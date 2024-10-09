@@ -272,8 +272,8 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       quote:
-        "Probe STEM transformed my learning experience. The interactive projects and global network are unparalleled.",
-      author: "Sarah K., Computer Science Student",
+        "\"Probe STEM transformed my learning experience. The interactive projects and global network are unparalleled.",
+      author: "Sarah K., Computer Science Student\"",
       rating: 5,
     },
     {
@@ -321,10 +321,10 @@ const TestimonialsSection = () => {
                 ))}
               </div>
               <p className="text-[#004080] italic mb-6 text-lg">
-                "{testimonial.quote}"
+                {testimonial.quote}
               </p>
               <p className="text-[#0056b3] font-semibold text-right">
-                - {testimonial.author}
+                {testimonial.author}
               </p>
             </motion.div>
           </AnimatedSection>

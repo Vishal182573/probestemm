@@ -89,7 +89,7 @@ const AboutUsPage: React.FC = () => {
               </CardHeader>
               <CardContent className="text-gray-700">
                 <p>
-                  In today's era of innovation, academics and industry often
+                  In today era of innovation, academics and industry often
                   work in isolation. Bridging the gap between them could spark a
                   revolution, allowing researchers to make more meaningful
                   contributions by aligning their work with real-world
@@ -182,7 +182,7 @@ const AboutUsPage: React.FC = () => {
                 project completion, students will receive a certificate from
                 both the faculty and the industry partner. Depending on
                 available funding, faculty may offer fellowships. All relevant
-                information will be maintained on the faculty's page, allowing
+                information will be maintained on the faculty page, allowing
                 students to connect through the comment feature. Additionally, a
                 notification will be sent to all students in the relevant area.
               </p>

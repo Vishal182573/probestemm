@@ -179,7 +179,7 @@ const StudentProfilePage: React.FC = () => {
                       <Badge variant="outline" className="mr-2">
                         2023
                       </Badge>
-                      Dean's List, Spring Semester
+                      Dean List, Spring Semester
                     </li>
                     <li className="flex items-center">
                       <Badge variant="outline" className="mr-2">

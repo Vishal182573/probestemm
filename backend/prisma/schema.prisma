@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// **************** Student Model **************** //
+
+model Student {
+  id                String              @id @default(cuid())
+  name              String
+  email             String              @unique
+  imageUrl          String?
+  
+  // Relations
+  discussions       Discussion[]
+  education         Education[]
+  researchHighlights ResearchHighlight[]
+  experiences       Experience[]
+  achievements      Achievement[]
+  comments          Comment[]
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model ResearchHighlight {
+  id          String   @id @default(cuid())
+  title       String   // e.g., "Machine Learning in Healthcare"
+  status      String   // "ONGOING" or "COMPLETED"
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+}
+
+model Experience {
+  id          String   @id @default(cuid())
+  position    String   // e.g., "Research Assistant", "Summer Intern"
+  company     String   // e.g., "AI Lab, Innovative Tech University"
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean  @default(false)
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  year        Int
+  title       String   // e.g., "Dean's List, Spring Semester"
+  description String?
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  degree      String
+  institution String
+  passingYear String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+}
+
+// **************** Professor Model **************** //
+model Professor {
+  id              String              @id @default(cuid())
+  name            String
+  email           String              @unique
+  title           String              // "Distinguished Professor of Computer Science"
+  university      String              // "Prestigious University"
+  photoUrl        String?
+  website         String?
+  degree          String              // "Ph.D."
+  
+  // Relations
+  answers         Answer[]
+  positions       Position[]
+  achievements    ProfessorAchievement[]
+  blogs           Blog[]
+  comments        Comment[]
+  projects        Project[]
+  webinars        Webinar[]
+
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model Position {
+  id          String    @id @default(cuid())
+  title       String    // e.g., "Distinguished Professor", "Associate Professor"
+  university  String    // e.g., "Prestigious University"
+  startYear   Int
+  endYear     Int?      // null if current position
+  current     Boolean   @default(false)
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+}
+
+model ProfessorAchievement {
+  id          String    @id @default(cuid())
+  year        Int
+  title       String    // e.g., "Outstanding Researcher Award"
+  description String?
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+}
+
+//*************business****************//
+model Business {
+  id          String @id @default(cuid())
+  email       String @unique 
+  companyName String 
+  description String
+  website     String
+  
+  // New relations
+  projects    Project[]     // Business can create projects
+  answers     Answer[]  // Business can answer discussions
+
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt  
+}
+
+//*************discussion*************//
+
+model Discussion {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  category     String
+  subcategory  String
+  status       DiscussionStatus @default(UNANSWERED)
+  
+  // Relation to the student asking the question
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  // Votes and comments
+  upvotes      Int       @default(0)
+  downvotes    Int       @default(0)
+  answers      Answer[]
+  commentCount Int       @default(0)
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Answer {
+  id           String     @id @default(cuid())
+  content      String
+  
+  // Relation to the discussion
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  discussionId String
+
+  // Relation to the professor answering
+  professor    Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId  String
+      // Relation to the Business answering
+  business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId   String
+
+  // Votes
+  upvotes      Int        @default(0)
+  downvotes    Int        @default(0)
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// *********** Blog Model ************* //
+model Blog {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  likes       Int       @default(0)
+  dislikes    Int       @default(0)
+  comments    Comment[]
+  author      Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// *********** Comment Model ************* //
+model Comment {
+  id          String    @id @default(cuid())
+  content     String
+  blog        Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId      String
+  userType    UserType  // Field to identify if the comment is from a professor or student
+  
+  // User relations
+  student     Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String?
+  professor   Professor? @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum DiscussionStatus {
+  ANSWERED
+  UNANSWERED
+}
+
+enum UserType {
+  PROFESSOR
+  STUDENT
+}
+
+//***************projects*************//
+model Project{
+  id String @id @default(cuid())
+  topic String 
+  content String
+  difficulty Difficulty
+  timeline DateTime
+  tags String[]
+  status Status
+  // Modified relations to include business
+  professor   Professor? @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String?
+  business    Business?  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId  String?
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+}
+
+enum Difficulty{
+  EASY
+  INTERMEDIATE
+  HARD
+}
+
+enum Status{
+  OPEN
+  ONGOING
+  CLOSED
+}
+
+
+//***************Webinar*********//
+
+model Webinar {
+  id          String    @id @default(cuid())
+  title       String
+  topic       String
+  place       String
+  date        DateTime
+  status      WebinarStatus @default(PENDING)
+  
+  // Relation to professor who creates the webinar
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  maxAttendees Int?
+  duration    Int?      // Duration in minutes
+  isOnline    Boolean  @default(true)
+  meetingLink String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum WebinarStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+//***************super admin*******************//
+
+model SuperAdmin {
+  id              String @id @default(cuid())
+  email           String @unique
+  name            String
+  
+  // Management relations
+  managedStudents Student[]
+  managedProfessors Professor[]
+  managedBusinesses Business[]
+  managedDiscussions Discussion[]
+  managedBlogs    Blog[]
+  managedProjects Project[]
+  managedWebinars Webinar[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

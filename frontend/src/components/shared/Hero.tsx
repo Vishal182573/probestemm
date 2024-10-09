@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { Monitor, Book, Users, PenTool, Lightbulb, GraduationCap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -48,7 +48,7 @@ const HeroSection = () => {
                       {slide.title}
                     </h1>
                     <div className="flex space-x-4 mt-6">
-                      <Link to={"/teacher-profile"}>
+                      <Link href={"/teacher-profile"}>
                       <Button
                         variant="default"
                         size="lg"
@@ -57,7 +57,7 @@ const HeroSection = () => {
                         Join as Teacher
                       </Button>
                       </Link>
-                      <Link to={"/student-profile"}>
+                      <Link href={"/student-profile"}>
                       <Button
                         variant="outline"
                         size="lg"

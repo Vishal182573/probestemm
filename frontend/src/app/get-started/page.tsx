@@ -13,7 +13,7 @@ const GetStartedPage = () => {
       description:
         "Empower the next generation of innovators with cutting-edge tools and global reach.",
       color: "from-purple-500 to-indigo-500",
-      link: "/teacher-profile",
+      link: "/teacher-profile", 
     },
     {
       title: "Join as Student",
