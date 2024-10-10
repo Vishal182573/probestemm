@@ -1,165 +1,76 @@
-// src/controllers/authController.ts
-
 import type { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { v2 as cloudinary } from "cloudinary";
+import { PrismaClient } from "@prisma/client";
+import cloudinary from "../config/cloudinary";
+import type {
+  StudentData,
+  ProfessorData,
+  BusinessData,
+  AdminData,
+  UserRole,
+} from "../types/auth";
 
 const prisma = new PrismaClient();
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Validation schemas
-const UserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-const EducationSchema = z.object({
-  degree: z.string(),
-  institution: z.string(),
-  passingYear: z.string(),
-});
-
-const ResearchHighlightSchema = z.object({
-  title: z.string(),
-  status: z.enum(["ONGOING", "COMPLETED"]),
-});
-
-const PositionSchema = z.object({
-  title: z.string(),
-  institution: z.string(),
-  startYear: z.string(),
-  endYear: z.string().optional(),
-  current: z.boolean().default(false),
-});
-
-const AchievementSchema = z.object({
-  year: z.string(),
-  description: z.string(),
-});
-
-const StudentSchema = UserSchema.extend({
-  fullName: z.string().min(1),
-  phoneNumber: z.string(),
-  location: z.string(),
-  university: z.string(),
-  course: z.string(),
-  researchHighlights: z.array(ResearchHighlightSchema).default([]),
-  experience: z.string().default(""),
-  education: z.array(EducationSchema).default([]),
-  achievements: z.array(AchievementSchema).default([]),
-});
-
-const ProfessorSchema = UserSchema.extend({
-  fullName: z.string().min(1),
-  phoneNumber: z.string(),
-  location: z.string(),
-  title: z.string(),
-  university: z.string(),
-  website: z.string().url().optional().default(""),
-  degree: z.string(),
-  department: z.string(),
-  position: z.string(),
-  researchInterests: z.string().default(""),
-  positions: z.array(PositionSchema).default([]),
-  achievements: z.array(AchievementSchema).default([]),
-});
-
-const BusinessSchema = UserSchema.extend({
-  companyName: z.string().min(1),
-  phoneNumber: z.string(),
-  location: z.string(),
-  industry: z.string(),
-  description: z.string(),
-  website: z.string().url().optional(),
-});
-
-const AdminSchema = UserSchema.extend({
-  name: z.string().min(1),
-});
-
-// Helper functions
-const tryParseJSON = (jsonString: string) => {
-  try {
-    return JSON.parse(jsonString);
-  } catch (e) {
-    return null;
-  }
-};
-
-const generateToken = (userId: string, role: string): string => {
-  return jwt.sign({ userId, role }, process.env.JWT_SECRET!, {
+const generateToken = (id: string, role: UserRole) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET as string, {
     expiresIn: "1d",
   });
 };
 
-const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
-};
-
-const uploadImage = async (file: Express.Multer.File): Promise<string> => {
-  const result = await cloudinary.uploader.upload(file.path);
-  return result.secure_url;
-};
-
-// Controllers
-export const studentSignup = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const studentSignup = async (req: Request, res: Response) => {
   try {
-    const formData = req.body;
-    const researchHighlights = tryParseJSON(formData.researchHighlights) || [];
-    const parsedEducation = tryParseJSON(formData.education) || [];
-    const parsedAchievements = tryParseJSON(formData.achievements) || [];
+    const userData: StudentData = req.body;
+    const file = req.file;
 
-    const validatedData = StudentSchema.parse({
-      ...formData,
-      researchHighlights,
-      education: parsedEducation,
-      achievements: parsedAchievements,
-      // Provide default values for potentially undefined fields
-      experience: formData.experience || "",
+    // Check if email exists in the request body
+    if (!userData.email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const existingUser = await prisma.student.findUnique({
+      where: { email: userData.email },
     });
 
-    const {
-      email,
-      password,
-      education,
-      achievements,
-      researchHighlights: parsedResearchHighlights,
-      ...rest
-    } = validatedData;
-
-    const existingUser = await prisma.student.findUnique({ where: { email } });
     if (existingUser) {
-      res.status(400).json({ error: "Email already in use" });
-      return;
+      return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await hashPassword(password);
-    let imageUrl;
-    if (req.file) {
-      imageUrl = await uploadImage(req.file);
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+    let imageUrl = "";
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path);
+      imageUrl = result.secure_url;
     }
 
-    const student = await prisma.student.create({
+    // Parse nested data if it's sent as JSON strings
+    const researchHighlights = Array.isArray(userData.researchHighlights)
+      ? userData.researchHighlights
+      : JSON.parse(userData.researchHighlights as string);
+
+    const education = Array.isArray(userData.education)
+      ? userData.education
+      : JSON.parse(userData.education as string);
+
+    const achievements = Array.isArray(userData.achievements)
+      ? userData.achievements
+      : JSON.parse(userData.achievements as string);
+
+    const user = await prisma.student.create({
       data: {
-        ...rest,
-        email,
+        fullName: userData.fullName,
+        email: userData.email,
         password: hashedPassword,
+        phoneNumber: userData.phoneNumber,
+        location: userData.location,
         imageUrl,
+        university: userData.university,
+        course: userData.course,
+        experience: userData.experience,
         researchHighlights: {
-          create: parsedResearchHighlights,
+          create: researchHighlights,
         },
         education: {
           create: education,
@@ -168,58 +79,67 @@ export const studentSignup = async (
           create: achievements,
         },
       },
-      include: {
-        education: true,
-        researchHighlights: true,
-        achievements: true,
-      },
     });
 
-    const token = generateToken(student.id, "student");
-    res.status(201).json({ student, token });
+    const token = generateToken(user.id, "student");
+
+    res.status(201).json({ user, token });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
-      return;
-    }
-    res.status(500).json({ error: "Failed to create student" });
+    console.error(error);
+    res.status(500).json({ error: "Error creating user" });
   }
 };
 
-export const professorSignup = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const professorSignup = async (req: Request, res: Response) => {
   try {
-    const formData = req.body;
-    const validatedData = ProfessorSchema.parse({
-      ...formData,
-      positions: JSON.parse(formData.positions || "[]"),
-      achievements: JSON.parse(formData.achievements || "[]"),
-    });
+    const userData: ProfessorData = req.body;
+    const file = req.file;
 
-    const { email, password, positions, achievements, ...rest } = validatedData;
+    // Check if email exists in the request body
+    if (!userData.email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
 
     const existingUser = await prisma.professor.findUnique({
-      where: { email },
+      where: { email: userData.email },
     });
+
     if (existingUser) {
-      res.status(400).json({ error: "Email already in use" });
-      return;
+      return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await hashPassword(password);
-    let photoUrl;
-    if (req.file) {
-      photoUrl = await uploadImage(req.file);
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+    let photoUrl = "";
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path);
+      photoUrl = result.secure_url;
     }
 
-    const professor = await prisma.professor.create({
+    // Parse nested data if it's sent as JSON strings
+    const positions = Array.isArray(userData.positions)
+      ? userData.positions
+      : JSON.parse(userData.positions as string);
+
+    const achievements = Array.isArray(userData.achievements)
+      ? userData.achievements
+      : JSON.parse(userData.achievements as string);
+
+    const user = await prisma.professor.create({
       data: {
-        ...rest,
-        email,
+        fullName: userData.fullName,
+        email: userData.email,
         password: hashedPassword,
+        phoneNumber: userData.phoneNumber,
+        location: userData.location,
         photoUrl,
+        title: userData.title,
+        university: userData.university,
+        website: userData.website,
+        degree: userData.degree, // Add this line
+        department: userData.department,
+        position: userData.position,
+        researchInterests: userData.researchInterests,
         positions: {
           create: positions,
         },
@@ -227,176 +147,141 @@ export const professorSignup = async (
           create: achievements,
         },
       },
-      include: {
-        positions: true,
-        achievements: true,
-      },
     });
 
-    const token = generateToken(professor.id, "professor");
-    res.status(201).json({ professor, token });
+    const token = generateToken(user.id, "professor");
+
+    res.status(201).json({ user, token });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
-      return;
-    }
-    res.status(500).json({ error: "Failed to create professor" });
+    console.error(error);
+    res.status(500).json({ error: "Error creating user" });
   }
 };
-
-export const businessSignup = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const businessSignup = async (req: Request, res: Response) => {
   try {
-    const validatedData = BusinessSchema.parse(req.body);
-    const { email, password, website = "", ...rest } = validatedData;
+    const userData: BusinessData = req.body;
+    const file = req.file;
 
-    const existingUser = await prisma.business.findUnique({ where: { email } });
+    // Check if email exists in the request body
+    if (!userData.email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const existingUser = await prisma.business.findUnique({
+      where: { email: userData.email },
+    });
+
     if (existingUser) {
-      res.status(400).json({ error: "Email already in use" });
-      return;
+      return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const business = await prisma.business.create({
+    let profileImageUrl = "";
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path);
+      profileImageUrl = result.secure_url;
+    }
+
+    const user = await prisma.business.create({
       data: {
-        ...rest,
-        email,
+        companyName: userData.companyName,
+        email: userData.email,
         password: hashedPassword,
-        website,
+        phoneNumber: userData.phoneNumber,
+        location: userData.location,
+        industry: userData.industry,
+        description: userData.description,
+        website: userData.website,
+        profileImageUrl,
       },
     });
 
-    const token = generateToken(business.id, "business");
-    res.status(201).json({ business, token });
+    const token = generateToken(user.id, "business");
+
+    res.status(201).json({ user, token });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
-      return;
-    }
-    res.status(500).json({ error: "Failed to create business" });
+    console.error(error);
+    res.status(500).json({ error: "Error creating user" });
   }
 };
-export const adminSignup = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const adminSignup = async (req: Request, res: Response) => {
   try {
-    const validatedData = AdminSchema.parse(req.body);
-    const { email, password, name } = validatedData;
+    const userData: AdminData = req.body;
 
     const existingUser = await prisma.superAdmin.findUnique({
-      where: { email },
+      where: { email: userData.email },
     });
+
     if (existingUser) {
-      res.status(400).json({ error: "Email already in use" });
-      return;
+      return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const admin = await prisma.superAdmin.create({
+    const user = await prisma.superAdmin.create({
       data: {
-        email,
+        name: userData.fullName,
+        email: userData.email,
         password: hashedPassword,
-        name,
       },
     });
 
-    const token = generateToken(admin.id, "admin");
-    res.status(201).json({ admin, token });
+    const token = generateToken(user.id, "admin");
+
+    res.status(201).json({ user, token });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
-      return;
-    }
-    res.status(500).json({ error: "Failed to create admin" });
+    console.error(error);
+    res.status(500).json({ error: "Error creating user" });
   }
 };
 
-export const signin = async (req: Request, res: Response): Promise<void> => {
+export const signin = async (req: Request, res: Response) => {
   try {
-    const { email, password } = UserSchema.parse(req.body);
-
-    const student = await prisma.student.findUnique({
-      where: { email },
-      include: {
-        education: true,
-        researchHighlights: true,
-        achievements: true,
-      },
-    });
-    const professor = await prisma.professor.findUnique({
-      where: { email },
-      include: {
-        positions: true,
-        achievements: true,
-      },
-    });
-    const business = await prisma.business.findUnique({ where: { email } });
-    const admin = await prisma.superAdmin.findUnique({ where: { email } });
+    const {
+      email,
+      password,
+      role,
+    }: { email: string; password: string; role: UserRole } = req.body;
 
     let user;
-    let role;
-
-    if (student) {
-      user = student;
-      role = "student";
-    } else if (professor) {
-      user = professor;
-      role = "professor";
-    } else if (business) {
-      user = business;
-      role = "business";
-    } else if (admin) {
-      user = admin;
-      role = "admin";
+    switch (role) {
+      case "student":
+        user = await prisma.student.findUnique({ where: { email } });
+        break;
+      case "professor":
+        user = await prisma.professor.findUnique({ where: { email } });
+        break;
+      case "business":
+        user = await prisma.business.findUnique({ where: { email } });
+        break;
+      case "admin":
+        user = await prisma.superAdmin.findUnique({ where: { email } });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid role" });
     }
 
     if (!user) {
-      res.status(400).json({ error: "Invalid credentials" });
-      return;
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
-      res.status(400).json({ error: "Invalid credentials" });
-      return;
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = generateToken(user.id, role as string);
-    res.status(200).json({ user, token, role });
+    const token = generateToken(user.id, role);
+
+    res.json({ user, token });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
-      return;
-    }
-    res.status(500).json({ error: "Failed to sign in" });
+    console.error(error);
+    res.status(500).json({ error: "Error logging in" });
   }
 };
 
-export const authenticateJWT = (
-  req: Request,
-  res: Response,
-  next: Function
-): void => {
-  const authHeader = req.headers.authorization;
-
-  if (authHeader) {
-    const token = authHeader.split(" ")[1];
-
-    jwt.verify(token, process.env.JWT_SECRET!, (err: any, user: any) => {
-      if (err) {
-        res.sendStatus(403);
-        return;
-      }
-
-      (req as any).user = user;
-      next();
-    });
-  } else {
-    res.sendStatus(401);
-  }
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out successfully" });
 };

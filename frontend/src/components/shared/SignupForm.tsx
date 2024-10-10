@@ -103,12 +103,7 @@ export const SignupForm: React.FC = () => {
   const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    try {
-      setStep(2);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      setError("An error occurred. Please try again.");
-    }
+    setStep(2);
   };
 
   const handleRoleSpecificSubmit = async (e: React.FormEvent) => {
@@ -116,57 +111,18 @@ export const SignupForm: React.FC = () => {
     setError(null);
     try {
       const formData = new FormData();
-      formData.append("fullName", userData.fullName);
-      formData.append("email", userData.email);
-      formData.append("password", userData.password);
-      formData.append("phoneNumber", roleSpecificData.phoneNumber);
-      formData.append("location", roleSpecificData.location);
-      if (roleSpecificData.profileImage) {
-        formData.append("profileImage", roleSpecificData.profileImage);
-      }
-
-      // Append other role-specific data
-      if (userData.role === "student") {
-        formData.append("university", roleSpecificData.university || "");
-        formData.append("course", roleSpecificData.course || "");
-        formData.append(
-          "researchHighlights",
-          JSON.stringify(roleSpecificData.researchHighlights || [])
-        );
-        formData.append("experience", roleSpecificData.experience || "");
-        formData.append(
-          "education",
-          JSON.stringify(roleSpecificData.education || [])
-        );
-        formData.append(
-          "achievements",
-          JSON.stringify(roleSpecificData.achievements || [])
-        );
-      } else if (userData.role === "professor") {
-        formData.append("title", roleSpecificData.title || "");
-        formData.append("university", roleSpecificData.university || "");
-        formData.append("website", roleSpecificData.website || "");
-        formData.append("degree", roleSpecificData.degree || "");
-        formData.append("department", roleSpecificData.department || "");
-        formData.append("position", roleSpecificData.position || "");
-        formData.append(
-          "researchInterests",
-          roleSpecificData.researchInterests || ""
-        );
-        formData.append(
-          "positions",
-          JSON.stringify(roleSpecificData.positions || [])
-        );
-        formData.append(
-          "achievements",
-          JSON.stringify(roleSpecificData.achievements || [])
-        );
-      } else if (userData.role === "business") {
-        formData.append("companyName", roleSpecificData.companyName || "");
-        formData.append("industry", roleSpecificData.industry || "");
-        formData.append("description", roleSpecificData.description || "");
-        formData.append("website", roleSpecificData.website || "");
-      }
+      Object.entries(userData).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      Object.entries(roleSpecificData).forEach(([key, value]) => {
+        if (key === "profileImage" && value instanceof File) {
+          formData.append(key, value);
+        } else if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
 
       const response = await authApi.post(
         `/${userData.role}/signup`,
@@ -179,6 +135,8 @@ export const SignupForm: React.FC = () => {
       );
 
       console.log("Signup successful:", response.data);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userRole", userData.role);
       router.push(`/${userData.role}-profile`);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -464,8 +422,6 @@ export const SignupForm: React.FC = () => {
       </div>
     );
 
-    // ... (previous code remains the same)
-
     const renderPositions = () => (
       <div className="space-y-2">
         <Label>Positions Held</Label>
@@ -664,6 +620,21 @@ export const SignupForm: React.FC = () => {
                   setRoleSpecificData({
                     ...roleSpecificData,
                     title: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="degree">Degree</Label>
+              <Input
+                id="degree"
+                type="text"
+                value={roleSpecificData.degree || ""}
+                onChange={(e) =>
+                  setRoleSpecificData({
+                    ...roleSpecificData,
+                    degree: e.target.value,
                   })
                 }
                 required

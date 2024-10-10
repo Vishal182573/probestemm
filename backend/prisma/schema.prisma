@@ -113,6 +113,7 @@ model Business {
   industry    String
   description String
   website     String?
+  profileImageUrl String?
   
   projects    Project[]
   answers     Answer[]
