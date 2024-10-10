@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React from "react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Award, Briefcase, GraduationCap, Star, Edit3 } from "lucide-react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
+import { LogoutButton } from "@/components/shared/LoginForm";
 
 const StudentProfilePage: React.FC = () => {
   const staggerChildren = {
@@ -59,10 +60,13 @@ const StudentProfilePage: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button variant="outline">
-                  <Edit3 className="mr-2 h-4 w-4" />
-                  Edit Profile
-                </Button>
+                <div className="flex flex-col space-y-2">
+                  <Button variant="outline" className="w-full">
+                    <Edit3 className="mr-2" />
+                    Edit Profile
+                  </Button>
+                  <LogoutButton />
+                </div>
               </motion.div>
             </div>
           </div>
@@ -201,7 +205,7 @@ const StudentProfilePage: React.FC = () => {
         </section>
       </main>
 
-      <Footer/>
+      <Footer />
     </div>
   );
 };
