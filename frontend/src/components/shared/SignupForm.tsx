@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,14 @@ import { Label } from "@/components/ui/label";
 import { User2Icon, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+const authApi = axios.create({
+  baseURL: `${API_URL}/auth`,
+  withCredentials: true,
+});
 
 type UserRole = "student" | "professor" | "business";
 
@@ -26,33 +34,50 @@ interface UserData {
   role: UserRole;
 }
 
+interface RoleSpecificData {
+  phoneNumber: string;
+  location: string;
+  profileImage: File | null;
+  university?: string;
+  course?: string;
+  researchHighlights?: ResearchHighlight[];
+  experience?: string;
+  education?: Education[];
+  achievements?: Achievement[];
+  title?: string;
+  website?: string;
+  degree?: string;
+  department?: string;
+  position?: string;
+  researchInterests?: string;
+  positions?: Position[];
+  companyName?: string;
+  industry?: string;
+  description?: string;
+}
+
 interface Education {
   degree: string;
   institution: string;
-  year: string;
+  passingYear: string;
+}
+
+interface ResearchHighlight {
+  title: string;
+  status: "ONGOING" | "COMPLETED";
 }
 
 interface Position {
   title: string;
   institution: string;
   startYear: string;
-  endYear: string;
+  endYear?: string;
+  current: boolean;
 }
 
 interface Achievement {
   year: string;
   description: string;
-}
-
-interface RoleSpecificData {
-  phoneNumber: string;
-  location: string;
-  profileImage: File | null;
-  education?: Education[];
-  positions?: Position[];
-  achievements?: Achievement[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
 }
 
 export const SignupForm: React.FC = () => {
@@ -68,21 +93,102 @@ export const SignupForm: React.FC = () => {
     location: "",
     profileImage: null,
     education: [],
-    positions: [],
+    researchHighlights: [],
     achievements: [],
+    positions: [],
   });
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleInitialSubmit = (e: React.FormEvent) => {
+  const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2);
+    setError(null);
+    try {
+      setStep(2);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setError("An error occurred. Please try again.");
+    }
   };
 
-  const handleRoleSpecificSubmit = (e: React.FormEvent) => {
+  const handleRoleSpecificSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("User Data:", userData);
-    console.log("Role Specific Data:", roleSpecificData);
-    router.push(`/${userData.role}-profile`);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("fullName", userData.fullName);
+      formData.append("email", userData.email);
+      formData.append("password", userData.password);
+      formData.append("phoneNumber", roleSpecificData.phoneNumber);
+      formData.append("location", roleSpecificData.location);
+      if (roleSpecificData.profileImage) {
+        formData.append("profileImage", roleSpecificData.profileImage);
+      }
+
+      // Append other role-specific data
+      if (userData.role === "student") {
+        formData.append("university", roleSpecificData.university || "");
+        formData.append("course", roleSpecificData.course || "");
+        formData.append(
+          "researchHighlights",
+          JSON.stringify(roleSpecificData.researchHighlights || [])
+        );
+        formData.append("experience", roleSpecificData.experience || "");
+        formData.append(
+          "education",
+          JSON.stringify(roleSpecificData.education || [])
+        );
+        formData.append(
+          "achievements",
+          JSON.stringify(roleSpecificData.achievements || [])
+        );
+      } else if (userData.role === "professor") {
+        formData.append("title", roleSpecificData.title || "");
+        formData.append("university", roleSpecificData.university || "");
+        formData.append("website", roleSpecificData.website || "");
+        formData.append("degree", roleSpecificData.degree || "");
+        formData.append("department", roleSpecificData.department || "");
+        formData.append("position", roleSpecificData.position || "");
+        formData.append(
+          "researchInterests",
+          roleSpecificData.researchInterests || ""
+        );
+        formData.append(
+          "positions",
+          JSON.stringify(roleSpecificData.positions || [])
+        );
+        formData.append(
+          "achievements",
+          JSON.stringify(roleSpecificData.achievements || [])
+        );
+      } else if (userData.role === "business") {
+        formData.append("companyName", roleSpecificData.companyName || "");
+        formData.append("industry", roleSpecificData.industry || "");
+        formData.append("description", roleSpecificData.description || "");
+        formData.append("website", roleSpecificData.website || "");
+      }
+
+      const response = await authApi.post(
+        `/${userData.role}/signup`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Signup successful:", response.data);
+      router.push(`/${userData.role}-profile`);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setError(
+          error.response.data.error || "An error occurred during signup"
+        );
+      } else {
+        setError("An error occurred during signup. Please try again.");
+      }
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +205,7 @@ export const SignupForm: React.FC = () => {
       ...roleSpecificData,
       education: [
         ...(roleSpecificData.education || []),
-        { degree: "", institution: "", year: "" },
+        { degree: "", institution: "", passingYear: "" },
       ],
     });
   };
@@ -125,7 +231,13 @@ export const SignupForm: React.FC = () => {
       ...roleSpecificData,
       positions: [
         ...(roleSpecificData.positions || []),
-        { title: "", institution: "", startYear: "", endYear: "" },
+        {
+          title: "",
+          institution: "",
+          startYear: "",
+          endYear: "",
+          current: false,
+        },
       ],
     });
   };
@@ -133,10 +245,11 @@ export const SignupForm: React.FC = () => {
   const updatePosition = (
     index: number,
     field: keyof Position,
-    value: string
+    value: string | boolean
   ) => {
     const newPositions = [...(roleSpecificData.positions || [])];
-    newPositions[index][field] = value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (newPositions[index] as any)[field] = value;
     setRoleSpecificData({ ...roleSpecificData, positions: newPositions });
   };
 
@@ -172,6 +285,43 @@ export const SignupForm: React.FC = () => {
     setRoleSpecificData({ ...roleSpecificData, achievements: newAchievements });
   };
 
+  const addResearchHighlight = () => {
+    setRoleSpecificData({
+      ...roleSpecificData,
+      researchHighlights: [
+        ...(roleSpecificData.researchHighlights || []),
+        { title: "", status: "ONGOING" },
+      ],
+    });
+  };
+
+  const updateResearchHighlight = (
+    index: number,
+    field: keyof ResearchHighlight,
+    value: string
+  ) => {
+    const newResearchHighlights = [
+      ...(roleSpecificData.researchHighlights || []),
+    ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newResearchHighlights[index][field] = value as any;
+    setRoleSpecificData({
+      ...roleSpecificData,
+      researchHighlights: newResearchHighlights,
+    });
+  };
+
+  const removeResearchHighlight = (index: number) => {
+    const newResearchHighlights = [
+      ...(roleSpecificData.researchHighlights || []),
+    ];
+    newResearchHighlights.splice(index, 1);
+    setRoleSpecificData({
+      ...roleSpecificData,
+      researchHighlights: newResearchHighlights,
+    });
+  };
+
   const renderInitialForm = () => (
     <form className="space-y-4" onSubmit={handleInitialSubmit}>
       <Input
@@ -179,18 +329,21 @@ export const SignupForm: React.FC = () => {
         placeholder="Full Name"
         value={userData.fullName}
         onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
+        required
       />
       <Input
         type="email"
         placeholder="Email Address"
         value={userData.email}
         onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+        required
       />
       <Input
         type="password"
         placeholder="Password"
         value={userData.password}
         onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+        required
       />
       <Select
         onValueChange={(value) =>
@@ -215,8 +368,7 @@ export const SignupForm: React.FC = () => {
       </div>
       <Link
         href="/login"
-        className="text-primary text-sm text-center block  mt-2 mb-4 hover:underline  
-      "
+        className="text-primary text-sm text-center block mt-2 mb-4 hover:underline"
       >
         Already have an account? Log In
       </Link>
@@ -271,6 +423,7 @@ export const SignupForm: React.FC = () => {
         </div>
       </>
     );
+
     const renderEducation = () => (
       <div className="space-y-2">
         <Label>Education</Label>
@@ -289,9 +442,11 @@ export const SignupForm: React.FC = () => {
               }
             />
             <Input
-              placeholder="Year"
-              value={edu.year}
-              onChange={(e) => updateEducation(index, "year", e.target.value)}
+              placeholder="Passing Year"
+              value={edu.passingYear}
+              onChange={(e) =>
+                updateEducation(index, "passingYear", e.target.value)
+              }
             />
             <Button
               type="button"
@@ -308,6 +463,8 @@ export const SignupForm: React.FC = () => {
         </Button>
       </div>
     );
+
+    // ... (previous code remains the same)
 
     const renderPositions = () => (
       <div className="space-y-2">
@@ -338,6 +495,13 @@ export const SignupForm: React.FC = () => {
               value={pos.endYear}
               onChange={(e) => updatePosition(index, "endYear", e.target.value)}
             />
+            <Checkbox
+              checked={pos.current}
+              onCheckedChange={(checked) =>
+                updatePosition(index, "current", checked as boolean)
+              }
+            />
+            <Label htmlFor={`current-${index}`}>Current</Label>
             <Button
               type="button"
               variant="outline"
@@ -387,33 +551,73 @@ export const SignupForm: React.FC = () => {
       </div>
     );
 
+    const renderResearchHighlights = () => (
+      <div className="space-y-2">
+        <Label>Research Highlights</Label>
+        {roleSpecificData.researchHighlights?.map((highlight, index) => (
+          <div key={index} className="flex space-x-2">
+            <Input
+              placeholder="Title"
+              value={highlight.title}
+              onChange={(e) =>
+                updateResearchHighlight(index, "title", e.target.value)
+              }
+            />
+            <Select
+              value={highlight.status}
+              onValueChange={(value) =>
+                updateResearchHighlight(index, "status", value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ONGOING">Ongoing</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => removeResearchHighlight(index)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        <Button type="button" variant="outline" onClick={addResearchHighlight}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Research Highlight
+        </Button>
+      </div>
+    );
+
     switch (userData.role) {
       case "student":
         return (
           <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
             {commonFields}
-
             {renderEducation()}
             <div className="space-y-2">
-              <Label htmlFor="univeristy/college name">
-                University/College Name
-              </Label>
+              <Label htmlFor="university">University/College Name</Label>
               <Input
-                id="univeristy/college name"
+                id="university"
                 type="text"
-                value={roleSpecificData.univeristy || ""}
+                value={roleSpecificData.university || ""}
                 onChange={(e) =>
                   setRoleSpecificData({
                     ...roleSpecificData,
-                    univeristy: e.target.value,
+                    university: e.target.value,
                   })
                 }
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="course name">Course Name(Degree)</Label>
+              <Label htmlFor="course">Course Name (Degree)</Label>
               <Input
-                id="course name"
+                id="course"
                 type="text"
                 placeholder="Computer Science (B.Tech)"
                 value={roleSpecificData.course || ""}
@@ -423,21 +627,10 @@ export const SignupForm: React.FC = () => {
                     course: e.target.value,
                   })
                 }
+                required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="researchHighlights">Research Highlights</Label>
-              <Textarea
-                id="researchHighlights"
-                value={roleSpecificData.researchHighlights || ""}
-                onChange={(e) =>
-                  setRoleSpecificData({
-                    ...roleSpecificData,
-                    researchHighlights: e.target.value,
-                  })
-                }
-              />
-            </div>
+            {renderResearchHighlights()}
             <div className="space-y-2">
               <Label htmlFor="experience">Experience</Label>
               <Textarea
@@ -462,15 +655,30 @@ export const SignupForm: React.FC = () => {
           <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
             {commonFields}
             <div className="space-y-2">
-              <Label htmlFor="institution">Current Institution</Label>
+              <Label htmlFor="title">Title</Label>
               <Input
-                id="institution"
+                id="title"
                 type="text"
-                value={roleSpecificData.institution || ""}
+                value={roleSpecificData.title || ""}
                 onChange={(e) =>
                   setRoleSpecificData({
                     ...roleSpecificData,
-                    institution: e.target.value,
+                    title: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="university">Current Institution</Label>
+              <Input
+                id="university"
+                type="text"
+                value={roleSpecificData.university || ""}
+                onChange={(e) =>
+                  setRoleSpecificData({
+                    ...roleSpecificData,
+                    university: e.target.value,
                   })
                 }
                 required
@@ -506,7 +714,6 @@ export const SignupForm: React.FC = () => {
                 required
               />
             </div>
-
             {renderPositions()}
             <div className="space-y-2">
               <Label htmlFor="researchInterests">Research Interests</Label>
@@ -542,7 +749,6 @@ export const SignupForm: React.FC = () => {
             </Button>
           </form>
         );
-
       case "business":
         return (
           <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
@@ -572,20 +778,6 @@ export const SignupForm: React.FC = () => {
                   setRoleSpecificData({
                     ...roleSpecificData,
                     industry: e.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="interests">Areas of Interest</Label>
-              <Textarea
-                id="interests"
-                value={roleSpecificData.interests || ""}
-                onChange={(e) =>
-                  setRoleSpecificData({
-                    ...roleSpecificData,
-                    interests: e.target.value,
                   })
                 }
                 required
@@ -637,6 +829,7 @@ export const SignupForm: React.FC = () => {
       </CardHeader>
       <CardContent>
         {step === 1 ? renderInitialForm() : renderRoleSpecificForm()}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </CardContent>
     </Card>
   );

@@ -1,6 +1,6 @@
-import { type Request, type Response } from 'express';
-import { PrismaClient, DiscussionStatus } from '@prisma/client';
-import { z } from 'zod';
+import { type Request, type Response } from "express";
+import { PrismaClient, DiscussionStatus } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -21,19 +21,19 @@ const AnswerSchema = z.object({
 // GET /api/discussions
 export const getDiscussions = async (req: Request, res: Response) => {
   try {
-      const discussions = await prisma.discussion.findMany({
+    const discussions = await prisma.discussion.findMany({
+      include: {
+        student: true,
+        answers: {
           include: {
-              student: true,
-              answers: {
-                  include: {
-                      professor: true,
-                  },
-              },
+            professor: true,
           },
-      });
-      return res.status(200).json(discussions);
+        },
+      },
+    });
+    return res.status(200).json(discussions);
   } catch (error) {
-      return res.status(500).json({ error: 'Failed to fetch discussions' });
+    return res.status(500).json({ error: "Failed to fetch discussions" });
   }
 };
 
@@ -54,12 +54,12 @@ export const getDiscussionById = async (req: Request, res: Response) => {
     });
 
     if (!discussion) {
-      return res.status(404).json({ error: 'Discussion not found' });
+      return res.status(404).json({ error: "Discussion not found" });
     }
 
     return res.status(200).json(discussion);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch discussion' });
+    return res.status(500).json({ error: "Failed to fetch discussion" });
   }
 };
 
@@ -78,7 +78,7 @@ export const createDiscussion = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create discussion' });
+    return res.status(500).json({ error: "Failed to create discussion" });
   }
 };
 
@@ -92,6 +92,7 @@ export const createAnswer = async (req: Request, res: Response) => {
       data: {
         ...validatedData,
         discussionId,
+        businessId: "someBusinessId", // Replace 'someBusinessId' with the actual businessId value
       },
     });
 
@@ -106,7 +107,7 @@ export const createAnswer = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create answer' });
+    return res.status(500).json({ error: "Failed to create answer" });
   }
 };
 
@@ -115,12 +116,12 @@ export const createAnswer = async (req: Request, res: Response) => {
 //   try {
 //     const { id } = req.params;
 //     const validatedData = DiscussionSchema.partial().parse(req.body);
-    
+
 //     const discussion = await prisma.discussion.update({
 //       where: { id },
 //       data: validatedData,
 //     });
-    
+
 //     return res.status(200).json(discussion);
 //   } catch (error) {
 //     if (error instanceof z.ZodError) {

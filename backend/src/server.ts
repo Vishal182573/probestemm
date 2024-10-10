@@ -1,18 +1,17 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import studentsRoutes from "./routes/studentRoutes.ts"
-import ProfessorRoutes from "./routes/professorRoutes.ts"
-import DiscussionRoutes from "./routes/discussionsRoutes.ts"
-import BlogsRoutes from "./routes/blogsRoutes.ts"
-import WebinarRoutes from "./routes/webinarRoutes.ts"
-import ProjectRoutes from "./routes/projectsRoutes.ts"
-import BusinessRoutes from "./routes/businessRoutes.ts"
-import SuperAdminRoutes from "./routes/superadminRoutes.ts"
-
-import ImageUploadRoutes from "./routes/uploadImageRoutes.ts"
-
 import { FRONTEND_URL } from "./constants";
+import authRoutes from "./routes/authRoutes";
+import studentsRoutes from "./routes/studentRoutes";
+import professorRoutes from "./routes/professorRoutes";
+import discussionRoutes from "./routes/discussionsRoutes";
+import blogsRoutes from "./routes/blogsRoutes";
+import webinarRoutes from "./routes/webinarRoutes";
+import projectRoutes from "./routes/projectsRoutes";
+import businessRoutes from "./routes/businessRoutes";
+import superAdminRoutes from "./routes/superadminRoutes";
+import imageUploadRoutes from "./routes/uploadImageRoutes";
 
 dotenv.config();
 
@@ -24,27 +23,28 @@ const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
       ? process.env.FRONTEND_URL
-      : `${FRONTEND_URL}`,
+      : FRONTEND_URL,
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
-// Apply CORS middleware
+// Middleware
 app.use(cors(corsOptions));
-
-app.use("api/student",studentsRoutes)
-app.use("api/professor",ProfessorRoutes)
-app.use("api/discussion",DiscussionRoutes)
-app.use("api/blog",BlogsRoutes)
-app.use("api/project",ProjectRoutes)
-app.use("api/webinar",WebinarRoutes)
-app.use("api/business",BusinessRoutes)
-app.use("api/super-admin",SuperAdminRoutes)
-app.use("api/image",ImageUploadRoutes)
-
 app.use(express.json());
 
-app.use("/", (req, res) => {
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/student", studentsRoutes);
+app.use("/api/professor", professorRoutes);
+app.use("/api/discussion", discussionRoutes);
+app.use("/api/blog", blogsRoutes);
+app.use("/api/project", projectRoutes);
+app.use("/api/webinar", webinarRoutes);
+app.use("/api/business", businessRoutes);
+app.use("/api/super-admin", superAdminRoutes);
+app.use("/api/image", imageUploadRoutes);
+
+app.get("/", (req, res) => {
   res.send("Server is running");
 });
 

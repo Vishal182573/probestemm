@@ -1,7 +1,7 @@
 // src/controllers/projectControllers.ts
-import { type Request, type Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { type Request, type Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
 const ProjectSchema = z.object({
   topic: z.string().min(1),
   content: z.string().min(1),
-  difficulty: z.enum(['EASY', 'INTERMEDIATE', 'HARD']),
+  difficulty: z.enum(["EASY", "INTERMEDIATE", "HARD"]),
   timeline: z.string().transform((str) => new Date(str)),
   tags: z.array(z.string()),
-  status: z.enum(['OPEN', 'ONGOING', 'CLOSED']),
+  status: z.enum(["OPEN", "ONGOING", "CLOSED"]),
 });
 
 // Create project for professor
@@ -29,7 +29,7 @@ const createProfessorProject = async (req: Request, res: Response) => {
         },
         // Explicitly set businessId to null
         business: undefined,
-        businessId: null,
+        businessId: undefined,
       },
     });
     return res.status(201).json(project);
@@ -37,7 +37,9 @@ const createProfessorProject = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create professor project' });
+    return res
+      .status(500)
+      .json({ error: "Failed to create professor project" });
   }
 };
 
@@ -55,7 +57,7 @@ const createBusinessProject = async (req: Request, res: Response) => {
         },
         // Explicitly set professorId to null
         professor: undefined,
-        professorId: null,
+        professorId: undefined,
       },
     });
     return res.status(201).json(project);
@@ -63,7 +65,7 @@ const createBusinessProject = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create business project' });
+    return res.status(500).json({ error: "Failed to create business project" });
   }
 };
 
@@ -73,8 +75,8 @@ const getAllProfessorProjects = async (req: Request, res: Response) => {
     const projects = await prisma.project.findMany({
       where: {
         NOT: {
-          professorId: null
-        }
+          professorId: null,
+        },
       },
       include: {
         professor: {
@@ -82,14 +84,16 @@ const getAllProfessorProjects = async (req: Request, res: Response) => {
             id: true,
             name: true,
             email: true,
-            university: true
-          }
-        }
-      }
+            university: true,
+          },
+        },
+      },
     });
     return res.status(200).json(projects);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch professor projects' });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch professor projects" });
   }
 };
 
@@ -99,8 +103,8 @@ const getAllBusinessProjects = async (req: Request, res: Response) => {
     const projects = await prisma.project.findMany({
       where: {
         NOT: {
-          businessId: null
-        }
+          businessId: null,
+        },
       },
       include: {
         business: {
@@ -108,14 +112,14 @@ const getAllBusinessProjects = async (req: Request, res: Response) => {
             id: true,
             companyName: true,
             email: true,
-            website: true
-          }
-        }
-      }
+            website: true,
+          },
+        },
+      },
     });
     return res.status(200).json(projects);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch business projects' });
+    return res.status(500).json({ error: "Failed to fetch business projects" });
   }
 };
 
@@ -125,7 +129,7 @@ const getProfessorProjects = async (req: Request, res: Response) => {
     const { professorId } = req.params;
     const projects = await prisma.project.findMany({
       where: {
-        professorId
+        professorId,
       },
       include: {
         professor: {
@@ -133,14 +137,16 @@ const getProfessorProjects = async (req: Request, res: Response) => {
             id: true,
             name: true,
             email: true,
-            university: true
-          }
-        }
-      }
+            university: true,
+          },
+        },
+      },
     });
     return res.status(200).json(projects);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch professor projects' });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch professor projects" });
   }
 };
 
@@ -150,7 +156,7 @@ const getBusinessProjects = async (req: Request, res: Response) => {
     const { businessId } = req.params;
     const projects = await prisma.project.findMany({
       where: {
-        businessId
+        businessId,
       },
       include: {
         business: {
@@ -158,14 +164,14 @@ const getBusinessProjects = async (req: Request, res: Response) => {
             id: true,
             companyName: true,
             email: true,
-            website: true
-          }
-        }
-      }
+            website: true,
+          },
+        },
+      },
     });
     return res.status(200).json(projects);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch business projects' });
+    return res.status(500).json({ error: "Failed to fetch business projects" });
   }
 };
 
@@ -181,33 +187,33 @@ const getProjectById = async (req: Request, res: Response) => {
             id: true,
             name: true,
             email: true,
-            university: true
-          }
+            university: true,
+          },
         },
         business: {
           select: {
             id: true,
             companyName: true,
             email: true,
-            website: true
-          }
-        }
-      }
+            website: true,
+          },
+        },
+      },
     });
 
     if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
+      return res.status(404).json({ error: "Project not found" });
     }
 
     // Add a field to indicate the creator type
     const projectWithCreatorType = {
       ...project,
-      creatorType: project.professorId ? 'PROFESSOR' : 'BUSINESS'
+      creatorType: project.professorId ? "PROFESSOR" : "BUSINESS",
     };
 
     return res.status(200).json(projectWithCreatorType);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch project' });
+    return res.status(500).json({ error: "Failed to fetch project" });
   }
 };
 
@@ -215,7 +221,7 @@ const getProjectById = async (req: Request, res: Response) => {
 //   try {
 //     const { id } = req.params;
 //     const validatedData = ProjectSchema.partial().parse(req.body);
-    
+
 //     const project = await prisma.project.update({
 //       where: { id },
 //       data: validatedData,
@@ -229,7 +235,7 @@ const getProjectById = async (req: Request, res: Response) => {
 //         }
 //       }
 //     });
-    
+
 //     return res.status(200).json(project);
 //   } catch (error) {
 //     if (error instanceof z.ZodError) {
@@ -258,5 +264,5 @@ export {
   getAllBusinessProjects,
   getAllProfessorProjects,
   getBusinessProjects,
-  getProfessorProjects
+  getProfessorProjects,
 };
