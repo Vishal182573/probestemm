@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, { useState } from "react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
@@ -6,43 +7,77 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Pencil, FileText } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const CreateBlogPost = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ title, content });
-    router.push("/blogs");
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await axios.post(
+        `${API_URL}/blogs`,
+        { title, content },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Blog created:", response.data);
+      router.push("/blogs");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setError(
+          error.response.data?.error ||
+            "An error occurred while creating the blog post"
+        );
+      } else {
+        setError("An error occurred while creating the blog post");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#82CAFF] text-gray-800">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <Card className="shadow-lg mx-auto max-w-3xl bg-white">
+        <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-4xl font-bold text-gray-900">
-              <FileText className="w-8 h-8" />
-              <span>Create New Blog Post</span>
+            <CardTitle className="text-2xl font-bold flex items-center">
+              <Pencil className="mr-2" />
+              Create New Blog Post
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
                 <label
                   htmlFor="title"
-                  className="flex items-center space-x-2 text-lg font-medium text-gray-800"
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  <Pencil className="w-5 h-5" />
-                  <span>Title</span>
+                  Title
                 </label>
                 <Input
-                  type="text"
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -51,13 +86,12 @@ const CreateBlogPost = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
+              <div>
                 <label
                   htmlFor="content"
-                  className="flex items-center space-x-2 text-lg font-medium text-gray-800"
+                  className="block text-sm font-medium text-gray-700"
                 >
-                  <FileText className="w-5 h-5" />
-                  <span>Content</span>
+                  Content
                 </label>
                 <Textarea
                   id="content"
@@ -69,11 +103,13 @@ const CreateBlogPost = () => {
                   required
                 />
               </div>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
               <Button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                disabled={isLoading}
               >
-                Publish Blog Post
+                {isLoading ? "Publishing..." : "Publish Blog Post"}
               </Button>
             </form>
           </CardContent>

@@ -176,6 +176,7 @@ model Blog {
   dislikes    Int       @default(0)
   comments    Comment[]
   author      Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  
   professorId String
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])

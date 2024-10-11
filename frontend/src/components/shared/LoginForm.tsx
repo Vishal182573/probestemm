@@ -41,7 +41,13 @@ export const LoginForm: React.FC = () => {
         password,
         role,
       });
-      console.log(response.data);
+
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       // Redirect based on role
       switch (role) {

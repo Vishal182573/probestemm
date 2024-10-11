@@ -37,7 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/student", studentsRoutes);
 app.use("/api/professor", professorRoutes);
 app.use("/api/discussion", discussionRoutes);
-app.use("/api/blog", blogsRoutes);
+app.use("/api", blogsRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/webinar", webinarRoutes);
 app.use("/api/business", businessRoutes);

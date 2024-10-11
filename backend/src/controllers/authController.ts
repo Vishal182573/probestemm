@@ -274,7 +274,7 @@ export const signin = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, role);
 
-    res.json({ user, token });
+    res.json({ user, token, role });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error logging in" });

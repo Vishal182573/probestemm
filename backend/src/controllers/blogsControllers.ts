@@ -1,22 +1,24 @@
-import { type Request, type Response } from 'express';
-import { PrismaClient, UserType } from '@prisma/client';
-import { z } from 'zod';
+import type { Request, Response } from "express";
+import { PrismaClient, UserType } from "@prisma/client";
+import { z } from "zod";
+
 const prisma = new PrismaClient();
 
 // Validation schemas
 const BlogSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
-  professorId: z.string().min(1, 'Professor ID is required'),
+  title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
 });
 
 const CommentSchema = z.object({
-  content: z.string().min(1, 'Comment content is required'),
-  userType: z.nativeEnum(UserType),
-  studentId: z.string().optional(),
-  professorId: z.string().optional(),
+  content: z.string().min(1, "Comment content is required"),
 });
-
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    role: "student" | "professor" | "business" | "admin";
+  };
+}
 // Blog Routes handlers
 const getBlogs = async (req: Request, res: Response) => {
   try {
@@ -25,36 +27,36 @@ const getBlogs = async (req: Request, res: Response) => {
         author: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             title: true,
             university: true,
-          }
+          },
         },
         comments: {
           include: {
             student: {
               select: {
                 id: true,
-                name: true,
-              }
+                fullName: true,
+              },
             },
             professor: {
               select: {
                 id: true,
-                name: true,
+                fullName: true,
                 title: true,
-              }
+              },
             },
-          }
+          },
         },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
     return res.status(200).json(blogs);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch blogs' });
+    return res.status(500).json({ error: "Failed to fetch blogs" });
   }
 };
 
@@ -67,105 +69,134 @@ const getBlogById = async (req: Request, res: Response) => {
         author: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             title: true,
             university: true,
-          }
+          },
         },
         comments: {
           include: {
             student: {
               select: {
                 id: true,
-                name: true,
-              }
+                fullName: true,
+              },
             },
             professor: {
               select: {
                 id: true,
-                name: true,
+                fullName: true,
                 title: true,
-              }
+              },
             },
           },
           orderBy: {
-            createdAt: 'desc'
-          }
+            createdAt: "desc",
+          },
         },
       },
     });
 
     if (!blog) {
-      return res.status(404).json({ error: 'Blog not found' });
+      return res.status(404).json({ error: "Blog not found" });
     }
 
     return res.status(200).json(blog);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch blog' });
+    return res.status(500).json({ error: "Failed to fetch blog" });
   }
 };
-
-const createBlog = async (req: Request, res: Response) => {
+const createBlog = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const validatedData = BlogSchema.parse(req.body);
-    
-    const professorExists = await prisma.professor.findUnique({
-      where: { id: validatedData.professorId }
-    });
+    const professorId = req.user?.id;
 
-    if (!professorExists) {
-      return res.status(404).json({ error: 'Professor not found' });
+    if (!professorId) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const blog = await prisma.blog.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        professorId,
+      },
       include: {
         author: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             title: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
-    
+
     return res.status(201).json(blog);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create blog' });
+    return res.status(500).json({ error: "Failed to create blog" });
   }
 };
 
-// const updateBlog = async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const validatedData = BlogSchema.partial().parse(req.body);
-    
-//     const blog = await prisma.blog.update({
-//       where: { id },
-//       data: validatedData,
-//       include: {
-//         author: {
-//           select: {
-//             id: true,
-//             name: true,
-//             title: true,
-//           }
-//         }
-//       }
-//     });
-    
-//     return res.status(200).json(blog);
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(400).json({ error: error.errors });
-//     }
-//     return res.status(500).json({ error: 'Failed to update blog' });
-//   }
-// };
+const updateBlog = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const validatedData = BlogSchema.partial().parse(req.body);
+    const professorId = req.user?.id;
+
+    if (!professorId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const blog = await prisma.blog.update({
+      where: {
+        id,
+        professorId,
+      },
+      data: validatedData,
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(blog);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    return res.status(500).json({ error: "Failed to update blog" });
+  }
+};
+
+const deleteBlog = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const professorId = req.user?.id;
+
+    if (!professorId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    await prisma.blog.delete({
+      where: {
+        id,
+        professorId,
+      },
+    });
+
+    return res.status(204).send();
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to delete blog" });
+  }
+};
 
 const likeBlog = async (req: Request, res: Response) => {
   try {
@@ -174,13 +205,13 @@ const likeBlog = async (req: Request, res: Response) => {
       where: { id },
       data: {
         likes: {
-          increment: 1
-        }
-      }
+          increment: 1,
+        },
+      },
     });
     return res.status(200).json(blog);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to like blog' });
+    return res.status(500).json({ error: "Failed to like blog" });
   }
 };
 
@@ -191,48 +222,59 @@ const dislikeBlog = async (req: Request, res: Response) => {
       where: { id },
       data: {
         dislikes: {
-          increment: 1
-        }
-      }
+          increment: 1,
+        },
+      },
     });
     return res.status(200).json(blog);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to dislike blog' });
+    return res.status(500).json({ error: "Failed to dislike blog" });
   }
 };
 
-const createComment = async (req: Request, res: Response) => {
+const createComment = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { blogId } = req.params;
     const validatedData = CommentSchema.parse(req.body);
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
 
-    if (validatedData.userType === UserType.STUDENT && !validatedData.studentId) {
-      return res.status(400).json({ error: 'Student ID is required for student comments' });
+    if (!userId || !userRole) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
-    if (validatedData.userType === UserType.PROFESSOR && !validatedData.professorId) {
-      return res.status(400).json({ error: 'Professor ID is required for professor comments' });
+
+    const userType =
+      userRole === "student" ? UserType.STUDENT : UserType.PROFESSOR;
+
+    let commentData: any = {
+      ...validatedData,
+      blogId,
+      userType,
+    };
+
+    if (userType === UserType.STUDENT) {
+      commentData.studentId = userId;
+    } else if (userType === UserType.PROFESSOR) {
+      commentData.professorId = userId;
     }
 
     const comment = await prisma.comment.create({
-      data: {
-        ...validatedData,
-        blogId,
-      },
+      data: commentData,
       include: {
         student: {
           select: {
             id: true,
-            name: true,
-          }
+            fullName: true,
+          },
         },
         professor: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             title: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     return res.status(201).json(comment);
@@ -240,51 +282,127 @@ const createComment = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to create comment' });
+    return res.status(500).json({ error: "Failed to create comment" });
   }
 };
 
-// const updateComment = async (req: Request, res: Response) => {
-//   try {
-//     const { commentId } = req.params;
-//     const validatedData = CommentSchema.partial().parse(req.body);
+const updateComment = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const validatedData = CommentSchema.parse(req.body);
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
 
-//     const comment = await prisma.comment.update({
-//       where: { id: commentId },
-//       data: validatedData,
-//       include: {
-//         student: {
-//           select: {
-//             id: true,
-//             name: true,
-//           }
-//         },
-//         professor: {
-//           select: {
-//             id: true,
-//             name: true,
-//             title: true,
-//           }
-//         }
-//       }
-//     });
+    if (!userId || !userRole) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-//     return res.status(200).json(comment);
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(400).json({ error: error.errors });
-//     }
-//     return res.status(500).json({ error: 'Failed to update comment' });
-//   }
-// };
+    const userType =
+      userRole === "student" ? UserType.STUDENT : UserType.PROFESSOR;
 
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { blog: true },
+    });
 
-// Default export containing all controller functions
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    // Check if the user is the comment author or the blog author
+    if (
+      userType === UserType.STUDENT &&
+      comment.studentId !== userId &&
+      comment.professorId !== userId &&
+      comment.blog.professorId !== userId
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this comment" });
+    }
+
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: validatedData,
+      include: {
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+        professor: {
+          select: {
+            id: true,
+            fullName: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(updatedComment);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    return res.status(500).json({ error: "Failed to update comment" });
+  }
+};
+
+const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { blogId, commentId } = req.params;
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    if (!userId || !userRole) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userType =
+      userRole === "student" ? UserType.STUDENT : UserType.PROFESSOR;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { blog: true },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    // Check if the user is the comment author or the blog author
+    if (
+      userType === UserType.STUDENT &&
+      comment.studentId !== userId &&
+      comment.professorId !== userId &&
+      comment.blog.professorId !== userId
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to delete this comment" });
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    return res.status(204).send();
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to delete comment" });
+  }
+};
+
 export default {
   getBlogs,
   getBlogById,
   createBlog,
+  updateBlog,
+  deleteBlog,
   likeBlog,
   dislikeBlog,
   createComment,
+  updateComment,
+  deleteComment,
 };
