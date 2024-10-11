@@ -7,6 +7,7 @@ import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, MessageSquare, Plus } from "lucide-react";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -27,36 +28,41 @@ interface Blog {
 
 const BlogsPage = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/blogs`);
-        setBlogs(response.data);
-      } catch (error) {
-        setError("Failed to fetch blogs");
-        console.error("Error fetching blogs:", error);
-      }
-    };
-
     fetchBlogs();
   }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/blogs`);
+      setBlogs(response.data);
+      setError("");
+    } catch (error) {
+      setError("Failed to fetch blogs");
+      console.error("Error fetching blogs:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLike = async (blogId: string) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        toast({ title: "Please log in to like blogs", variant: "destructive" });
+        return;
       }
 
       await axios.post(
         `${API_URL}/blogs/${blogId}/like`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -65,8 +71,10 @@ const BlogsPage = () => {
           blog.id === blogId ? { ...blog, likes: blog.likes + 1 } : blog
         )
       );
+      toast({ title: "Blog liked successfully" });
     } catch (error) {
       console.error("Error liking blog:", error);
+      toast({ title: "Failed to like blog", variant: "destructive" });
     }
   };
 
@@ -74,16 +82,18 @@ const BlogsPage = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        toast({
+          title: "Please log in to dislike blogs",
+          variant: "destructive",
+        });
+        return;
       }
 
       await axios.post(
         `${API_URL}/blogs/${blogId}/dislike`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -92,18 +102,30 @@ const BlogsPage = () => {
           blog.id === blogId ? { ...blog, dislikes: blog.dislikes + 1 } : blog
         )
       );
+      toast({ title: "Blog disliked successfully" });
     } catch (error) {
       console.error("Error disliking blog:", error);
+      toast({ title: "Failed to dislike blog", variant: "destructive" });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-white text-2xl">Loading blogs...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600 text-gray-800">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-gray-900">
-          Probe STEM Blogs
-        </h1>
+        <h1 className="text-4xl font-bold mb-8 text-white">Probe STEM Blogs</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogs.map((blog) => (

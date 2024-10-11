@@ -176,15 +176,17 @@ model Blog {
   dislikes    Int       @default(0)
   comments    Comment[]
   author      Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  
   professorId String
   
+  blogLikes   BlogLike[]
+
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+
 
 model Comment {
   id          String    @id @default(cuid())
@@ -200,6 +202,15 @@ model Comment {
   
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+model BlogLike {
+  id        String  @id @default(cuid())
+  blog      Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId    String
+  userId    String
+  isLike    Boolean
+
+  @@unique([blogId, userId])
 }
 
 model Project {

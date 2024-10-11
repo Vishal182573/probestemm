@@ -6,8 +6,9 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Send, Trash } from "lucide-react";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -15,10 +16,14 @@ interface Comment {
   id: string;
   content: string;
   createdAt: string;
-  author: {
+  student?: {
     id: string;
     fullName: string;
-    title?: string;
+  };
+  professor?: {
+    id: string;
+    fullName: string;
+    title: string;
   };
 }
 
@@ -41,46 +46,96 @@ const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userInteraction, setUserInteraction] = useState<
+    "like" | "dislike" | null
+  >(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchBlogPost = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/blogs/${id}`);
-        setBlogPost(response.data);
-      } catch (error) {
-        setError("Failed to fetch blog post");
-        console.error("Error fetching blog post:", error);
-      }
-    };
-
     if (id) {
       fetchBlogPost();
+      fetchUserInteraction();
     }
   }, [id]);
+
+  const fetchBlogPost = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/blogs/${id}`);
+      setBlogPost(response.data);
+      setError("");
+    } catch (error) {
+      setError("Failed to fetch blog post");
+      console.error("Error fetching blog post:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserInteraction = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await axios.get(
+        `${API_URL}/blogs/${id}/user-interaction`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setUserInteraction(response.data.interaction);
+    } catch (error) {
+      console.error("Error fetching user interaction:", error);
+    }
+  };
 
   const handleLike = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        toast({ title: "Please log in to like blogs", variant: "destructive" });
+        return;
       }
 
-      await axios.post(
-        `${API_URL}/blogs/${id}/like`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setBlogPost((prevPost) =>
-        prevPost ? { ...prevPost, likes: prevPost.likes + 1 } : null
-      );
+      if (userInteraction === "like") {
+        // Remove like
+        await axios.delete(`${API_URL}/blogs/${id}/like`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserInteraction(null);
+        setBlogPost((prev) =>
+          prev ? { ...prev, likes: prev.likes - 1 } : null
+        );
+        toast({ title: "Like removed" });
+      } else {
+        // Add like
+        await axios.post(
+          `${API_URL}/blogs/${id}/like`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setUserInteraction("like");
+        setBlogPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                likes: prev.likes + 1,
+                dislikes:
+                  userInteraction === "dislike"
+                    ? prev.dislikes - 1
+                    : prev.dislikes,
+              }
+            : null
+        );
+        toast({ title: "Blog liked successfully" });
+      }
     } catch (error) {
       console.error("Error liking blog post:", error);
+      toast({ title: "Failed to update like", variant: "destructive" });
     }
   };
 
@@ -88,24 +143,47 @@ const BlogPostPage = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        toast({
+          title: "Please log in to dislike blogs",
+          variant: "destructive",
+        });
+        return;
       }
 
-      await axios.post(
-        `${API_URL}/blogs/${id}/dislike`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setBlogPost((prevPost) =>
-        prevPost ? { ...prevPost, dislikes: prevPost.dislikes + 1 } : null
-      );
+      if (userInteraction === "dislike") {
+        // Remove dislike
+        await axios.delete(`${API_URL}/blogs/${id}/dislike`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserInteraction(null);
+        setBlogPost((prev) =>
+          prev ? { ...prev, dislikes: prev.dislikes - 1 } : null
+        );
+        toast({ title: "Dislike removed" });
+      } else {
+        // Add dislike
+        await axios.post(
+          `${API_URL}/blogs/${id}/dislike`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setUserInteraction("dislike");
+        setBlogPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                dislikes: prev.dislikes + 1,
+                likes: userInteraction === "like" ? prev.likes - 1 : prev.likes,
+              }
+            : null
+        );
+        toast({ title: "Blog disliked successfully" });
+      }
     } catch (error) {
       console.error("Error disliking blog post:", error);
+      toast({ title: "Failed to update dislike", variant: "destructive" });
     }
   };
 
@@ -114,16 +192,15 @@ const BlogPostPage = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        toast({ title: "Please log in to comment", variant: "destructive" });
+        return;
       }
 
       const response = await axios.post(
         `${API_URL}/blogs/${id}/comments`,
         { content: newComment },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -133,15 +210,61 @@ const BlogPostPage = () => {
           : null
       );
       setNewComment("");
+      toast({ title: "Comment added successfully" });
     } catch (error) {
       console.error("Error submitting comment:", error);
+      toast({ title: "Failed to add comment", variant: "destructive" });
     }
   };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please log in to delete comments",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBlogPost((prevPost) =>
+        prevPost
+          ? {
+              ...prevPost,
+              comments: prevPost.comments.filter(
+                (comment) => comment.id !== commentId
+              ),
+            }
+          : null
+      );
+      toast({ title: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({ title: "Failed to delete comment", variant: "destructive" });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#82CAFF] flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-white text-2xl">Loading blog post...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!blogPost) {
     return (
       <div className="min-h-screen bg-[#82CAFF] text-gray-800 flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold mb-4">Loading...</h1>
+        <h1 className="text-4xl font-bold mb-4">Blog post not found</h1>
         {error && <p className="text-red-500">{error}</p>}
       </div>
     );
@@ -161,7 +284,9 @@ const BlogPostPage = () => {
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
-              className="flex items-center"
+              className={`flex items-center ${
+                userInteraction === "like" ? "bg-blue-100" : ""
+              }`}
               onClick={handleLike}
             >
               <ThumbsUp className="mr-2" size={18} />
@@ -169,7 +294,9 @@ const BlogPostPage = () => {
             </Button>
             <Button
               variant="outline"
-              className="flex items-center"
+              className={`flex items-center ${
+                userInteraction === "dislike" ? "bg-red-100" : ""
+              }`}
               onClick={handleDislike}
             >
               <ThumbsDown className="mr-2" size={18} />
@@ -182,14 +309,31 @@ const BlogPostPage = () => {
           <ul className="space-y-4 mb-6">
             {blogPost.comments.map((comment) => (
               <li key={comment.id} className="border-b pb-4">
-                <p className="font-semibold">
-                  {comment?.author?.fullName}
-                  {comment?.author?.title && `, ${comment?.author?.title}`}
-                </p>
-                <p>{comment?.content}</p>
-                <p className="text-sm text-gray-500">
-                  {new Date(comment?.createdAt).toLocaleString()}
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold">
+                      {comment.student?.fullName || comment.professor?.fullName}
+                      {comment.student?.fullName && ", Student"}
+                      {comment.professor?.fullName && ", Professor"}
+
+                      {comment.professor?.title &&
+                        `, ${comment.professor.title}`}
+                    </p>
+                    <p>{comment.content}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteComment(comment.id)}
+                    >
+                      <Trash size={16} />
+                    </Button>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

@@ -13,12 +13,14 @@ const BlogSchema = z.object({
 const CommentSchema = z.object({
   content: z.string().min(1, "Comment content is required"),
 });
+
 interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     role: "student" | "professor" | "business" | "admin";
   };
 }
+
 // Blog Routes handlers
 const getBlogs = async (req: Request, res: Response) => {
   try {
@@ -106,6 +108,7 @@ const getBlogById = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to fetch blog" });
   }
 };
+
 const createBlog = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const validatedData = BlogSchema.parse(req.body);
@@ -198,10 +201,42 @@ const deleteBlog = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-const likeBlog = async (req: Request, res: Response) => {
+const likeBlog = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const blog = await prisma.blog.update({
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Check if the user has already liked or disliked the blog
+    const existingLike = await prisma.blogLike.findUnique({
+      where: {
+        blogId_userId: {
+          blogId: id,
+          userId,
+        },
+      },
+    });
+
+    if (existingLike) {
+      return res
+        .status(400)
+        .json({ error: "You have already interacted with this blog" });
+    }
+
+    // Create a new like
+    await prisma.blogLike.create({
+      data: {
+        blogId: id,
+        userId,
+        isLike: true,
+      },
+    });
+
+    // Update the blog's like count
+    const updatedBlog = await prisma.blog.update({
       where: { id },
       data: {
         likes: {
@@ -209,16 +244,49 @@ const likeBlog = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(200).json(blog);
+
+    return res.status(200).json(updatedBlog);
   } catch (error) {
     return res.status(500).json({ error: "Failed to like blog" });
   }
 };
 
-const dislikeBlog = async (req: Request, res: Response) => {
+const dislikeBlog = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const blog = await prisma.blog.update({
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Check if the user has already liked or disliked the blog
+    const existingLike = await prisma.blogLike.findUnique({
+      where: {
+        blogId_userId: {
+          blogId: id,
+          userId,
+        },
+      },
+    });
+
+    if (existingLike) {
+      return res
+        .status(400)
+        .json({ error: "You have already interacted with this blog" });
+    }
+
+    // Create a new dislike
+    await prisma.blogLike.create({
+      data: {
+        blogId: id,
+        userId,
+        isLike: false,
+      },
+    });
+
+    // Update the blog's dislike count
+    const updatedBlog = await prisma.blog.update({
       where: { id },
       data: {
         dislikes: {
@@ -226,7 +294,8 @@ const dislikeBlog = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(200).json(blog);
+
+    return res.status(200).json(updatedBlog);
   } catch (error) {
     return res.status(500).json({ error: "Failed to dislike blog" });
   }
@@ -311,10 +380,10 @@ const updateComment = async (req: AuthenticatedRequest, res: Response) => {
 
     // Check if the user is the comment author or the blog author
     if (
-      userType === UserType.STUDENT &&
-      comment.studentId !== userId &&
-      comment.professorId !== userId &&
-      comment.blog.professorId !== userId
+      (userType === UserType.STUDENT && comment.studentId !== userId) ||
+      (userType === UserType.PROFESSOR &&
+        comment.professorId !== userId &&
+        comment.blog.professorId !== userId)
     ) {
       return res
         .status(403)
@@ -374,10 +443,10 @@ const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
 
     // Check if the user is the comment author or the blog author
     if (
-      userType === UserType.STUDENT &&
-      comment.studentId !== userId &&
-      comment.professorId !== userId &&
-      comment.blog.professorId !== userId
+      (userType === UserType.STUDENT && comment.studentId !== userId) ||
+      (userType === UserType.PROFESSOR &&
+        comment.professorId !== userId &&
+        comment.blog.professorId !== userId)
     ) {
       return res
         .status(403)
