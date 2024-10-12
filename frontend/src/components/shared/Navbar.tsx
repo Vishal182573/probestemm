@@ -1,12 +1,27 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react"; // Importing User icon
 import Link from "next/link";
+import Image from "next/image";
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const [user, setUser] = useState<{ photoUrl?: string; name?: string ,id? :string} | null>(null); // State to store user data
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // Check for token and user details in localStorage when the component mounts
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(userData)); // Parse user data from localStorage
+    }
+  }, []);
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -25,14 +40,26 @@ export const Navbar: React.FC = () => {
             <NavLink to="/blogs">Blogs</NavLink>
             <NavLink to="/projects">Projects</NavLink>
             <NavLink to="/about">About</NavLink>
-            <Link href="/login">
-              <Button
-                variant="default"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Login
-              </Button>
-            </Link>
+            {isLoggedIn && user ? (
+              <Link href={`/${localStorage.getItem("role")}/profile/${user.id}`}>
+                <Image
+                  src={user.photoUrl || "/fallback-profile.png"} // Fallback image if photoUrl is missing
+                  alt={user.name || "User Profile"} // Alt text with fallback to "User Profile"
+                  width={40}
+                  height={40}
+                  className="rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-600 transition-all" // Improved styling
+                />
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Login
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
         {isMenuOpen && (
@@ -44,14 +71,25 @@ export const Navbar: React.FC = () => {
               <MobileNavLink to="/projects">Projects</MobileNavLink>
               <MobileNavLink to="/webinars">Webinars</MobileNavLink>
               <MobileNavLink to="/about">About</MobileNavLink>
-              <Link href="/login">
-                <Button
-                  variant="default"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Login
-                </Button>
-              </Link>
+              {isLoggedIn && user ? (
+                <Link href="/profile">
+                  <Button
+                    variant="ghost"
+                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                  >
+                    <User className="mr-2" size={18} /> Profile
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/login">
+                  <Button
+                    variant="default"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Login
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}
@@ -60,17 +98,29 @@ export const Navbar: React.FC = () => {
   );
 };
 
-const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => (
+const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({
+  to,
+  children,
+}) => (
   <Link href={to}>
-    <Button variant="ghost" className="text-gray-600 hover:text-blue-600 hover:bg-blue-50">
+    <Button
+      variant="ghost"
+      className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+    >
       {children}
     </Button>
   </Link>
 );
 
-const MobileNavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => (
+const MobileNavLink: React.FC<{ to: string; children: React.ReactNode }> = ({
+  to,
+  children,
+}) => (
   <Link href={to}>
-    <Button variant="ghost" className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50">
+    <Button
+      variant="ghost"
+      className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+    >
       {children}
     </Button>
   </Link>

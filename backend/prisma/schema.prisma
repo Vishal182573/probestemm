@@ -26,6 +26,7 @@ model Student {
   
   discussions       Discussion[]
   comments          Comment[]
+  projects          Project[]
   
   superAdmin        SuperAdmin?         @relation(fields: [superAdminId], references: [id])
   superAdminId      String?
@@ -221,14 +222,28 @@ model Project {
   timeline    DateTime
   tags        String[]
   status      Status
+  type        ProjectType
   
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
   business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
   businessId  String?
+  student     Student?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  studentId   String?
+
+  appliedProfessors Json?  // For business projects
+  appliedStudents   Json?  // For professor projects
 
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum ProjectType {
+  BUSINESS
+  PROFESSOR
 }
 
 model Webinar {

@@ -1,11 +1,18 @@
-// LoginPage.tsx
+"use client"
 import React from "react";
 import { Navbar } from "@/components/shared/Navbar";
 import { NewsAlert } from "@/components/shared/NewsAlert";
 import { LoginForm } from "@/components/shared/LoginForm";
 import { Footer } from "@/components/shared/Footer";
+import { useRouter } from "next/navigation";
+
 
 const LoginPage: React.FC = () => {
+  const router = useRouter();
+
+if(localStorage.getItem("token")){
+  router.push('/')
+}
   return (
     <div className="flex flex-col min-h-screen bg-[#82CAFF]">
       <Navbar />

@@ -1,30 +1,35 @@
-// src/routes/projectRoutes.ts
 import express from 'express';
 import {
-  createProfessorProject,
   createBusinessProject,
-  getAllProfessorProjects,
+  createProfessorProject,
   getAllBusinessProjects,
-  getProfessorProjects,
-  getBusinessProjects,
-  getProjectById
+  getAllProfessorProjects,
+  changeBusinessProjectStatus,
+  changeProfessorProjectStatus,
+  getProjectsByBusinessId,
+  getProjectsByProfessorId,
+  applyToBusinessProject,
+  applyToProfessorProject,
+  getAppliedProfessors,
+  getAppliedStudents,
 } from '../controllers/projectsController.ts';
 
 const router = express.Router();
 
-// Project creation routes
-router.post('/professor/:professorId', createProfessorProject);
-router.post('/business/:businessId', createBusinessProject);
+// Business project routes
+router.post('/business', createBusinessProject);
+router.get('/business', getAllBusinessProjects);
+router.patch('/business/:id/status', changeBusinessProjectStatus);
+router.get('/business/:businessId/projects', getProjectsByBusinessId);
+router.post('/business/apply', applyToBusinessProject);
+router.get('/business/:projectId/applicants', getAppliedProfessors);
 
-// Get all projects routes
-router.get('/professors', getAllProfessorProjects);
-router.get('/businesses', getAllBusinessProjects);
-
-// Get projects by specific creator
-router.get('/professor/:professorId', getProfessorProjects);
-router.get('/business/:businessId', getBusinessProjects);
-
-// Get single project
-router.get('/:id', getProjectById);
+// Professor project routes
+router.post('/professor', createProfessorProject);
+router.get('/professor', getAllProfessorProjects);
+router.patch('/professor/:id/status', changeProfessorProjectStatus);
+router.get('/professor/:professorId/projects', getProjectsByProfessorId);
+router.post('/professor/apply', applyToProfessorProject);
+router.get('/professor/:projectId/applicants', getAppliedStudents);
 
 export default router;

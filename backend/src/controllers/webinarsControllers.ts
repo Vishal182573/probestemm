@@ -1,181 +1,108 @@
-import { type Request, type Response } from 'express';
-import { PrismaClient, WebinarStatus } from '@prisma/client';
-import { z } from 'zod';
+import type{ Request, Response } from "express";
+import { PrismaClient, WebinarStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Validation schema for webinars
-const WebinarSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  topic: z.string().min(1, 'Topic is required'),
-  place: z.string().min(1, 'Place is required'),
-  date: z.string().transform((str) => new Date(str)),
-  status: z.nativeEnum(WebinarStatus).default(WebinarStatus.PENDING),
-  professorId: z.string().min(1, 'Professor ID is required'),
-  maxAttendees: z.number().optional(),
-  duration: z.number().optional(),
-  isOnline: z.boolean().default(true),
-  meetingLink: z.string().optional(),
-});
+// Get all webinars
+export const getAllWebinars = async (req: Request, res: Response) => {
+  try {
+    const webinars = await prisma.webinar.findMany();
+    res.status(200).json(webinars);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch webinars" });
+  }
+};
 
-// Controller functions
-const getWebinars = async (req: Request, res: Response) => {
+// Get webinars by professor ID
+export const getWebinarsByProfessorId = async (req: Request, res: Response) => {
+  const { professorId } = req.params;
   try {
     const webinars = await prisma.webinar.findMany({
-      include: {
-        professor: {
-          select: {
-            id: true,
-            name: true,
-            title: true,
-            university: true,
-          }
-        }
+      where: { professorId },
+    });
+    res.status(200).json(webinars);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch professor's webinars" });
+  }
+};
+
+export const requestWebinar = async (req: Request, res: Response) => {
+  const { professorId, title, topic, place, date, maxAttendees, duration, isOnline, meetingLink } = req.body;
+
+  try {
+    // Check if there's already a pending webinar request for this professor
+    const existingWebinar = await prisma.webinar.findFirst({
+      where: {
+        professorId,
+        status: WebinarStatus.PENDING,
       },
-      orderBy: {
-        date: 'asc'
-      }
     });
-    return res.status(200).json(webinars);
+
+    if (existingWebinar) {
+      return res.status(400).json({ 
+        error: "A webinar request with 'PENDING' status already exists." 
+      });
+    }
+
+    // Create a new webinar request
+    const newWebinar = await prisma.webinar.create({
+      data: {
+        title,
+        topic,
+        place,
+        date: new Date(date),
+        maxAttendees,
+        duration,
+        isOnline,
+        meetingLink,
+        status: WebinarStatus.PENDING,
+        professorId,
+      },
+    });
+
+    res.status(201).json(newWebinar);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch webinars' });
+    res.status(500).json({ error: "Failed to request webinar" });
   }
 };
 
-const getWebinarById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const webinar = await prisma.webinar.findUnique({
-      where: { id },
-      include: {
-        professor: {
-          select: {
-            id: true,
-            name: true,
-            title: true,
-            university: true,
-          }
-        }
-      }
-    });
 
-    if (!webinar) {
-      return res.status(404).json({ error: 'Webinar not found' });
-    }
+// SuperAdmin updates webinar status (APPROVED / REJECTED)
+export const updateWebinarStatus = async (req: Request, res: Response) => {
+  const { webinarId } = req.params;
+  const { status } = req.body; // Status should be either APPROVED or REJECTED
 
-    return res.status(200).json(webinar);
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch webinar' });
+  if (![WebinarStatus.APPROVED, WebinarStatus.REJECTED].includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
   }
-};
 
-const createWebinar = async (req: Request, res: Response) => {
   try {
-    const validatedData = WebinarSchema.parse(req.body);
-    
-    const professorExists = await prisma.professor.findUnique({
-      where: { id: validatedData.professorId }
-    });
-
-    if (!professorExists) {
-      return res.status(404).json({ error: 'Professor not found' });
-    }
-
-    const webinar = await prisma.webinar.create({
-      data: validatedData,
-      include: {
-        professor: {
-          select: {
-            id: true,
-            name: true,
-            title: true,
-          }
-        }
-      }
-    });
-    
-    return res.status(201).json(webinar);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    return res.status(500).json({ error: 'Failed to create webinar' });
-  }
-};
-
-// const updateWebinar = async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const validatedData = WebinarSchema.partial().parse(req.body);
-    
-//     const webinar = await prisma.webinar.update({
-//       where: { id },
-//       data: validatedData,
-//       include: {
-//         professor: {
-//           select: {
-//             id: true,
-//             name: true,
-//             title: true,
-//           }
-//         }
-//       }
-//     });
-    
-//     return res.status(200).json(webinar);
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(400).json({ error: error.errors });
-//     }
-//     return res.status(500).json({ error: 'Failed to update webinar' });
-//   }
-// };
-
-const deleteWebinar = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    await prisma.webinar.delete({
-      where: { id },
-    });
-    return res.status(204).send();
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to delete webinar' });
-  }
-};
-
-const updateWebinarStatus = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    if (!Object.values(WebinarStatus).includes(status)) {
-      return res.status(400).json({ error: 'Invalid webinar status' });
-    }
-
-    const webinar = await prisma.webinar.update({
-      where: { id },
+    const updatedWebinar = await prisma.webinar.update({
+      where: { id: webinarId },
       data: { status },
-      include: {
-        professor: {
-          select: {
-            id: true,
-            name: true,
-            title: true,
-          }
-        }
-      }
     });
-    
-    return res.status(200).json(webinar);
+    res.status(200).json(updatedWebinar);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to update webinar status' });
+    res.status(500).json({ error: "Failed to update webinar status" });
   }
 };
 
-export default {
-  getWebinars,
-  getWebinarById,
-  createWebinar,
-  deleteWebinar,
-  updateWebinarStatus
+// Professor updates webinar status to COMPLETED / CANCELLED
+export const updateProfessorWebinarStatus = async (req: Request, res: Response) => {
+  const { webinarId } = req.params;
+  const { status } = req.body; // Status should be either COMPLETED or CANCELLED
+
+  if (![WebinarStatus.COMPLETED, WebinarStatus.CANCELLED].includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
+  }
+
+  try {
+    const updatedWebinar = await prisma.webinar.update({
+      where: { id: webinarId },
+      data: { status },
+    });
+    res.status(200).json(updatedWebinar);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update webinar status" });
+  }
 };

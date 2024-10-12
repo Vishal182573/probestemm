@@ -32,8 +32,10 @@ import {
 } from "@/components/ui/select";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
+import { useParams } from "next/navigation";
 
 const ProfessorProfilePage: React.FC = () => {
+  const {id} = useParams();
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
 
   const tabItems = [
