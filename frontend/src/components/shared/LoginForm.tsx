@@ -1,13 +1,12 @@
 "use client";
-
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogInIcon, LogOutIcon, Loader2 } from "lucide-react";
+import { LogInIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const authApi = axios.create({
@@ -34,7 +34,6 @@ export const LoginForm: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
       const response = await authApi.post("/signin", {
         email,
@@ -44,27 +43,35 @@ export const LoginForm: React.FC = () => {
 
       const { token, user } = response.data;
 
+      // Store user data in local storage
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("role", role);
       localStorage.setItem("user", JSON.stringify(user));
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+      toast({
+        title: "Login successful!",
+        description: "Welcome back!.",
+        duration: 3000,
+      });
       // Redirect based on role
       switch (role) {
         case "student":
-          router.push("/student-profile");
+          router.push(`/student-profile/${user.id}`);
           break;
         case "professor":
-          router.push("/professor-profile");
+          router.push(`/professor-profile/${user.id}`);
           break;
         case "business":
-          router.push("/business-profile");
+          router.push(`/business-profile/${user.id}`);
           break;
         case "admin":
-          router.push("/admin-dashboard");
+          router.push(`/admin-dashboard/${user.id}`);
           break;
         default:
-          router.push("/dashboard");
+          router.push(`/dashboard/${user.id}`);
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -153,34 +160,4 @@ export const LoginForm: React.FC = () => {
   );
 };
 
-export const LogoutButton: React.FC = () => {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      await authApi.post("/logout");
-      router.push("/login");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleLogout}
-      className="bg-red-500 hover:bg-red-600 text-white"
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <LogOutIcon className="mr-2 h-4 w-4" />
-      )}
-      Logout
-    </Button>
-  );
-};
+export default LoginForm;
