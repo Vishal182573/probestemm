@@ -1,19 +1,26 @@
-import express from "express";
+// src/routes/discussionRoutes.ts
+
+import express from 'express';
 import {
-    getDiscussionById,
-    getDiscussions,
-    createAnswer,
-    createDiscussion,
-    updateDiscussion,
-    deleteDiscussion
-} from "../controllers/discussionsControllers";
+  createDiscussion,
+  answerDiscussion,
+  voteDiscussion,
+  searchDiscussions,
+  getRecentDiscussions,
+  getMostVotedDiscussions,
+  getDiscussionsByStatus,
+  getDiscussionsByCategoryAndSubcategory,
+} from '../controllers/discussionsControllers.ts';
 
 const router = express.Router();
 
-router.get('/', getDiscussions);
-router.get('/:id', getDiscussionById);
-router.post('/', createDiscussion);
-router.post('/:id/answers', createAnswer);
-// router.put('/:id', updateDiscussion);
+router.post('/create', createDiscussion);
+router.post('/answer', answerDiscussion);
+router.post('/vote', voteDiscussion);
+router.get('/search', searchDiscussions);
+router.get('/recent', getRecentDiscussions);
+router.get('/most-voted', getMostVotedDiscussions);
+router.get('/by-status', getDiscussionsByStatus);
+router.get('/by-category-subcategory', getDiscussionsByCategoryAndSubcategory);
 
 export default router;

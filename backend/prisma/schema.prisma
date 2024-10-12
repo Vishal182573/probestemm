@@ -140,13 +140,31 @@ model Discussion {
   upvotes      Int       @default(0)
   downvotes    Int       @default(0)
   answers      Answer[]
-  commentCount Int       @default(0)
+  answerCount  Int       @default(0)
   
+  votes        Vote[]
+
   superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+model Vote {
+  id           String    @id @default(cuid())
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  discussionId String
+  userId       String
+  userType     UserType
+  voteType     VoteType
+
+  @@unique([discussionId, userId, userType])
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
 }
 
 model Answer {

@@ -1,132 +1,208 @@
-import { type Request, type Response } from "express";
-import { PrismaClient, DiscussionStatus } from "@prisma/client";
-import { z } from "zod";
+import { PrismaClient, UserType, DiscussionStatus, VoteType } from '@prisma/client';
+import type{ Request, Response } from 'express';
 
 const prisma = new PrismaClient();
 
-// Validation schemas
-const DiscussionSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  category: z.string().min(1),
-  subcategory: z.string().min(1),
-  studentId: z.string().min(1),
-});
-
-const AnswerSchema = z.object({
-  content: z.string().min(1),
-  professorId: z.string().min(1),
-});
-
-// GET /api/discussions
-export const getDiscussions = async (req: Request, res: Response) => {
-  try {
-    const discussions = await prisma.discussion.findMany({
-      include: {
-        student: true,
-        answers: {
-          include: {
-            professor: true,
-          },
-        },
-      },
-    });
-    return res.status(200).json(discussions);
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch discussions" });
-  }
-};
-
-// GET /api/discussions/:id
-export const getDiscussionById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const discussion = await prisma.discussion.findUnique({
-      where: { id },
-      include: {
-        student: true,
-        answers: {
-          include: {
-            professor: true,
-          },
-        },
-      },
-    });
-
-    if (!discussion) {
-      return res.status(404).json({ error: "Discussion not found" });
-    }
-
-    return res.status(200).json(discussion);
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch discussion" });
-  }
-};
-
-// POST /api/discussions
 export const createDiscussion = async (req: Request, res: Response) => {
   try {
-    const validatedData = DiscussionSchema.parse(req.body);
+    const { title, description, category, subcategory, studentId } = req.body;
+
     const discussion = await prisma.discussion.create({
       data: {
-        ...validatedData,
-        status: DiscussionStatus.UNANSWERED,
+        title,
+        description,
+        category,
+        subcategory,
+        student: { connect: { id: studentId } },
       },
     });
-    return res.status(201).json(discussion);
+
+    res.status(201).json(discussion);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    return res.status(500).json({ error: "Failed to create discussion" });
+    res.status(500).json({ error: 'Failed to create discussion' });
   }
 };
 
-// POST /api/discussions/:id/answers
-export const createAnswer = async (req: Request, res: Response) => {
+export const answerDiscussion = async (req: Request, res: Response) => {
   try {
-    const { id: discussionId } = req.params;
-    const validatedData = AnswerSchema.parse(req.body);
+    const { content, discussionId, userType, userId } = req.body;
+
+    if (userType !== UserType.PROFESSOR && userType !== "BUSINESS") {
+      return res.status(403).json({ error: 'Only professors or businesses can answer discussions' });
+    }
 
     const answer = await prisma.answer.create({
       data: {
-        ...validatedData,
-        discussionId,
-        businessId: "someBusinessId", // Replace 'someBusinessId' with the actual businessId value
+        content,
+        discussion: { connect: { id: discussionId } },
+        [userType.toLowerCase()]: { connect: { id: userId } },
       },
     });
 
-    // Update discussion status to ANSWERED
     await prisma.discussion.update({
       where: { id: discussionId },
-      data: { status: DiscussionStatus.ANSWERED },
+      data: {
+        status: DiscussionStatus.ANSWERED,
+        answerCount: { increment: 1 },
+      },
     });
 
-    return res.status(201).json(answer);
+    res.status(201).json(answer);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    return res.status(500).json({ error: "Failed to create answer" });
+    res.status(500).json({ error: 'Failed to answer discussion' });
   }
 };
 
-// PUT /api/discussions/:id
-// export const updateDiscussion = async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const validatedData = DiscussionSchema.partial().parse(req.body);
+export const voteDiscussion = async (req: Request, res: Response) => {
+  try {
+    const { discussionId, userId, userType, voteType } = req.body;
 
-//     const discussion = await prisma.discussion.update({
-//       where: { id },
-//       data: validatedData,
-//     });
+    const existingVote = await prisma.vote.findUnique({
+      where: {
+        discussionId_userId_userType: {
+          discussionId,
+          userId,
+          userType,
+        },
+      },
+    });
 
-//     return res.status(200).json(discussion);
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(400).json({ error: error.errors });
-//     }
-//     return res.status(500).json({ error: 'Failed to update discussion' });
-//   }
-// };
+    if (existingVote) {
+      if (existingVote.voteType === voteType) {
+        return res.status(400).json({ error: 'You have already voted' });
+      }
+
+      await prisma.vote.update({
+        where: { id: existingVote.id },
+        data: { voteType },
+      });
+    } else {
+      await prisma.vote.create({
+        data: {
+          discussion: { connect: { id: discussionId } },
+          userId,
+          userType,
+          voteType,
+        },
+      });
+    }
+
+    const updatedDiscussion = await prisma.discussion.update({
+      where: { id: discussionId },
+      data: {
+        upvotes: {
+          increment: voteType === VoteType.UPVOTE ? 1 : 0,
+        },
+        downvotes: {
+          increment: voteType === VoteType.DOWNVOTE ? 1 : 0,
+        },
+      },
+    });
+
+    res.status(200).json(updatedDiscussion);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to vote on discussion' });
+  }
+};
+
+export const searchDiscussions = async (req: Request, res: Response) => {
+  try {
+    const { searchString } = req.query;
+
+    const discussions = await prisma.discussion.findMany({
+      where: {
+        title: {
+          contains: searchString as string,
+          mode: 'insensitive',
+        },
+      },
+      include: {
+        student: true,
+        answers: true,
+      },
+    });
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to search discussions' });
+  }
+};
+
+export const getRecentDiscussions = async (req: Request, res: Response) => {
+  try {
+    const discussions = await prisma.discussion.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+      include: {
+        student: true,
+        answers: true,
+      },
+    });
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get recent discussions' });
+  }
+};
+
+export const getMostVotedDiscussions = async (req: Request, res: Response) => {
+  try {
+    const discussions = await prisma.discussion.findMany({
+      orderBy: {
+        upvotes: 'desc',
+      },
+      take: 10,
+      include: {
+        student: true,
+        answers: true,
+      },
+    });
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get most voted discussions' });
+  }
+};
+
+export const getDiscussionsByStatus = async (req: Request, res: Response) => {
+  try {
+    const { status } = req.query;
+
+    const whereClause = status === 'all' ? {} : { status: status as DiscussionStatus };
+
+    const discussions = await prisma.discussion.findMany({
+      where: whereClause,
+      include: {
+        student: true,
+        answers: true,
+      },
+    });
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get discussions by status' });
+  }
+};
+
+export const getDiscussionsByCategoryAndSubcategory = async (req: Request, res: Response) => {
+  try {
+    const { category, subcategory } = req.query;
+
+    const discussions = await prisma.discussion.findMany({
+      where: {
+        category: category as string,
+        subcategory: subcategory as string,
+      },
+      include: {
+        student: true,
+        answers: true,
+      },
+    });
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get discussions by category and subcategory' });
+  }
+};
