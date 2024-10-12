@@ -40,7 +40,7 @@ app.use("/api/professors", professorRoutes);
 app.use("/api/discussion", discussionRoutes);
 app.use("/api", blogsRoutes);
 app.use("/api/project", projectRoutes);
-app.use("/api/webinar", webinarRoutes);
+app.use("/api/webinars", webinarRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/image", imageUploadRoutes);

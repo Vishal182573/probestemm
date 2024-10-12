@@ -68,9 +68,23 @@ interface Professor {
   webinars: Array<{ id: string; title: string; date: string; status: string }>;
 }
 
+interface Webinar {
+  id: string;
+  title: string;
+  topic: string;
+  place: string;
+  date: string;
+  maxAttendees: number;
+  duration: number;
+  isOnline: boolean;
+  meetingLink?: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
+}
+
 const ProfessorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<Professor | null>(null);
+  const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,14 +99,21 @@ const ProfessorProfilePage: React.FC = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/professors/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProfessor(response.data);
+        const [professorResponse, webinarsResponse] = await Promise.all([
+          axios.get(`${API_URL}/professors/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_URL}/webinars/professor/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setProfessor(professorResponse.data);
+        setWebinars(webinarsResponse.data);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching professor data:", error);
-        setError("Failed to load professor data. Please try again.");
+        console.error("Error fetching data:", error);
+        setError("Failed to load data. Please try again.");
         setIsLoading(false);
       }
     };
@@ -103,13 +124,10 @@ const ProfessorProfilePage: React.FC = () => {
   const handleCreateWebinar = async (webinarData: any) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_URL}/webinars`, webinarData, {
+      const response = await axios.post(`${API_URL}/webinars`, webinarData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const response = await axios.get(`${API_URL}/professors/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProfessor(response.data);
+      setWebinars([...webinars, response.data]);
       setIsWebinarDialogOpen(false);
     } catch (error) {
       console.error("Error creating webinar:", error);
@@ -117,8 +135,33 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  const handleUpdateWebinarStatus = async (
+    webinarId: string,
+    newStatus: "COMPLETED" | "CANCELLED"
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${API_URL}/webinars/${webinarId}/professor-status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setWebinars(
+        webinars.map((w) => (w.id === webinarId ? response.data : w))
+      );
+    } catch (error) {
+      console.error("Error updating webinar status:", error);
+      setError("Failed to update webinar status. Please try again.");
+    }
+  };
+
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="text-center flex items-center justify-center h-screen">
+        <div className="loader">Loading...</div>
+        <div className="text-muted-foreground ml-2">please wait</div>
+      </div>
+    );
   }
 
   if (error) {
@@ -367,6 +410,8 @@ const ProfessorProfilePage: React.FC = () => {
                 </motion.div>
               </TabsContent>
 
+              {/* webinar --section */}
+
               <TabsContent value="webinars">
                 <motion.div
                   className="space-y-8"
@@ -389,11 +434,11 @@ const ProfessorProfilePage: React.FC = () => {
                             onOpenChange={setIsWebinarDialogOpen}
                           >
                             <DialogTrigger asChild>
-                              <Button>Create Webinar</Button>
+                              <Button>Request Webinar</Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>
-                                <DialogTitle>Create a New Webinar</DialogTitle>
+                                <DialogTitle>Request a New Webinar</DialogTitle>
                               </DialogHeader>
                               <form
                                 onSubmit={(e) => {
@@ -401,8 +446,18 @@ const ProfessorProfilePage: React.FC = () => {
                                   const formData = new FormData(
                                     e.currentTarget
                                   );
-                                  const webinarData =
-                                    Object.fromEntries(formData);
+                                  const webinarData = {
+                                    ...Object.fromEntries(formData),
+                                    professorId: id,
+                                    isOnline:
+                                      formData.get("place") === "online",
+                                    maxAttendees: parseInt(
+                                      formData.get("maxAttendees") as string
+                                    ),
+                                    duration: parseInt(
+                                      formData.get("duration") as string
+                                    ),
+                                  };
                                   handleCreateWebinar(webinarData);
                                 }}
                                 className="space-y-4"
@@ -415,6 +470,7 @@ const ProfessorProfilePage: React.FC = () => {
                                     id="webinar-title"
                                     name="title"
                                     placeholder="Enter webinar title"
+                                    required
                                   />
                                 </div>
                                 <div>
@@ -423,11 +479,12 @@ const ProfessorProfilePage: React.FC = () => {
                                     id="webinar-topic"
                                     name="topic"
                                     placeholder="Enter webinar topic"
+                                    required
                                   />
                                 </div>
                                 <div>
                                   <Label htmlFor="webinar-place">Place</Label>
-                                  <Select name="place">
+                                  <Select name="place" required>
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select a place" />
                                     </SelectTrigger>
@@ -449,7 +506,43 @@ const ProfessorProfilePage: React.FC = () => {
                                   <Input
                                     id="webinar-date"
                                     name="date"
-                                    type="date"
+                                    type="datetime-local"
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="webinar-max-attendees">
+                                    Max Attendees
+                                  </Label>
+                                  <Input
+                                    id="webinar-max-attendees"
+                                    name="maxAttendees"
+                                    type="number"
+                                    min="1"
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="webinar-duration">
+                                    Duration (minutes)
+                                  </Label>
+                                  <Input
+                                    id="webinar-duration"
+                                    name="duration"
+                                    type="number"
+                                    min="1"
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="webinar-meeting-link">
+                                    Meeting Link (if online)
+                                  </Label>
+                                  <Input
+                                    id="webinar-meeting-link"
+                                    name="meetingLink"
+                                    type="url"
+                                    placeholder="https://example.com/meeting"
                                   />
                                 </div>
                                 <Button type="submit">
@@ -459,7 +552,13 @@ const ProfessorProfilePage: React.FC = () => {
                             </DialogContent>
                           </Dialog>
                         </div>
-                        {["UPCOMING", "COMPLETED", "PENDING"].map((status) => (
+                        {[
+                          "PENDING",
+                          "APPROVED",
+                          "REJECTED",
+                          "COMPLETED",
+                          "CANCELLED",
+                        ].map((status) => (
                           <div key={status}>
                             <h3 className="text-xl font-semibold mb-2">
                               {status === "PENDING"
@@ -470,7 +569,7 @@ const ProfessorProfilePage: React.FC = () => {
                                   } Webinars`}
                             </h3>
                             <ul className="space-y-2">
-                              {professor.webinars
+                              {webinars
                                 .filter((webinar) => webinar.status === status)
                                 .map((webinar) => (
                                   <li
@@ -478,17 +577,48 @@ const ProfessorProfilePage: React.FC = () => {
                                     className="flex items-center justify-between"
                                   >
                                     <span>{webinar.title}</span>
-                                    <Badge
-                                      variant={
-                                        status === "COMPLETED"
-                                          ? "secondary"
-                                          : status === "PENDING"
-                                          ? "outline"
-                                          : "default"
-                                      }
-                                    >
-                                      {webinar.date}
-                                    </Badge>
+                                    <div className="flex items-center space-x-2">
+                                      <Badge
+                                        variant={
+                                          status === "COMPLETED"
+                                            ? "secondary"
+                                            : status === "PENDING"
+                                            ? "outline"
+                                            : "default"
+                                        }
+                                      >
+                                        {new Date(
+                                          webinar.date
+                                        ).toLocaleDateString()}
+                                      </Badge>
+                                      {status === "APPROVED" && (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            onClick={() =>
+                                              handleUpdateWebinarStatus(
+                                                webinar.id,
+                                                "COMPLETED"
+                                              )
+                                            }
+                                          >
+                                            Mark Completed
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() =>
+                                              handleUpdateWebinarStatus(
+                                                webinar.id,
+                                                "CANCELLED"
+                                              )
+                                            }
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </>
+                                      )}
+                                    </div>
                                   </li>
                                 ))}
                             </ul>

@@ -8,7 +8,11 @@ import Image from "next/image";
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
-  const [user, setUser] = useState<{ photoUrl?: string; name?: string ,id? :string} | null>(null); // State to store user data
+  const [user, setUser] = useState<{
+    photoUrl?: string;
+    name?: string;
+    id?: string;
+  } | null>(null); // State to store user data
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -41,7 +45,9 @@ export const Navbar: React.FC = () => {
             <NavLink to="/projects">Projects</NavLink>
             <NavLink to="/about">About</NavLink>
             {isLoggedIn && user ? (
-              <Link href={`/${localStorage.getItem("role")}/profile/${user.id}`}>
+              <Link
+                href={`/${localStorage.getItem("role")}-profile/${user.id}`}
+              >
                 <Image
                   src={user.photoUrl || "/fallback-profile.png"} // Fallback image if photoUrl is missing
                   alt={user.name || "User Profile"} // Alt text with fallback to "User Profile"

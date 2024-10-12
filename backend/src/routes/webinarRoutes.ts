@@ -4,7 +4,7 @@ import * as webinarController from "../controllers/webinarsControllers";
 const router = express.Router();
 
 // Webinar routes
-router.get("/webinars", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     await webinarController.getAllWebinars(req, res);
   } catch (error) {
@@ -13,7 +13,7 @@ router.get("/webinars", async (req, res) => {
   }
 });
 
-router.get("/webinars/professor/:professorId", async (req, res) => {
+router.get("/professor/:professorId", async (req, res) => {
   try {
     await webinarController.getWebinarsByProfessorId(req, res);
   } catch (error) {
@@ -22,7 +22,7 @@ router.get("/webinars/professor/:professorId", async (req, res) => {
   }
 });
 
-router.post("/webinars", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     await webinarController.requestWebinar(req, res);
   } catch (error) {
@@ -31,7 +31,7 @@ router.post("/webinars", async (req, res) => {
   }
 });
 
-router.put("/webinars/:webinarId/status", async (req, res) => {
+router.put("/:webinarId/status", async (req, res) => {
   try {
     await webinarController.updateWebinarStatus(req, res);
   } catch (error) {
@@ -40,7 +40,7 @@ router.put("/webinars/:webinarId/status", async (req, res) => {
   }
 });
 
-router.put("/webinars/:webinarId/professor-status", async (req, res) => {
+router.put("/:webinarId/professor-status", async (req, res) => {
   try {
     await webinarController.updateProfessorWebinarStatus(req, res);
   } catch (error) {
