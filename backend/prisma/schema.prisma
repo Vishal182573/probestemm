@@ -334,3 +334,13 @@ enum WebinarStatus {
   COMPLETED
   CANCELLED
 }
+
+model Contact {
+  id        String   @id @default(cuid())
+  email     String
+  fullName  String
+  subject   String
+  phoneNumber String?
+  message   String
+  createdAt DateTime @default(now())
+}

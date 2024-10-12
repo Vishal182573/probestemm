@@ -12,6 +12,7 @@ import projectRoutes from "./routes/projectsRoutes";
 import businessRoutes from "./routes/businessRoutes";
 import superAdminRoutes from "./routes/superadminRoutes";
 import imageUploadRoutes from "./routes/uploadImageRoutes";
+import contactRoutes from "./routes/contactRoutes"
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use("/api/webinars", webinarRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/image", imageUploadRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

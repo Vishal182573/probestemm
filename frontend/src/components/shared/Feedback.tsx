@@ -1,14 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 const ContactForm: React.FC = () => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const [formData, setFormData] = useState({
+    email: "",
+    fullName: "",
+    subject: "",
+    phoneNumber: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted");
+    setIsSubmitting(true);
+    try {
+      await axios.post(`${API_URL}/contact`, formData);
+      setSubmitStatus("success");
+      setFormData({ email: "", fullName: "", subject: "", phoneNumber: "", message: "" });
+    } catch (error) {
+      setSubmitStatus("error");
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -54,6 +77,9 @@ const ContactForm: React.FC = () => {
                 <div>
                   <Input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="Your Email Address"
                     className="w-full bg-gray-50 border-blue-200 text-gray-800 placeholder-gray-500 focus:border-blue-400 focus:ring-blue-400"
                     required
@@ -62,6 +88,9 @@ const ContactForm: React.FC = () => {
                 <div>
                   <Input
                     type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
                     placeholder="Full Name"
                     className="w-full bg-gray-50 border-blue-200 text-gray-800 placeholder-gray-500 focus:border-blue-400 focus:ring-blue-400"
                     required
@@ -70,6 +99,9 @@ const ContactForm: React.FC = () => {
                 <div>
                   <Input
                     type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
                     placeholder="Subject"
                     className="w-full bg-gray-50 border-blue-200 text-gray-800 placeholder-gray-500 focus:border-blue-400 focus:ring-blue-400"
                     required
@@ -78,12 +110,18 @@ const ContactForm: React.FC = () => {
                 <div>
                   <Input
                     type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
                     placeholder="Phone Number"
                     className="w-full bg-gray-50 border-blue-200 text-gray-800 placeholder-gray-500 focus:border-blue-400 focus:ring-blue-400"
                   />
                 </div>
                 <div>
                   <Textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     placeholder="Your Message Here"
                     className="w-full h-32 bg-gray-50 border-blue-200 text-gray-800 placeholder-gray-500 focus:border-blue-400 focus:ring-blue-400"
                     required
@@ -92,9 +130,16 @@ const ContactForm: React.FC = () => {
                 <Button
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-300"
+                  disabled={isSubmitting}
                 >
-                  Submit
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
+                {submitStatus === "success" && (
+                  <p className="text-green-600 text-center">Message sent successfully!</p>
+                )}
+                {submitStatus === "error" && (
+                  <p className="text-red-600 text-center">Failed to send message. Please try again.</p>
+                )}
               </form>
             </div>
           </div>
