@@ -109,4 +109,17 @@ router.delete(
   }
 );
 
+router.get(
+  "/blogs/:blogId/user-interactions",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      await blogController.userInteraction(req, res);
+    } catch (error) {
+      console.error("Error in getting user interactions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 export default router;

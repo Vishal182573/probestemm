@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/student", studentsRoutes);
-app.use("/api/professor", professorRoutes);
+app.use("/api/professors", professorRoutes);
 app.use("/api/discussion", discussionRoutes);
 app.use("/api", blogsRoutes);
 app.use("/api/project", projectRoutes);

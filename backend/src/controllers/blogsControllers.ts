@@ -357,7 +357,7 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
 
 const updateComment = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { blogId, commentId } = req.params;
+    const { commentId } = req.params;
     const validatedData = CommentSchema.parse(req.body);
     const userId = req.user?.id;
     const userRole = req.user?.role;
@@ -463,6 +463,28 @@ const deleteComment = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+const userInteraction = async (req: AuthenticatedRequest, res: Response) => {
+  // provide the current like or dislike status of the user
+
+  const { blogId } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const userInteraction = await prisma.blogLike.findUnique({
+    where: {
+      blogId_userId: {
+        blogId,
+        userId,
+      },
+    },
+  });
+
+  return res.status(200).json(userInteraction);
+};
+
 export default {
   getBlogs,
   getBlogById,
@@ -474,4 +496,5 @@ export default {
   createComment,
   updateComment,
   deleteComment,
+  userInteraction,
 };

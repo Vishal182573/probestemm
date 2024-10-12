@@ -83,7 +83,7 @@ export const studentSignup = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, "student");
 
-    res.status(201).json({ user, token,role:"student"});
+    res.status(201).json({ user, token, role: "student" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error creating user" });
@@ -151,7 +151,7 @@ export const professorSignup = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, "professor");
 
-    res.status(201).json({ user, token,role:"professor"});
+    res.status(201).json({ user, token, role: "professor" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error creating user" });
@@ -199,7 +199,7 @@ export const businessSignup = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, "business");
 
-    res.status(201).json({ user, token,role:"business" });
+    res.status(201).json({ user, token, role: "business" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error creating user" });
@@ -229,7 +229,7 @@ export const adminSignup = async (req: Request, res: Response) => {
 
     const token = generateToken(user.id, "admin");
 
-    res.status(201).json({ user, token,role:"superAdmin" });
+    res.status(201).json({ user, token, role: "superAdmin" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error creating user" });

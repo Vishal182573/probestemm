@@ -1,5 +1,8 @@
-"use client"
-import React, { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +16,7 @@ import {
   Globe,
   GraduationCap,
   Video,
+  BookOpen,
 } from "lucide-react";
 import {
   Dialog,
@@ -34,14 +38,102 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useParams } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+interface Professor {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  location: string;
+  photoUrl: string;
+  title: string;
+  university: string;
+  website: string;
+  degree: string;
+  department: string;
+  position: string;
+  researchInterests: string;
+  positions: Array<{
+    id: string;
+    title: string;
+    institution: string;
+    startYear: string;
+    endYear?: string;
+    current: boolean;
+  }>;
+  achievements: Array<{ id: string; year: string; description: string }>;
+  blogs: Array<{ id: string; title: string; createdAt: string }>;
+  projects: Array<{ id: string; topic: string; status: string }>;
+  webinars: Array<{ id: string; title: string; date: string; status: string }>;
+}
+
 const ProfessorProfilePage: React.FC = () => {
-  const {id} = useParams();
+  const { id } = useParams();
+  const [professor, setProfessor] = useState<Professor | null>(null);
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfessorData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/professors/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfessor(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching professor data:", error);
+        setError("Failed to load professor data. Please try again.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfessorData();
+  }, [id, router]);
+
+  const handleCreateWebinar = async (webinarData: any) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${API_URL}/webinars`, webinarData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const response = await axios.get(`${API_URL}/professors/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProfessor(response.data);
+      setIsWebinarDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating webinar:", error);
+      setError("Failed to create webinar. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!professor) {
+    return <div>Professor not found</div>;
+  }
 
   const tabItems = [
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     { id: "projects", label: "My Projects", icon: <Briefcase /> },
     { id: "webinars", label: "My Webinars", icon: <Video /> },
+    { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
   ];
 
   return (
@@ -49,7 +141,6 @@ const ProfessorProfilePage: React.FC = () => {
       <Navbar />
 
       <main className="flex-grow">
-        {/* Hero Section */}
         <motion.section
           className="relative bg-secondary text-secondary-foreground py-24"
           initial={{ opacity: 0 }}
@@ -60,26 +151,44 @@ const ProfessorProfilePage: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">
                 <Avatar className="w-32 h-32 border-4 border-primary">
-                  <AvatarImage src="/professor.png" alt="Dr. Lorem Ipsum" />
-                  <AvatarFallback>LI</AvatarFallback>
+                  <AvatarImage
+                    src={professor.photoUrl}
+                    alt={professor.fullName}
+                  />
+                  <AvatarFallback>
+                    {professor.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <h1 className="text-4xl font-bold mb-2">
-                    Dr. Lorem Ipsum, Ph.D.
+                    {professor.fullName}
                   </h1>
                   <p className="text-xl text-muted-foreground">
-                    Distinguished Professor of Computer Science
+                    {professor.title}
                   </p>
                   <p className="text-lg text-muted-foreground">
-                    Prestigious University
+                    {professor.university}
+                  </p>
+                  <p className="text-md text-muted-foreground">
+                    {professor.department}
                   </p>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
-                <Button variant="outline">
-                  <Globe className="mr-2 h-4 w-4" />
-                  Website
-                </Button>
+                {professor.website && (
+                  <a
+                    className="btn btn-outline flex items-center"
+                    href={professor.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Globe className="mr-2 h-4 w-4" />
+                    Website
+                  </a>
+                )}
                 <Button variant="outline">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Google Scholar
@@ -89,7 +198,6 @@ const ProfessorProfilePage: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Profile Content Section */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">
@@ -116,31 +224,60 @@ const ProfessorProfilePage: React.FC = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                        <GraduationCap className="mr-2" />
+                        Personal Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        <li>
+                          <strong>Email:</strong> {professor.email}
+                        </li>
+                        <li>
+                          <strong>Phone:</strong> {professor.phoneNumber}
+                        </li>
+                        <li>
+                          <strong>Location:</strong> {professor.location}
+                        </li>
+                        <li>
+                          <strong>Degree:</strong> {professor.degree || "N/A"}
+                        </li>
+                        <li>
+                          <strong>Position:</strong> {professor.position}
+                        </li>
+                        <li>
+                          <strong>Research Interests:</strong>{" "}
+                          {professor.researchInterests}
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
                         <Award className="mr-2" />
                         Achievements
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2">
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2023
-                          </Badge>
-                          Outstanding Researcher Award
-                        </li>
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2022
-                          </Badge>
-                          Best Paper Award at AI Conference
-                        </li>
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2021
-                          </Badge>
-                          National Science Foundation Grant
-                        </li>
-                      </ul>
+                      {professor.achievements.length > 0 ? (
+                        <ul className="space-y-2">
+                          {professor.achievements.map((achievement) => (
+                            <li
+                              key={achievement.id}
+                              className="flex items-center"
+                            >
+                              <Badge variant="outline" className="mr-2">
+                                {achievement.year}
+                              </Badge>
+                              {achievement.description}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No achievements listed yet.</p>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -152,26 +289,21 @@ const ProfessorProfilePage: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2">
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2020 - Present
-                          </Badge>
-                          Distinguished Professor, Prestigious University
-                        </li>
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2015 - 2020
-                          </Badge>
-                          Associate Professor, Another University
-                        </li>
-                        <li className="flex items-center">
-                          <Badge variant="outline" className="mr-2">
-                            2010 - 2015
-                          </Badge>
-                          Assistant Professor, Yet Another University
-                        </li>
-                      </ul>
+                      {professor.positions.length > 0 ? (
+                        <ul className="space-y-2">
+                          {professor.positions.map((position) => (
+                            <li key={position.id} className="flex items-center">
+                              <Badge variant="outline" className="mr-2">
+                                {position.startYear} -{" "}
+                                {position.endYear || "Present"}
+                              </Badge>
+                              {position.title}, {position.institution}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No positions listed yet.</p>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -192,51 +324,44 @@ const ProfessorProfilePage: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Upcoming Projects
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>AI for Climate Change Mitigation</span>
-                              <Badge>Tech Corp, Starting Sept 2024</Badge>
-                            </li>
-                          </ul>
+                      {professor.projects.length > 0 ? (
+                        <div className="space-y-6">
+                          {["OPEN", "ONGOING", "CLOSED"].map((status) => (
+                            <div key={status}>
+                              <h3 className="text-xl font-semibold mb-2">
+                                {status.charAt(0) +
+                                  status.slice(1).toLowerCase()}{" "}
+                                Projects
+                              </h3>
+                              <ul className="space-y-2">
+                                {professor.projects
+                                  .filter(
+                                    (project) => project.status === status
+                                  )
+                                  .map((project) => (
+                                    <li
+                                      key={project.id}
+                                      className="flex items-center justify-between"
+                                    >
+                                      <span>{project.topic}</span>
+                                      <Badge
+                                        variant={
+                                          status === "CLOSED"
+                                            ? "outline"
+                                            : "secondary"
+                                        }
+                                      >
+                                        {status}
+                                      </Badge>
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
+                          ))}
                         </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Ongoing Projects
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>Quantum Computing Applications</span>
-                              <Badge variant="secondary">
-                                QuantumTech, Since Jan 2024
-                              </Badge>
-                            </li>
-                            <li className="flex items-center justify-between">
-                              <span>Neural Networks for Medical Imaging</span>
-                              <Badge variant="secondary">
-                                MedTech Inc, Since Aug 2023
-                              </Badge>
-                            </li>
-                          </ul>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Completed Projects
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>Blockchain for Supply Chain</span>
-                              <Badge variant="outline">
-                                LogiCorp, Completed Dec 2023
-                              </Badge>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
+                      ) : (
+                        <p>No projects listed yet.</p>
+                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -270,13 +395,25 @@ const ProfessorProfilePage: React.FC = () => {
                               <DialogHeader>
                                 <DialogTitle>Create a New Webinar</DialogTitle>
                               </DialogHeader>
-                              <form className="space-y-4">
+                              <form
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  const formData = new FormData(
+                                    e.currentTarget
+                                  );
+                                  const webinarData =
+                                    Object.fromEntries(formData);
+                                  handleCreateWebinar(webinarData);
+                                }}
+                                className="space-y-4"
+                              >
                                 <div>
                                   <Label htmlFor="webinar-title">
                                     Webinar Title
                                   </Label>
                                   <Input
                                     id="webinar-title"
+                                    name="title"
                                     placeholder="Enter webinar title"
                                   />
                                 </div>
@@ -284,12 +421,13 @@ const ProfessorProfilePage: React.FC = () => {
                                   <Label htmlFor="webinar-topic">Topic</Label>
                                   <Input
                                     id="webinar-topic"
+                                    name="topic"
                                     placeholder="Enter webinar topic"
                                   />
                                 </div>
                                 <div>
                                   <Label htmlFor="webinar-place">Place</Label>
-                                  <Select>
+                                  <Select name="place">
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select a place" />
                                     </SelectTrigger>
@@ -308,7 +446,11 @@ const ProfessorProfilePage: React.FC = () => {
                                 </div>
                                 <div>
                                   <Label htmlFor="webinar-date">Date</Label>
-                                  <Input id="webinar-date" type="date" />
+                                  <Input
+                                    id="webinar-date"
+                                    name="date"
+                                    type="date"
+                                  />
                                 </div>
                                 <Button type="submit">
                                   Submit for Approval
@@ -317,47 +459,41 @@ const ProfessorProfilePage: React.FC = () => {
                             </DialogContent>
                           </Dialog>
                         </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Upcoming Webinars
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>Future of AI in Healthcare</span>
-                              <Badge>Oct 15, 2024</Badge>
-                            </li>
-                          </ul>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Completed Webinars
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>Introduction to Quantum Computing</span>
-                              <Badge variant="secondary">Mar 5, 2024</Badge>
-                            </li>
-                            <li className="flex items-center justify-between">
-                              <span>Ethical Considerations in AI</span>
-                              <Badge variant="secondary">Jan 20, 2024</Badge>
-                            </li>
-                          </ul>
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">
-                            Pending Approval
-                          </h3>
-                          <ul className="space-y-2">
-                            <li className="flex items-center justify-between">
-                              <span>
-                                Blockchain Technology: Beyond Cryptocurrencies
-                              </span>
-                              <Badge variant="outline">
-                                Awaiting Admin Approval
-                              </Badge>
-                            </li>
-                          </ul>
-                        </div>
+                        {["UPCOMING", "COMPLETED", "PENDING"].map((status) => (
+                          <div key={status}>
+                            <h3 className="text-xl font-semibold mb-2">
+                              {status === "PENDING"
+                                ? "Pending Approval"
+                                : `${
+                                    status.charAt(0) +
+                                    status.slice(1).toLowerCase()
+                                  } Webinars`}
+                            </h3>
+                            <ul className="space-y-2">
+                              {professor.webinars
+                                .filter((webinar) => webinar.status === status)
+                                .map((webinar) => (
+                                  <li
+                                    key={webinar.id}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span>{webinar.title}</span>
+                                    <Badge
+                                      variant={
+                                        status === "COMPLETED"
+                                          ? "secondary"
+                                          : status === "PENDING"
+                                          ? "outline"
+                                          : "default"
+                                      }
+                                    >
+                                      {webinar.date}
+                                    </Badge>
+                                  </li>
+                                ))}
+                            </ul>
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -367,7 +503,7 @@ const ProfessorProfilePage: React.FC = () => {
           </div>
         </section>
       </main>
-      <Footer/>
+      <Footer />
     </div>
   );
 };

@@ -17,6 +17,8 @@ import { User2Icon, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -98,6 +100,8 @@ export const SignupForm: React.FC = () => {
     positions: [],
   });
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const router = useRouter();
 
   const handleInitialSubmit = async (e: React.FormEvent) => {
@@ -123,7 +127,6 @@ export const SignupForm: React.FC = () => {
           formData.append(key, value.toString());
         }
       });
-
       const response = await authApi.post(
         `/${userData.role}/signup`,
         formData,
@@ -135,9 +138,15 @@ export const SignupForm: React.FC = () => {
       );
 
       console.log("Signup successful:", response.data);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userRole", userData.role);
-      router.push(`/${userData.role}-profile`);
+      setIsSuccess(true);
+      toast({
+        title: "Account created successfully!",
+        description: "You can now log in with your new account.",
+        duration: 5000,
+      });
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setError(
@@ -799,7 +808,17 @@ export const SignupForm: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {step === 1 ? renderInitialForm() : renderRoleSpecificForm()}
+        {isSuccess ? (
+          <Alert className="mb-4">
+            <AlertDescription>
+              Account created successfully! Redirecting to login page...
+            </AlertDescription>
+          </Alert>
+        ) : step === 1 ? (
+          renderInitialForm()
+        ) : (
+          renderRoleSpecificForm()
+        )}
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </CardContent>
     </Card>
