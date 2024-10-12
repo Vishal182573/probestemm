@@ -55,6 +55,10 @@ const getProfessorById = async (req: Request, res: Response) => {
           select: {
             id: true,
             title: true,
+            content: true,
+            comments: true,
+            likes: true,
+            dislikes: true,
             createdAt: true,
           },
         },
