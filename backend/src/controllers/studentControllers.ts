@@ -1,30 +1,24 @@
 import { type Request, type Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
 
 const prisma = new PrismaClient();
-
-// Validation schema
-const StudentSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  imageUrl: z.string().optional(),
-});
 
 // GET /api/students
 export const getStudents = async (req: Request, res: Response) => {
   try {
     const students = await prisma.student.findMany({
       include: {
-        discussions: true,
-        education: true,
         researchHighlights: true,
-        experiences: true,
+        education: true,
         achievements: true,
+        discussions: true,
+        comments: true,
+        projects: true,
       },
     });
-    res.status(200).json(students);  // Don't return the response directly
+    res.status(200).json(students);
   } catch (error) {
+    console.error('Error fetching students:', error);
     res.status(500).json({ error: 'Failed to fetch students' });
   }
 };
@@ -33,24 +27,23 @@ export const getStudents = async (req: Request, res: Response) => {
 export const getStudentById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
     const student = await prisma.student.findUnique({
-      where: { id: String(id) },  // Ensure id is cast to string or appropriate type
+      where: { id },
       include: {
-        discussions: true,
-        education: true,
         researchHighlights: true,
-        experiences: true,
+        education: true,
         achievements: true,
+        discussions: true,
+        comments: true,
+        projects: true,
       },
     });
-
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
-
     res.status(200).json(student);
   } catch (error) {
+    console.error('Error fetching student:', error);
     res.status(500).json({ error: 'Failed to fetch student' });
   }
 };
@@ -58,15 +51,34 @@ export const getStudentById = async (req: Request, res: Response) => {
 // POST /api/students
 export const createStudent = async (req: Request, res: Response) => {
   try {
-    const validatedData = StudentSchema.parse(req.body);
+    const {
+      fullName,
+      email,
+      password,
+      phoneNumber,
+      location,
+      imageUrl,
+      university,
+      course,
+      experience,
+    } = req.body;
+
     const student = await prisma.student.create({
-      data: validatedData,
+      data: {
+        fullName,
+        email,
+        password,
+        phoneNumber,
+        location,
+        imageUrl,
+        university,
+        course,
+        experience,
+      },
     });
     res.status(201).json(student);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
+    console.error('Error creating student:', error);
     res.status(500).json({ error: 'Failed to create student' });
   }
 };
@@ -75,18 +87,35 @@ export const createStudent = async (req: Request, res: Response) => {
 export const updateStudent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const validatedData = StudentSchema.partial().parse(req.body);
-    
+    const {
+      fullName,
+      email,
+      password,
+      phoneNumber,
+      location,
+      imageUrl,
+      university,
+      course,
+      experience,
+    } = req.body;
+
     const student = await prisma.student.update({
-      where: { id: String(id) },  // Ensure id is cast to string
-      data: validatedData,
+      where: { id },
+      data: {
+        fullName,
+        email,
+        password,
+        phoneNumber,
+        location,
+        imageUrl,
+        university,
+        course,
+        experience,
+      },
     });
-    
     res.status(200).json(student);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
+    console.error('Error updating student:', error);
     res.status(500).json({ error: 'Failed to update student' });
   }
 };
