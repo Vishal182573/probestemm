@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
@@ -9,7 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Briefcase, Globe, Edit3, Tag, Plus } from "lucide-react";
+import {
+  Building,
+  Briefcase,
+  Globe,
+  Edit3,
+  Tag,
+  Plus,
+  User,
+} from "lucide-react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 
@@ -35,6 +43,12 @@ interface Project {
   timeline: string;
   tags: string[];
   status: "OPEN" | "ONGOING" | "CLOSED";
+  appliedProfessors?: { id: string; name: string }[];
+}
+
+interface AppliedProfessor {
+  id: string;
+  name: string;
 }
 
 const BusinessProfilePage: React.FC = () => {
@@ -44,13 +58,18 @@ const BusinessProfilePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newProject, setNewProject] = useState({
+  const [newProject, setNewProject] = useState<{
+    topic: string;
+    content: string;
+    difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+    timeline: string;
+    tags: string;
+  }>({
     topic: "",
     content: "",
-    difficulty: "EASY" as const,
-    timeline: new Date().toISOString().split('T')[0],
+    difficulty: "EASY",
+    timeline: new Date().toISOString().split("T")[0],
     tags: "",
-    status: "OPEN" as const,
   });
 
   useEffect(() => {
@@ -67,7 +86,6 @@ const BusinessProfilePage: React.FC = () => {
         });
 
         setBusiness(response.data);
-        setProjects(response.data.projects || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -76,7 +94,30 @@ const BusinessProfilePage: React.FC = () => {
       }
     };
 
+    const fetchProjects = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_URL}/project/business/${id}/projects`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setProjects(response.data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        setError("Failed to load projects. Please try again.");
+      }
+    };
+
     fetchBusinessData();
+    fetchProjects();
   }, [id, router]);
 
   const handleCreateProject = async () => {
@@ -87,25 +128,91 @@ const BusinessProfilePage: React.FC = () => {
         return;
       }
 
-      const response = await axios.post(`${API_URL}/business/${id}/projects`, {
-        ...newProject,
-        tags: newProject.tags.split(',').map(tag => tag.trim()),
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.post(
+        `${API_URL}/project/business`,
+        {
+          ...newProject,
+          tags: newProject.tags.split(",").map((tag) => tag.trim()),
+          businessId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       setProjects([...projects, response.data]);
       setNewProject({
         topic: "",
         content: "",
         difficulty: "EASY",
-        timeline: new Date().toISOString().split('T')[0],
+        timeline: new Date().toISOString().split("T")[0],
         tags: "",
-        status: "OPEN",
       });
     } catch (error) {
       console.error("Error creating project:", error);
       setError("Failed to create project. Please try again.");
+    }
+  };
+
+  const handleChangeProjectStatus = async (
+    projectId: string,
+    status: "OPEN" | "ONGOING" | "CLOSED",
+    selectedProfessorId?: string
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      await axios.patch(
+        `${API_URL}/project/business/${projectId}/status`,
+        { status, selectedProfessorId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setProjects(
+        projects.map((project) =>
+          project.id === projectId ? { ...project, status } : project
+        )
+      );
+    } catch (error) {
+      console.error("Error changing project status:", error);
+      setError("Failed to change project status. Please try again.");
+    }
+  };
+
+  const fetchAppliedProfessors = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/project/business/${projectId}/applicants`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setProjects(
+        projects.map((project) =>
+          project.id === projectId
+            ? { ...project, appliedProfessors: response.data }
+            : project
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching applied professors:", error);
+      setError("Failed to fetch applied professors. Please try again.");
     }
   };
 
@@ -153,16 +260,28 @@ const BusinessProfilePage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Avatar className="w-32 h-32 border-4 border-primary">
-                    <AvatarImage src={business.profileImageUrl || ""} alt={business.companyName} />
+                    <AvatarImage
+                      src={business.profileImageUrl || ""}
+                      alt={business.companyName}
+                    />
                     <AvatarFallback>
-                      {business.companyName.split(" ").map((n) => n[0]).join("")}
+                      {business.companyName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">{business.companyName}</h1>
-                  <p className="text-xl text-muted-foreground">{business.industry}</p>
-                  <p className="text-lg text-muted-foreground">{business.location}</p>
+                  <h1 className="text-4xl font-bold mb-2">
+                    {business.companyName}
+                  </h1>
+                  <p className="text-xl text-muted-foreground">
+                    {business.industry}
+                  </p>
+                  <p className="text-lg text-muted-foreground">
+                    {business.location}
+                  </p>
                 </div>
               </div>
               <motion.div
@@ -195,14 +314,23 @@ const BusinessProfilePage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    <li><strong>Email:</strong> {business.email}</li>
-                    <li><strong>Phone:</strong> {business.phoneNumber}</li>
-                    <li><strong>Website:</strong> {business.website || 'N/A'}</li>
-                    <li><strong>Description:</strong> {business.description}</li>
+                    <li>
+                      <strong>Email:</strong> {business.email}
+                    </li>
+                    <li>
+                      <strong>Phone:</strong> {business.phoneNumber}
+                    </li>
+                    <li>
+                      <strong>Website:</strong> {business.website || "N/A"}
+                    </li>
+                    <li>
+                      <strong>Description:</strong> {business.description}
+                    </li>
                   </ul>
                 </CardContent>
               </Card>
 
+              {/* Create Project Card */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-bold text-primary">
@@ -223,15 +351,24 @@ const BusinessProfilePage: React.FC = () => {
                       placeholder="Project Content"
                       value={newProject.content}
                       onChange={(e) =>
-                        setNewProject({ ...newProject, content: e.target.value })
+                        setNewProject({
+                          ...newProject,
+                          content: e.target.value,
+                        })
                       }
                     />
                     <select
                       value={newProject.difficulty}
                       onChange={(e) =>
-                        setNewProject({ ...newProject, difficulty: e.target.value as "EASY" | "INTERMEDIATE" | "HARD" })
+                        setNewProject({
+                          ...newProject,
+                          difficulty: e.target.value as
+                            | "EASY"
+                            | "INTERMEDIATE"
+                            | "HARD",
+                        })
                       }
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border rounded bg-background"
                     >
                       <option value="EASY">Easy</option>
                       <option value="INTERMEDIATE">Intermediate</option>
@@ -241,7 +378,10 @@ const BusinessProfilePage: React.FC = () => {
                       type="date"
                       value={newProject.timeline}
                       onChange={(e) =>
-                        setNewProject({ ...newProject, timeline: e.target.value })
+                        setNewProject({
+                          ...newProject,
+                          timeline: e.target.value,
+                        })
                       }
                     />
                     <Input
@@ -258,6 +398,7 @@ const BusinessProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
+              {/* Projects Card */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-bold text-primary">
@@ -268,26 +409,87 @@ const BusinessProfilePage: React.FC = () => {
                 <CardContent>
                   <ul className="space-y-4">
                     {projects.map((project) => (
-                      <li key={project.id} className="border-b pb-4 last:border-b-0">
+                      <li
+                        key={project.id}
+                        className="border-b pb-4 last:border-b-0"
+                      >
                         <h3 className="font-semibold">{project.topic}</h3>
                         <p className="text-sm text-muted-foreground mb-2">
                           {project.content.substring(0, 100)}...
                         </p>
-                        <div className="flex justify-between items-center">
-                          <Badge variant="secondary">{project.difficulty}</Badge>
-                          <Badge 
-                            variant={project.status === "OPEN" ? "success" : 
-                                     project.status === "ONGOING" ? "warning" : "destructive"}
+                        <div className="flex justify-between items-center mb-2 ">
+                          <Badge variant="secondary">
+                            {project.difficulty}
+                          </Badge>
+                          <Badge
+                            variant={
+                              project.status === "OPEN"
+                                ? "default"
+                                : project.status === "ONGOING"
+                                ? "secondary"
+                                : "destructive"
+                            }
                           >
                             {project.status}
                           </Badge>
                         </div>
+                        {project.status === "OPEN" && (
+                          <Button
+                            onClick={() => fetchAppliedProfessors(project.id)}
+                            className="w-full mb-2"
+                          >
+                            <User className="mr-2" /> View Applied Professors
+                          </Button>
+                        )}
+                        {project.appliedProfessors &&
+                          project.appliedProfessors.length > 0 && (
+                            <div className="mb-2">
+                              <h4 className="font-semibold">
+                                Applied Professors:
+                              </h4>
+                              <ul>
+                                {project.appliedProfessors.map(
+                                  (professor: AppliedProfessor) => (
+                                    <li
+                                      key={professor.id}
+                                      className="flex justify-between items-center"
+                                    >
+                                      <span>{professor.name}</span>
+                                      <Button
+                                        onClick={() =>
+                                          handleChangeProjectStatus(
+                                            project.id,
+                                            "ONGOING",
+                                            professor.id
+                                          )
+                                        }
+                                        size="sm"
+                                      >
+                                        Select
+                                      </Button>
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        {project.status === "ONGOING" && (
+                          <Button
+                            onClick={() =>
+                              handleChangeProjectStatus(project.id, "CLOSED")
+                            }
+                            className="w-full"
+                          >
+                            Complete Project
+                          </Button>
+                        )}
                       </li>
                     ))}
                   </ul>
                 </CardContent>
               </Card>
 
+              {/* Project Tags Card */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-bold text-primary">
@@ -297,7 +499,9 @@ const BusinessProfilePage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(projects.flatMap(project => project.tags))).map((tag, index) => (
+                    {Array.from(
+                      new Set(projects.flatMap((project) => project.tags))
+                    ).map((tag, index) => (
                       <Badge key={index} variant="outline">
                         {tag}
                       </Badge>

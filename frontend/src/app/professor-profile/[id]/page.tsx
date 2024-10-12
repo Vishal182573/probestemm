@@ -37,6 +37,7 @@ import {
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -63,9 +64,8 @@ interface Professor {
     current: boolean;
   }>;
   achievements: Array<{ id: string; year: string; description: string }>;
-  blogs: Array<{ id: string; title: string; createdAt: string }>;
+  blogs: any;
   projects: Array<{ id: string; topic: string; status: string }>;
-  webinars: Array<{ id: string; title: string; date: string; status: string }>;
 }
 
 interface Webinar {
@@ -404,6 +404,62 @@ const ProfessorProfilePage: React.FC = () => {
                         </div>
                       ) : (
                         <p>No projects listed yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="blogs">
+                <motion.div
+                  className="space-y-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                        <BookOpen className="mr-2" />
+                        My Blogs
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {professor?.blogs && professor.blogs.length > 0 ? (
+                        <ul className="space-y-4">
+                          {professor.blogs.map((blog: any) => (
+                            <li key={blog.id} className="border-b pb-4">
+                              <h3 className="text-xl font-semibold mb-2">
+                                {blog.title}
+                              </h3>
+                              <p className="text-muted-foreground mb-2">
+                                {new Date(blog.createdAt).toLocaleDateString()}
+                              </p>
+                              <p className="mb-2">
+                                {blog.content.length > 150
+                                  ? `${blog.content.substring(0, 150)}...`
+                                  : blog.content}
+                              </p>
+                              <div className="flex items-center space-x-4">
+                                <Badge variant="secondary">
+                                  {blog.likes} Likes
+                                </Badge>
+                                <Badge variant="outline">
+                                  {blog.dislikes} Dislikes
+                                </Badge>
+
+                                <Badge variant="outline">
+                                  {blog.comments.length} Comments
+                                </Badge>
+                                <Link href={`/blogs/${blog.id}`}>
+                                  <Button variant="outline">View Blog</Button>
+                                </Link>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No blogs posted yet.</p>
                       )}
                     </CardContent>
                   </Card>
