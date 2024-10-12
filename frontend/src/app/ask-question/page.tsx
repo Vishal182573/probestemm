@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,9 @@ import {
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const categories: { [key: string]: string[] } = {
   Science: [
@@ -46,14 +50,56 @@ const AskQuestion: React.FC = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [subcategory, setSubcategory] = useState("");
-  const router= useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log({ title, description, category, subcategory });
-    // Redirect to the discussion forum after submission
-    router.push("/");
+    setIsSubmitting(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const studentId = localStorage.getItem("userId"); // Assuming you store the user's ID in localStorage
+      if (!studentId) {
+        throw new Error("No student ID found");
+      }
+
+      const response = await axios.post(
+        `${API_URL}/discussion/create`,
+        {
+          title,
+          description,
+          category,
+          subcategory,
+          studentId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast({
+        title: "Success",
+        description: "Your question has been submitted successfully.",
+        variant: "default",
+      });
+
+      router.push("/");
+    } catch (error) {
+      console.error("Error submitting question:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your question. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -155,13 +201,11 @@ const AskQuestion: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {category &&
-                    categories[category as keyof typeof categories].map(
-                      (subcat) => (
-                        <SelectItem key={subcat} value={subcat}>
-                          {subcat}
-                        </SelectItem>
-                      )
-                    )}
+                    categories[category].map((subcat) => (
+                      <SelectItem key={subcat} value={subcat}>
+                        {subcat}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -170,8 +214,9 @@ const AskQuestion: React.FC = () => {
           <Button
             type="submit"
             className="w-full bg-primary hover:bg-accent text-white"
+            disabled={isSubmitting}
           >
-            Submit Question
+            {isSubmitting ? "Submitting..." : "Submit Question"}
           </Button>
         </form>
       </motion.div>

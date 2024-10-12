@@ -107,102 +107,102 @@ export const voteDiscussion = async (req: Request, res: Response) => {
 
 export const searchDiscussions = async (req: Request, res: Response) => {
   try {
-    const { searchString } = req.query;
+    const {
+      searchString,
+      status,
+      category,
+      subcategory,
+      sortBy,
+      page = 1,
+      pageSize = 10
+    } = req.query;
 
-    const discussions = await prisma.discussion.findMany({
-      where: {
-        title: {
-          contains: searchString as string,
-          mode: 'insensitive',
+    const skip = (Number(page) - 1) * Number(pageSize);
+
+    let whereClause: any = {};
+    let orderBy: any = {};
+
+    // Apply filters
+    if (searchString) {
+      whereClause.title = { contains: searchString as string, mode: 'insensitive' };
+    }
+
+    if (status && status !== 'all') {
+      whereClause.status = status as DiscussionStatus;
+    }
+
+    if (category) {
+      whereClause.category = category as string;
+    }
+
+    if (subcategory) {
+      whereClause.subcategory = subcategory as string;
+    }
+
+    // Apply sorting
+    if (sortBy === 'recent') {
+      orderBy.createdAt = 'desc';
+    } else if (sortBy === 'mostVoted') {
+      orderBy.upvotes = 'desc';
+    }
+
+    const [discussions, totalCount] = await Promise.all([
+      prisma.discussion.findMany({
+        where: whereClause,
+        orderBy: orderBy,
+        skip,
+        take: Number(pageSize),
+        include: {
+          student: true,
+          answers: true,
         },
-      },
-      include: {
-        student: true,
-        answers: true,
+      }),
+      prisma.discussion.count({ where: whereClause }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / Number(pageSize));
+
+    res.status(200).json({
+      discussions,
+      pagination: {
+        currentPage: Number(page),
+        totalPages,
+        pageSize: Number(pageSize),
+        totalCount,
       },
     });
-
-    res.status(200).json(discussions);
   } catch (error) {
     res.status(500).json({ error: 'Failed to search discussions' });
   }
 };
 
-export const getRecentDiscussions = async (req: Request, res: Response) => {
+export const getDiscussionById = async (req: Request, res: Response) => {
   try {
-    const discussions = await prisma.discussion.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 10,
+    const { id } = req.params;
+
+    const discussion = await prisma.discussion.findUnique({
+      where: { id },
       include: {
         student: true,
-        answers: true,
+        answers: {
+          include: {
+            professor: true,
+            business: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        votes: true,
       },
     });
 
-    res.status(200).json(discussions);
+    if (!discussion) {
+      return res.status(404).json({ error: 'Discussion not found' });
+    }
+
+    res.status(200).json(discussion);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get recent discussions' });
-  }
-};
-
-export const getMostVotedDiscussions = async (req: Request, res: Response) => {
-  try {
-    const discussions = await prisma.discussion.findMany({
-      orderBy: {
-        upvotes: 'desc',
-      },
-      take: 10,
-      include: {
-        student: true,
-        answers: true,
-      },
-    });
-
-    res.status(200).json(discussions);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get most voted discussions' });
-  }
-};
-
-export const getDiscussionsByStatus = async (req: Request, res: Response) => {
-  try {
-    const { status } = req.query;
-
-    const whereClause = status === 'all' ? {} : { status: status as DiscussionStatus };
-
-    const discussions = await prisma.discussion.findMany({
-      where: whereClause,
-      include: {
-        student: true,
-        answers: true,
-      },
-    });
-
-    res.status(200).json(discussions);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get discussions by status' });
-  }
-};
-
-export const getDiscussionsByCategoryAndSubcategory = async (req: Request, res: Response) => {
-  try {
-    const { category, subcategory } = req.query;
-
-    const discussions = await prisma.discussion.findMany({
-      where: {
-        category: category as string,
-        subcategory: subcategory as string,
-      },
-      include: {
-        student: true,
-        answers: true,
-      },
-    });
-
-    res.status(200).json(discussions);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get discussions by category and subcategory' });
+    res.status(500).json({ error: 'Failed to fetch discussion' });
   }
 };

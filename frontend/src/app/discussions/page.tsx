@@ -17,6 +17,7 @@ import {
   FaSort,
   FaFilter,
   FaArrowUp,
+  FaArrowDown,
   FaClock,
   FaComment,
   FaUser,
@@ -24,105 +25,101 @@ import {
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
+import axios from "axios";
 
-interface Question {
+interface Discussion {
   id: string;
   title: string;
-  author: string;
-  time: string;
-  votes: number;
-  answered: boolean;
-  commentCount: number;
+  studentName: string;
+  createdAt: string;
+  upvotes: number;
+  downvotes: number;
+  status: "OPEN" | "ANSWERED";
+  answerCount: number;
+  category: string;
+  subcategory: string;
+}
+
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
 }
 
 const categories: { [key: string]: string[] } = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
-  ],
+  Science: ["Physics", "Chemistry", "Biology", "Earth Sciences", "Space Science"],
   Technology: ["Computer Science", "Engineering"],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
+  Engineering: ["Electrical Engineering", "Mechanical Engineering", "Civil Engineering", "Chemical Engineering"],
   Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
-  ],
+  "Engineering Technology": ["Data Engineering", "Robotics", "Biotechnology", "Environmental Technology", "Space Technology", "Pharmaceutical Engineering"],
 };
 
 const DiscussionForum: React.FC = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("recently");
+  const [sortBy, setSortBy] = useState("recent");
   const [status, setStatus] = useState("all");
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [subcategory, setSubcategory] = useState<string | undefined>(undefined);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
+    totalCount: 0,
+  });
   const router = useRouter();
 
   useEffect(() => {
-    setQuestions([
-      {
-        id: "1",
-        title: "What are the fundamental principles of quantum mechanics?",
-        author: "Dr. Smith",
-        time: "7 hours ago",
-        votes: 15,
-        answered: true,
-        commentCount: 5,
-      },
-      {
-        id: "1",
-        title: "What are the fundamental principles of quantum mechanics?",
-        author: "Dr. Smith",
-        time: "7 hours ago",
-        votes: 15,
-        answered: true,
-        commentCount: 5,
-      },
-      {
-        id: "1",
-        title: "What are the fundamental principles of quantum mechanics?",
-        author: "Dr. Smith",
-        time: "7 hours ago",
-        votes: 15,
-        answered: true,
-        commentCount: 5,
-      },
-      {
-        id: "1",
-        title: "What are the fundamental principles of quantum mechanics?",
-        author: "Dr. Smith",
-        time: "7 hours ago",
-        votes: 15,
-        answered: true,
-        commentCount: 5,
-      },
-      {
-        id: "1",
-        title: "What are the fundamental principles of quantum mechanics?",
-        author: "Dr. Smith",
-        time: "7 hours ago",
-        votes: 15,
-        answered: true,
-        commentCount: 5,
-      },
-      // ... more questions
-    ]);
-  }, []);
+    fetchDiscussions();
+  }, [sortBy, status, category, subcategory, pagination.currentPage]);
+
+  const fetchDiscussions = async () => {
+    try {
+      const params: any = {
+        page: pagination.currentPage,
+        pageSize: pagination.pageSize,
+        sortBy,
+        status: status !== "all" ? status.toUpperCase() : undefined,
+        category,
+        subcategory,
+        searchString: searchQuery,
+      };
+
+      const response = await axios.get(`${API_URL}/discussion/search`, { params });
+      setDiscussions(response.data.discussions);
+      setPagination(response.data.pagination);
+    } catch (error) {
+      console.error("Failed to fetch discussions:", error);
+    }
+  };
+
+  const handleSearch = () => {
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    fetchDiscussions();
+  };
+
+  const handleVote = async (discussionId: string, voteType: "UPVOTE" | "DOWNVOTE") => {
+    try {
+      await axios.post(`${API_URL}/discussion/vote`, {
+        discussionId,
+        userId: "currentUserId", // Replace with actual user ID
+        userType: "STUDENT", // Replace with actual user type
+        voteType,
+      });
+      fetchDiscussions(); // Refresh discussions after voting
+    } catch (error) {
+      console.error("Failed to vote on discussion:", error);
+    }
+  };
 
   const handleQuestionClick = (questionId: string) => {
-    router.push(`/question/${questionId}`);
+    router.push(`/discussions/${questionId}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
   };
 
   return (
@@ -130,7 +127,6 @@ const DiscussionForum: React.FC = () => {
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: "url('https://i.pinimg.com/736x/08/9b/eb/089bebd775f58eea689495a3245b1c86.jpg')",
-        // backgroundColor: "rgba(130, 202, 255, 0.8)",
         backgroundBlendMode: "overlay",
       }}
     >
@@ -166,34 +162,17 @@ const DiscussionForum: React.FC = () => {
             />
           </div>
           <Button
+            onClick={handleSearch}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Search
+          </Button>
+          <Button
             onClick={() => router.push("/ask-question")}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center mb-4 sm:mb-0"
+            className="bg-green-600 hover:bg-green-700 text-white flex items-center mb-4 sm:mb-0"
           >
             <FaPlus className="mr-2" /> Ask Question
           </Button>
-          <div className="flex space-x-4">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-white text-gray-800">
-                <FaSort className="mr-2" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recently">Recently added</SelectItem>
-                <SelectItem value="votes">Most votes</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-full sm:w-[150px] bg-white text-gray-800">
-                <FaFilter className="mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="answered">Answered</SelectItem>
-                <SelectItem value="unanswered">Unanswered</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </motion.div>
 
         <motion.div
@@ -203,11 +182,36 @@ const DiscussionForum: React.FC = () => {
           transition={{ delay: 0.3 }}
         >
           <div className="flex-1">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full bg-white text-gray-800">
+                <FaSort className="mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Recently added</SelectItem>
+                <SelectItem value="mostVoted">Most votes</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1">
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-full bg-white text-gray-800">
+                <FaFilter className="mr-2" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="answered">Answered</SelectItem>
+                <SelectItem value="open">Unanswered</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1">
             <Select
               value={category}
               onValueChange={(value) => {
                 setCategory(value);
-                setSubcategory("");
+                setSubcategory(undefined);
               }}
             >
               <SelectTrigger className="w-full bg-white text-gray-800">
@@ -222,7 +226,6 @@ const DiscussionForum: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-
           <div className="flex-1">
             <Select
               value={subcategory}
@@ -245,9 +248,9 @@ const DiscussionForum: React.FC = () => {
         </motion.div>
 
         <AnimatePresence>
-          {questions.map((question, index) => (
+          {discussions.map((discussion, index) => (
             <motion.div
-              key={question.id}
+              key={discussion.id}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -50 }}
@@ -255,42 +258,62 @@ const DiscussionForum: React.FC = () => {
             >
               <Card
                 className="mb-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer bg-white"
-                onClick={() => handleQuestionClick(question.id)}
+                onClick={() => handleQuestionClick(discussion.id)}
               >
                 <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start space-x-4">
                   <div className="flex flex-col items-center mb-4 sm:mb-0">
-                    <Button variant="outline" className="px-2 py-1 mb-2">
+                    <Button 
+                      variant="outline" 
+                      className="px-2 py-1 mb-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote(discussion.id, "UPVOTE");
+                      }}
+                    >
                       <FaArrowUp className="text-blue-600" />
                     </Button>
                     <span className="text-sm font-medium text-gray-800">
-                      {question.votes}
+                      {discussion.upvotes - discussion.downvotes}
                     </span>
+                    <Button 
+                      variant="outline" 
+                      className="px-2 py-1 mt-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote(discussion.id, "DOWNVOTE");
+                      }}
+                    >
+                      <FaArrowDown className="text-red-600" />
+                    </Button>
                   </div>
                   <div className="flex-grow">
                     <h3 className="text-lg sm:text-xl font-semibold mb-2 text-gray-800">
-                      {question.title}
+                      {discussion.title}
                     </h3>
                     <div className="flex flex-col sm:flex-row items-start text-sm text-gray-600 space-y-1 sm:space-y-0 sm:space-x-2">
                       <div className="flex items-center">
                         <FaUser className="mr-1" />
-                        <span>{question.author}</span>
+                        <span>{discussion.studentName}</span>
                       </div>
                       <div className="flex items-center">
                         <FaClock className="mr-1" />
-                        <span>{question.time}</span>
+                        <span>{new Date(discussion.createdAt).toLocaleString()}</span>
                       </div>
                       <div
                         className={`flex items-center ${
-                          question.answered ? "text-green-600" : "text-blue-600"
+                          discussion.status === "ANSWERED" ? "text-green-600" : "text-blue-600"
                         }`}
                       >
                         <span>
-                          {question.answered ? "Answered" : "Unanswered"}
+                          {discussion.status === "ANSWERED" ? "Answered" : "Unanswered"}
                         </span>
                       </div>
                       <div className="flex items-center">
                         <FaComment className="mr-1" />
-                        <span>{question.commentCount} comments</span>
+                        <span>{discussion.answerCount} answers</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span>{discussion.category} - {discussion.subcategory}</span>
                       </div>
                     </div>
                   </div>
@@ -299,6 +322,27 @@ const DiscussionForum: React.FC = () => {
             </motion.div>
           ))}
         </AnimatePresence>
+
+        {/* Pagination controls */}
+        <div className="flex justify-center mt-6">
+          <Button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className="mr-2"
+          >
+            Previous
+          </Button>
+          <span className="mx-4">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+          <Button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className="ml-2"
+          >
+            Next
+          </Button>
+        </div>
       </motion.div>
       <Footer />
     </div>
