@@ -30,10 +30,13 @@ const BlogsPage = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userRole, setUserRole] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchBlogs();
+    const role = localStorage.getItem("role");
+    setUserRole(role);
   }, []);
 
   const fetchBlogs = async () => {
@@ -175,13 +178,15 @@ const BlogsPage = () => {
             </div>
           ))}
         </div>
-        <div className="mt-12 text-center">
-          <Link href="/create-blog">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Plus className="mr-2 h-5 w-5" />
-              Create New Blog Post
-            </Button>
-          </Link>
+        <div className="mt-12 text-center ">
+          {userRole === "professor" && (
+            <Link href="/create-blog">
+              <Button variant="default" size="lg">
+                <Plus className="mr-2 h-6 w-6" />
+                Create New Blog
+              </Button>
+            </Link>
+          )}
         </div>
       </main>
       <Footer />
