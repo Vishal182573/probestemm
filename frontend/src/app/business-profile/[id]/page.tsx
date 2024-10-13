@@ -43,12 +43,15 @@ interface Project {
   timeline: string;
   tags: string[];
   status: "OPEN" | "ONGOING" | "CLOSED";
-  appliedProfessors?: { id: string; name: string }[];
+  business?: { id: string; companyName: string };
+  professor?: { id: string; fullName: string };
 }
 
 interface AppliedProfessor {
-  id: string;
+  professorId: string;
   name: string;
+  email: string;
+  phoneNumber: string;
 }
 
 const BusinessProfilePage: React.FC = () => {
@@ -58,6 +61,10 @@ const BusinessProfilePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [appliedProfessorsMap, setAppliedProfessorsMap] = useState<{
+    [projectId: string]: AppliedProfessor[];
+  }>({});
+
   const [newProject, setNewProject] = useState<{
     topic: string;
     content: string;
@@ -120,7 +127,9 @@ const BusinessProfilePage: React.FC = () => {
     fetchProjects();
   }, [id, router]);
 
-  const handleCreateProject = async () => {
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -143,7 +152,7 @@ const BusinessProfilePage: React.FC = () => {
         }
       );
 
-      setProjects([...projects, response.data]);
+      setProjects((prevProjects) => [...prevProjects, response.data]);
       setNewProject({
         topic: "",
         content: "",
@@ -151,9 +160,37 @@ const BusinessProfilePage: React.FC = () => {
         timeline: new Date().toISOString().split("T")[0],
         tags: "",
       });
+      setError(null);
     } catch (error) {
       console.error("Error creating project:", error);
       setError("Failed to create project. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAppliedProfessors = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/project/business/${projectId}/applicants`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setAppliedProfessorsMap((prevMap) => ({
+        ...prevMap,
+        [projectId]: response.data,
+      }));
+    } catch (error) {
+      console.error("Error fetching applied professors:", error);
+      setError("Failed to fetch applied professors. Please try again.");
     }
   };
 
@@ -177,42 +214,21 @@ const BusinessProfilePage: React.FC = () => {
         }
       );
 
-      setProjects(
-        projects.map((project) =>
+      setProjects((prevProjects) =>
+        prevProjects.map((project) =>
           project.id === projectId ? { ...project, status } : project
         )
       );
+
+      // Clear applied professors for this project after changing status
+      setAppliedProfessorsMap((prevMap) => {
+        const newMap = { ...prevMap };
+        delete newMap[projectId];
+        return newMap;
+      });
     } catch (error) {
       console.error("Error changing project status:", error);
       setError("Failed to change project status. Please try again.");
-    }
-  };
-
-  const fetchAppliedProfessors = async (projectId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await axios.get(
-        `${API_URL}/project/business/${projectId}/applicants`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setProjects(
-        projects.map((project) =>
-          project.id === projectId
-            ? { ...project, appliedProfessors: response.data }
-            : project
-        )
-      );
-    } catch (error) {
-      console.error("Error fetching applied professors:", error);
-      setError("Failed to fetch applied professors. Please try again.");
     }
   };
 
@@ -339,13 +355,14 @@ const BusinessProfilePage: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleCreateProject}>
                     <Input
                       placeholder="Project Topic"
                       value={newProject.topic}
                       onChange={(e) =>
                         setNewProject({ ...newProject, topic: e.target.value })
                       }
+                      required
                     />
                     <Textarea
                       placeholder="Project Content"
@@ -356,6 +373,7 @@ const BusinessProfilePage: React.FC = () => {
                           content: e.target.value,
                         })
                       }
+                      required
                     />
                     <select
                       value={newProject.difficulty}
@@ -369,6 +387,7 @@ const BusinessProfilePage: React.FC = () => {
                         })
                       }
                       className="w-full p-2 border rounded bg-background"
+                      required
                     >
                       <option value="EASY">Easy</option>
                       <option value="INTERMEDIATE">Intermediate</option>
@@ -383,6 +402,7 @@ const BusinessProfilePage: React.FC = () => {
                           timeline: e.target.value,
                         })
                       }
+                      required
                     />
                     <Input
                       placeholder="Tags (comma-separated)"
@@ -390,15 +410,26 @@ const BusinessProfilePage: React.FC = () => {
                       onChange={(e) =>
                         setNewProject({ ...newProject, tags: e.target.value })
                       }
+                      required
                     />
-                    <Button onClick={handleCreateProject} className="w-full">
-                      <Plus className="mr-2" /> Create Project
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        "Creating..."
+                      ) : (
+                        <>
+                          <Plus className="mr-2" /> Create Project
+                        </>
+                      )}
                     </Button>
                   </form>
+                  {error && <p className="text-red-500 mt-2">{error}</p>}
                 </CardContent>
               </Card>
 
-              {/* Projects Card */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-bold text-primary">
@@ -417,7 +448,7 @@ const BusinessProfilePage: React.FC = () => {
                         <p className="text-sm text-muted-foreground mb-2">
                           {project.content.substring(0, 100)}...
                         </p>
-                        <div className="flex justify-between items-center mb-2 ">
+                        <div className="flex justify-between items-center mb-2">
                           <Badge variant="secondary">
                             {project.difficulty}
                           </Badge>
@@ -441,29 +472,43 @@ const BusinessProfilePage: React.FC = () => {
                             <User className="mr-2" /> View Applied Professors
                           </Button>
                         )}
-                        {project.appliedProfessors &&
-                          project.appliedProfessors.length > 0 && (
+                        {appliedProfessorsMap[project.id]?.length === 0 && (
+                          <p className="text-muted-foreground">
+                            No professors applied yet
+                          </p>
+                        )}
+                        {appliedProfessorsMap[project.id]?.length > 0 &&
+                          project.status === "OPEN" && (
                             <div className="mb-2">
                               <h4 className="font-semibold">
                                 Applied Professors:
                               </h4>
                               <ul>
-                                {project.appliedProfessors.map(
-                                  (professor: AppliedProfessor) => (
+                                {appliedProfessorsMap[project.id].map(
+                                  (professor) => (
                                     <li
-                                      key={professor.id}
-                                      className="flex justify-between items-center"
+                                      key={professor.professorId}
+                                      className="flex flex-col mb-2 p-2 bg-secondary rounded-md"
                                     >
-                                      <span>{professor.name}</span>
+                                      <span className="font-semibold">
+                                        {professor.name}
+                                      </span>
+                                      <span className="text-sm">
+                                        {professor.email}
+                                      </span>
+                                      <span className="text-sm">
+                                        {professor.phoneNumber}
+                                      </span>
                                       <Button
                                         onClick={() =>
                                           handleChangeProjectStatus(
                                             project.id,
                                             "ONGOING",
-                                            professor.id
+                                            professor.professorId
                                           )
                                         }
                                         size="sm"
+                                        className="mt-2"
                                       >
                                         Select
                                       </Button>
@@ -488,7 +533,6 @@ const BusinessProfilePage: React.FC = () => {
                   </ul>
                 </CardContent>
               </Card>
-
               {/* Project Tags Card */}
               <Card>
                 <CardHeader>

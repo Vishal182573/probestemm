@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Footer } from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/Navbar";
 import NotificationsComponent from "@/components/shared/Notifications";

@@ -283,7 +283,7 @@ const BlogPostPage = () => {
           <p className="text-lg mb-6">{blogPost.content}</p>
           <div className="flex items-center space-x-4">
             <Button
-              variant="outline"
+              variant="default"
               className={`flex items-center ${
                 userInteraction === "like" ? "bg-blue-100" : ""
               }`}
@@ -293,7 +293,7 @@ const BlogPostPage = () => {
               {blogPost.likes}
             </Button>
             <Button
-              variant="outline"
+              variant="default"
               className={`flex items-center ${
                 userInteraction === "dislike" ? "bg-red-100" : ""
               }`}
@@ -343,7 +343,7 @@ const BlogPostPage = () => {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
-              className="flex-grow p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#82CAFF]"
+              className="flex-grow p-2 rounded-lg border bg-current focus:outline-none focus:ring-2 focus:ring-[#82CAFF] bg-ba"
             />
             <Button
               type="submit"

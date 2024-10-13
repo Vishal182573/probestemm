@@ -1,6 +1,8 @@
-"use client"
-import { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Rocket,
-  Calendar,
+  Mail,
   User,
   Clock,
   XCircle,
@@ -24,99 +26,155 @@ import {
   GraduationCap,
 } from "lucide-react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 interface Project {
-  id: number;
   title: string;
+  id: string;
+  topic: string;
+  content: string;
   description: string;
   timeline: string;
-  status: "Open" | "Closed";
-  professor?: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  status: "OPEN" | "ONGOING" | "CLOSED" | "APPLIED";
+  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
   tags: string[];
+  type: "BUSINESS" | "PROFESSOR";
+  business?: { id: string; companyName: string };
+  professor?: { id: string; fullName: string; email: string };
 }
 
 const ProjectsPage = () => {
-  const [projects] = useState<Project[]>([
-    {
-      id: 1,
-      title: "AI-Powered Smart City",
-      description:
-        "Develop an AI system to optimize urban infrastructure and services.",
-      timeline: "3 months",
-      status: "Open",
-      professor: "Dr. Emily Johnson",
-      difficulty: "Advanced",
-      tags: ["AI", "Urban Planning", "IoT"],
-    },
-    {
-      id: 2,
-      title: "Quantum Computing Algorithms",
-      description:
-        "Research and implement novel quantum algorithms for cryptography.",
-      timeline: "6 months",
-      status: "Closed",
-      difficulty: "Advanced",
-      tags: ["Quantum Computing", "Cryptography", "Algorithms"],
-    },
-    {
-      id: 3,
-      title: "Sustainable Energy Solutions",
-      description:
-        "Design and prototype renewable energy systems for developing regions.",
-      timeline: "4 months",
-      status: "Open",
-      professor: "Dr. Sarah Martinez",
-      difficulty: "Intermediate",
-      tags: ["Renewable Energy", "Sustainability", "Engineering"],
-    },
-  ]);
+  const [businessProjects, setBusinessProjects] = useState<Project[]>([]);
+  const [professorProjects, setProfessorProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    const id = localStorage.getItem("userId");
+    setUserRole(role);
+    setUserId(id);
+
+    const fetchProjects = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Authentication token is missing. Please log in again.");
+          setLoading(false);
+          return;
+        }
+
+        const [businessResponse, professorResponse] = await Promise.all([
+          axios.get(`${API_URL}/project/business`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_URL}/project/professor`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setBusinessProjects(businessResponse.data);
+        setProfessorProjects(professorResponse.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        setError("Failed to load projects. Please try again.");
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const applyToProject = async (
+    projectId: string,
+    projectType: "BUSINESS" | "PROFESSOR"
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !userId || !userRole) {
+        setError("User information is missing. Please log in again.");
+        return;
+      }
+
+      const endpoint =
+        projectType === "BUSINESS" ? "business/apply" : "professor/apply";
+
+      const response = await axios.post(
+        `${API_URL}/project/${endpoint}`,
+        {
+          projectId,
+          [userRole === "professor" ? "professorId" : "studentId"]: userId,
+          [userRole === "professor" ? "professorName" : "studentName"]:
+            localStorage.getItem("fullName"),
+          [userRole === "professor" ? "professorEmail" : "studentEmail"]:
+            localStorage.getItem("email"),
+          [userRole === "professor"
+            ? "professorPhoneNumber"
+            : "studentPhoneNumber"]: localStorage.getItem("phoneNumber"),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 200) {
+        // Update the project status in the UI
+        const updateProjects = (projects: Project[]): Project[] =>
+          projects.map((p) =>
+            p.id === projectId ? { ...p, status: "APPLIED" } : p
+          );
+
+        if (projectType === "BUSINESS") {
+          setBusinessProjects((prevProjects) => updateProjects(prevProjects));
+        } else {
+          setProfessorProjects((prevProjects) => updateProjects(prevProjects));
+        }
+      }
+    } catch (error) {
+      console.error("Error applying to project:", error);
+      setError("Failed to apply to the project. Please try again.");
+    }
+  };
+  if (loading) {
+    return <div>Loading projects...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-950 text-white">
       <Navbar />
       <main className="flex-grow">
         <ProjectsHero />
-        <Tabs defaultValue="professors" className="max-w-6xl mx-auto px-4 ">
-          <TabsList className="mb-8 ">
-            <TabsTrigger
-              className="text-lg
-              font-semibold
-              px-4
-              py-2
-              rounded-md
-              bg-gray-800
-              hover:bg-gray-700
-              cursor-pointer
-              transition-all
-              duration-300"
-              value="professors"
-            >
-              {<GraduationCap className="mr-2 h-5 w-5" />}
-              For Professors
+        <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4">
+          <TabsList className="mb-8">
+            <TabsTrigger value="business">
+              <GraduationCap className="mr-2 h-5 w-5" />
+              Business Projects
             </TabsTrigger>
-
-            <TabsTrigger
-              className="text-lg
-              font-semibold
-              px-4
-              py-2
-              rounded-md
-              bg-gray-800
-              hover:bg-gray-700
-              cursor-pointer
-              transition-all
-              duration-300"
-              value="students"
-            >
-              {<UserCircle className="mr-2 h-5 w-5" />}
-              For Students
+            <TabsTrigger value="professor">
+              <UserCircle className="mr-2 h-5 w-5" />
+              Professor Projects
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="professors">
-            <ProfessorProjectsList projects={projects} />
+          <TabsContent value="business">
+            <ProjectsList
+              projects={businessProjects}
+              userRole={userRole}
+              onApply={(id) => applyToProject(id, "BUSINESS")}
+              projectType="BUSINESS"
+            />
           </TabsContent>
-          <TabsContent value="students">
-            <StudentProjectsList projects={projects} />
+          <TabsContent value="professor">
+            <ProjectsList
+              projects={professorProjects}
+              userRole={userRole}
+              onApply={(id) => applyToProject(id, "PROFESSOR")}
+              projectType="PROFESSOR"
+            />
           </TabsContent>
         </Tabs>
       </main>
@@ -165,15 +223,32 @@ const ProjectsHero = () => {
   );
 };
 
-const ProfessorProjectsList = ({ projects }: { projects: Project[] }) => {
+const ProjectsList = ({
+  projects,
+  userRole,
+  onApply,
+  projectType,
+}: {
+  projects: Project[];
+  userRole: string | null;
+  onApply: (id: string) => void;
+  projectType: "BUSINESS" | "PROFESSOR";
+}) => {
+  const filteredProjects = projects.filter(
+    (project) => project.type === projectType
+  );
+
   return (
     <section className="py-20">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project, index) => (
-          <ProfessorProjectCard
+        {filteredProjects.map((project, index) => (
+          <ProjectCard
             key={project.id}
             project={project}
             index={index}
+            userRole={userRole}
+            onApply={onApply}
+            projectType={projectType}
           />
         ))}
       </div>
@@ -181,18 +256,28 @@ const ProfessorProjectsList = ({ projects }: { projects: Project[] }) => {
   );
 };
 
-const ProfessorProjectCard = ({
+const ProjectCard = ({
   project,
   index,
+  userRole,
+  onApply,
+  projectType,
 }: {
   project: Project;
   index: number;
+  userRole: string | null;
+  onApply: (id: string) => void;
+  projectType: "BUSINESS" | "PROFESSOR";
 }) => {
   const difficultyColor = {
-    Beginner: "bg-green-500",
-    Intermediate: "bg-yellow-500",
-    Advanced: "bg-red-500",
+    EASY: "bg-green-500",
+    INTERMEDIATE: "bg-yellow-500",
+    HARD: "bg-red-500",
   };
+
+  const canApply =
+    (projectType === "BUSINESS" && userRole === "professor") ||
+    (projectType === "PROFESSOR" && userRole === "student");
 
   return (
     <motion.div
@@ -219,28 +304,40 @@ const ProfessorProjectCard = ({
         <CardContent className="pt-4">
           <div className="space-y-2">
             <div className="flex items-center text-gray-300">
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>Timeline: {project.timeline}</span>
-            </div>
-            <div className="flex items-center text-gray-300">
               <User className="mr-2 h-4 w-4" />
               <span>
-                {project.professor
-                  ? `Professor: ${project.professor}`
-                  : "Professor: Not Assigned"}
+                {project.status === "ONGOING" || project.status === "CLOSED"
+                  ? `Professor: ${project.professor?.fullName}`
+                  : "Professor not assigned"}
               </span>
             </div>
+            {(project.status === "ONGOING" || project.status === "CLOSED") &&
+              project.professor && (
+                <div className="flex items-center text-gray-300">
+                  <Mail className="mr-2 h-4 w-4" />
+                  <span>Email: {project.professor.email}</span>
+                </div>
+              )}
+
             <div className="flex items-center">
               <Clock className="mr-2 h-4 w-4" />
               <span
                 className={
-                  project.status === "Open" ? "text-green-400" : "text-red-400"
+                  project.status === "OPEN" ? "text-green-400" : "text-red-400"
                 }
               >
                 Status: {project.status}
               </span>
             </div>
           </div>
+          <div className="mt-4">
+            <h4 className="font-semibold">Topic:</h4>
+            <p>{project.topic}</p>
+          </div>
+          <div className="mt-4">
+            <h4 className="font-semibold">Content:</h4>
+            <p>{project.content}</p>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tags.map((tag, i) => (
               <Badge
@@ -254,115 +351,29 @@ const ProfessorProjectCard = ({
           </div>
         </CardContent>
         <CardFooter>
-          <Button
-            className={`w-full ${
-              project.status === "Open"
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-gray-600 hover:bg-gray-700 cursor-not-allowed"
-            }`}
-            disabled={project.status === "Closed"}
-          >
-            {project.status === "Open" ? (
-              <>
-                Apply Now
-                <Rocket className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Closed
-                <XCircle className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    </motion.div>
-  );
-};
-
-const StudentProjectsList = ({ projects }: { projects: Project[] }) => {
-  return (
-    <section className="py-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project, index) => (
-          <StudentProjectCard
-            key={project.id}
-            project={project}
-            index={index}
-          />
-        ))}
-      </div>
-    </section>
-  );
-};
-
-const StudentProjectCard = ({
-  project,
-  index,
-}: {
-  project: Project;
-  index: number;
-}) => {
-  const difficultyColor = {
-    Beginner: "bg-green-500",
-    Intermediate: "bg-yellow-500",
-    Advanced: "bg-red-500",
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-    >
-      <Card className="bg-gray-900 border-blue-800 overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-blue-800 to-purple-800 pb-2">
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl font-bold text-white">
-              {project.title}
-            </CardTitle>
-            <Badge
-              className={`${difficultyColor[project.difficulty]} text-white`}
+          {canApply && (
+            <Button
+              className={`w-full ${
+                project.status === "OPEN"
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-600 hover:bg-gray-700 cursor-not-allowed"
+              }`}
+              disabled={project.status !== "OPEN"}
+              onClick={() => onApply(project.id)}
             >
-              {project.difficulty}
-            </Badge>
-          </div>
-          <CardDescription className="text-gray-200 mt-2">
-            {project.description}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-300">
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>Timeline: {project.timeline}</span>
-            </div>
-            <div className="flex items-center text-gray-300">
-              <User className="mr-2 h-4 w-4" />
-              <span>
-                {project.professor
-                  ? `Professor: ${project.professor}`
-                  : "Professor: Not Assigned"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {project.tags.map((tag, i) => (
-              <Badge
-                key={i}
-                variant="secondary"
-                className="bg-blue-600 text-white"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700">
-            Apply Now
-            <Rocket className="ml-2 h-4 w-4" />
-          </Button>
+              {project.status === "OPEN" ? (
+                <>
+                  Apply Now
+                  <Rocket className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  {project.status}
+                  <XCircle className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </motion.div>

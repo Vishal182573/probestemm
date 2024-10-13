@@ -48,6 +48,9 @@ export const LoginForm: React.FC = () => {
       localStorage.setItem("userId", user.id);
       localStorage.setItem("role", role);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("fullName", user.fullName);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("phoneNumber", user.phoneNumber);
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -48,35 +48,59 @@ interface PaginationInfo {
 }
 
 const categories: { [key: string]: string[] } = {
-  Science: ["Physics", "Chemistry", "Biology", "Earth Sciences", "Space Science"],
+  Science: [
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Earth Sciences",
+    "Space Science",
+  ],
   Technology: ["Computer Science", "Engineering"],
-  Engineering: ["Electrical Engineering", "Mechanical Engineering", "Civil Engineering", "Chemical Engineering"],
+  Engineering: [
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+  ],
   Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": ["Data Engineering", "Robotics", "Biotechnology", "Environmental Technology", "Space Technology", "Pharmaceutical Engineering"],
+  "Engineering Technology": [
+    "Data Engineering",
+    "Robotics",
+    "Biotechnology",
+    "Environmental Technology",
+    "Space Technology",
+    "Pharmaceutical Engineering",
+  ],
 };
 
 const DiscussionForum: React.FC = () => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [status, setStatus] = useState("all");
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [subcategory, setSubcategory] = useState<string | undefined>(undefined);
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
+
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
     pageSize: 10,
     totalCount: 0,
   });
+  const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     fetchDiscussions();
+    const role = localStorage.getItem("role");
+    setUserRole(role);
   }, [sortBy, status, category, subcategory, pagination.currentPage]);
 
   const fetchDiscussions = async () => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const params: any = {
         page: pagination.currentPage,
         pageSize: pagination.pageSize,
@@ -87,7 +111,9 @@ const DiscussionForum: React.FC = () => {
         searchString: searchQuery,
       };
 
-      const response = await axios.get(`${API_URL}/discussion/search`, { params });
+      const response = await axios.get(`${API_URL}/discussion/search`, {
+        params,
+      });
       setDiscussions(response.data.discussions);
       setPagination(response.data.pagination);
     } catch (error) {
@@ -96,11 +122,14 @@ const DiscussionForum: React.FC = () => {
   };
 
   const handleSearch = () => {
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchDiscussions();
   };
 
-  const handleVote = async (discussionId: string, voteType: "UPVOTE" | "DOWNVOTE") => {
+  const handleVote = async (
+    discussionId: string,
+    voteType: "UPVOTE" | "DOWNVOTE"
+  ) => {
     try {
       await axios.post(`${API_URL}/discussion/vote`, {
         discussionId,
@@ -119,14 +148,15 @@ const DiscussionForum: React.FC = () => {
   };
 
   const handlePageChange = (newPage: number) => {
-    setPagination(prev => ({ ...prev, currentPage: newPage }));
+    setPagination((prev) => ({ ...prev, currentPage: newPage }));
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: "url('https://i.pinimg.com/736x/08/9b/eb/089bebd775f58eea689495a3245b1c86.jpg')",
+        backgroundImage:
+          "url('https://i.pinimg.com/736x/08/9b/eb/089bebd775f58eea689495a3245b1c86.jpg')",
         backgroundBlendMode: "overlay",
       }}
     >
@@ -167,12 +197,15 @@ const DiscussionForum: React.FC = () => {
           >
             Search
           </Button>
-          <Button
-            onClick={() => router.push("/ask-question")}
-            className="bg-green-600 hover:bg-green-700 text-white flex items-center mb-4 sm:mb-0"
-          >
-            <FaPlus className="mr-2" /> Ask Question
-          </Button>
+
+          {userRole === "student" && (
+            <Button
+              onClick={() => router.push("/ask-question")}
+              className="bg-green-600 hover:bg-green-700 text-white flex items-center mb-4 sm:mb-0"
+            >
+              <FaPlus className="mr-2" /> Ask Question
+            </Button>
+          )}
         </motion.div>
 
         <motion.div
@@ -262,8 +295,8 @@ const DiscussionForum: React.FC = () => {
               >
                 <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start space-x-4">
                   <div className="flex flex-col items-center mb-4 sm:mb-0">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="px-2 py-1 mb-2"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -275,8 +308,8 @@ const DiscussionForum: React.FC = () => {
                     <span className="text-sm font-medium text-gray-800">
                       {discussion.upvotes - discussion.downvotes}
                     </span>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="px-2 py-1 mt-2"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -297,15 +330,21 @@ const DiscussionForum: React.FC = () => {
                       </div>
                       <div className="flex items-center">
                         <FaClock className="mr-1" />
-                        <span>{new Date(discussion.createdAt).toLocaleString()}</span>
+                        <span>
+                          {new Date(discussion.createdAt).toLocaleString()}
+                        </span>
                       </div>
                       <div
                         className={`flex items-center ${
-                          discussion.status === "ANSWERED" ? "text-green-600" : "text-blue-600"
+                          discussion.status === "ANSWERED"
+                            ? "text-green-600"
+                            : "text-blue-600"
                         }`}
                       >
                         <span>
-                          {discussion.status === "ANSWERED" ? "Answered" : "Unanswered"}
+                          {discussion.status === "ANSWERED"
+                            ? "Answered"
+                            : "Unanswered"}
                         </span>
                       </div>
                       <div className="flex items-center">
@@ -313,7 +352,9 @@ const DiscussionForum: React.FC = () => {
                         <span>{discussion.answerCount} answers</span>
                       </div>
                       <div className="flex items-center">
-                        <span>{discussion.category} - {discussion.subcategory}</span>
+                        <span>
+                          {discussion.category} - {discussion.subcategory}
+                        </span>
                       </div>
                     </div>
                   </div>
