@@ -17,6 +17,9 @@ import {
   GraduationCap,
   Video,
   BookOpen,
+  Plus,
+  User,
+  Loader2,
 } from "lucide-react";
 import {
   Dialog,
@@ -34,10 +37,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Textarea } from "@/components/ui/textarea";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -81,6 +86,25 @@ interface Webinar {
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
 }
 
+interface Project {
+  id: string;
+  topic: string;
+  content: string;
+  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+  timeline: string;
+  tags: string[];
+  status: "OPEN" | "ONGOING" | "CLOSED";
+  type: "PROFESSOR";
+}
+
+interface AppliedStudent {
+  projectId: string;
+  studentId: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+}
+
 const ProfessorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<Professor | null>(null);
@@ -88,6 +112,13 @@ const ProfessorProfilePage: React.FC = () => {
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+  const [appliedStudentsMap, setAppliedStudentsMap] = useState<{
+    [projectId: string]: AppliedStudent[];
+  }>({});
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [isLoadingApplicants, setIsLoadingApplicants] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -99,17 +130,22 @@ const ProfessorProfilePage: React.FC = () => {
           return;
         }
 
-        const [professorResponse, webinarsResponse] = await Promise.all([
-          axios.get(`${API_URL}/professors/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/webinars/professor/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+        const [professorResponse, webinarsResponse, projectsResponse] =
+          await Promise.all([
+            axios.get(`${API_URL}/professors/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/webinars/professor/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/project/professor/${id}/projects`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
         setProfessor(professorResponse.data);
         setWebinars(webinarsResponse.data);
+        setProjects(projectsResponse.data);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -155,6 +191,79 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  const handleCreateProject = async (projectData: any) => {
+    setIsCreatingProject(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_URL}/project/professor`,
+        { ...projectData, type: "PROFESSOR", professorId: id },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setProjects([...projects, response.data]);
+      setIsProjectDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      setError("Failed to create project. Please try again.");
+    } finally {
+      setIsCreatingProject(false);
+    }
+  };
+
+  const fetchAppliedStudents = async (projectId: string) => {
+    setIsLoadingApplicants(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/project/professor/${projectId}/applicants`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setAppliedStudentsMap((prevMap) => ({
+        ...prevMap,
+        [projectId]: response.data,
+      }));
+    } catch (error) {
+      console.error("Error fetching applied students:", error);
+      setError("Failed to fetch applied students. Please try again.");
+    } finally {
+      setIsLoadingApplicants(false);
+    }
+  };
+  const handleChangeProjectStatus = async (
+    projectId: string,
+    status: "OPEN" | "ONGOING" | "CLOSED",
+    selectedStudentId?: string
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${API_URL}/project/professor/${projectId}/status`,
+        { status, selectedStudentId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setProjects((prevProjects) =>
+        prevProjects.map((project) =>
+          project.id === projectId ? { ...project, status } : project
+        )
+      );
+
+      if (status === "ONGOING" || status === "CLOSED") {
+        setAppliedStudentsMap((prevMap) => {
+          const newMap = { ...prevMap };
+          delete newMap[projectId];
+          return newMap;
+        });
+      }
+    } catch (error) {
+      console.error("Error changing project status:", error);
+      setError("Failed to change project status. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen">
@@ -171,6 +280,241 @@ const ProfessorProfilePage: React.FC = () => {
   if (!professor) {
     return <div>Professor not found</div>;
   }
+
+  const renderProjectsTab = () => (
+    <TabsContent value="projects">
+      <motion.div
+        className="space-y-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-primary">
+              <Briefcase className="mr-2" />
+              My Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <Dialog
+                  open={isProjectDialogOpen}
+                  onOpenChange={setIsProjectDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2" />
+                      Create Project
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create a New Project</DialogTitle>
+                    </DialogHeader>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const projectData = {
+                          ...Object.fromEntries(formData),
+                          tags: formData
+                            .get("tags")
+                            ?.toString()
+                            .split(",")
+                            .map((tag) => tag.trim()),
+                          type: "PROFESSOR",
+                        };
+                        handleCreateProject(projectData);
+                      }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <Label htmlFor="project-topic">Project Topic</Label>
+                        <Input
+                          id="project-topic"
+                          name="topic"
+                          placeholder="Enter project topic"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="project-content">Project Content</Label>
+                        <Textarea
+                          id="project-content"
+                          name="content"
+                          placeholder="Enter project content"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="project-difficulty">Difficulty</Label>
+                        <Select name="difficulty" required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select difficulty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="EASY">Easy</SelectItem>
+                            <SelectItem value="INTERMEDIATE">
+                              Intermediate
+                            </SelectItem>
+                            <SelectItem value="HARD">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="project-timeline">Timeline</Label>
+                        <Input
+                          id="project-timeline"
+                          name="timeline"
+                          type="date"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="project-tags">Tags</Label>
+                        <Input
+                          id="project-tags"
+                          name="tags"
+                          placeholder="Enter tags (comma-separated)"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" disabled={isCreatingProject}>
+                        {isCreatingProject ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Project"
+                        )}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              {["OPEN", "ONGOING", "CLOSED"].map((status) => (
+                <div key={status}>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {status.charAt(0) + status.slice(1).toLowerCase()} Projects
+                  </h3>
+                  <ul className="space-y-4">
+                    {projects
+                      .filter((project) => project.status === status)
+                      .map((project) => (
+                        <li
+                          key={project.id}
+                          className="border-b pb-4 last:border-b-0"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-lg font-semibold">
+                              {project.topic}
+                            </h4>
+                            <Badge
+                              variant={
+                                status === "CLOSED" ? "outline" : "secondary"
+                              }
+                            >
+                              {status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {project.content.substring(0, 100)}...
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {project.tags.map((tag, index) => (
+                              <Badge key={index} variant="outline">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                          {status === "OPEN" && (
+                            <Button
+                              onClick={() => fetchAppliedStudents(project.id)}
+                              className="mr-2"
+                              disabled={isLoadingApplicants}
+                            >
+                              {isLoadingApplicants ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                <>
+                                  <User className="mr-2" /> View Applicants
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          {status === "ONGOING" && (
+                            <Button
+                              onClick={() =>
+                                handleChangeProjectStatus(project.id, "CLOSED")
+                              }
+                            >
+                              Close Project
+                            </Button>
+                          )}
+                          {appliedStudentsMap[project.id]?.length > 0 && (
+                            <div className="mt-4">
+                              <h5 className="font-semibold mb-2">
+                                Applied Students:
+                              </h5>
+                              <ul className="space-y-2">
+                                {appliedStudentsMap[project.id].map(
+                                  (student) => (
+                                    <li
+                                      key={student.studentId}
+                                      className="flex items-center justify-between bg-secondary p-2 rounded"
+                                    >
+                                      <div>
+                                        <span className="font-medium">
+                                          {student.name}
+                                        </span>
+                                        <span className="text-sm text-muted-foreground ml-2">
+                                          {student.email}
+                                        </span>
+                                      </div>
+                                      {status === "OPEN" && (
+                                        <Button
+                                          onClick={() =>
+                                            handleChangeProjectStatus(
+                                              project.id,
+                                              "ONGOING",
+                                              student.studentId
+                                            )
+                                          }
+                                          size="sm"
+                                        >
+                                          Select
+                                        </Button>
+                                      )}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                          {status === "OPEN" &&
+                            (!appliedStudentsMap[project.id] ||
+                              appliedStudentsMap[project.id].length === 0) && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                No students have applied yet.
+                              </p>
+                            )}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </TabsContent>
+  );
 
   const tabItems = [
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
@@ -346,64 +690,6 @@ const ProfessorProfilePage: React.FC = () => {
                         </ul>
                       ) : (
                         <p>No positions listed yet.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent value="projects">
-                <motion.div
-                  className="space-y-8"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
-                        <Briefcase className="mr-2" />
-                        My Projects
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {professor.projects.length > 0 ? (
-                        <div className="space-y-6">
-                          {["OPEN", "ONGOING", "CLOSED"].map((status) => (
-                            <div key={status}>
-                              <h3 className="text-xl font-semibold mb-2">
-                                {status.charAt(0) +
-                                  status.slice(1).toLowerCase()}{" "}
-                                Projects
-                              </h3>
-                              <ul className="space-y-2">
-                                {professor.projects
-                                  .filter(
-                                    (project) => project.status === status
-                                  )
-                                  .map((project) => (
-                                    <li
-                                      key={project.id}
-                                      className="flex items-center justify-between"
-                                    >
-                                      <span>{project.topic}</span>
-                                      <Badge
-                                        variant={
-                                          status === "CLOSED"
-                                            ? "outline"
-                                            : "secondary"
-                                        }
-                                      >
-                                        {status}
-                                      </Badge>
-                                    </li>
-                                  ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No projects listed yet.</p>
                       )}
                     </CardContent>
                   </Card>
@@ -685,6 +971,7 @@ const ProfessorProfilePage: React.FC = () => {
                   </Card>
                 </motion.div>
               </TabsContent>
+              {renderProjectsTab()}
             </Tabs>
           </div>
         </section>

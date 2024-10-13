@@ -137,7 +137,14 @@ const ProjectsPage = () => {
     }
   };
   if (loading) {
-    return <div>Loading projects...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-300">
+          <Rocket className="h-8 w-8 r-2 mr-2 " />
+          Loading projects...
+        </p>
+      </div>
+    );
   }
 
   if (error) {

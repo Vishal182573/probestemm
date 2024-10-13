@@ -63,9 +63,11 @@ const getProfessorById = async (req: Request, res: Response) => {
           },
         },
         projects: {
+          where: { type: "PROFESSOR" },
           select: {
             id: true,
             topic: true,
+            content: true,
             status: true,
           },
         },

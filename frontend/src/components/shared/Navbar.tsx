@@ -1,31 +1,52 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User } from "lucide-react"; // Importing User icon
+import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<{
-    photoUrl?: string;
-    name?: string;
     id?: string;
-  } | null>(null); // State to store user data
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    role?: string;
+    imageUrl?: string;
+    photoUrl?: string;
+    profileImageUrl?: string;
+  } | null>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  // Check for token and user details in localStorage when the component mounts
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
+    const userString = localStorage.getItem("user");
+    const role = localStorage.getItem("role");
 
-    if (token && userData) {
+    if (token && userString && role) {
       setIsLoggedIn(true);
-      setUser(JSON.parse(userData)); // Parse user data from localStorage
+      const userData = JSON.parse(userString);
+      setUser({ ...userData, role });
     }
   }, []);
+
+  const getProfileImageSrc = () => {
+    if (!user || !user.role) return "/user.png";
+
+    switch (user.role) {
+      case "student":
+        return user.imageUrl || "/user.png";
+      case "professor":
+        return user.photoUrl || "/user.png";
+      case "business":
+        return user.profileImageUrl || "/user.png";
+      default:
+        return "/user.png";
+    }
+  };
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -45,15 +66,13 @@ export const Navbar: React.FC = () => {
             <NavLink to="/projects">Projects</NavLink>
             <NavLink to="/about">About</NavLink>
             {isLoggedIn && user ? (
-              <Link
-                href={`/${localStorage.getItem("role")}-profile/${user.id}`}
-              >
+              <Link href={`/${user.role}-profile/${user.id}`}>
                 <Image
-                  src={user.photoUrl || "/fallback-profile.png"} // Fallback image if photoUrl is missing
-                  alt={user.name || "User Profile"} // Alt text with fallback to "User Profile"
+                  src={getProfileImageSrc()}
+                  alt={user.fullName || "User Profile"}
                   width={40}
                   height={40}
-                  className="rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-600 transition-all" // Improved styling
+                  className="rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-600 transition-all"
                 />
               </Link>
             ) : (
@@ -78,7 +97,7 @@ export const Navbar: React.FC = () => {
               <MobileNavLink to="/webinars">Webinars</MobileNavLink>
               <MobileNavLink to="/about">About</MobileNavLink>
               {isLoggedIn && user ? (
-                <Link href="/profile">
+                <Link href={`/${user.role}-profile/${user.id}`}>
                   <Button
                     variant="ghost"
                     className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
