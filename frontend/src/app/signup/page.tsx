@@ -1,5 +1,6 @@
 // SignupPage.tsx
 import React from "react";
+import Image from "next/image";
 import { Navbar } from "@/components/shared/Navbar";
 import { NewsAlert } from "@/components/shared/NewsAlert";
 import { SignupForm } from "@/components/shared/SignupForm";
@@ -20,9 +21,11 @@ const SignupPage: React.FC = () => {
               Connect with mentors, collaborate on projects, and accelerate your
               STEM career.
             </p>
-            <img
+            <Image
               src="https://raw.githubusercontent.com/alexperronnet/openai-svgs/main/svgs/04-artificial-intelligence.svg"
               alt="Signup illustration"
+              width={500}
+              height={500}
               className="w-full max-w-md"
             />
           </div>

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -69,7 +69,7 @@ const AskQuestion: React.FC = () => {
         throw new Error("No student ID found");
       }
 
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/discussion/create`,
         {
           title,
