@@ -16,6 +16,7 @@ interface Comment {
   id: string;
   content: string;
   createdAt: string;
+  userType: "STUDENT" | "PROFESSOR" | "BUSINESS";
   student?: {
     id: string;
     fullName: string;
@@ -24,6 +25,10 @@ interface Comment {
     id: string;
     fullName: string;
     title: string;
+  };
+  business?: {
+    id: string;
+    companyName: string;
   };
 }
 
@@ -34,11 +39,17 @@ interface BlogPost {
   likes: number;
   dislikes: number;
   comments: Comment[];
-  author: {
+  authorType: "PROFESSOR" | "BUSINESS";
+  professor?: {
     id: string;
     fullName: string;
     title: string;
     university: string;
+  };
+  business?: {
+    id: string;
+    companyName: string;
+    industry: string;
   };
 }
 
@@ -85,105 +96,51 @@ const BlogPostPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setUserInteraction(response.data.interaction);
+      setUserInteraction(response.data?.isLike ? "like" : "dislike");
     } catch (error) {
       console.error("Error fetching user interaction:", error);
     }
   };
 
-  const handleLike = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({ title: "Please log in to like blogs", variant: "destructive" });
-        return;
-      }
-
-      if (userInteraction === "like") {
-        // Remove like
-        await axios.delete(`${API_URL}/blogs/${id}/like`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUserInteraction(null);
-        setBlogPost((prev) =>
-          prev ? { ...prev, likes: prev.likes - 1 } : null
-        );
-        toast({ title: "Like removed" });
-      } else {
-        // Add like
-        await axios.post(
-          `${API_URL}/blogs/${id}/like`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setUserInteraction("like");
-        setBlogPost((prev) =>
-          prev
-            ? {
-                ...prev,
-                likes: prev.likes + 1,
-                dislikes:
-                  userInteraction === "dislike"
-                    ? prev.dislikes - 1
-                    : prev.dislikes,
-              }
-            : null
-        );
-        toast({ title: "Blog liked successfully" });
-      }
-    } catch (error) {
-      console.error("Error liking blog post:", error);
-      toast({ title: "Failed to update like", variant: "destructive" });
-    }
-  };
-
-  const handleDislike = async () => {
+  const handleLikeDislike = async (action: "like" | "dislike") => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         toast({
-          title: "Please log in to dislike blogs",
+          title: "Please log in to interact with blogs",
           variant: "destructive",
         });
         return;
       }
 
-      if (userInteraction === "dislike") {
-        // Remove dislike
-        await axios.delete(`${API_URL}/blogs/${id}/dislike`, {
+      let endpoint = `${API_URL}/blogs/${id}/${action}`;
+      let method = "POST";
+
+      if (userInteraction === action) {
+        // Remove like/dislike
+        endpoint = `${API_URL}/blogs/${id}/${action}`;
+        method = "DELETE";
+      } else if (userInteraction) {
+        // Change from like to dislike or vice versa
+        await axios.delete(`${API_URL}/blogs/${id}/${userInteraction}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserInteraction(null);
-        setBlogPost((prev) =>
-          prev ? { ...prev, dislikes: prev.dislikes - 1 } : null
-        );
-        toast({ title: "Dislike removed" });
-      } else {
-        // Add dislike
-        await axios.post(
-          `${API_URL}/blogs/${id}/dislike`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setUserInteraction("dislike");
-        setBlogPost((prev) =>
-          prev
-            ? {
-                ...prev,
-                dislikes: prev.dislikes + 1,
-                likes: userInteraction === "like" ? prev.likes - 1 : prev.likes,
-              }
-            : null
-        );
-        toast({ title: "Blog disliked successfully" });
       }
+
+      await axios({
+        method,
+        url: endpoint,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setUserInteraction(userInteraction === action ? null : action);
+      fetchBlogPost(); // Refetch to get updated likes/dislikes count
+      toast({
+        title: `Blog ${action === "like" ? "liked" : "disliked"} successfully`,
+      });
     } catch (error) {
-      console.error("Error disliking blog post:", error);
-      toast({ title: "Failed to update dislike", variant: "destructive" });
+      console.error(`Error ${action}ing blog post:`, error);
+      toast({ title: `Failed to ${action} blog`, variant: "destructive" });
     }
   };
 
@@ -277,8 +234,10 @@ const BlogPostPage = () => {
         <article className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h1 className="text-3xl font-bold mb-4">{blogPost.title}</h1>
           <p className="text-gray-600 mb-4">
-            By {blogPost.author.fullName}, {blogPost.author.title} at{" "}
-            {blogPost.author.university}
+            By {blogPost.professor?.fullName || blogPost.business?.companyName},{" "}
+            {blogPost.professor
+              ? `${blogPost.professor.title} at ${blogPost.professor.university}`
+              : `${blogPost.business?.industry}`}
           </p>
           <p className="text-lg mb-6">{blogPost.content}</p>
           <div className="flex items-center space-x-4">
@@ -287,7 +246,7 @@ const BlogPostPage = () => {
               className={`flex items-center ${
                 userInteraction === "like" ? "bg-blue-100" : ""
               }`}
-              onClick={handleLike}
+              onClick={() => handleLikeDislike("like")}
             >
               <ThumbsUp className="mr-2" size={18} />
               {blogPost.likes}
@@ -297,7 +256,7 @@ const BlogPostPage = () => {
               className={`flex items-center ${
                 userInteraction === "dislike" ? "bg-red-100" : ""
               }`}
-              onClick={handleDislike}
+              onClick={() => handleLikeDislike("dislike")}
             >
               <ThumbsDown className="mr-2" size={18} />
               {blogPost.dislikes}
@@ -312,27 +271,27 @@ const BlogPostPage = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold">
-                      {comment.student?.fullName || comment.professor?.fullName}
-                      {comment.student?.fullName && ", Student"}
-                      {comment.professor?.fullName && ", Professor"}
-
-                      {comment.professor?.title &&
-                        `, ${comment.professor.title}`}
+                      {comment.student?.fullName ||
+                        comment.professor?.fullName ||
+                        comment.business?.companyName}
+                      {comment.student
+                        ? " ,Student"
+                        : comment.professor
+                        ? " ,Professor"
+                        : " ,Business"}
                     </p>
                     <p>{comment.content}</p>
                     <p className="text-sm text-gray-500">
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteComment(comment.id)}
-                    >
-                      <Trash size={16} />
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
+                    <Trash size={16} />
+                  </Button>
                 </div>
               </li>
             ))}

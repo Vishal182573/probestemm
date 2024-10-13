@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,37 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-const CreateBlogPost = () => {
+type CreateBlogPostProps = unknown;
+
+const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || (role !== "professor" && role !== "business")) {
+      router.push("/login");
+      toast({
+        title: "Unauthorized",
+        description:
+          "Please log in as a professor or business to create a blog post.",
+        variant: "destructive",
+      });
+    }
+  }, [router, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
       const token = localStorage.getItem("token");
@@ -37,20 +54,34 @@ const CreateBlogPost = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
 
       console.log("Blog created:", response.data);
+      toast({
+        title: "Success",
+        description: "Your blog post has been created successfully.",
+      });
       router.push("/blogs");
     } catch (error) {
+      console.error("Error creating blog post:", error);
       if (axios.isAxiosError(error) && error.response) {
-        setError(
-          error.response.data?.error ||
-            "An error occurred while creating the blog post"
-        );
+        toast({
+          title: "Error",
+          description: `Failed to create blog post: ${
+            error.response.data.error || error.message
+          }`,
+          variant: "destructive",
+        });
       } else {
-        setError("An error occurred while creating the blog post");
+        toast({
+          title: "Error",
+          description:
+            "An unexpected error occurred while creating the blog post. Please try again.",
+          variant: "destructive",
+        });
       }
     } finally {
       setIsLoading(false);
@@ -58,7 +89,7 @@ const CreateBlogPost = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <Card className="w-full max-w-2xl mx-auto">
@@ -103,7 +134,6 @@ const CreateBlogPost = () => {
                   required
                 />
               </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
               <Button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white w-full"

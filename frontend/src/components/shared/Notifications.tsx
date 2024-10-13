@@ -62,16 +62,16 @@ const NotificationsComponent: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    return new Date(dateString).toLocaleDateString("en-US", options);
-  };
+  // const formatDate = (dateString: string) => {
+  //   const options: Intl.DateTimeFormatOptions = {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //   };
+  //   return new Date(dateString).toLocaleDateString("en-US", options);
+  // };
 
   return (
     <Card className="w-full max-w-3xl mx-auto bg-[#82CAFF] border-white">
@@ -131,15 +131,11 @@ const NotificationsComponent: React.FC = () => {
                         <p className="text-sm text-blue-500">
                           Topic: {webinar.topic}
                         </p>
-                        <p className="text-sm text-blue-500">
-                          Date: {formatDate(webinar.date)}
-                        </p>
+
                         <p className="text-sm text-blue-500">
                           Place: {webinar.place}
                         </p>
-                        <p className="text-sm text-blue-500">
-                          Max Attendees: {webinar.maxAttendees}
-                        </p>
+
                         <Badge
                           variant="outline"
                           className={`mt-2 ${
