@@ -12,24 +12,147 @@ import {
   applyToProfessorProject,
   getAppliedProfessors,
   getAppliedStudents,
-} from "../controllers/projectsController.ts";
+} from "../controllers/projectsController";
+import {
+  businessAuthMiddleware,
+  professorAuthMiddleware,
+  studentAuthMiddleware,
+} from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 // Business project routes
-router.post("/business", createBusinessProject); // create business projects
-router.get("/business", getAllBusinessProjects); // get all business projects
-router.patch("/business/:id/status", changeBusinessProjectStatus); // change status of project used while business select proffesors from list and also when project is completed from professor side
-router.get("/business/:businessId/projects", getProjectsByBusinessId); // get all business projects to show on business profile
-router.post("/business/apply", applyToBusinessProject); // route for professors to apply on projects posted by business
-router.get("/business/:projectId/applicants", getAppliedProfessors); // route for list of all professors that applied for the project
+router.post("/business", businessAuthMiddleware, async (req, res) => {
+  try {
+    await createBusinessProject(req, res);
+  } catch (error) {
+    console.error("Error in creating business project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
-// Professor project routes   .. ..............// same functions as above
-router.post("/professor", createProfessorProject);
-router.get("/professor", getAllProfessorProjects);
-router.patch("/professor/:id/status", changeProfessorProjectStatus);
-router.get("/professor/:professorId/projects", getProjectsByProfessorId);
-router.post("/professor/apply", applyToProfessorProject);
-router.get("/professor/:projectId/applicants", getAppliedStudents);
+router.get("/business", async (req, res) => {
+  try {
+    await getAllBusinessProjects(req, res);
+  } catch (error) {
+    console.error("Error in getting business projects:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch(
+  "/business/:id/status",
+
+  async (req, res) => {
+    try {
+      await changeBusinessProjectStatus(req, res);
+    } catch (error) {
+      console.error("Error in changing business project status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.get(
+  "/business/:businessId/projects",
+  businessAuthMiddleware,
+  async (req, res) => {
+    try {
+      await getProjectsByBusinessId(req, res);
+    } catch (error) {
+      console.error("Error in getting projects by business ID:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.post("/business/apply", professorAuthMiddleware, async (req, res) => {
+  try {
+    await applyToBusinessProject(req, res);
+  } catch (error) {
+    console.error("Error in applying to business project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get(
+  "/business/:projectId/applicants",
+
+  async (req, res) => {
+    try {
+      await getAppliedProfessors(req, res);
+    } catch (error) {
+      console.error("Error in getting applied professors:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Professor project routes
+router.post("/professor", professorAuthMiddleware, async (req, res) => {
+  try {
+    await createProfessorProject(req, res);
+  } catch (error) {
+    console.error("Error in creating professor project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/professor", async (req, res) => {
+  try {
+    await getAllProfessorProjects(req, res);
+  } catch (error) {
+    console.error("Error in getting professor projects:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch(
+  "/professor/:id/status",
+
+  async (req, res) => {
+    try {
+      await changeProfessorProjectStatus(req, res);
+    } catch (error) {
+      console.error("Error in changing professor project status:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.get(
+  "/professor/:professorId/projects",
+  professorAuthMiddleware,
+  async (req, res) => {
+    try {
+      await getProjectsByProfessorId(req, res);
+    } catch (error) {
+      console.error("Error in getting projects by professor ID:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.post("/professor/apply", studentAuthMiddleware, async (req, res) => {
+  try {
+    await applyToProfessorProject(req, res);
+  } catch (error) {
+    console.error("Error in applying to professor project:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get(
+  "/professor/:projectId/applicants",
+
+  async (req, res) => {
+    try {
+      await getAppliedStudents(req, res);
+    } catch (error) {
+      console.error("Error in getting applied students:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 export default router;

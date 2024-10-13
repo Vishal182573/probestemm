@@ -57,7 +57,16 @@ export const getAllBusinessProjects = async (req: Request, res: Response) => {
   try {
     const projects = await prisma.project.findMany({
       where: { type: ProjectType.BUSINESS },
-      include: { business: true },
+      include: {
+        business: true,
+        professor: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
     });
 
     res.status(200).json(projects);
@@ -180,7 +189,13 @@ export const getProjectsByProfessorId = async (req: Request, res: Response) => {
 // Apply to a business project (for professors)
 export const applyToBusinessProject = async (req: Request, res: Response) => {
   try {
-    const { projectId, professorId, professorName } = req.body;
+    const {
+      projectId,
+      professorId,
+      professorName,
+      professorEmail,
+      professorPhoneNumber,
+    } = req.body;
 
     const project = await prisma.project.findUnique({
       where: { id: projectId, type: ProjectType.BUSINESS },
@@ -190,16 +205,17 @@ export const applyToBusinessProject = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    const updatedProject = await prisma.project.update({
-      where: { id: projectId },
+    const appliedProfessor = await prisma.appliedProfessor.create({
       data: {
-        appliedProfessors: {
-          push: { id: professorId, name: professorName },
-        },
+        project: { connect: { id: projectId } },
+        professorId,
+        name: professorName,
+        email: professorEmail,
+        phoneNumber: professorPhoneNumber,
       },
     });
 
-    res.status(200).json(updatedProject);
+    res.status(200).json(appliedProfessor);
   } catch (error) {
     res.status(500).json({ error: "Failed to apply to project" });
   }
@@ -208,7 +224,13 @@ export const applyToBusinessProject = async (req: Request, res: Response) => {
 // Apply to a professor project (for students)
 export const applyToProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { projectId, studentId, studentName } = req.body;
+    const {
+      projectId,
+      studentId,
+      studentName,
+      studentEmail,
+      studentPhoneNumber,
+    } = req.body;
 
     const project = await prisma.project.findUnique({
       where: { id: projectId, type: ProjectType.PROFESSOR },
@@ -218,56 +240,61 @@ export const applyToProfessorProject = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    const updatedProject = await prisma.project.update({
-      where: { id: projectId },
+    const appliedStudent = await prisma.appliedStudent.create({
       data: {
-        appliedStudents: {
-          push: { id: studentId, name: studentName },
-        },
+        project: { connect: { id: projectId } },
+        studentId,
+        name: studentName,
+        email: studentEmail,
+        phoneNumber: studentPhoneNumber,
       },
     });
 
-    res.status(200).json(updatedProject);
+    res.status(200).json(appliedStudent);
   } catch (error) {
     res.status(500).json({ error: "Failed to apply to project" });
   }
 };
 
-// Get applied users for a business project
+// Get applied professors for a business project
 export const getAppliedProfessors = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId, type: ProjectType.BUSINESS },
-      select: { appliedProfessors: true },
+    const appliedProfessors = await prisma.appliedProfessor.findMany({
+      where: { projectId },
+      select: {
+        professorId: true,
+        name: true,
+        email: true,
+        phoneNumber: true,
+        createdAt: true,
+      },
     });
 
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-
-    res.status(200).json(project.appliedProfessors);
+    res.status(200).json(appliedProfessors);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch applied professors" });
   }
 };
 
-// Get applied users for a professor project
+// Get applied students for a professor project
 export const getAppliedStudents = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId, type: ProjectType.PROFESSOR },
-      select: { appliedStudents: true },
+    const appliedStudents = await prisma.appliedStudent.findMany({
+      where: { projectId },
+      select: {
+        studentId: true,
+        name: true,
+        email: true,
+        phoneNumber: true,
+        createdAt: true,
+      },
     });
 
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-
-    res.status(200).json(project.appliedStudents);
+    res.status(200).json(appliedStudents);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch applied students" });
   }

@@ -249,8 +249,8 @@ model Project {
   student     Student?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
   studentId   String?
 
-  appliedProfessors Json?  // For business projects
-  appliedStudents   Json?  // For professor projects
+  appliedProfessors AppliedProfessor[] // for business
+  appliedStudents   AppliedStudent[]  // for professor
 
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -343,4 +343,33 @@ model Contact {
   phoneNumber String?
   message   String
   createdAt DateTime @default(now())
+}
+
+
+model AppliedProfessor {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  professorId String
+  name        String
+  email       String
+  phoneNumber String
+
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, professorId])
+}
+
+model AppliedStudent {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  studentId   String
+  name        String
+  email       String
+  phoneNumber String
+
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, studentId])
 }
