@@ -1,9 +1,6 @@
 import express from "express";
 import blogController from "../controllers/blogsControllers";
-import {
-  authMiddleware,
-  professorAuthMiddleware,
-} from "../middleware/authMiddleware";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
@@ -27,7 +24,7 @@ router.get("/blogs/:id", async (req, res) => {
 });
 
 // Protected routes
-router.post("/blogs", professorAuthMiddleware, async (req, res) => {
+router.post("/blogs", authMiddleware, async (req, res) => {
   try {
     await blogController.createBlog(req, res);
   } catch (error) {
@@ -36,7 +33,7 @@ router.post("/blogs", professorAuthMiddleware, async (req, res) => {
   }
 });
 
-router.put("/blogs/:id", professorAuthMiddleware, async (req, res) => {
+router.put("/blogs/:id", async (req, res) => {
   try {
     await blogController.updateBlog(req, res);
   } catch (error) {
@@ -45,7 +42,7 @@ router.put("/blogs/:id", professorAuthMiddleware, async (req, res) => {
   }
 });
 
-router.delete("/blogs/:id", professorAuthMiddleware, async (req, res) => {
+router.delete("/blogs/:id", async (req, res) => {
   try {
     await blogController.deleteBlog(req, res);
   } catch (error) {

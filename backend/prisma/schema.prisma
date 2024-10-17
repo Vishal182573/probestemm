@@ -118,6 +118,8 @@ model Business {
   
   projects    Project[]
   answers     Answer[]
+  blogs       Blog[]
+  comments    Comment[]
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -194,8 +196,11 @@ model Blog {
   likes       Int       @default(0)
   dislikes    Int       @default(0)
   comments    Comment[]
-  author      Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  professorId String
+  authorType  BlogAuthorType?
+  professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
+  professorId String?
+  business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  businessId  String?
   
   blogLikes   BlogLike[]
 
@@ -205,7 +210,6 @@ model Blog {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
-
 
 model Comment {
   id          String    @id @default(cuid())
@@ -218,10 +222,13 @@ model Comment {
   studentId   String?
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
+  business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  businessId  String?
   
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+
 model BlogLike {
   id        String  @id @default(cuid())
   blog      Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
@@ -262,6 +269,11 @@ model Project {
 enum ProjectType {
   BUSINESS
   PROFESSOR
+}
+
+enum BlogAuthorType {
+  PROFESSOR
+  BUSINESS
 }
 
 model Webinar {

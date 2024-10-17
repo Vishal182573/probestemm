@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 
 const ContactForm: React.FC = () => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const [formData, setFormData] = useState({
     email: "",
     fullName: "",
@@ -15,9 +16,13 @@ const ContactForm: React.FC = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
+    null
+  );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -27,8 +32,14 @@ const ContactForm: React.FC = () => {
     try {
       await axios.post(`${API_URL}/contact`, formData);
       setSubmitStatus("success");
-      setFormData({ email: "", fullName: "", subject: "", phoneNumber: "", message: "" });
-    } catch (error) {
+      setFormData({
+        email: "",
+        fullName: "",
+        subject: "",
+        phoneNumber: "",
+        message: "",
+      });
+    } catch {
       setSubmitStatus("error");
     }
     setIsSubmitting(false);
@@ -135,10 +146,14 @@ const ContactForm: React.FC = () => {
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
                 {submitStatus === "success" && (
-                  <p className="text-green-600 text-center">Message sent successfully!</p>
+                  <p className="text-green-600 text-center">
+                    Message sent successfully!
+                  </p>
                 )}
                 {submitStatus === "error" && (
-                  <p className="text-red-600 text-center">Failed to send message. Please try again.</p>
+                  <p className="text-red-600 text-center">
+                    Failed to send message. Please try again.
+                  </p>
                 )}
               </form>
             </div>

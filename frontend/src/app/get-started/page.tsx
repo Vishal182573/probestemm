@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ const GetStartedPage = () => {
       description:
         "Empower the next generation of innovators with cutting-edge tools and global reach.",
       color: "from-purple-500 to-indigo-500",
-      link: "/teacher-profile", 
+      link: "/teacher-profile",
     },
     {
       title: "Join as Student",
@@ -60,7 +62,9 @@ const GetStartedPage = () => {
                 >
                   {profile.icon}
                 </div>
-                <h2 className="text-2xl font-bold mb-4">{profile.title}</h2>
+                <h2 className="text-2xl font-bold mb-4 text-black">
+                  {profile.title}
+                </h2>
                 <p className="text-gray-600 mb-6">{profile.description}</p>
                 <Link href={profile.link}>
                   <Button
