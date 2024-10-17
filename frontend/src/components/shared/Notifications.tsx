@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState, useEffect } from "react";
 import { Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,24 +62,13 @@ const NotificationsComponent: React.FC = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  // const formatDate = (dateString: string) => {
-  //   const options: Intl.DateTimeFormatOptions = {
-  //     year: "numeric",
-  //     month: "long",
-  //     day: "numeric",
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   };
-  //   return new Date(dateString).toLocaleDateString("en-US", options);
-  // };
-
   return (
-    <Card className="w-full max-w-3xl mx-auto bg-[#82CAFF] border-white">
+    <Card className="max-w-7xl mx-auto bg-white border-[#c1502e]">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-2xl font-bold text-blue-800">
+        <CardTitle className="text-4xl font-bold text-[#472014] font-caveat">
           Webinars
         </CardTitle>
-        <Badge variant="secondary" className="bg-blue-500 text-white">
+        <Badge variant="secondary" className="bg-[#c1502e] text-white">
           {filteredWebinars.length} Total
         </Badge>
       </CardHeader>
@@ -90,7 +79,7 @@ const NotificationsComponent: React.FC = () => {
               setFilter(value)
             }
           >
-            <SelectTrigger className="w-[180px] bg-white text-blue-800">
+            <SelectTrigger className="w-[180px] bg-white text-[#472014]">
               <SelectValue placeholder="Filter webinars" />
             </SelectTrigger>
             <SelectContent>
@@ -107,7 +96,7 @@ const NotificationsComponent: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center text-blue-600"
+              className="text-center text-[#472014]"
             >
               No webinars found
             </motion.p>
@@ -121,27 +110,25 @@ const NotificationsComponent: React.FC = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="bg-white border-blue-200">
+                  <Card className="bg-white border-[#c1502e]">
                     <CardContent className="flex items-center p-4">
-                      <Video className="h-6 w-6 text-blue-500 mr-4" />
+                      <Video className="h-6 w-6 text-[#c1502e] mr-4" />
                       <div>
-                        <h3 className="text-lg font-semibold text-blue-700">
+                        <h3 className="text-lg font-semibold text-[#472014]">
                           {webinar.title}
                         </h3>
-                        <p className="text-sm text-blue-500">
+                        <p className="text-sm text-[#686256]">
                           Topic: {webinar.topic}
                         </p>
-
-                        <p className="text-sm text-blue-500">
+                        <p className="text-sm text-[#686256]">
                           Place: {webinar.place}
                         </p>
-
                         <Badge
                           variant="outline"
                           className={`mt-2 ${
                             webinar.status === "APPROVED"
                               ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
+                              : "bg-[#c1502e] text-white"
                           }`}
                         >
                           {webinar.status}
@@ -163,7 +150,7 @@ const NotificationsComponent: React.FC = () => {
                 key={i}
                 onClick={() => paginate(i + 1)}
                 variant={currentPage === i + 1 ? "default" : "outline"}
-                className="mx-1 bg-blue-500 text-white hover:bg-blue-600"
+                className="mx-1 bg-[#c1502e] text-white hover:bg-[#472014]"
               >
                 {i + 1}
               </Button>

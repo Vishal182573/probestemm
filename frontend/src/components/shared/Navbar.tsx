@@ -8,6 +8,7 @@ import Image from "next/image";
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<{
     id?: string;
     fullName?: string;
@@ -33,6 +34,15 @@ export const Navbar: React.FC = () => {
     }
   }, []);
 
+  // Scroll detection to change text color
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const getProfileImageSrc = () => {
     if (!user || !user.role) return "/user.png";
 
@@ -48,23 +58,37 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const linkTextColor = isScrolled ? "text-[#472014]" : "text-white";
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-opacity-90 backdrop-blur-md shadow-md fixed top-0 z-50 w-full transition-colors duration-300 ">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-blue-600">Probe STEM</h1>
+            <h1 className={`text-2xl font-bold ${linkTextColor}`}>Probe STEM</h1>
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <div className="hidden md:flex items-center space-x-4">
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/discussions">Questionnaire</NavLink>
-            <NavLink to="/webinars">Webinars</NavLink>
-            <NavLink to="/blogs">Blogs</NavLink>
-            <NavLink to="/projects">Projects</NavLink>
-            <NavLink to="/about">About</NavLink>
+            <NavLink to="/" className={linkTextColor}>
+              HOME
+            </NavLink>
+            <NavLink to="/discussions" className={linkTextColor}>
+              DISCUSSION FORUM
+            </NavLink>
+            <NavLink to="/webinars" className={linkTextColor}>
+              WEBINARS
+            </NavLink>
+            <NavLink to="/blogs" className={linkTextColor}>
+              BLOGS
+            </NavLink>
+            <NavLink to="/projects" className={linkTextColor}>
+              PROJECTS
+            </NavLink>
+            <NavLink to="/about" className={linkTextColor}>
+              ABOUT
+            </NavLink>
             {isLoggedIn && user ? (
               <Link href={`/${user.role}-profile/${user.id}`}>
                 <Image
@@ -79,9 +103,9 @@ export const Navbar: React.FC = () => {
               <Link href="/login">
                 <Button
                   variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-[#472014] text-white font-semibold"
                 >
-                  Login
+                  LOGIN / SIGNUP
                 </Button>
               </Link>
             )}
@@ -90,12 +114,24 @@ export const Navbar: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-2">
-              <MobileNavLink to="/">Home</MobileNavLink>
-              <MobileNavLink to="/discussions">Questionnaire</MobileNavLink>
-              <MobileNavLink to="/blogs">Blogs</MobileNavLink>
-              <MobileNavLink to="/projects">Projects</MobileNavLink>
-              <MobileNavLink to="/webinars">Webinars</MobileNavLink>
-              <MobileNavLink to="/about">About</MobileNavLink>
+              <MobileNavLink to="/" className={linkTextColor}>
+                HOME
+              </MobileNavLink>
+              <MobileNavLink to="/discussions" className={linkTextColor}>
+                DISCUSSION FORUM
+              </MobileNavLink>
+              <MobileNavLink to="/blogs" className={linkTextColor}>
+                BLOGS
+              </MobileNavLink>
+              <MobileNavLink to="/projects" className={linkTextColor}>
+                PROJECTS
+              </MobileNavLink>
+              <MobileNavLink to="/webinars" className={linkTextColor}>
+                WEBINARS
+              </MobileNavLink>
+              <MobileNavLink to="/about" className={linkTextColor}>
+                ABOUT
+              </MobileNavLink>
               {isLoggedIn && user ? (
                 <Link href={`/${user.role}-profile/${user.id}`}>
                   <Button
@@ -109,9 +145,9 @@ export const Navbar: React.FC = () => {
                 <Link href="/login">
                   <Button
                     variant="default"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-[#472014] text-white"
                   >
-                    Login
+                    LOGIN/SIGNUP
                   </Button>
                 </Link>
               )}
@@ -123,28 +159,30 @@ export const Navbar: React.FC = () => {
   );
 };
 
-const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({
+const NavLink: React.FC<{ to: string; children: React.ReactNode; className: string }> = ({
   to,
   children,
+  className,
 }) => (
   <Link href={to}>
     <Button
       variant="ghost"
-      className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+      className={`${className} hover:text-blue-600 hover:bg-blue-50 font-semibold text-lg`}
     >
       {children}
     </Button>
   </Link>
 );
 
-const MobileNavLink: React.FC<{ to: string; children: React.ReactNode }> = ({
+const MobileNavLink: React.FC<{ to: string; children: React.ReactNode; className: string }> = ({
   to,
   children,
+  className,
 }) => (
   <Link href={to}>
     <Button
       variant="ghost"
-      className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+      className={`w-full text-left ${className} hover:text-blue-600 hover:bg-blue-50`}
     >
       {children}
     </Button>

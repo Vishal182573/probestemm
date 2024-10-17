@@ -89,22 +89,22 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600">
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <Card className="w-full max-w-2xl mx-auto">
+      <main className="container mx-auto px-4 py-8">
+        <Card className="w-full max-w-4xl mx-auto border-2 border-[#c1502e] shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold flex items-center">
-              <Pencil className="mr-2" />
+            <CardTitle className="text-5xl sm:text-6xl font-extrabold text-[#472014] font-caveat flex items-center justify-center">
+              <Pencil className="mr-4 h-12 w-12" />
               Create New Blog Post
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="title"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-xl font-bold text-[#472014] mb-2"
                 >
                   Title
                 </label>
@@ -112,7 +112,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-gray-100 text-gray-800 border-gray-300"
+                  className="w-full border-2 border-[#c1502e] rounded-lg p-3"
                   placeholder="Enter your blog title"
                   required
                 />
@@ -120,7 +120,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
               <div>
                 <label
                   htmlFor="content"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-xl font-bold text-[#472014] mb-2"
                 >
                   Content
                 </label>
@@ -128,7 +128,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-gray-100 text-gray-800 border-gray-300"
+                  className="w-full border-2 border-[#c1502e] rounded-lg p-3"
                   rows={8}
                   placeholder="Write your blog content here..."
                   required
@@ -136,7 +136,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
               </div>
               <Button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                className="w-full bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
                 disabled={isLoading}
               >
                 {isLoading ? "Publishing..." : "Publish Blog Post"}

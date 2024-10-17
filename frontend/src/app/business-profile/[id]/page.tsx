@@ -13,7 +13,6 @@ import {
   Building,
   Briefcase,
   Globe,
-  Edit3,
   Tag,
   Plus,
   User,
@@ -258,12 +257,12 @@ const BusinessProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
 
       <main className="flex-grow">
         <motion.section
-          className="relative bg-secondary text-secondary-foreground py-24"
+          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -275,12 +274,12 @@ const BusinessProfilePage: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Avatar className="w-32 h-32 border-4 border-primary">
+                  <Avatar className="w-32 h-32 border-4 border-white">
                     <AvatarImage
                       src={business.profileImageUrl || ""}
                       alt={business.companyName}
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-[#472014] bg-white">
                       {business.companyName
                         .split(" ")
                         .map((n) => n[0])
@@ -289,26 +288,17 @@ const BusinessProfilePage: React.FC = () => {
                   </Avatar>
                 </motion.div>
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">
+                  <h1 className="text-5xl font-extrabold mb-2 font-caveat text-white">
                     {business.companyName}
                   </h1>
-                  <p className="text-xl text-muted-foreground">
+                  <p className="text-2xl text-white/90">
                     {business.industry}
                   </p>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-xl text-white/80">
                     {business.location}
                   </p>
                 </div>
               </div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button variant="outline" className="w-full">
-                  <Edit3 className="mr-2" />
-                  Edit Profile
-                </Button>
-              </motion.div>
             </div>
           </div>
         </motion.section>
@@ -321,35 +311,38 @@ const BusinessProfilePage: React.FC = () => {
               initial="initial"
               animate="animate"
             >
-              <Card>
+              <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                     <Building className="mr-2" />
                     Business Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    <li>
-                      <strong>Email:</strong> {business.email}
+                <CardContent className="text-lg">
+                  <ul className="space-y-4">
+                    <li className="flex items-center">
+                      <strong className="text-[#472014] min-w-[100px]">Email:</strong> 
+                      <span>{business.email}</span>
+                    </li>
+                    <li className="flex items-center">
+                      <strong className="text-[#472014] min-w-[100px]">Phone:</strong> 
+                      <span>{business.phoneNumber}</span>
+                    </li>
+                    <li className="flex items-center">
+                      <strong className="text-[#472014] min-w-[100px]">Website:</strong> 
+                      <span>{business.website || "N/A"}</span>
                     </li>
                     <li>
-                      <strong>Phone:</strong> {business.phoneNumber}
-                    </li>
-                    <li>
-                      <strong>Website:</strong> {business.website || "N/A"}
-                    </li>
-                    <li>
-                      <strong>Description:</strong> {business.description}
+                      <strong className="text-[#472014] block mb-2">Description:</strong>
+                      <p className="text-gray-700">{business.description}</p>
                     </li>
                   </ul>
                 </CardContent>
               </Card>
 
-              {/* Create Project Card */}
-              <Card>
+              <Card className="border-2 border-[#c1502e] shadow-xl bg-white text-[#472014]">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                     <Briefcase className="mr-2" />
                     Create Project
                   </CardTitle>
@@ -362,17 +355,16 @@ const BusinessProfilePage: React.FC = () => {
                       onChange={(e) =>
                         setNewProject({ ...newProject, topic: e.target.value })
                       }
+                      className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                       required
                     />
                     <Textarea
                       placeholder="Project Content"
                       value={newProject.content}
                       onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          content: e.target.value,
-                        })
+                        setNewProject({ ...newProject, content: e.target.value })
                       }
+                      className="border-2 border-[#c1502e] rounded-lg p-3"
                       required
                     />
                     <select
@@ -380,13 +372,10 @@ const BusinessProfilePage: React.FC = () => {
                       onChange={(e) =>
                         setNewProject({
                           ...newProject,
-                          difficulty: e.target.value as
-                            | "EASY"
-                            | "INTERMEDIATE"
-                            | "HARD",
+                          difficulty: e.target.value as "EASY" | "INTERMEDIATE" | "HARD",
                         })
                       }
-                      className="w-full p-2 border rounded bg-background"
+                      className="w-full p-3 border-2 border-[#c1502e] rounded-lg bg-white"
                       required
                     >
                       <option value="EASY">Easy</option>
@@ -397,11 +386,9 @@ const BusinessProfilePage: React.FC = () => {
                       type="date"
                       value={newProject.timeline}
                       onChange={(e) =>
-                        setNewProject({
-                          ...newProject,
-                          timeline: e.target.value,
-                        })
+                        setNewProject({ ...newProject, timeline: e.target.value })
                       }
+                      className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                       required
                     />
                     <Input
@@ -410,11 +397,12 @@ const BusinessProfilePage: React.FC = () => {
                       onChange={(e) =>
                         setNewProject({ ...newProject, tags: e.target.value })
                       }
+                      className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                       required
                     />
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -430,36 +418,38 @@ const BusinessProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                     <Globe className="mr-2" />
                     Projects
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-4">
+                  <ul className="space-y-6">
                     {projects.map((project) => (
                       <li
                         key={project.id}
-                        className="border-b pb-4 last:border-b-0"
+                        className="border-b-2 border-[#c1502e]/20 pb-6 last:border-b-0"
                       >
-                        <h3 className="font-semibold">{project.topic}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <h3 className="text-xl font-bold text-[#472014] mb-2">
+                          {project.topic}
+                        </h3>
+                        <p className="text-gray-700 mb-4">
                           {project.content.substring(0, 100)}...
                         </p>
-                        <div className="flex justify-between items-center mb-2">
-                          <Badge variant="secondary">
+                        <div className="flex justify-between items-center mb-4">
+                          <Badge className="bg-[#c1502e] text-white px-4 py-2 rounded-full">
                             {project.difficulty}
                           </Badge>
                           <Badge
-                            variant={
+                            className={`px-4 py-2 rounded-full ${
                               project.status === "OPEN"
-                                ? "default"
+                                ? "bg-green-500"
                                 : project.status === "ONGOING"
-                                ? "secondary"
-                                : "destructive"
-                            }
+                                ? "bg-[#003d82]"
+                                : "bg-red-500"
+                            } text-white`}
                           >
                             {project.status}
                           </Badge>
@@ -467,36 +457,36 @@ const BusinessProfilePage: React.FC = () => {
                         {project.status === "OPEN" && (
                           <Button
                             onClick={() => fetchAppliedProfessors(project.id)}
-                            className="w-full mb-2"
+                            className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl mb-4"
                           >
                             <User className="mr-2" /> View Applied Professors
                           </Button>
                         )}
                         {appliedProfessorsMap[project.id]?.length === 0 && (
-                          <p className="text-muted-foreground">
+                          <p className="text-gray-500 italic">
                             No professors applied yet
                           </p>
                         )}
                         {appliedProfessorsMap[project.id]?.length > 0 &&
                           project.status === "OPEN" && (
-                            <div className="mb-2">
-                              <h4 className="font-semibold">
+                            <div className="mb-4">
+                              <h4 className="text-lg font-bold text-[#472014] mb-3">
                                 Applied Professors:
                               </h4>
-                              <ul>
+                              <ul className="space-y-4">
                                 {appliedProfessorsMap[project.id].map(
                                   (professor) => (
                                     <li
                                       key={professor.professorId}
-                                      className="flex flex-col mb-2 p-2 bg-secondary rounded-md"
+                                      className="flex flex-col p-4 bg-gray-50 rounded-lg border-2 border-[#c1502e]"
                                     >
-                                      <span className="font-semibold">
+                                      <span className="text-lg font-bold text-[#472014]">
                                         {professor.name}
                                       </span>
-                                      <span className="text-sm">
+                                      <span className="text-gray-600">
                                         {professor.email}
                                       </span>
-                                      <span className="text-sm">
+                                      <span className="text-gray-600 mb-3">
                                         {professor.phoneNumber}
                                       </span>
                                       <Button
@@ -507,10 +497,9 @@ const BusinessProfilePage: React.FC = () => {
                                             professor.professorId
                                           )
                                         }
-                                        size="sm"
-                                        className="mt-2"
+                                        className="bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-2 px-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
                                       >
-                                        Select
+                                        Select Professor
                                       </Button>
                                     </li>
                                   )
@@ -523,7 +512,7 @@ const BusinessProfilePage: React.FC = () => {
                             onClick={() =>
                               handleChangeProjectStatus(project.id, "CLOSED")
                             }
-                            className="w-full"
+                            className="w-full bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
                           >
                             Complete Project
                           </Button>
@@ -533,20 +522,23 @@ const BusinessProfilePage: React.FC = () => {
                   </ul>
                 </CardContent>
               </Card>
-              {/* Project Tags Card */}
-              <Card>
+
+              <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                     <Tag className="mr-2" />
                     Project Tags
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {Array.from(
                       new Set(projects.flatMap((project) => project.tags))
                     ).map((tag, index) => (
-                      <Badge key={index} variant="outline">
+                      <Badge
+                        key={index}
+                        className="bg-[#c1502e]/10 text-[#472014] border-2 border-[#c1502e] px-4 py-2 rounded-full text-sm font-semibold"
+                      >
                         {tag}
                       </Badge>
                     ))}

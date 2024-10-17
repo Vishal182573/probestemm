@@ -152,14 +152,7 @@ const DiscussionForum: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage:
-          "url('https://i.pinimg.com/736x/08/9b/eb/089bebd775f58eea689495a3245b1c86.jpg')",
-        backgroundBlendMode: "overlay",
-      }}
-    >
+    <div className="min-h-screen bg-white">
       <Navbar />
       <motion.div
         initial={{ opacity: 0 }}
@@ -170,7 +163,7 @@ const DiscussionForum: React.FC = () => {
         <motion.h1
           initial={{ y: -50 }}
           animate={{ y: 0 }}
-          className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center text-gray-800"
+          className="text-5xl md:text-6xl font-extrabold mb-6 md:mb-8 text-center text-[#472014] font-caveat"
         >
           Discussion Forum
         </motion.h1>
@@ -182,18 +175,18 @@ const DiscussionForum: React.FC = () => {
           transition={{ delay: 0.2 }}
         >
           <div className="relative flex-grow mb-4 sm:mb-0">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#686256]" />
             <Input
               type="text"
               placeholder="Search discussions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full bg-white text-gray-800"
+              className="pl-10 pr-4 py-2 w-full bg-white text-[#472014] border-[#c1502e]"
             />
           </div>
           <Button
             onClick={handleSearch}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
           >
             Search
           </Button>
@@ -201,7 +194,7 @@ const DiscussionForum: React.FC = () => {
           {userRole === "student" && (
             <Button
               onClick={() => router.push("/ask-question")}
-              className="bg-green-600 hover:bg-green-700 text-white flex items-center mb-4 sm:mb-0"
+              className="bg-[#c1502e] hover:bg-[#472014] text-white flex items-center mb-4 sm:mb-0 rounded-full"
             >
               <FaPlus className="mr-2" /> Ask Question
             </Button>
@@ -290,40 +283,40 @@ const DiscussionForum: React.FC = () => {
               transition={{ delay: index * 0.1 }}
             >
               <Card
-                className="mb-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer bg-white"
+                className="mb-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer bg-white border border-[#c1502e]"
                 onClick={() => handleQuestionClick(discussion.id)}
               >
                 <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start space-x-4">
                   <div className="flex flex-col items-center mb-4 sm:mb-0">
                     <Button
                       variant="outline"
-                      className="px-2 py-1 mb-2"
+                      className="px-2 py-1 mb-2 hover:bg-[#c1502e] hover:text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleVote(discussion.id, "UPVOTE");
                       }}
                     >
-                      <FaArrowUp className="text-blue-600" />
+                      <FaArrowUp className="text-white" />
                     </Button>
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-sm font-medium text-[#472014]">
                       {discussion.upvotes - discussion.downvotes}
                     </span>
                     <Button
                       variant="outline"
-                      className="px-2 py-1 mt-2"
+                      className="px-2 py-1 mt-2 hover:bg-[#c1502e] hover:text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleVote(discussion.id, "DOWNVOTE");
                       }}
                     >
-                      <FaArrowDown className="text-red-600" />
+                      <FaArrowDown className="text-white" />
                     </Button>
                   </div>
                   <div className="flex-grow">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-gray-800">
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-[#472014]">
                       {discussion.title}
                     </h3>
-                    <div className="flex flex-col sm:flex-row items-start text-sm text-gray-600 space-y-1 sm:space-y-0 sm:space-x-2">
+                    <div className="flex flex-col sm:flex-row items-start text-sm text-[#686256] space-y-1 sm:space-y-0 sm:space-x-2">
                       <div className="flex items-center">
                         <FaUser className="mr-1" />
                         <span>{discussion.studentName}</span>
@@ -369,17 +362,17 @@ const DiscussionForum: React.FC = () => {
           <Button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1}
-            className="mr-2"
+            className="mr-2 bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
           >
             Previous
           </Button>
-          <span className="mx-4">
+          <span className="mx-4 text-[#472014]">
             Page {pagination.currentPage} of {pagination.totalPages}
           </span>
           <Button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={pagination.currentPage === pagination.totalPages}
-            className="ml-2"
+            className="ml-2 bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
           >
             Next
           </Button>

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { motion } from "framer-motion";
+import { motion} from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,19 +67,19 @@ const StudentProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center flex items-center justify-center h-screen">
-        <div className="loader">Loading...</div>
-        <div className="text-muted-foreground ml-2">please wait</div>
+      <div className="text-center flex items-center justify-center h-screen bg-white">
+        <div className="loader text-[#c1502e] font-caveat text-2xl">Loading...</div>
+        <div className="text-[#472014] ml-2">please wait</div>
       </div>
     );
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="text-[#c1502e] text-center p-4">{error}</div>;
   }
 
   if (!student) {
-    return <div>Student not found</div>;
+    return <div className="text-[#472014] text-center p-4">Student not found</div>;
   }
 
   const staggerChildren = {
@@ -91,12 +91,12 @@ const StudentProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <Navbar />
 
       <main className="flex-grow">
         <motion.section
-          className="relative bg-secondary text-secondary-foreground py-24"
+          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -108,24 +108,27 @@ const StudentProfilePage: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Avatar className="w-32 h-32 border-4 border-primary">
+                  <Avatar className="w-32 h-32 border-4 border-white">
                     <AvatarImage src={student.imageUrl || ""} alt={student.fullName} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-[#472014] text-white">
                       {student.fullName.split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">{student.fullName}</h1>
-                  <p className="text-xl text-muted-foreground">{student.course}</p>
-                  <p className="text-lg text-muted-foreground">{student.university}</p>
+                  <h1 className="text-4xl font-extrabold mb-2 font-caveat">{student.fullName}</h1>
+                  <p className="text-xl font-bold">{student.course}</p>
+                  <p className="text-lg">{student.university}</p>
                 </div>
               </div>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#c1502e] font-bold transition-all duration-300"
+                >
                   <Edit3 className="mr-2" />
                   Edit Profile
                 </Button>
@@ -134,7 +137,7 @@ const StudentProfilePage: React.FC = () => {
           </div>
         </motion.section>
 
-        <section className="py-12">
+        <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 gap-8"
@@ -142,55 +145,58 @@ const StudentProfilePage: React.FC = () => {
               initial="initial"
               animate="animate"
             >
-              <Card>
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Star className="mr-2" />
                     Research Highlights
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-[#472014]">
                   <ul className="space-y-2">
                     {student.researchHighlights.map((highlight) => (
                       <li key={highlight.id} className="flex items-center">
-                        <Badge variant="secondary" className="mr-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="mr-2 bg-[#c1502e]/10 text-[#c1502e] font-semibold"
+                        >
                           {highlight.status}
                         </Badge>
-                        {highlight.title}
+                        <span className="font-medium">{highlight.title}</span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Briefcase className="mr-2" />
                     Experience
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-[#472014] font-medium">
                   <p>{student.experience}</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <GraduationCap className="mr-2" />
                     Education
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-[#472014]">
                   <ul className="space-y-4">
                     {student.education.map((edu) => (
                       <li key={edu.id}>
-                        <h3 className="font-semibold">{edu.degree}</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="font-bold text-[#472014]">{edu.degree}</h3>
+                        <p className="text-sm text-[#686256] font-medium">
                           {edu.institution}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-[#686256] font-medium">
                           Passing Year: {edu.passingYear}
                         </p>
                       </li>
@@ -199,21 +205,24 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Award className="mr-2" />
                     Achievements
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-[#472014]">
                   <ul className="space-y-2">
                     {student.achievements.map((achievement) => (
                       <li key={achievement.id} className="flex items-center">
-                        <Badge variant="outline" className="mr-2">
+                        <Badge 
+                          variant="outline" 
+                          className="mr-2 border-[#c1502e] text-[#c1502e] font-semibold"
+                        >
                           {achievement.year}
                         </Badge>
-                        {achievement.description}
+                        <span className="font-medium">{achievement.description}</span>
                       </li>
                     ))}
                   </ul>

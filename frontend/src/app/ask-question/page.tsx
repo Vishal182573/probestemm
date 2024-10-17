@@ -105,74 +105,75 @@ const AskQuestion: React.FC = () => {
   return (
     <>
       <Navbar />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="container mx-auto p-4 sm:p-6 md:p-8 min-h-screen"
-      >
-        <motion.h1
-          initial={{ y: -50 }}
-          animate={{ y: 0 }}
-          className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center text-primary"
+      <div className="min-h-screen bg-white">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="container mx-auto p-4 sm:p-6 md:p-8"
         >
-          Ask a Question
-        </motion.h1>
+          <motion.h1
+            initial={{ y: -50 }}
+            animate={{ y: 0 }}
+            className="text-5xl sm:text-6xl font-extrabold mb-8 text-[#472014] font-caveat text-center"
+          >
+            Ask a Question
+          </motion.h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Title
-            </label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter your question title"
-              className="w-full"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Description
-            </label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Provide more details about your question"
-              className="w-full h-32"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="flex-1">
+          <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto text-black">
+            <div>
               <label
-                htmlFor="category"
-                className="block text-sm font-medium text-foreground mb-2"
+                htmlFor="title"
+                className="block text-xl font-bold text-[#472014] mb-2"
               >
-                Category
+                Title
               </label>
-              <Select
-                value={category}
-                onValueChange={(value) => {
-                  setCategory(value);
-                  setSubcategory("");
-                }}
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter your question title"
+                className="w-full border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                 required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-xl font-bold text-[#472014] mb-2"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Provide more details about your question"
+                className="w-full h-32 border-2 border-[#c1502e] rounded-lg p-3"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="flex-1">
+                <label
+                  htmlFor="category"
+                  className="block text-xl font-bold text-[#472014] mb-2"
+                >
+                  Category
+                </label>
+                <Select
+                  value={category}
+                  onValueChange={(value) => {
+                    setCategory(value);
+                    setSubcategory("");
+                  }}
+                  required
+                >
+                  <SelectTrigger className="border-2 border-[#c1502e] rounded-lg p-3">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
                 <SelectContent>
                   {Object.keys(categories).map((cat) => (
                     <SelectItem key={cat} value={cat}>
@@ -184,22 +185,22 @@ const AskQuestion: React.FC = () => {
             </div>
 
             <div className="flex-1">
-              <label
-                htmlFor="subcategory"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Subcategory
-              </label>
-              <Select
-                value={subcategory}
-                onValueChange={setSubcategory}
-                disabled={!category}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a subcategory" />
-                </SelectTrigger>
-                <SelectContent>
+                <label
+                  htmlFor="subcategory"
+                  className="block text-xl font-bold text-[#472014] mb-2"
+                >
+                  Subcategory
+                </label>
+                <Select
+                  value={subcategory}
+                  onValueChange={setSubcategory}
+                  disabled={!category}
+                  required
+                >
+                  <SelectTrigger className="border-2 border-[#c1502e] rounded-lg p-3">
+                    <SelectValue placeholder="Select a subcategory" />
+                  </SelectTrigger>
+                  <SelectContent>
                   {category &&
                     categories[category].map((subcat) => (
                       <SelectItem key={subcat} value={subcat}>
@@ -211,15 +212,16 @@ const AskQuestion: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-primary hover:bg-accent text-white"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Question"}
-          </Button>
-        </form>
-      </motion.div>
+           <Button
+              type="submit"
+              className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Question"}
+            </Button>
+          </form>
+        </motion.div>
+      </div>
       <Footer />
     </>
   );

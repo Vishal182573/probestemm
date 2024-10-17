@@ -41,7 +41,6 @@ import {
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -284,7 +283,7 @@ const ProfessorProfilePage: React.FC = () => {
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       <motion.div
-        className="space-y-8"
+        className="space-y-8 "
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -524,12 +523,12 @@ const ProfessorProfilePage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
 
       <main className="flex-grow">
         <motion.section
-          className="relative bg-secondary text-secondary-foreground py-24"
+          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] py-24"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -537,46 +536,35 @@ const ProfessorProfilePage: React.FC = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">
-                <Avatar className="w-32 h-32 border-4 border-primary">
-                  <AvatarImage
-                    src={professor.photoUrl}
-                    alt={professor.fullName}
-                  />
+                <Avatar className="w-32 h-32 border-4 border-[#472014]">
+                  <AvatarImage src={professor.photoUrl} alt={professor.fullName} />
                   <AvatarFallback>
-                    {professor.fullName
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {professor.fullName.split(" ").map((n) => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">
+                  <h1 className="text-4xl font-caveat font-bold mb-2 text-white">
                     {professor.fullName}
                   </h1>
-                  <p className="text-xl text-muted-foreground">
-                    {professor.title}
-                  </p>
-                  <p className="text-lg text-muted-foreground">
-                    {professor.university}
-                  </p>
-                  <p className="text-md text-muted-foreground">
-                    {professor.department}
-                  </p>
+                  <p className="text-xl text-white/90">{professor.title}</p>
+                  <p className="text-lg text-white/90">{professor.university}</p>
+                  <p className="text-md text-white/80">{professor.department}</p>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
                 {professor.website && (
-                  <a
-                    className="btn btn-outline flex items-center"
-                    href={professor.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Button 
+                    variant="outline" 
+                    className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#c1502e] font-bold rounded-full transition-all duration-300"
                   >
                     <Globe className="mr-2 h-4 w-4" />
                     Website
-                  </a>
+                  </Button>
                 )}
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#c1502e] font-bold rounded-full transition-all duration-300"
+                >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Google Scholar
                 </Button>
@@ -585,15 +573,15 @@ const ProfessorProfilePage: React.FC = () => {
           </div>
         </motion.section>
 
-        <section className="py-12">
+        <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">
-              <TabsList className="flex justify-center bg-background p-2 rounded-lg">
+              <TabsList className="flex justify-center bg-white p-2 rounded-lg border-2 border-[#c1502e]/20">
                 {tabItems.map((item) => (
                   <TabsTrigger
                     key={item.id}
                     value={item.id}
-                    className="flex items-center space-x-2 px-4 py-2"
+                    className="flex items-center space-x-2 px-6 py-3 text-[#472014] data-[state=active]:bg-[#c1502e] data-[state=active]:text-white rounded-full font-caveat text-lg"
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -608,145 +596,120 @@ const ProfessorProfilePage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card>
+                  <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-caveat text-[#472014]">
                         <GraduationCap className="mr-2" />
                         Personal Information
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
+                    <CardContent className="text-[#472014]/80">
+                      <ul className="space-y-4">
                         <li>
-                          <strong>Email:</strong> {professor.email}
+                          <strong className="text-[#c1502e]">Email:</strong> {professor.email}
                         </li>
                         <li>
-                          <strong>Phone:</strong> {professor.phoneNumber}
+                          <strong className="text-[#c1502e]">Phone:</strong> {professor.phoneNumber}
                         </li>
                         <li>
-                          <strong>Location:</strong> {professor.location}
+                          <strong className="text-[#c1502e]">Location:</strong> {professor.location}
                         </li>
                         <li>
-                          <strong>Degree:</strong> {professor.degree || "N/A"}
+                          <strong className="text-[#c1502e]">Degree:</strong> {professor.degree || "N/A"}
                         </li>
                         <li>
-                          <strong>Position:</strong> {professor.position}
+                          <strong className="text-[#c1502e]">Position:</strong> {professor.position}
                         </li>
                         <li>
-                          <strong>Research Interests:</strong>{" "}
+                          <strong className="text-[#c1502e]">Research Interests:</strong>{" "}
                           {professor.researchInterests}
                         </li>
                       </ul>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-caveat text-[#472014]">
                         <Award className="mr-2" />
                         Achievements
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {professor.achievements.length > 0 ? (
-                        <ul className="space-y-2">
+                        <ul className="space-y-4">
                           {professor.achievements.map((achievement) => (
-                            <li
-                              key={achievement.id}
-                              className="flex items-center"
-                            >
-                              <Badge variant="outline" className="mr-2">
+                            <li key={achievement.id} className="flex items-center">
+                              <Badge 
+                                variant="outline" 
+                                className="mr-2 bg-[#c1502e]/10 text-[#472014] border-[#c1502e]"
+                              >
                                 {achievement.year}
                               </Badge>
-                              {achievement.description}
+                              <span className="text-[#472014]/80">{achievement.description}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p>No achievements listed yet.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
-                        <Briefcase className="mr-2" />
-                        Positions Held
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {professor.positions.length > 0 ? (
-                        <ul className="space-y-2">
-                          {professor.positions.map((position) => (
-                            <li key={position.id} className="flex items-center">
-                              <Badge variant="outline" className="mr-2">
-                                {position.startYear} -{" "}
-                                {position.endYear || "Present"}
-                              </Badge>
-                              {position.title}, {position.institution}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No positions listed yet.</p>
+                        <p className="text-[#472014]/60">No achievements listed yet.</p>
                       )}
                     </CardContent>
                   </Card>
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="blogs">
+              <TabsContent value="projects">
                 <motion.div
                   className="space-y-8"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card>
+                  <div className="flex justify-end mb-6">
+                    <Button 
+                      className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
+                      onClick={() => setIsProjectDialogOpen(true)}
+                    >
+                      <Plus className="mr-2" />
+                      Create Project
+                    </Button>
+                  </div>
+
+                  <Card className="border-2 border-[#c1502e]/20 shadow-lg bg-white">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
-                        <BookOpen className="mr-2" />
-                        My Blogs
+                      <CardTitle className="flex items-center text-2xl font-caveat text-[#472014]">
+                        <Briefcase className="mr-2" />
+                        Active Projects
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {professor?.blogs && professor.blogs.length > 0 ? (
-                        <ul className="space-y-4">
-                          {professor.blogs.map((blog: any) => (
-                            <li key={blog.id} className="border-b pb-4">
-                              <h3 className="text-xl font-semibold mb-2">
-                                {blog.title}
-                              </h3>
-                              <p className="text-muted-foreground mb-2">
-                                {new Date(blog.createdAt).toLocaleDateString()}
-                              </p>
-                              <p className="mb-2">
-                                {blog.content.length > 150
-                                  ? `${blog.content.substring(0, 150)}...`
-                                  : blog.content}
-                              </p>
-                              <div className="flex items-center space-x-4">
-                                <Badge variant="secondary">
-                                  {blog.likes} Likes
-                                </Badge>
-                                <Badge variant="outline">
-                                  {blog.dislikes} Dislikes
-                                </Badge>
-
-                                <Badge variant="outline">
-                                  {blog.comments.length} Comments
-                                </Badge>
-                                <Link href={`/blogs/${blog.id}`}>
-                                  <Button variant="outline">View Blog</Button>
-                                </Link>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No blogs posted yet.</p>
-                      )}
+                      {projects.map((project) => (
+                        <div 
+                          key={project.id} 
+                          className="mb-6 p-6 border-b-2 border-[#c1502e]/10 last:border-0"
+                        >
+                          <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-xl font-caveat text-[#472014]">
+                              {project.topic}
+                            </h3>
+                            <Badge className="bg-[#c1502e] text-white">
+                              {project.status}
+                            </Badge>
+                          </div>
+                          <p className="text-[#472014]/80 mb-4">{project.content}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {project.tags.map((tag, index) => (
+                              <Badge 
+                                key={index} 
+                                variant="outline"
+                                className="border-[#c1502e] text-[#472014]"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -761,9 +724,9 @@ const ProfessorProfilePage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card>
+                  <Card className="text-[#472014] bg-white">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-bold text-[#c1502e] ">
                         <Video className="mr-2" />
                         My Webinars
                       </CardTitle>
@@ -776,7 +739,7 @@ const ProfessorProfilePage: React.FC = () => {
                             onOpenChange={setIsWebinarDialogOpen}
                           >
                             <DialogTrigger asChild>
-                              <Button>Request Webinar</Button>
+                              <Button >Request Webinar</Button>
                             </DialogTrigger>
                             <DialogContent>
                               <DialogHeader>

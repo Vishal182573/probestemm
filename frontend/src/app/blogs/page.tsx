@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, MessageSquare, Plus } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -160,10 +161,10 @@ const BlogsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600">
+      <div className="flex flex-col min-h-screen bg-white">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-white text-2xl">Loading blogs...</div>
+          <div className="text-black text-2xl">Loading blogs...</div>
         </main>
         <Footer />
       </div>
@@ -177,25 +178,38 @@ const BlogsPage: React.FC = () => {
   // bg-emerald-600  
   // bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90
   return (
-    <div className="flex flex-col min-h-screen shadow-xl bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90 backdrop-filter backdrop-blur-xl ">
+    <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-emerald-50">Probe STEM Blogs</h1>
+        <motion.h1 
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-5xl font-bold mb-8 text-[#472014] font-caveat"
+        >
+          Probe STEM Blogs
+        </motion.h1>
         {error && <p className="text-red-400 mb-4">{error}</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogs.map((blog) => {
             const authorInfo = getAuthorInfo(blog);
             return (
-              <div key={blog.id} className="bg-white p-6 rounded-xl shadow-xl">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-900">
+              <motion.div 
+                key={blog.id} 
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white p-6 rounded-xl shadow-xl border-2 border-[#c1502e]"
+              >
+                <h2 className="text-2xl font-semibold mb-4 text-[#472014] font-caveat">
                   {blog.title}
                 </h2>
-                <p className="text-gray-700 mb-2">
+                <p className="text-[#686256] mb-2">
                   By {authorInfo.name}
                   {authorInfo.title && `, ${authorInfo.title}`}
                 </p>
-                <p className="text-gray-600 mb-4">{authorInfo.affiliation}</p>
-                <p className="text-gray-700 mb-6">
+                <p className="text-[#686256] mb-4">{authorInfo.affiliation}</p>
+                <p className="text-[#472014] mb-6">
                   {blog.content.substring(0, 150)}...
                 </p>
                 <div className="flex justify-between items-center">
@@ -203,7 +217,7 @@ const BlogsPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-700"
+                      className="text-[#c1502e] hover:text-white"
                       onClick={() => handleLike(blog.id)}
                     >
                       <ThumbsUp className="mr-2 h-4 w-4" />
@@ -212,7 +226,7 @@ const BlogsPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-700"
+                      className="text-[#c1502e] hover:text-white "
                       onClick={() => handleDislike(blog.id)}
                     >
                       <ThumbsDown className="mr-2 h-4 w-4" />
@@ -224,21 +238,21 @@ const BlogsPage: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-white border-gray-300"
+                      className=" border-[#c1502e] bg-[#472014] text-white"
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
                       {blog.comments.length} Comments
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
         <div className="mt-12 text-center">
           {(userRole === "professor" || userRole === "business") && (
             <Link href="/create-blog">
-              <Button variant="default" size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button variant="default" size="lg" className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl">
                 <Plus className="mr-2 h-6 w-6" />
                 Create New Blog
               </Button>

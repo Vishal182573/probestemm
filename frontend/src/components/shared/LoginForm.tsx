@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const authApi = axios.create({
@@ -56,10 +58,10 @@ export const LoginForm: React.FC = () => {
 
       toast({
         title: "Login successful!",
-        description: "Welcome back!.",
+        description: "Welcome back!",
         duration: 3000,
       });
-      // Redirect based on role
+
       switch (role) {
         case "student":
           router.push(`/student-profile/${user.id}`);
@@ -90,15 +92,18 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-lg bg-card">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-primary">
-          Welcome Back
+    <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-3xl font-bold text-[#472014] font-caveat">
+          Sign In
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-[#686256]">
           New to Probe STEM?{" "}
           <Link href="/signup">
-            <Button variant="link" className="text-primary text-sm p-0">
+            <Button
+              variant="link"
+              className="text-[#c1502e] hover:text-[#472014] text-sm p-0 font-semibold"
+            >
               Sign Up
             </Button>
           </Link>
@@ -106,25 +111,29 @@ export const LoginForm: React.FC = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            value={email}
-            type="email"
-            placeholder="Email Address"
-            className="bg-background"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            value={password}
-            type="password"
-            placeholder="Password"
-            className="bg-background"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="space-y-2">
+            <Input
+              value={email}
+              type="email"
+              placeholder="Email Address"
+              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014] placeholder:text-[#686256]/60"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Input
+              value={password}
+              type="password"
+              placeholder="Password"
+              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014] placeholder:text-[#686256]/60"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
           <Select value={role} onValueChange={setRole}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014]">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white text-[#472014]">
               <SelectItem value="student">Student</SelectItem>
               <SelectItem value="professor">Professor</SelectItem>
               <SelectItem value="business">Business</SelectItem>
@@ -134,29 +143,37 @@ export const LoginForm: React.FC = () => {
           <div className="flex justify-between items-center">
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-[#c1502e] hover:text-[#472014] font-semibold"
             >
               Forgot Password?
             </Link>
           </div>
           <Button
             type="submit"
-            className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
+            className="w-full h-12 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold transition-colors duration-300"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Signing In...
               </>
             ) : (
               <>
                 Log In
-                <LogInIcon className="ml-2 h-4 w-4" />
+                <LogInIcon className="ml-2 h-5 w-5" />
               </>
             )}
           </Button>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-500 text-sm mt-2 text-center"
+            >
+              {error}
+            </motion.p>
+          )}
         </form>
       </CardContent>
     </Card>

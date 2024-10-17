@@ -23,7 +23,6 @@ import {
 import NotificationsComponent from "@/components/shared/Notifications";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturedQuestionsSection from "@/components/shared/FeaturedQuestionSection";
-import { url } from "inspector";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -32,7 +31,7 @@ interface AnimatedSectionProps {
 
 const HomePage = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-emerald-800 text-[#003366]">
+    <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
       <main className="flex-grow">
         <HeroSection />
@@ -75,24 +74,24 @@ const HeroSection = () => {
           style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
         />
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#82CAFF] via-[#82CAFF] to-[#003366] opacity-80 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#c1502e] to-[#686256] opacity-80 z-10" />
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 text-white"
+          className="text-5xl sm:text-6xl lg:text-[150px] font-extrabold mb-6 text-[#472014] font-caveat"
         >
-          Connecting <span className="text-[#0056b3]">Minds</span>{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0056b3] to-[#00BFFF]">Globally</span>
+          Connecting <span className="">Minds</span>{" "}
+          <span className="bg-clip-text ">Globally</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg sm:text-xl md:text-2xl mb-10 text-white max-w-3xl mx-auto"
+          className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
         >
-          Probe STEM: Fostering dynamic collaboration among students, faculty, and industry experts to drive innovation
+          <span className=" text-[#472014] font-bold">Probe STEM:</span> fostering dynamic collaboration among students, faculty, and industry experts to drive innovation
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
@@ -103,7 +102,7 @@ const HeroSection = () => {
           <Link href="/login">
             <Button
               size="lg"
-              className="bg-[#0056b3] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
+              className="bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               Get Started
               <Rocket className="ml-2 h-6 w-6" />
@@ -166,7 +165,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
 const FeaturesSection = () => {
   const features = [
     {
-      icon: <UserCircle className="h-16 w-16 text-[#0056b3]" />,
+      icon: <UserCircle className="h-16 w-16 text-[#472014]" />,
       title: "Student Profile",
       description:
         "Showcase your academic journey, research highlights, and achievements. Connect with professors and industry partners for exciting opportunities.",
@@ -177,7 +176,7 @@ const FeaturesSection = () => {
       ],
     },
     {
-      icon: <GraduationCap className="h-16 w-16 text-[#0056b3]" />,
+      icon: <GraduationCap className="h-16 w-16 text-[#472014]" />,
       title: "Professor Profile",
       description:
         "Manage your academic portfolio, showcase research projects, and connect with talented students and industry partners.",
@@ -188,7 +187,7 @@ const FeaturesSection = () => {
       ],
     },
     {
-      icon: <Briefcase className="h-16 w-16 text-[#0056b3]" />,
+      icon: <Briefcase className="h-16 w-16 text-[#472014]" />,
       title: "Industry Profile",
       description:
         "Discover top talent, collaborate on cutting-edge research projects, and stay at the forefront of innovation in your industry.",
@@ -201,9 +200,9 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="py-24 px-4 bg-[#82CAFF]">
+    <section className="py-24 px-4 bg-white">
       <AnimatedSection>
-        <h2 className="text-5xl font-bold text-center mb-16 text-[#003366]">
+        <h2 className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat">
           Why Choose Probe STEM?
         </h2>
       </AnimatedSection>
@@ -214,24 +213,24 @@ const FeaturesSection = () => {
             direction={index % 2 === 0 ? "left" : "right"}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-xl h-full flex flex-col"
+              className="p-8 rounded-xl shadow-xl h-full flex flex-col bg-[#c1502e]"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex flex-col items-center text-center flex-grow">
+              <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
                 {feature.icon}
 
-                <h3 className="text-2xl font-semibold mt-6 mb-4 text-[#0056b3]">
+                <h3 className="text-4xl font-semibold mt-6 mb-4 text-[#472014] font-caveat">
                   {feature.title}
                 </h3>
-                <p className="text-[#004080] text-lg mb-6">
+                <p className="text-[#472014] text-lg mb-6">
                   {feature.description}
                 </p>
                 <ul className="text-left w-full">
                   {feature.benefits.map((benefit, idx) => (
                     <li key={idx} className="flex items-center mb-2">
-                      <Star className="h-5 w-5 text-[#0056b3] mr-2" />
-                      <span className="text-[#003366]">{benefit}</span>
+                      <Star className="h-5 w-5 text-[#472014] mr-2 " />
+                      <span className="text-[#472014]">{benefit}</span>
                     </li>
                   ))}
                 </ul>
@@ -246,10 +245,10 @@ const FeaturesSection = () => {
 
 const NotificationsSection = () => {
   return (
-    <section className="py-20 bg-[#82CAFF]">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4">
         <AnimatedSection>
-          <h2 className="text-4xl font-bold text-center mb-12 text-[#003366]">
+          <h2 className="text-5xl font-bold text-center mb-12 text-[#472014] font-caveat">
             Stay Updated
           </h2>
         </AnimatedSection>
@@ -284,9 +283,9 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="py-24 px-4 bg-[#82CAFF]">
+    <section className="py-24 px-4 bg-white">
       <AnimatedSection>
-        <h2 className="text-5xl font-bold text-center mb-16 text-[#003366]">
+        <h2 className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat">
           What Our Community Says
         </h2>
       </AnimatedSection>
@@ -297,7 +296,7 @@ const TestimonialsSection = () => {
             direction={index % 2 === 0 ? "left" : "right"}
           >
             <motion.div
-              className="bg-white p-8 rounded-xl shadow-xl"
+              className="bg-[#c1502e] p-8 rounded-xl shadow-xl font-caveat text-xl"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
@@ -309,14 +308,14 @@ const TestimonialsSection = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.1 }}
                   >
-                    <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                    <Star className="h-6 w-6 text-[#472014] fill-current" />
                   </motion.div>
                 ))}
               </div>
-              <p className="text-[#004080] italic mb-6 text-lg">
+              <p className="text-[#472014] italic mb-6 ">
                 {testimonial.quote}
               </p>
-              <p className="text-[#0056b3] font-semibold text-right">
+              <p className="text-[#472014] font-semibold text-right">
                 {testimonial.author}
               </p>
             </motion.div>
@@ -366,14 +365,14 @@ const FAQSection = () => {
   ];
 
   return (
-    <section className="py-12 bg-[#82CAFF]">
+    <section className="py-12 bg-white w-full">
       <div className="container mx-auto px-4">
         <AnimatedSection>
-          <h2 className="text-3xl font-bold text-center mb-8 text-blue-600">
+          <h2 className="text-5xl font-bold text-center mb-8 text-[#472014] font-caveat">
             Frequently Asked Questions
           </h2>
         </AnimatedSection>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((item, index) => (
               <AnimatedSection
@@ -382,12 +381,12 @@ const FAQSection = () => {
               >
                 <AccordionItem
                   value={`item-${index}`}
-                  className="mb-4 border border-blue-200 rounded-lg overflow-hidden"
+                  className="mb-4 border border-[#c1502e] rounded-lg overflow-hidden"
                 >
-                  <AccordionTrigger className="text-left text-lg font-semibold p-4 bg-white hover:bg-gray-50 transition-all duration-300 text-blue-600">
+                  <AccordionTrigger className="text-left text-lg font-semibold p-4 bg-[#c1502e] hover:bg-[#c05f41] transition-all duration-300 text-[#472014]">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-gray-700 p-4 bg-white">
+                  <AccordionContent className="text-[#472014] p-4 bg-[#686256]">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>

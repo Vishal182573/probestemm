@@ -138,9 +138,9 @@ const ProjectsPage = () => {
   };
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-300">
-          <Rocket className="h-8 w-8 r-2 mr-2 " />
+      <div className="flex items-center justify-center h-screen bg-white">
+        <p className="text-[#472014] font-caveat text-2xl">
+          <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
           Loading projects...
         </p>
       </div>
@@ -148,21 +148,21 @@ const ProjectsPage = () => {
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="text-[#472014]">{error}</div>;
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
+    <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <Navbar />
       <main className="flex-grow">
         <ProjectsHero />
-        <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4">
+        <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">
-            <TabsTrigger value="business">
+            <TabsTrigger value="business" className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white">
               <GraduationCap className="mr-2 h-5 w-5" />
               Business Projects
             </TabsTrigger>
-            <TabsTrigger value="professor">
+            <TabsTrigger value="professor" className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white">
               <UserCircle className="mr-2 h-5 w-5" />
               Professor Projects
             </TabsTrigger>
@@ -192,13 +192,13 @@ const ProjectsPage = () => {
 
 const ProjectsHero = () => {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-blue-900 to-gray-950">
+    <section className="py-20 px-4 bg-gradient-to-b from-[#c1502e] to-[#686256]">
       <div className="max-w-4xl mx-auto text-center">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-6xl font-bold mb-6 text-blue-400"
+          className="text-6xl font-extrabold mb-6 text-[#472014] font-caveat"
         >
           Cutting-Edge STEM Projects
         </motion.h1>
@@ -206,25 +206,12 @@ const ProjectsHero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xl mb-10 text-gray-300"
+          className="text-xl mb-10 text-white"
         >
           Explore groundbreaking projects and collaborate with leading experts
           in the field. Push the boundaries of science and technology with Probe
           STEM.
         </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <Button
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Explore Projects
-            <Rocket className="ml-2 h-5 w-5" />
-          </Button>
-        </motion.div>
       </div>
     </section>
   );
@@ -292,10 +279,10 @@ const ProjectCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card className="bg-gray-900 border-blue-800 overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-blue-800 to-purple-800 pb-2">
+      <Card className="bg-white border-[#c1502e] overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-[#c1502e] to-[#686256] pb-2">
           <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl font-bold text-white">
+            <CardTitle className="text-2xl font-bold text-white font-caveat">
               {project.title}
             </CardTitle>
             <Badge
@@ -304,13 +291,13 @@ const ProjectCard = ({
               {project.difficulty}
             </Badge>
           </div>
-          <CardDescription className="text-gray-200 mt-2">
+          <CardDescription className="text-white mt-2">
             {project.description}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           <div className="space-y-2">
-            <div className="flex items-center text-gray-300">
+            <div className="flex items-center text-[#472014]">
               <User className="mr-2 h-4 w-4" />
               <span>
                 {project.status === "ONGOING" || project.status === "CLOSED"
@@ -320,7 +307,7 @@ const ProjectCard = ({
             </div>
             {(project.status === "ONGOING" || project.status === "CLOSED") &&
               project.professor && (
-                <div className="flex items-center text-gray-300">
+                <div className="flex items-center text-[#472014]">
                   <Mail className="mr-2 h-4 w-4" />
                   <span>Email: {project.professor.email}</span>
                 </div>
@@ -330,7 +317,7 @@ const ProjectCard = ({
               <Clock className="mr-2 h-4 w-4" />
               <span
                 className={
-                  project.status === "OPEN" ? "text-green-400" : "text-red-400"
+                  project.status === "OPEN" ? "text-green-600" : "text-red-600"
                 }
               >
                 Status: {project.status}
@@ -338,19 +325,19 @@ const ProjectCard = ({
             </div>
           </div>
           <div className="mt-4">
-            <h4 className="font-semibold">Topic:</h4>
-            <p>{project.topic}</p>
+            <h4 className="font-semibold text-[#472014]">Topic:</h4>
+            <p className="text-[#686256]">{project.topic}</p>
           </div>
           <div className="mt-4">
-            <h4 className="font-semibold">Content:</h4>
-            <p>{project.content}</p>
+            <h4 className="font-semibold text-[#472014]">Content:</h4>
+            <p className="text-[#686256]">{project.content}</p>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tags.map((tag, i) => (
               <Badge
                 key={i}
                 variant="secondary"
-                className="bg-blue-600 text-white"
+                className="bg-[#c1502e] text-white"
               >
                 {tag}
               </Badge>
@@ -360,10 +347,10 @@ const ProjectCard = ({
         <CardFooter>
           {canApply && (
             <Button
-              className={`w-full ${
+              className={`w-full rounded-full ${
                 project.status === "OPEN"
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-gray-600 hover:bg-gray-700 cursor-not-allowed"
+                  ? "bg-[#c1502e] hover:bg-[#472014] text-white"
+                  : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed text-white"
               }`}
               disabled={project.status !== "OPEN"}
               onClick={() => onApply(project.id)}

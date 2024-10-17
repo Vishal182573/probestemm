@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ThumbsUp, ThumbsDown, Send, Trash } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -208,10 +209,10 @@ const BlogPostPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#82CAFF] flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] flex flex-col">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-white text-2xl">Loading blog post...</div>
+          <div className="text-[#472014] text-4xl font-caveat">Loading blog post...</div>
         </main>
         <Footer />
       </div>
@@ -220,98 +221,115 @@ const BlogPostPage = () => {
 
   if (!blogPost) {
     return (
-      <div className="min-h-screen bg-[#82CAFF] text-gray-800 flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold mb-4">Blog post not found</h1>
-        {error && <p className="text-red-500">{error}</p>}
+      <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] text-[#472014] flex flex-col items-center justify-center">
+        <h1 className="text-[100px] font-bold mb-4 font-caveat">Blog post not found</h1>
+        {error && <p className="text-red-500 text-xl">{error}</p>}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#82CAFF] text-gray-800 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <article className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-4">{blogPost.title}</h1>
-          <p className="text-gray-600 mb-4">
+      <main className="flex-grow container mx-auto px-4 py-12">
+        <motion.article 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8 mb-8 border-[2px] border-[#472014]"
+        >
+          <h1 className="text-4xl font-caveat font-bold mb-4 text-[#472014]">{blogPost.title}</h1>
+          <p className="text-lg text-[#c1502e] font-semibold mb-6">
             By {blogPost.professor?.fullName || blogPost.business?.companyName},{" "}
             {blogPost.professor
               ? `${blogPost.professor.title} at ${blogPost.professor.university}`
               : `${blogPost.business?.industry}`}
           </p>
-          <p className="text-lg mb-6">{blogPost.content}</p>
+          <p className="text-lg mb-8 text-[#472014]">{blogPost.content}</p>
           <div className="flex items-center space-x-4">
             <Button
               variant="default"
-              className={`flex items-center ${
-                userInteraction === "like" ? "bg-blue-100" : ""
+              className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
+                userInteraction === "like" 
+                  ? "bg-[#c1502e] text-white" 
+                  : "bg-white hover:bg-[#c1502e] hover:text-white"
               }`}
               onClick={() => handleLikeDislike("like")}
             >
-              <ThumbsUp className="mr-2" size={18} />
+              <ThumbsUp className="mr-2" size={20} />
               {blogPost.likes}
             </Button>
             <Button
               variant="default"
-              className={`flex items-center ${
-                userInteraction === "dislike" ? "bg-red-100" : ""
+              className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
+                userInteraction === "dislike" 
+                  ? "bg-[#472014] text-white" 
+                  : "bg-white hover:bg-[#472014] hover:text-white"
               }`}
               onClick={() => handleLikeDislike("dislike")}
             >
-              <ThumbsDown className="mr-2" size={18} />
+              <ThumbsDown className="mr-2" size={20} />
               {blogPost.dislikes}
             </Button>
           </div>
-        </article>
-        <section className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">Comments</h2>
-          <ul className="space-y-4 mb-6">
+        </motion.article>
+
+        <motion.section 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8"
+        >
+          <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">Comments</h2>
+          <ul className="space-y-6 mb-8">
             {blogPost.comments.map((comment) => (
-              <li key={comment.id} className="border-b pb-4">
+              <li key={comment.id} className="border-b border-[#c1502e]/20 pb-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-[#c1502e] text-lg">
                       {comment.student?.fullName ||
                         comment.professor?.fullName ||
                         comment.business?.companyName}
-                      {comment.student
-                        ? " ,Student"
-                        : comment.professor
-                        ? " ,Professor"
-                        : " ,Business"}
+                      <span className="text-[#472014] ml-2">
+                        {comment.student
+                          ? "Student"
+                          : comment.professor
+                          ? "Professor"
+                          : "Business"}
+                      </span>
                     </p>
-                    <p>{comment.content}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-lg text-[#472014] my-2">{comment.content}</p>
+                    <p className="text-sm text-[#686256]">
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="hover:bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
                     onClick={() => handleDeleteComment(comment.id)}
                   >
-                    <Trash size={16} />
+                    <Trash size={18} />
                   </Button>
                 </div>
               </li>
             ))}
           </ul>
-          <form onSubmit={handleCommentSubmit} className="flex space-x-2">
+          <form onSubmit={handleCommentSubmit} className="flex space-x-4">
             <Input
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
-              className="flex-grow p-2 rounded-lg border bg-current focus:outline-none focus:ring-2 focus:ring-[#82CAFF] bg-ba"
+              className="flex-grow p-4 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-lg bg-white text-[#472014]"
             />
             <Button
               type="submit"
-              className="bg-[#82CAFF] hover:bg-[#6AB6E6] text-white"
+              className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-6 py-3 rounded-full transition-all duration-300"
             >
-              <Send size={18} />
+              <Send size={20} />
             </Button>
           </form>
-        </section>
+        </motion.section>
       </main>
       <Footer />
     </div>
