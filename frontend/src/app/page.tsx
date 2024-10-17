@@ -23,6 +23,7 @@ import {
 import NotificationsComponent from "@/components/shared/Notifications";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturedQuestionsSection from "@/components/shared/FeaturedQuestionSection";
+import { url } from "inspector";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -31,7 +32,7 @@ interface AnimatedSectionProps {
 
 const HomePage = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-[#82CAFF] text-[#003366]">
+    <div className="flex flex-col min-h-screen bg-emerald-800 text-[#003366]">
       <Navbar />
       <main className="flex-grow">
         <HeroSection />
@@ -62,7 +63,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center overflow-hidden">
       <AnimatePresence initial={false}>
         <motion.div
           key={currentImageIndex}
@@ -74,65 +75,57 @@ const HeroSection = () => {
           style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
         />
       </AnimatePresence>
-
-      <div className="absolute inset-0 bg-[#82CAFF] bg-opacity-70 z-10" />
-
-      <div className="relative z-20 text-center px-4 max-w-5xl mx-auto">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#82CAFF] via-[#82CAFF] to-[#003366] opacity-80 z-10" />
+      <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-6xl md:text-8xl font-extrabold mb-6 text-[#003366]"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 text-white"
         >
-          Revolutionize Your <span className="text-[#0056b3]">STEM</span>{" "}
-          Learning
+          Connecting <span className="text-[#0056b3]">Minds</span>{" "}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0056b3] to-[#00BFFF]">Globally</span>
         </motion.h1>
-
         <motion.p
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-xl md:text-2xl mb-10 text-[#004080] max-w-3xl mx-auto"
+          className="text-lg sm:text-xl md:text-2xl mb-10 text-white max-w-3xl mx-auto"
         >
-          Probe STEM: Where innovation meets education. Dive into a world of
-          interactive learning, cutting-edge technology, and global
-          collaboration.
+          Probe STEM: Fostering dynamic collaboration among students, faculty, and industry experts to drive innovation
         </motion.p>
-
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex justify-center space-x-4"
+          className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"
         >
           <Link href="/login">
             <Button
               size="lg"
-              className="bg-[#0056b3] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-md transition-all duration-300 text-lg"
+              className="bg-[#0056b3] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               Get Started
               <Rocket className="ml-2 h-6 w-6" />
             </Button>
           </Link>
-
           <Link href="/about">
             <Button
               size="lg"
               variant="outline"
-              className="bg-transparent border-2 border-[#0056b3] text-[#0056b3] font-bold py-4 px-8 rounded-md transition-all duration-300 hover:bg-[#0056b3] hover:text-white text-lg"
+              className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-full transition-all duration-300 hover:bg-white hover:text-[#0056b3] text-lg w-full sm:w-auto"
             >
               Learn More
             </Button>
           </Link>
         </motion.div>
       </div>
-
       <motion.div
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       >
-        <ChevronDown className="text-[#0056b3] h-10 w-10" />
+        <ChevronDown className="text-white h-10 w-6" />
       </motion.div>
     </section>
   );

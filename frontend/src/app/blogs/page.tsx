@@ -123,24 +123,30 @@ const BlogsPage = () => {
       </div>
     );
   }
-
+  // bg-gradient-to-br from-green-800 via-emerald-900 to-teal-900
+  // bg-gradient-to-br from-green-700 to-emerald-900 text-emerald-50 
+  // bg-gradient-to-br from-orange-500 to-pink-600 text-orange-50
+  // bg-gradient-to-br from-gray-900 to-blue-900 text-gray-200
+  // bg-lime-500 
+  // bg-emerald-600  
+  // bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-r from-fuchsia-600 via-purple-600 to-blue-600 text-gray-800">
+    <div className="flex flex-col min-h-screen shadow-xl bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90 backdrop-filter backdrop-blur-xl ">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-white">Probe STEM Blogs</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <h1 className="text-4xl font-bold mb-8 text-emerald-50">Probe STEM Blogs</h1>
+        {error && <p className="text-red-400 mb-4">{error}</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogs.map((blog) => (
-            <div key={blog.id} className="bg-white p-6 rounded-xl shadow-xl">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">
+            <div key={blog.id} className="bg-emerald-50 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-2xl font-semibold mb-4 text-emerald-900">
                 {blog.title}
               </h2>
-              <p className="text-gray-700 mb-2">
+              <p className="text-emerald-700 mb-2">
                 By {blog.author.fullName}, {blog.author.title}
               </p>
-              <p className="text-gray-600 mb-4">{blog.author.university}</p>
-              <p className="text-gray-700 mb-6">
+              <p className="text-emerald-600 mb-4">{blog.author.university}</p>
+              <p className="text-emerald-800 mb-6">
                 {blog.content.substring(0, 150)}...
               </p>
               <div className="flex justify-between items-center">
@@ -148,7 +154,7 @@ const BlogsPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700"
+                    className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100"
                     onClick={() => handleLike(blog.id)}
                   >
                     <ThumbsUp className="mr-2 h-4 w-4" />
@@ -157,7 +163,7 @@ const BlogsPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-700"
+                    className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100"
                     onClick={() => handleDislike(blog.id)}
                   >
                     <ThumbsDown className="mr-2 h-4 w-4" />
@@ -168,7 +174,7 @@ const BlogsPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-white border-gray-300"
+                    className="text-emerald-700 border-emerald-300 hover:bg-emerald-100"
                   >
                     <MessageSquare className="mr-2 h-4 w-4" />
                     {blog.comments.length} Comments
@@ -178,10 +184,10 @@ const BlogsPage = () => {
             </div>
           ))}
         </div>
-        <div className="mt-12 text-center ">
+        <div className="mt-12 text-center">
           {userRole === "professor" && (
             <Link href="/create-blog">
-              <Button variant="default" size="lg">
+              <Button variant="default" size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 <Plus className="mr-2 h-6 w-6" />
                 Create New Blog
               </Button>
