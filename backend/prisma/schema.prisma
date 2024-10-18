@@ -201,6 +201,7 @@ model Blog {
   professorId String?
   business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
   businessId  String?
+  blogImage   String?
   
   blogLikes   BlogLike[]
 
@@ -293,6 +294,7 @@ model Webinar {
   duration    Int?
   isOnline    Boolean   @default(true)
   meetingLink String?
+  webinarImage String?
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?

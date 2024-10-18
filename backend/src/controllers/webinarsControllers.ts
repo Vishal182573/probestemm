@@ -1,5 +1,6 @@
-import type{ Request, Response } from "express";
+import type { Request, Response } from "express";
 import { PrismaClient, WebinarStatus } from "@prisma/client";
+import cloudinary from "../config/cloudinary";
 
 const prisma = new PrismaClient();
 
@@ -8,9 +9,9 @@ export const getAllWebinars = async (req: Request, res: Response) => {
     const webinars = await prisma.webinar.findMany({
       where: {
         status: {
-          in: ['APPROVED', 'COMPLETED']
-        }
-      }
+          in: ["APPROVED", "COMPLETED"],
+        },
+      },
     });
     res.status(200).json(webinars);
   } catch (error) {
@@ -32,9 +33,36 @@ export const getWebinarsByProfessorId = async (req: Request, res: Response) => {
 };
 
 export const requestWebinar = async (req: Request, res: Response) => {
-  const { professorId, title, topic, place, date, maxAttendees, duration, isOnline, meetingLink } = req.body;
-
   try {
+    console.log("Received webinar request:", req.body);
+    console.log("Received file:", req.file);
+
+    const file = req.file;
+    let webinarImage = "";
+
+    if (file) {
+      try {
+        const result = await cloudinary.uploader.upload(file.path);
+        webinarImage = result.secure_url;
+        console.log("Image uploaded to Cloudinary:", webinarImage);
+      } catch (uploadError) {
+        console.error("Error uploading to Cloudinary:", uploadError);
+        return res.status(500).json({ error: "Failed to upload image" });
+      }
+    }
+
+    const {
+      professorId,
+      title,
+      topic,
+      place,
+      date,
+      maxAttendees,
+      duration,
+      isOnline,
+      meetingLink,
+    } = req.body;
+
     // Check if there's already a pending webinar request for this professor
     const existingWebinar = await prisma.webinar.findFirst({
       where: {
@@ -44,8 +72,8 @@ export const requestWebinar = async (req: Request, res: Response) => {
     });
 
     if (existingWebinar) {
-      return res.status(400).json({ 
-        error: "A webinar request with 'PENDING' status already exists." 
+      return res.status(400).json({
+        error: "A webinar request with 'PENDING' status already exists.",
       });
     }
 
@@ -56,22 +84,27 @@ export const requestWebinar = async (req: Request, res: Response) => {
         topic,
         place,
         date: new Date(date),
-        maxAttendees,
-        duration,
-        isOnline,
+        maxAttendees: parseInt(maxAttendees),
+        duration: parseInt(duration),
+        isOnline: isOnline === "true",
         meetingLink,
         status: WebinarStatus.PENDING,
         professorId,
+        webinarImage,
       },
     });
 
+    console.log("New webinar created:", newWebinar);
+
     res.status(201).json(newWebinar);
   } catch (error) {
-    res.status(500).json({ error: "Failed to request webinar" });
+    console.error("Error in requestWebinar:", error);
+    res.status(500).json({
+      error: "Failed to request webinar",
+      details: (error as any).message,
+    });
   }
 };
-
-
 // SuperAdmin updates webinar status (APPROVED / REJECTED)
 export const updateWebinarStatus = async (req: Request, res: Response) => {
   const { webinarId } = req.params;
@@ -93,7 +126,10 @@ export const updateWebinarStatus = async (req: Request, res: Response) => {
 };
 
 // Professor updates webinar status to COMPLETED / CANCELLED
-export const updateProfessorWebinarStatus = async (req: Request, res: Response) => {
+export const updateProfessorWebinarStatus = async (
+  req: Request,
+  res: Response
+) => {
   const { webinarId } = req.params;
   const { status } = req.body; // Status should be either COMPLETED or CANCELLED
 

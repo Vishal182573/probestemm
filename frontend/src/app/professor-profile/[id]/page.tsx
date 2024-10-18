@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import {
   Award,
   Briefcase,
@@ -82,6 +83,7 @@ interface Webinar {
   isOnline: boolean;
   meetingLink?: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
+  webinarImage?: string;
 }
 
 interface Project {
@@ -156,20 +158,52 @@ const ProfessorProfilePage: React.FC = () => {
     fetchProfessorData();
   }, [id, isLoggedInUser]);
 
-  const handleCreateWebinar = async (webinarData: any) => {
+  const handleCreateWebinar = async (
+    webinarData: any,
+    webinarImage: File | null
+  ) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/webinars`, webinarData, {
-        headers: { Authorization: `Bearer ${token}` },
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const formData = new FormData();
+
+      // Append webinar data to formData
+      Object.keys(webinarData).forEach((key) => {
+        formData.append(key, webinarData[key]);
       });
-      setWebinars([...webinars, response.data]);
+
+      // Append image if it exists
+      if (webinarImage) {
+        formData.append("webinarImage", webinarImage);
+      }
+
+      console.log("Sending webinar data:", webinarData);
+      console.log("Sending webinar image:", webinarImage);
+
+      const response = await axios.post(`${API_URL}/webinars`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Server response:", response.data);
+
+      setWebinars((prevWebinars) => [...prevWebinars, response.data]);
       setIsWebinarDialogOpen(false);
     } catch (error) {
       console.error("Error creating webinar:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Response data:", error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response headers:", error.response?.headers);
+      }
       setError("Failed to create webinar. Please try again.");
     }
   };
-
   const handleUpdateWebinarStatus = async (
     webinarId: string,
     newStatus: "COMPLETED" | "CANCELLED"
@@ -832,18 +866,30 @@ const ProfessorProfilePage: React.FC = () => {
                                         e.currentTarget
                                       );
                                       const webinarData = {
-                                        ...Object.fromEntries(formData),
                                         professorId: id,
-                                        isOnline:
-                                          formData.get("place") === "online",
+                                        title: formData.get("title") as string,
+                                        topic: formData.get("topic") as string,
+                                        place: formData.get("place") as string,
+                                        date: formData.get("date") as string,
                                         maxAttendees: parseInt(
                                           formData.get("maxAttendees") as string
                                         ),
                                         duration: parseInt(
                                           formData.get("duration") as string
                                         ),
+                                        isOnline:
+                                          formData.get("place") === "online",
+                                        meetingLink: formData.get(
+                                          "meetingLink"
+                                        ) as string,
                                       };
-                                      handleCreateWebinar(webinarData);
+                                      const webinarImage = formData.get(
+                                        "webinarImage"
+                                      ) as File;
+                                      handleCreateWebinar(
+                                        webinarData,
+                                        webinarImage
+                                      );
                                     }}
                                     className="space-y-4"
                                   >
@@ -934,6 +980,17 @@ const ProfessorProfilePage: React.FC = () => {
                                         placeholder="https://example.com/meeting"
                                       />
                                     </div>
+                                    <div>
+                                      <Label htmlFor="webinar-image">
+                                        Webinar Image
+                                      </Label>
+                                      <Input
+                                        id="webinar-image"
+                                        name="webinarImage"
+                                        type="file"
+                                        accept="image/*"
+                                      />
+                                    </div>
                                     <Button type="submit">
                                       Submit for Approval
                                     </Button>
@@ -957,7 +1014,7 @@ const ProfessorProfilePage: React.FC = () => {
                                         status.slice(1).toLowerCase()
                                       } Webinars`}
                                 </h3>
-                                <ul className="space-y-2">
+                                <ul className="space-y-4">
                                   {webinars
                                     .filter(
                                       (webinar) => webinar.status === status
@@ -965,9 +1022,27 @@ const ProfessorProfilePage: React.FC = () => {
                                     .map((webinar) => (
                                       <li
                                         key={webinar.id}
-                                        className="flex items-center justify-between"
+                                        className="flex items-center justify-between border-b pb-4"
                                       >
-                                        <span>{webinar.title}</span>
+                                        <div className="flex items-center space-x-4">
+                                          {webinar.webinarImage && (
+                                            <Image
+                                              src={webinar.webinarImage}
+                                              alt={webinar.title}
+                                              width={64}
+                                              height={64}
+                                              className="w-16 h-16 object-cover rounded"
+                                            />
+                                          )}
+                                          <div>
+                                            <span className="font-semibold">
+                                              {webinar.title}
+                                            </span>
+                                            <p className="text-sm text-gray-500">
+                                              {webinar.topic}
+                                            </p>
+                                          </div>
+                                        </div>
                                         <div className="flex items-center space-x-2">
                                           <Badge
                                             variant={

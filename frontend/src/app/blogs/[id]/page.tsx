@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import Link from "next/link";
 import { NavbarWithBg } from "@/components/shared/NavbarWithbg";
+import Image from "next/image";
 interface Comment {
   id: string;
   content: string;
@@ -40,6 +41,7 @@ interface BlogPost {
   likes: number;
   dislikes: number;
   comments: Comment[];
+  blogImage: string;
   authorType: "PROFESSOR" | "BUSINESS";
   professor?: {
     id: string;
@@ -251,6 +253,16 @@ const BlogPostPage = () => {
               : `${blogPost.business?.industry}`}
           </p>
           <p className="text-lg mb-8 text-[#472014]">{blogPost.content}</p>
+          {blogPost.blogImage && (
+            <Image
+              src={blogPost.blogImage}
+              alt={blogPost.title}
+              width={300}
+              height={200}
+              className="mb-4 rounded-lg"
+            />
+          )}
+
           <div className="flex items-center space-x-4">
             <Button
               variant="default"

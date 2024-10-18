@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Pencil } from "lucide-react";
+import { Pencil, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ type CreateBlogPostProps = unknown;
 const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -37,6 +38,12 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     }
   }, [router, toast]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -47,16 +54,19 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
         throw new Error("No authentication token found");
       }
 
-      const response = await axios.post(
-        `${API_URL}/blogs`,
-        { title, content },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      if (image) {
+        formData.append("blogImage", image);
+      }
+
+      const response = await axios.post(`${API_URL}/blogs`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       console.log("Blog created:", response.data);
       toast({
@@ -89,7 +99,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavbarWithBg/>
+      <NavbarWithBg />
       <main className="container mx-auto px-4 py-8">
         <Card className="w-full max-w-4xl mx-auto border-2 border-[#c1502e] shadow-xl bg-white">
           <CardHeader>
@@ -116,6 +126,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   required
                 />
               </div>
+
               <div>
                 <label
                   htmlFor="content"
@@ -128,17 +139,32 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="w-full border-2 border-[#c1502e] rounded-lg p-3"
-                  rows={8}
-                  placeholder="Write your blog content here..."
+                  placeholder="Enter your blog content"
                   required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="image"
+                  className="block text-xl font-bold text-[#472014] mb-2"
+                >
+                  Image
+                </label>
+                <input
+                  type="file"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full border-2 border-[#c1502e] rounded-lg p-3"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
+                className="bg-[#c1502e] hover:bg-[#472014] text-white"
                 disabled={isLoading}
               >
-                {isLoading ? "Publishing..." : "Publish Blog Post"}
+                {isLoading ? "Creating..." : "Create Blog Post"}
               </Button>
             </form>
           </CardContent>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ interface Blog {
   id: string;
   title: string;
   content: string;
+  blogImage: string;
   likes: number;
   dislikes: number;
   authorType: "PROFESSOR" | "BUSINESS" | null;
@@ -179,13 +181,7 @@ const BlogsPage: React.FC = () => {
       </div>
     );
   }
-  // bg-gradient-to-br from-green-800 via-emerald-900 to-teal-900
-  // bg-gradient-to-br from-green-700 to-emerald-900 text-emerald-50
-  // bg-gradient-to-br from-orange-500 to-pink-600 text-orange-50
-  // bg-gradient-to-br from-gray-900 to-blue-900 text-gray-200
-  // bg-lime-500
-  // bg-emerald-600
-  // bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
@@ -218,6 +214,15 @@ const BlogsPage: React.FC = () => {
                   {authorInfo.title && `, ${authorInfo.title}`}
                 </p>
                 <p className="text-[#686256] mb-4">{authorInfo.affiliation}</p>
+                {blog.blogImage && (
+                  <Image
+                    src={blog.blogImage}
+                    alt={blog.title}
+                    width={300}
+                    height={200}
+                    className="mb-4 rounded-lg"
+                  />
+                )}
                 <p className="text-[#472014] mb-6">
                   {blog.content.substring(0, 150)}...
                 </p>
