@@ -174,11 +174,11 @@ export const getProjectsByProfessorId = async (req: Request, res: Response) => {
       include: { professor: true, student: true },
     });
 
-    if (!projects.length) {
-      return res
-        .status(404)
-        .json({ error: "No projects found for this professor" });
-    }
+    // if (!projects.length) {
+    //   return res
+    //     .status(404)
+    //     .json({ error: "No projects found for this professor" });
+    // }
 
     res.status(200).json(projects);
   } catch (error) {
@@ -238,6 +238,15 @@ export const applyToProfessorProject = async (req: Request, res: Response) => {
 
     if (!project) {
       return res.status(404).json({ error: "Project not found" });
+    }
+
+    // if already applied
+    const appliedStudents = await prisma.appliedStudent.findFirst({
+      where: { projectId, studentId },
+    });
+
+    if (appliedStudents) {
+      return res.status(400).json({ error: "Already applied to this project" });
     }
 
     const appliedStudent = await prisma.appliedStudent.create({

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 import React, { useState, useEffect, ReactNode } from "react";
-import Link from "next/link"
+import Link from "next/link";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Navbar } from "@/components/shared/Navbar";
@@ -91,7 +91,9 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
         >
-          <span className=" text-[#472014] font-bold">Probe STEM:</span> fostering dynamic collaboration among students, faculty, and industry experts to drive innovation
+          <span className=" text-[#472014] font-bold">Probe STEM:</span>{" "}
+          fostering dynamic collaboration among students, faculty, and industry
+          experts to drive innovation
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
@@ -161,7 +163,6 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
     </motion.div>
   );
 };
-
 const FeaturesSection = () => {
   const features = [
     {
@@ -174,6 +175,7 @@ const FeaturesSection = () => {
         "Project collaboration tools",
         "Research publication tracking",
       ],
+      link: "/students",
     },
     {
       icon: <GraduationCap className="h-16 w-16 text-[#472014]" />,
@@ -185,6 +187,7 @@ const FeaturesSection = () => {
         "Research project management",
         "Student talent pool access",
       ],
+      link: "/professors",
     },
     {
       icon: <Briefcase className="h-16 w-16 text-[#472014]" />,
@@ -196,47 +199,44 @@ const FeaturesSection = () => {
         "Research collaboration tools",
         "Industry-academia networking",
       ],
+      link: "/businesses",
     },
   ];
 
   return (
     <section className="py-24 px-4 bg-white">
-      <AnimatedSection>
-        <h2 className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat">
-          Why Choose Probe STEM?
-        </h2>
-      </AnimatedSection>
+      <h2 className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat">
+        Why Choose Probe STEM?
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
         {features.map((feature, index) => (
-          <AnimatedSection
+          <motion.div
             key={index}
-            direction={index % 2 === 0 ? "left" : "right"}
+            className="p-8 rounded-xl shadow-xl h-full flex flex-col bg-[#c1502e]"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
           >
-            <motion.div
-              className="p-8 rounded-xl shadow-xl h-full flex flex-col bg-[#c1502e]"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
-                {feature.icon}
-
-                <h3 className="text-4xl font-semibold mt-6 mb-4 text-[#472014] font-caveat">
-                  {feature.title}
-                </h3>
-                <p className="text-[#472014] text-lg mb-6">
-                  {feature.description}
-                </p>
-                <ul className="text-left w-full">
-                  {feature.benefits.map((benefit, idx) => (
-                    <li key={idx} className="flex items-center mb-2">
-                      <Star className="h-5 w-5 text-[#472014] mr-2 " />
-                      <span className="text-[#472014]">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          </AnimatedSection>
+            <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
+              {feature.icon}
+              <h3 className="text-4xl font-semibold mt-6 mb-4 text-[#472014] font-caveat">
+                {feature.title}
+              </h3>
+              <p className="text-[#472014] text-lg mb-6">
+                {feature.description}
+              </p>
+              <ul className="text-left w-full mb-6">
+                {feature.benefits.map((benefit, idx) => (
+                  <li key={idx} className="flex items-center mb-2">
+                    <Star className="h-5 w-5 text-[#472014] mr-2 " />
+                    <span className="text-[#472014]">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href={feature.link} className="mt-auto">
+                <Button>View {feature.title}s</Button>
+              </Link>
+            </div>
+          </motion.div>
         ))}
       </div>
     </section>
@@ -264,8 +264,8 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       quote:
-        "\"Probe STEM transformed my learning experience. The interactive projects and global network are unparalleled.",
-      author: "Sarah K., Computer Science Student\"",
+        '"Probe STEM transformed my learning experience. The interactive projects and global network are unparalleled.',
+      author: 'Sarah K., Computer Science Student"',
       rating: 5,
     },
     {
@@ -312,9 +312,7 @@ const TestimonialsSection = () => {
                   </motion.div>
                 ))}
               </div>
-              <p className="text-[#472014] italic mb-6 ">
-                {testimonial.quote}
-              </p>
+              <p className="text-[#472014] italic mb-6 ">{testimonial.quote}</p>
               <p className="text-[#472014] font-semibold text-right">
                 {testimonial.author}
               </p>

@@ -65,7 +65,9 @@ export const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link href="/">
-            <h1 className={`text-2xl font-bold ${linkTextColor}`}>Probe STEM</h1>
+            <h1 className={`text-2xl font-bold ${linkTextColor}`}>
+              Probe STEM
+            </h1>
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -159,11 +161,11 @@ export const Navbar: React.FC = () => {
   );
 };
 
-const NavLink: React.FC<{ to: string; children: React.ReactNode; className: string }> = ({
-  to,
-  children,
-  className,
-}) => (
+const NavLink: React.FC<{
+  to: string;
+  children: React.ReactNode;
+  className: string;
+}> = ({ to, children, className }) => (
   <Link href={to}>
     <Button
       variant="ghost"
@@ -174,11 +176,11 @@ const NavLink: React.FC<{ to: string; children: React.ReactNode; className: stri
   </Link>
 );
 
-const MobileNavLink: React.FC<{ to: string; children: React.ReactNode; className: string }> = ({
-  to,
-  children,
-  className,
-}) => (
+const MobileNavLink: React.FC<{
+  to: string;
+  children: React.ReactNode;
+  className: string;
+}> = ({ to, children, className }) => (
   <Link href={to}>
     <Button
       variant="ghost"

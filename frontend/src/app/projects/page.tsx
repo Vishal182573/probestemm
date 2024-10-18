@@ -157,11 +157,17 @@ const ProjectsPage = () => {
         <ProjectsHero />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">
-            <TabsTrigger value="business" className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white">
+            <TabsTrigger
+              value="business"
+              className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+            >
               <GraduationCap className="mr-2 h-5 w-5" />
               Business Projects
             </TabsTrigger>
-            <TabsTrigger value="professor" className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white">
+            <TabsTrigger
+              value="professor"
+              className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+            >
               <UserCircle className="mr-2 h-5 w-5" />
               Professor Projects
             </TabsTrigger>

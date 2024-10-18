@@ -12,7 +12,7 @@ import projectRoutes from "./routes/projectsRoutes";
 import businessRoutes from "./routes/businessRoutes";
 import superAdminRoutes from "./routes/superadminRoutes";
 import imageUploadRoutes from "./routes/uploadImageRoutes";
-import contactRoutes from "./routes/contactRoutes"
+import contactRoutes from "./routes/contactRoutes";
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const corsOptions = {
-  origin:FRONTEND_URL,
+  origin: FRONTEND_URL,
   credentials: true,
   optionsSuccessStatus: 200,
 };
