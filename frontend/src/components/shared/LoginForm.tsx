@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { API_URL } from "@/constants";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const authApi = axios.create({
   baseURL: `${API_URL}/auth`,
   withCredentials: true,

@@ -18,8 +18,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { API_URL } from "@/constants";
 
 const authApi = axios.create({
   baseURL: `${API_URL}/auth`,

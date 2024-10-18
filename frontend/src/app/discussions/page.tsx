@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import axios from "axios";
+import { API_URL } from "@/constants";
 
 interface Discussion {
   id: string;
@@ -74,8 +75,6 @@ const categories: { [key: string]: string[] } = {
 };
 
 const DiscussionForum: React.FC = () => {
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [status, setStatus] = useState("all");

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { API_URL } from "@/constants";
 
 interface Webinar {
   id: string;
@@ -34,7 +35,7 @@ const NotificationsComponent: React.FC = () => {
   useEffect(() => {
     const fetchWebinars = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/webinars");
+        const response = await axios.get(`${API_URL}/webinars`);
         setWebinars(response.data);
       } catch (error) {
         console.error("Failed to fetch webinars:", error);

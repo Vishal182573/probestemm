@@ -10,8 +10,7 @@ import { ThumbsUp, ThumbsDown, Send, Trash } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { API_URL } from "@/constants";
 
 interface Comment {
   id: string;

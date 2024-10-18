@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
+import { API_URL } from "@/constants";
 
 interface DashboardItem {
   id: string;
@@ -55,8 +56,6 @@ interface Professor {
   degrees: string;
   department: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const dashboardItems: DashboardItem[] = [
   { id: "professors", name: "Professors", icon: <Users />, count: 150 },

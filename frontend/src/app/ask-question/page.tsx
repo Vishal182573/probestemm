@@ -16,8 +16,7 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { API_URL } from "@/constants";
 
 const categories: { [key: string]: string[] } = {
   Science: [

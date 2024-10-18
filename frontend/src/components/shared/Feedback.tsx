@@ -4,10 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import { API_URL } from "@/constants";
 
 const ContactForm: React.FC = () => {
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const [formData, setFormData] = useState({
     email: "",
     fullName: "",

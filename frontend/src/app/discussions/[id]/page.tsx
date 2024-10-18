@@ -15,6 +15,7 @@ import {
 import { Footer } from "@/components/shared/Footer";
 import { Navbar } from "@/components/shared/Navbar";
 import axios from "axios";
+import { API_URL } from "@/constants";
 
 interface Answer {
   id: string;
@@ -39,8 +40,6 @@ interface Discussion {
 }
 
 const QuestionDetailPage: React.FC = () => {
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
   const { id } = useParams<{ id: string }>();
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
   const [newAnswer, setNewAnswer] = useState("");
