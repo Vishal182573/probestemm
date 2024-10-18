@@ -2,6 +2,7 @@ import React from "react";
 import RoleList from "@/components/shared/RoleList";
 import AnimatedContainer from "@/components/shared/AnimatedContainer";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 async function getProfessors() {
   try {
@@ -27,12 +28,15 @@ export default async function ProfessorsPage() {
   try {
     const professors = await getProfessors();
     return (
+      <div className="w-full h-screen bg-white">
+        <NavbarWithBg/>
       <AnimatedContainer>
         <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
           Professors
         </h1>
         <RoleList roles={professors} roleType="professor" />
       </AnimatedContainer>
+      </div>
     );
   } catch (error) {
     return (

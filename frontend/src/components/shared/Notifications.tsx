@@ -85,7 +85,7 @@ const NotificationsComponent: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All Webinars</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
+              <SelectItem value="APPROVED">UPCOMING</SelectItem>
               <SelectItem value="COMPLETED">Completed</SelectItem>
             </SelectContent>
           </Select>
@@ -132,7 +132,7 @@ const NotificationsComponent: React.FC = () => {
                               : "bg-[#c1502e] text-white"
                           }`}
                         >
-                          {webinar.status}
+                          {webinar.status=="APPROVED"? "UPCOMING":webinar.status}
                         </Badge>
                       </div>
                     </CardContent>

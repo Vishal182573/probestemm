@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Building, Briefcase, Globe, Tag, Plus, User } from "lucide-react";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Business {
   id: string;
@@ -209,7 +209,7 @@ const BusinessProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center flex items-center justify-center h-screen">
+      <div className="text-center flex items-center justify-center h-screen bg-white">
         <div className="loader">Loading...</div>
         <div className="text-muted-foreground ml-2">please wait</div>
       </div>
@@ -234,7 +234,7 @@ const BusinessProfilePage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <NavbarWithBg/>
 
       <main className="flex-grow">
         <motion.section

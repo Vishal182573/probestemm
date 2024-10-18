@@ -9,12 +9,12 @@ import {
 } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Footer } from "@/components/shared/Footer";
-import { Navbar } from "@/components/shared/Navbar";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 const AboutUsPage: React.FC = () => {
   return (
     <div className="bg-gradient-to-b from-[#c1502e] to-[#686256] min-h-screen">
-      <Navbar />
+      <NavbarWithBg/>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

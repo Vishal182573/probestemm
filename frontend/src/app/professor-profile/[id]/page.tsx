@@ -37,14 +37,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Professor {
   id: string;
@@ -290,10 +288,10 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card>
+        <Card className="border border-[#c1502e] bg-white">
           <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-primary">
-              <Briefcase className="mr-2" />
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Briefcase className="mr-2 text-[#c1502e]" />
               My Projects
             </CardTitle>
           </CardHeader>
@@ -305,13 +303,13 @@ const ProfessorProfilePage: React.FC = () => {
                   onOpenChange={setIsProjectDialogOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
                       <Plus className="mr-2" />
                       Create Project
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
+                  <DialogContent className="border-[#c1502e]">
+                    <DialogHeader className="bg-[#c1502e] text-white p-4 rounded-t-lg">
                       <DialogTitle>Create a New Project</DialogTitle>
                     </DialogHeader>
                     <form
@@ -329,7 +327,7 @@ const ProfessorProfilePage: React.FC = () => {
                         };
                         handleCreateProject(projectData);
                       }}
-                      className="space-y-4"
+                      className="space-y-4 p-4"
                     >
                       <div>
                         <Label htmlFor="project-topic">Project Topic</Label>
@@ -338,6 +336,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="topic"
                           placeholder="Enter project topic"
                           required
+                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -347,6 +346,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="content"
                           placeholder="Enter project content"
                           required
+                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -371,6 +371,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="timeline"
                           type="date"
                           required
+                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -380,9 +381,14 @@ const ProfessorProfilePage: React.FC = () => {
                           name="tags"
                           placeholder="Enter tags (comma-separated)"
                           required
+                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
-                      <Button type="submit" disabled={isCreatingProject}>
+                      <Button 
+                        type="submit" 
+                        disabled={isCreatingProject}
+                        className="bg-[#c1502e] hover:bg-[#472014] text-white w-full"
+                      >
                         {isCreatingProject ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -398,7 +404,7 @@ const ProfessorProfilePage: React.FC = () => {
               </div>
               {["OPEN", "ONGOING", "CLOSED"].map((status) => (
                 <div key={status}>
-                  <h3 className="text-xl font-semibold mb-2">
+                  <h3 className="text-xl font-semibold mb-2 text-[#472014]">
                     {status.charAt(0) + status.slice(1).toLowerCase()} Projects
                   </h3>
                   <ul className="space-y-4">
@@ -407,26 +413,33 @@ const ProfessorProfilePage: React.FC = () => {
                       .map((project) => (
                         <li
                           key={project.id}
-                          className="border-b pb-4 last:border-b-0"
+                          className="border-b border-[#c1502e] pb-4 last:border-b-0"
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-semibold">
+                            <h4 className="text-lg font-semibold text-[#472014]">
                               {project.topic}
                             </h4>
                             <Badge
-                              variant={
-                                status === "CLOSED" ? "outline" : "secondary"
+                              variant={status === "CLOSED" ? "outline" : "secondary"}
+                              className={
+                                status === "CLOSED"
+                                  ? "border-[#c1502e] text-[#472014]"
+                                  : "bg-[#686256] text-white"
                               }
                             >
                               {status}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">
+                          <p className="text-sm text-[#686256] mb-2">
                             {project.content.substring(0, 100)}...
                           </p>
                           <div className="flex flex-wrap gap-2 mb-2">
                             {project.tags.map((tag, index) => (
-                              <Badge key={index} variant="outline">
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="border-[#c1502e] text-[#472014]"
+                              >
                                 {tag}
                               </Badge>
                             ))}
@@ -434,7 +447,7 @@ const ProfessorProfilePage: React.FC = () => {
                           {status === "OPEN" && (
                             <Button
                               onClick={() => fetchAppliedStudents(project.id)}
-                              className="mr-2"
+                              className="mr-2 bg-[#c1502e] hover:bg-[#472014] text-white"
                               disabled={isLoadingApplicants}
                             >
                               {isLoadingApplicants ? (
@@ -454,13 +467,14 @@ const ProfessorProfilePage: React.FC = () => {
                               onClick={() =>
                                 handleChangeProjectStatus(project.id, "CLOSED")
                               }
+                              className="bg-[#c1502e] hover:bg-[#472014] text-white"
                             >
                               Close Project
                             </Button>
                           )}
                           {appliedStudentsMap[project.id]?.length > 0 && (
                             <div className="mt-4">
-                              <h5 className="font-semibold mb-2">
+                              <h5 className="font-semibold mb-2 text-black">
                                 Applied Students:
                               </h5>
                               <ul className="space-y-2">
@@ -468,9 +482,9 @@ const ProfessorProfilePage: React.FC = () => {
                                   (student) => (
                                     <li
                                       key={student.studentId}
-                                      className="flex items-center justify-between bg-secondary p-2 rounded"
+                                      className="flex items-center justify-between p-2 rounded bg-[#472014] text-white"
                                     >
-                                      <div>
+                                      <div> 
                                         <span className="font-medium">
                                           {student.name}
                                         </span>
@@ -488,6 +502,7 @@ const ProfessorProfilePage: React.FC = () => {
                                             )
                                           }
                                           size="sm"
+                                          className="bg-[#c1502e] hover:bg-[#be8372] text-white"
                                         >
                                           Select
                                         </Button>
@@ -529,12 +544,12 @@ const ProfessorProfilePage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Navbar />
+    <div className="flex flex-col min-h-screen bg-white text-[#472014]">
+      <NavbarWithBg />
 
       <main className="flex-grow">
         <motion.section
-          className="relative bg-secondary text-secondary-foreground py-24"
+          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -581,7 +596,7 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
-                <Button variant="outline">
+                <Button variant="outline" className="bg-[#c1502e] hover:bg-[#472014] text-white">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Google Scholar
                 </Button>
@@ -593,12 +608,12 @@ const ProfessorProfilePage: React.FC = () => {
         <section className="py-12">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">
-              <TabsList className="flex justify-center bg-background p-2 rounded-lg">
+              <TabsList className="flex justify-center bg-white border-[#c1502e] border-2 text-[#472014] p-2 rounded-lg">
                 {tabItems.map((item) => (
                   <TabsTrigger
                     key={item.id}
                     value={item.id}
-                    className="flex items-center space-x-2 px-4 py-2"
+                    className="flex items-center space-x-2 px-4 py-2 data-[state=active]:bg-[#c1502e] data-[state=active]:text-white"
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -613,9 +628,9 @@ const ProfessorProfilePage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <Card>
+                  <Card className="bg-white text-[#472014]">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-bold ">
                         <GraduationCap className="mr-2" />
                         Personal Information
                       </CardTitle>
@@ -645,9 +660,9 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="bg-white text-[#472014]">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-bold ">
                         <Award className="mr-2" />
                         Achievements
                       </CardTitle>
@@ -673,9 +688,9 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="bg-white text-[#472014]">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                      <CardTitle className="flex items-center text-2xl font-bold">
                         <Briefcase className="mr-2" />
                         Positions Held
                       </CardTitle>
@@ -709,9 +724,9 @@ const ProfessorProfilePage: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <Card>
+                      <Card className="bg-white text-[#472014]">
                         <CardHeader>
-                          <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                          <CardTitle className="flex items-center text-2xl font-bold ">
                             <BookOpen className="mr-2" />
                             My Blogs
                           </CardTitle>
@@ -738,15 +753,15 @@ const ProfessorProfilePage: React.FC = () => {
                                     <Badge variant="secondary">
                                       {blog.likes} Likes
                                     </Badge>
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="text-black">
                                       {blog.dislikes} Dislikes
                                     </Badge>
 
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="text-black">
                                       {blog.comments.length} Comments
                                     </Badge>
                                     <Link href={`/blogs/${blog.id}`}>
-                                      <Button variant="outline">
+                                      <Button variant="outline" className="bg-[#c1502e] hover:bg-[#472014] text-white">
                                         View Blog
                                       </Button>
                                     </Link>
@@ -771,9 +786,9 @@ const ProfessorProfilePage: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <Card>
+                      <Card className="text-[#472014] bg-white">
                         <CardHeader>
-                          <CardTitle className="flex items-center text-2xl font-bold text-primary">
+                          <CardTitle className="flex items-center text-2xl font-bold ">
                             <Video className="mr-2" />
                             My Webinars
                           </CardTitle>
@@ -786,7 +801,7 @@ const ProfessorProfilePage: React.FC = () => {
                                 onOpenChange={setIsWebinarDialogOpen}
                               >
                                 <DialogTrigger asChild>
-                                  <Button>Request Webinar</Button>
+                                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">Request Webinar</Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                   <DialogHeader>
@@ -946,6 +961,7 @@ const ProfessorProfilePage: React.FC = () => {
                                                 ? "outline"
                                                 : "default"
                                             }
+                                            className="bg-[#c1502e] hover:bg-[#472014] text-white font-caveat"
                                           >
                                             {new Date(
                                               webinar.date
@@ -961,6 +977,7 @@ const ProfessorProfilePage: React.FC = () => {
                                                     "COMPLETED"
                                                   )
                                                 }
+                                                className="bg-[#c1502e] hover:bg-[#472014] text-white"
                                               >
                                                 Mark Completed
                                               </Button>

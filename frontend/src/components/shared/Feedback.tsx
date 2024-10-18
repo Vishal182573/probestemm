@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { API_URL } from "@/constants";
+import Image from "next/image";
+import { CONTACT } from "../../../public";
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -67,10 +70,8 @@ const ContactForm: React.FC = () => {
                 Send a mail directly to Us!
               </p>
               <div className="relative w-64 h-64 mx-auto">
-                <motion.img
-                  src="/api/placeholder/256/256"
-                  alt="Contact illustration"
-                  className="rounded-full border-4 border-white"
+                <motion.div
+                  className="rounded-full border-4 border-white overflow-hidden"
                   initial={{ scale: 0.8, rotate: -10 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{
@@ -79,7 +80,12 @@ const ContactForm: React.FC = () => {
                     damping: 20,
                     duration: 0.6,
                   }}
-                />
+                >
+                  <Image 
+                  src={CONTACT}
+                  alt="Contact illustration"
+                  className="object-cover "/>
+                  </motion.div>
               </div>
             </div>
             <div className="md:w-1/2 p-8 bg-white">

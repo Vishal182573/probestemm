@@ -1,6 +1,6 @@
 "use client";
 import { Footer } from "@/components/shared/Footer";
-import { Navbar } from "@/components/shared/Navbar";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import NotificationsComponent from "@/components/shared/Notifications";
 import { motion, useAnimation } from "framer-motion";
 
@@ -46,8 +46,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
 const WebinarPage = () => {
   return (
     <div>
-      <Navbar />
-
+      <NavbarWithBg/>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>

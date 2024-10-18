@@ -12,11 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 const categories: { [key: string]: string[] } = {
   Science: [
@@ -103,7 +103,7 @@ const AskQuestion: React.FC = () => {
 
   return (
     <>
-      <Navbar />
+      <NavbarWithBg/>
       <div className="min-h-screen bg-white">
         <motion.div
           initial={{ opacity: 0 }}

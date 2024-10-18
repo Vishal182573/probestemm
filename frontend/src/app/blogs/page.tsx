@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, MessageSquare, Plus } from "lucide-react";
@@ -10,6 +9,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Author {
   id: string;
@@ -161,7 +161,7 @@ const BlogsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
-        <Navbar />
+        <NavbarWithBg/>
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="text-black text-2xl">Loading blogs...</div>
         </main>
@@ -178,7 +178,7 @@ const BlogsPage: React.FC = () => {
   // bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <NavbarWithBg/>
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.h1 
           initial={{ opacity: 0, y: -50 }}

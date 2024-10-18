@@ -13,9 +13,9 @@ import {
   FaComment,
 } from "react-icons/fa";
 import { Footer } from "@/components/shared/Footer";
-import { Navbar } from "@/components/shared/Navbar";
 import axios from "axios";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Answer {
   id: string;
@@ -104,7 +104,7 @@ const QuestionDetailPage: React.FC = () => {
 
   if (isLoading)
     return (
-      <div className="flex justify-center items-center h-screen text-[#472014]">
+      <div className="flex justify-center items-center h-screen text-[#472014] bg-white">
         Loading...
       </div>
     );
@@ -123,7 +123,7 @@ const QuestionDetailPage: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <Navbar />
+      <NavbarWithBg/>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -3,10 +3,15 @@ import { PrismaClient, WebinarStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Get all webinars
 export const getAllWebinars = async (req: Request, res: Response) => {
   try {
-    const webinars = await prisma.webinar.findMany();
+    const webinars = await prisma.webinar.findMany({
+      where: {
+        status: {
+          in: ['APPROVED', 'COMPLETED']
+        }
+      }
+    });
     res.status(200).json(webinars);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch webinars" });

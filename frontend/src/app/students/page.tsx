@@ -2,6 +2,7 @@ import React from "react";
 import RoleList from "@/components/shared/RoleList";
 import AnimatedContainer from "@/components/shared/AnimatedContainer";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 async function getStudents() {
   try {
@@ -27,12 +28,15 @@ export default async function StudentsPage() {
   try {
     const students = await getStudents();
     return (
+      <div className="bg-white w-full h-screen">
+        <NavbarWithBg/>
       <AnimatedContainer>
         <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
           Students
         </h1>
         <RoleList roles={students} roleType="student" />
       </AnimatedContainer>
+      </div>
     );
   } catch (error) {
     return (

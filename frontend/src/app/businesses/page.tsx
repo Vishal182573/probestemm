@@ -27,12 +27,14 @@ export default async function BusinessesPage() {
   try {
     const businesses = await getBusinesses();
     return (
+      <div className="w-full h-screen bg-white">
       <AnimatedContainer>
         <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
           Businesses
         </h1>
         <RoleList roles={businesses} roleType="business" />
       </AnimatedContainer>
+      </div>
     );
   } catch (error) {
     return (

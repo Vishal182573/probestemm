@@ -5,10 +5,9 @@ import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-export const Navbar: React.FC = () => {
+export const NavbarWithBg: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<{
     id?: string;
     fullName?: string;
@@ -34,14 +33,6 @@ export const Navbar: React.FC = () => {
     }
   }, []);
 
-  // Scroll detection to change text color
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const getProfileImageSrc = () => {
     if (!user || !user.role) return "/user.png";
@@ -58,10 +49,10 @@ export const Navbar: React.FC = () => {
     }
   };
 
-  const linkTextColor = isScrolled ? "text-[#472014]" : "text-white";
+  const linkTextColor = "text-[#472014]";
 
   return (
-    <nav className="bg-opacity-90 backdrop-blur-md shadow-md fixed top-0 z-50 w-full transition-colors duration-300 ">
+    <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300 ">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link href="/">
@@ -138,7 +129,7 @@ export const Navbar: React.FC = () => {
                 <Link href={`/${user.role}-profile/${user.id}`}>
                   <Button
                     variant="ghost"
-                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50 "
+                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                   >
                     <User className="mr-2" size={18} /> Profile
                   </Button>
@@ -190,5 +181,4 @@ const MobileNavLink: React.FC<{
     </Button>
   </Link>
 );
-
-export default Navbar;
+export default NavbarWithBg;

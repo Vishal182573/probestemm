@@ -210,12 +210,14 @@ const FeaturesSection = () => {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
         {features.map((feature, index) => (
+
           <motion.div
             key={index}
             className="p-8 rounded-xl shadow-xl h-full flex flex-col bg-[#c1502e]"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
+          <Link href={feature.link} className="mt-auto">
             <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
               {feature.icon}
               <h3 className="text-4xl font-semibold mt-6 mb-4 text-[#472014] font-caveat">
@@ -232,10 +234,8 @@ const FeaturesSection = () => {
                   </li>
                 ))}
               </ul>
-              <Link href={feature.link} className="mt-auto">
-                <Button>View {feature.title}s</Button>
-              </Link>
             </div>
+            </Link>
           </motion.div>
         ))}
       </div>

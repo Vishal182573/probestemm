@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +25,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Project {
   title: string;
@@ -152,7 +152,7 @@ const ProjectsPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
-      <Navbar />
+      <NavbarWithBg/>
       <main className="flex-grow">
         <ProjectsHero />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">

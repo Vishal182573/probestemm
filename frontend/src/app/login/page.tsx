@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
 import { LoginForm } from "@/components/shared/LoginForm";
 import { Footer } from "@/components/shared/Footer";
 import { motion } from "framer-motion";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import { LOGIN } from "../../../public";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <NavbarWithBg/>
       <main className="flex-grow">
         <div className="relative min-h-[calc(100vh-4rem)]">
           {/* Background gradient overlay */}
@@ -64,10 +65,10 @@ const LoginPage: React.FC = () => {
                 </p>
                 <div className="relative w-full max-w-lg mx-auto md:mx-0 aspect-video">
                   <Image
-                    src="/api/placeholder/600/400"
+                    src={LOGIN}
                     alt="Login illustration"
                     fill
-                    className="object-cover rounded-xl shadow-2xl"
+                    className="object-cover rounded-xl "
                     priority
                   />
                 </div>

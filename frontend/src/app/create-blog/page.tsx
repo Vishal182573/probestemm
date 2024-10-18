@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 type CreateBlogPostProps = unknown;
 
@@ -89,9 +89,9 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      <NavbarWithBg/>
       <main className="container mx-auto px-4 py-8">
-        <Card className="w-full max-w-4xl mx-auto border-2 border-[#c1502e] shadow-xl">
+        <Card className="w-full max-w-4xl mx-auto border-2 border-[#c1502e] shadow-xl bg-white">
           <CardHeader>
             <CardTitle className="text-5xl sm:text-6xl font-extrabold text-[#472014] font-caveat flex items-center justify-center">
               <Pencil className="mr-4 h-12 w-12" />
@@ -99,7 +99,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 text-black">
               <div>
                 <label
                   htmlFor="title"
@@ -111,7 +111,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full border-2 border-[#c1502e] rounded-lg p-3"
+                  className="w-full border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                   placeholder="Enter your blog title"
                   required
                 />

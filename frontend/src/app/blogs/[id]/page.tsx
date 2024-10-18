@@ -11,6 +11,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Comment {
   id: string;
@@ -229,7 +230,7 @@ const BlogPostPage = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <Navbar />
+      <NavbarWithBg/>
       <main className="flex-grow container mx-auto px-4 py-12">
         <motion.article 
           initial={{ opacity: 0, y: 50 }}

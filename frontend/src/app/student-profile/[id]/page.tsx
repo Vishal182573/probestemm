@@ -4,14 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { motion} from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Award, Briefcase, GraduationCap, Star, Edit3 } from "lucide-react";
-import { Navbar } from "@/components/shared/Navbar";
+import { Award, Briefcase, GraduationCap, Star} from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Student {
   id: string;
@@ -92,7 +91,7 @@ const StudentProfilePage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
-      <Navbar />
+      <NavbarWithBg/>
 
       <main className="flex-grow">
         <motion.section
@@ -121,18 +120,6 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg">{student.university}</p>
                 </div>
               </div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="outline" 
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#c1502e] font-bold transition-all duration-300"
-                >
-                  <Edit3 className="mr-2" />
-                  Edit Profile
-                </Button>
-              </motion.div>
             </div>
           </div>
         </motion.section>
@@ -145,7 +132,7 @@ const StudentProfilePage: React.FC = () => {
               initial="initial"
               animate="animate"
             >
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Star className="mr-2" />
@@ -169,7 +156,7 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Briefcase className="mr-2" />
@@ -181,7 +168,7 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <GraduationCap className="mr-2" />
@@ -205,7 +192,7 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
                     <Award className="mr-2" />

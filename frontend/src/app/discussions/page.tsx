@@ -23,10 +23,10 @@ import {
   FaUser,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import axios from "axios";
 import { API_URL } from "@/constants";
+import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 interface Discussion {
   id: string;
@@ -152,20 +152,13 @@ const DiscussionForum: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      <NavbarWithBg/>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="container mx-auto p-4 sm:p-6 md:p-8"
       >
-        <motion.h1
-          initial={{ y: -50 }}
-          animate={{ y: 0 }}
-          className="text-5xl md:text-6xl font-extrabold mb-6 md:mb-8 text-center text-[#472014] font-caveat"
-        >
-          Discussion Forum
-        </motion.h1>
 
         <motion.div
           className="flex flex-col sm:flex-row items-center sm:space-x-4 mb-6 md:mb-8"
