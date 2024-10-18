@@ -17,12 +17,15 @@ import axios from "axios";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
+import Link from "next/link";
+import { LucideUserCheck, Rocket } from "lucide-react";
+
 interface Answer {
   id: string;
   content: string;
   createdAt: string;
-  professor?: { name: string };
-  business?: { name: string };
+  professor?: { fullName: string; id: string };
+  business?: { companyName: string; id: string };
 }
 
 interface Discussion {
@@ -102,12 +105,16 @@ const QuestionDetailPage: React.FC = () => {
     }
   };
 
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen text-[#472014] bg-white">
-        Loading...
+      <div className="flex items-center justify-center h-screen bg-white">
+        <p className="text-[#472014] font-caveat text-2xl">
+          <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
+          Loading discussion...
+        </p>
       </div>
     );
+  }
   if (error)
     return (
       <div className="flex justify-center items-center h-screen text-red-500">
@@ -123,7 +130,7 @@ const QuestionDetailPage: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <NavbarWithBg/>
+      <NavbarWithBg />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -210,12 +217,32 @@ const QuestionDetailPage: React.FC = () => {
                       <FaUser className="mr-1" />
                       <span>
                         {answer.professor
-                          ? answer.professor.name
-                          : answer.business?.name}
+                          ? `Professor: ${answer.professor.fullName}`
+                          : answer.business
+                          ? `Business: ${answer.business.companyName ?? ""}`
+                          : ""}
                       </span>
                       <span className="mx-2">•</span>
                       <FaClock className="mr-1" />
                       <span>{new Date(answer.createdAt).toLocaleString()}</span>
+                      <div className="flex items-center ml-4">
+                        <Link
+                          href={
+                            answer.professor
+                              ? `/professor-profile/${answer.professor.id} `
+                              : `/business-profile/${answer.business?.id ?? ""}`
+                          }
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-white bg-[#c1502e] hover: rounded-full transition-all duration-300 shadow-lg hover:shadow-xl space-x-3"
+                          >
+                            <LucideUserCheck size={18} />
+                            View Profile
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>

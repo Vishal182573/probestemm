@@ -1,5 +1,10 @@
-import { PrismaClient, UserType, DiscussionStatus, VoteType } from '@prisma/client';
-import type{ Request, Response } from 'express';
+import {
+  PrismaClient,
+  UserType,
+  DiscussionStatus,
+  VoteType,
+} from "@prisma/client";
+import type { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
@@ -19,7 +24,7 @@ export const createDiscussion = async (req: Request, res: Response) => {
 
     res.status(201).json(discussion);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create discussion' });
+    res.status(500).json({ error: "Failed to create discussion" });
   }
 };
 
@@ -27,8 +32,8 @@ export const answerDiscussion = async (req: Request, res: Response) => {
   try {
     const { content, discussionId, userType, userId } = req.body;
 
-    if (userType !== UserType.PROFESSOR && userType !== "BUSINESS") {
-      return res.status(403).json({ error: 'Only professors or businesses can answer discussions' });
+    if (userType === UserType.STUDENT) {
+      return res.status(400).json({ error: "Students cannot answer" });
     }
 
     const answer = await prisma.answer.create({
@@ -49,7 +54,7 @@ export const answerDiscussion = async (req: Request, res: Response) => {
 
     res.status(201).json(answer);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to answer discussion' });
+    res.status(500).json({ error: "Failed to answer discussion" });
   }
 };
 
@@ -69,7 +74,7 @@ export const voteDiscussion = async (req: Request, res: Response) => {
 
     if (existingVote) {
       if (existingVote.voteType === voteType) {
-        return res.status(400).json({ error: 'You have already voted' });
+        return res.status(400).json({ error: "You have already voted" });
       }
 
       await prisma.vote.update({
@@ -101,7 +106,7 @@ export const voteDiscussion = async (req: Request, res: Response) => {
 
     res.status(200).json(updatedDiscussion);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to vote on discussion' });
+    res.status(500).json({ error: "Failed to vote on discussion" });
   }
 };
 
@@ -114,7 +119,7 @@ export const searchDiscussions = async (req: Request, res: Response) => {
       subcategory,
       sortBy,
       page = 1,
-      pageSize = 10
+      pageSize = 10,
     } = req.query;
 
     const skip = (Number(page) - 1) * Number(pageSize);
@@ -124,10 +129,13 @@ export const searchDiscussions = async (req: Request, res: Response) => {
 
     // Apply filters
     if (searchString) {
-      whereClause.title = { contains: searchString as string, mode: 'insensitive' };
+      whereClause.title = {
+        contains: searchString as string,
+        mode: "insensitive",
+      };
     }
 
-    if (status && status !== 'all') {
+    if (status && status !== "all") {
       whereClause.status = status as DiscussionStatus;
     }
 
@@ -140,10 +148,10 @@ export const searchDiscussions = async (req: Request, res: Response) => {
     }
 
     // Apply sorting
-    if (sortBy === 'recent') {
-      orderBy.createdAt = 'desc';
-    } else if (sortBy === 'mostVoted') {
-      orderBy.upvotes = 'desc';
+    if (sortBy === "recent") {
+      orderBy.createdAt = "desc";
+    } else if (sortBy === "mostVoted") {
+      orderBy.upvotes = "desc";
     }
 
     const [discussions, totalCount] = await Promise.all([
@@ -172,7 +180,7 @@ export const searchDiscussions = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to search discussions' });
+    res.status(500).json({ error: "Failed to search discussions" });
   }
 };
 
@@ -190,7 +198,7 @@ export const getDiscussionById = async (req: Request, res: Response) => {
             business: true,
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
         votes: true,
@@ -198,11 +206,11 @@ export const getDiscussionById = async (req: Request, res: Response) => {
     });
 
     if (!discussion) {
-      return res.status(404).json({ error: 'Discussion not found' });
+      return res.status(404).json({ error: "Discussion not found" });
     }
 
     res.status(200).json(discussion);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch discussion' });
+    res.status(500).json({ error: "Failed to fetch discussion" });
   }
 };

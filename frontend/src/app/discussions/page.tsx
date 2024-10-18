@@ -21,6 +21,7 @@ import {
   FaClock,
   FaComment,
   FaUser,
+  FaUserCircle,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/shared/Footer";
@@ -39,6 +40,7 @@ interface Discussion {
   answerCount: number;
   category: string;
   subcategory: string;
+  studentId: string;
 }
 
 interface PaginationInfo {
@@ -345,6 +347,21 @@ const DiscussionForum: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="flex justify-end items-center mb-6">
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/student-profile/${discussion.studentId}`);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-white bg-[#c1502e] hover:bg-[#472014] hover:text-white rounded-full transition-all duration-300 flex items-center space-x-2"
+                >
+                  <FaUserCircle className="text-lg" />
+                  <span>View Profile</span>
+                </Button>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>

@@ -6,13 +6,13 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThumbsUp, ThumbsDown, Send, Trash } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Send, Trash, User2 } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
-import NavbarWithBg from "@/components/shared/NavbarWithbg";
-
+import Link from "next/link";
+import { NavbarWithBg } from "@/components/shared/NavbarWithbg";
 interface Comment {
   id: string;
   content: string;
@@ -212,7 +212,9 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] flex flex-col">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-[#472014] text-4xl font-caveat">Loading blog post...</div>
+          <div className="text-[#472014] text-4xl font-caveat">
+            Loading blog post...
+          </div>
         </main>
         <Footer />
       </div>
@@ -222,7 +224,9 @@ const BlogPostPage = () => {
   if (!blogPost) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] text-[#472014] flex flex-col items-center justify-center">
-        <h1 className="text-[100px] font-bold mb-4 font-caveat">Blog post not found</h1>
+        <h1 className="text-[100px] font-bold mb-4 font-caveat">
+          Blog post not found
+        </h1>
         {error && <p className="text-red-500 text-xl">{error}</p>}
       </div>
     );
@@ -230,14 +234,16 @@ const BlogPostPage = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <NavbarWithBg/>
+      <NavbarWithBg />
       <main className="flex-grow container mx-auto px-4 py-12">
-        <motion.article 
+        <motion.article
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8 mb-8 border-[2px] border-[#472014]"
         >
-          <h1 className="text-4xl font-caveat font-bold mb-4 text-[#472014]">{blogPost.title}</h1>
+          <h1 className="text-4xl font-caveat font-bold mb-4 text-[#472014]">
+            {blogPost.title}
+          </h1>
           <p className="text-lg text-[#c1502e] font-semibold mb-6">
             By {blogPost.professor?.fullName || blogPost.business?.companyName},{" "}
             {blogPost.professor
@@ -249,8 +255,8 @@ const BlogPostPage = () => {
             <Button
               variant="default"
               className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
-                userInteraction === "like" 
-                  ? "bg-[#c1502e] text-white" 
+                userInteraction === "like"
+                  ? "bg-[#c1502e] text-white"
                   : "bg-white hover:bg-[#c1502e] hover:text-white"
               }`}
               onClick={() => handleLikeDislike("like")}
@@ -261,8 +267,8 @@ const BlogPostPage = () => {
             <Button
               variant="default"
               className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
-                userInteraction === "dislike" 
-                  ? "bg-[#472014] text-white" 
+                userInteraction === "dislike"
+                  ? "bg-[#472014] text-white"
                   : "bg-white hover:bg-[#472014] hover:text-white"
               }`}
               onClick={() => handleLikeDislike("dislike")}
@@ -273,16 +279,21 @@ const BlogPostPage = () => {
           </div>
         </motion.article>
 
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8"
         >
-          <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">Comments</h2>
+          <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">
+            Comments
+          </h2>
           <ul className="space-y-6 mb-8">
             {blogPost.comments.map((comment) => (
-              <li key={comment.id} className="border-b border-[#c1502e]/20 pb-6">
+              <li
+                key={comment.id}
+                className="border-b border-[#c1502e]/20 pb-6"
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold text-[#c1502e] text-lg">
@@ -291,13 +302,34 @@ const BlogPostPage = () => {
                         comment.business?.companyName}
                       <span className="text-[#472014] ml-2">
                         {comment.student
-                          ? "Student"
+                          ? "(Student Profile)"
                           : comment.professor
-                          ? "Professor"
-                          : "Business"}
+                          ? "(Professor Profile)"
+                          : "(Business Profile)"}
                       </span>
                     </p>
-                    <p className="text-lg text-[#472014] my-2">{comment.content}</p>
+                    <p className="text-lg text-[#472014] my-2">
+                      {comment.content}
+                    </p>
+                    <Link
+                      href={
+                        comment.student
+                          ? `/student-profile/${comment.student.id}`
+                          : comment.professor
+                          ? `/professor-profile/${comment.professor.id}`
+                          : `/business-profile/${comment.business?.id ?? ""}`
+                      }
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-[#c1502e bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
+                      >
+                        <User2 size={18} className="mr-2" />
+                        View Profile
+                      </Button>
+                    </Link>
+
                     <p className="text-sm text-[#686256]">
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>

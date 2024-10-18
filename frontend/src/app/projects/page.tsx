@@ -23,9 +23,11 @@ import {
   XCircle,
   UserCircle,
   GraduationCap,
+  User2Icon,
 } from "lucide-react";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import Link from "next/link";
 
 interface Project {
   title: string;
@@ -152,7 +154,7 @@ const ProjectsPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
-      <NavbarWithBg/>
+      <NavbarWithBg />
       <main className="flex-grow">
         <ProjectsHero />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
@@ -373,6 +375,19 @@ const ProjectCard = ({
               )}
             </Button>
           )}
+
+          <Button className=" bg-[#c1502e] hover:bg-[#472014] text-white  w-full mt-4  rounded-full ">
+            <User2Icon className="mr-2" />
+            {projectType === "BUSINESS" ? (
+              <Link href={`/business-profile/${project.business?.id}`}>
+                View Business Profile
+              </Link>
+            ) : (
+              <Link href={`/professor-profile/${project.professor?.id}`}>
+                View Professor Profile
+              </Link>
+            )}
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>
