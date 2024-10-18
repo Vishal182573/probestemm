@@ -4,7 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, MessageSquare, Plus } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  Plus,
+  User,
+  Rocket,
+} from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -161,26 +168,29 @@ const BlogsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
-        <NavbarWithBg/>
+        <NavbarWithBg />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-black text-2xl">Loading blogs...</div>
+          <div className="text-black text-2xl font-caveat">
+            <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
+            Loading blogs...
+          </div>
         </main>
         <Footer />
       </div>
     );
   }
   // bg-gradient-to-br from-green-800 via-emerald-900 to-teal-900
-  // bg-gradient-to-br from-green-700 to-emerald-900 text-emerald-50 
+  // bg-gradient-to-br from-green-700 to-emerald-900 text-emerald-50
   // bg-gradient-to-br from-orange-500 to-pink-600 text-orange-50
   // bg-gradient-to-br from-gray-900 to-blue-900 text-gray-200
-  // bg-lime-500 
-  // bg-emerald-600  
+  // bg-lime-500
+  // bg-emerald-600
   // bg-gradient-to-br from-green-800 to-emerald-600 bg-opacity-90
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <NavbarWithBg/>
+      <NavbarWithBg />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -193,8 +203,8 @@ const BlogsPage: React.FC = () => {
           {blogs.map((blog) => {
             const authorInfo = getAuthorInfo(blog);
             return (
-              <motion.div 
-                key={blog.id} 
+              <motion.div
+                key={blog.id}
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -243,6 +253,22 @@ const BlogsPage: React.FC = () => {
                       {blog.comments.length} Comments
                     </Button>
                   </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-white bg-[#c1502e] hover:bg-[#472014] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <Link
+                      href={
+                        blog.professor
+                          ? `/professor-profile/${blog.professor.id}`
+                          : `/business-profile/${blog.business?.id}`
+                      }
+                    >
+                      View Profile
+                    </Link>
+                  </Button>
                 </div>
               </motion.div>
             );
@@ -251,7 +277,11 @@ const BlogsPage: React.FC = () => {
         <div className="mt-12 text-center">
           {(userRole === "professor" || userRole === "business") && (
             <Link href="/create-blog">
-              <Button variant="default" size="lg" className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl">
+              <Button
+                variant="default"
+                size="lg"
+                className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
+              >
                 <Plus className="mr-2 h-6 w-6" />
                 Create New Blog
               </Button>

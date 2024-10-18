@@ -262,16 +262,16 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to change project status. Please try again.");
     }
   };
-
   if (isLoading) {
     return (
-      <div className="text-center flex items-center justify-center h-screen">
-        <div className="loader">Loading...</div>
-        <div className="text-muted-foreground ml-2">please wait</div>
+      <div className="text-center flex items-center justify-center h-screen bg-white">
+        <div className="loader text-[#c1502e] font-caveat text-2xl">
+          Loading...
+        </div>
+        <div className="text-[#472014] ml-2">please wait</div>
       </div>
     );
   }
-
   if (error) {
     return <div>{error}</div>;
   }
@@ -384,8 +384,8 @@ const ProfessorProfilePage: React.FC = () => {
                           className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         disabled={isCreatingProject}
                         className="bg-[#c1502e] hover:bg-[#472014] text-white w-full"
                       >
@@ -420,7 +420,9 @@ const ProfessorProfilePage: React.FC = () => {
                               {project.topic}
                             </h4>
                             <Badge
-                              variant={status === "CLOSED" ? "outline" : "secondary"}
+                              variant={
+                                status === "CLOSED" ? "outline" : "secondary"
+                              }
                               className={
                                 status === "CLOSED"
                                   ? "border-[#c1502e] text-[#472014]"
@@ -484,7 +486,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       key={student.studentId}
                                       className="flex items-center justify-between p-2 rounded bg-[#472014] text-white"
                                     >
-                                      <div> 
+                                      <div>
                                         <span className="font-medium">
                                           {student.name}
                                         </span>
@@ -596,7 +598,10 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
-                <Button variant="outline" className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                <Button
+                  variant="outline"
+                  className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Google Scholar
                 </Button>
@@ -753,15 +758,24 @@ const ProfessorProfilePage: React.FC = () => {
                                     <Badge variant="secondary">
                                       {blog.likes} Likes
                                     </Badge>
-                                    <Badge variant="outline" className="text-black">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-black"
+                                    >
                                       {blog.dislikes} Dislikes
                                     </Badge>
 
-                                    <Badge variant="outline" className="text-black">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-black"
+                                    >
                                       {blog.comments.length} Comments
                                     </Badge>
                                     <Link href={`/blogs/${blog.id}`}>
-                                      <Button variant="outline" className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                                      <Button
+                                        variant="outline"
+                                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                                      >
                                         View Blog
                                       </Button>
                                     </Link>
@@ -801,7 +815,9 @@ const ProfessorProfilePage: React.FC = () => {
                                 onOpenChange={setIsWebinarDialogOpen}
                               >
                                 <DialogTrigger asChild>
-                                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">Request Webinar</Button>
+                                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                                    Request Webinar
+                                  </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                   <DialogHeader>

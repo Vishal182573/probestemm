@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { API_URL } from "@/constants";
+import Link from "next/link";
 
 interface Webinar {
   id: string;
@@ -23,6 +24,7 @@ interface Webinar {
   date: string;
   status: "APPROVED" | "COMPLETED";
   maxAttendees: number;
+  professorId: string;
 }
 
 const NotificationsComponent: React.FC = () => {
@@ -132,8 +134,22 @@ const NotificationsComponent: React.FC = () => {
                               : "bg-[#c1502e] text-white"
                           }`}
                         >
-                          {webinar.status=="APPROVED"? "UPCOMING":webinar.status}
+                          {webinar.status == "APPROVED"
+                            ? "UPCOMING"
+                            : webinar.status}
                         </Badge>
+                        <div className="flex items-center mt-2">
+                          <Button
+                            variant="outline"
+                            className="mt-4 bg-[#c1502e] text-white hover: shadow-lg hover:shadow-xl transition-shadow duration-300 gap-4"
+                          >
+                            <Link
+                              href={`/professor-profile/${webinar.professorId}`}
+                            >
+                              View Professor Profile
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

@@ -276,6 +276,17 @@ const BlogPostPage = () => {
               <ThumbsDown className="mr-2" size={20} />
               {blogPost.dislikes}
             </Button>
+            <Button className="text-[#c1502e] hover:text-white bg-white hover:bg-[#c1502e] rounded-full transition-all duration-300">
+              <Link
+                href={
+                  blogPost.professor
+                    ? `/professor-profile/${blogPost.professor.id}`
+                    : `/business-profile/${blogPost.business?.id ?? ""}`
+                }
+              >
+                View blog author profile
+              </Link>
+            </Button>
           </div>
         </motion.article>
 

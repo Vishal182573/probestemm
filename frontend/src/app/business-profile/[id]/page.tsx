@@ -210,8 +210,10 @@ const BusinessProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
-        <div className="loader">Loading...</div>
-        <div className="text-muted-foreground ml-2">please wait</div>
+        <div className="loader text-[#c1502e] font-caveat text-2xl">
+          Loading...
+        </div>
+        <div className="text-[#472014] ml-2">please wait</div>
       </div>
     );
   }
@@ -234,7 +236,7 @@ const BusinessProfilePage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <NavbarWithBg/>
+      <NavbarWithBg />
 
       <main className="flex-grow">
         <motion.section
