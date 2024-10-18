@@ -3,15 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "aws-sdk": "^2.1691.0",
+    "mock-aws-s3": "^4.0.2",
+    "nock": "^13.5.5"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "start": "bun run src/server/server.ts",
+    "start": "bun run src/server.ts",
     "dev": "bun run --watch src/server.ts",
-    "build": "bun build src/server/server.ts --outdir dist --target node",
+    "build": "bun build src/server.ts --outdir dist --target node",
     "lint": "bun run eslint src/**/*.ts",
     "format": "bun run prettier --write src/**/*.ts",
     "test": "bun run vitest"
