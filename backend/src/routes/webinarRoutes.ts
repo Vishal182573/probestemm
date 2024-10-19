@@ -1,7 +1,28 @@
 import express from "express";
 import * as webinarController from "../controllers/webinarsControllers";
 
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    public_id: (req, file) => `profile_images/${file.originalname}`,
+    // folder: "profile_images",
+  },
+});
+
 const router = express.Router();
+const upload = multer({ storage: storage });
 
 // Webinar routes
 router.get("/", async (req, res) => {
@@ -22,7 +43,7 @@ router.get("/professor/:professorId", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", upload.single("webinarImage"), async (req, res) => {
   try {
     await webinarController.requestWebinar(req, res);
   } catch (error) {

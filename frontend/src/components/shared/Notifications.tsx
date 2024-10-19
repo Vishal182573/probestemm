@@ -1,6 +1,5 @@
-"use client"
 import React, { useState, useEffect } from "react";
-import { Video } from "lucide-react";
+import { Video, Calendar, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { API_URL } from "@/constants";
+import Link from "next/link";
+import Image from "next/image";
 
 interface Webinar {
   id: string;
@@ -23,6 +24,8 @@ interface Webinar {
   date: string;
   status: "APPROVED" | "COMPLETED";
   maxAttendees: number;
+  professorId: string;
+  webinarImage?: string;
 }
 
 const NotificationsComponent: React.FC = () => {
@@ -111,29 +114,63 @@ const NotificationsComponent: React.FC = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="bg-white border-[#c1502e]">
-                    <CardContent className="flex items-center p-4">
-                      <Video className="h-6 w-6 text-[#c1502e] mr-4" />
-                      <div>
-                        <h3 className="text-lg font-semibold text-[#472014]">
-                          {webinar.title}
-                        </h3>
-                        <p className="text-sm text-[#686256]">
-                          Topic: {webinar.topic}
-                        </p>
-                        <p className="text-sm text-[#686256]">
-                          Place: {webinar.place}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className={`mt-2 ${
-                            webinar.status === "APPROVED"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-[#c1502e] text-white"
-                          }`}
-                        >
-                          {webinar.status=="APPROVED"? "UPCOMING":webinar.status}
-                        </Badge>
+                  <Card className="bg-white border-[#c1502e] overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="flex flex-col md:flex-row">
+                        <div className="w-full md:w-1/3 h-48 md:h-auto relative">
+                          {webinar.webinarImage ? (
+                            <Image
+                              src={webinar.webinarImage}
+                              alt={webinar.title}
+                              layout="fill"
+                              objectFit="cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <Video className="h-12 w-12 text-[#c1502e]" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="w-full md:w-2/3 p-4">
+                          <h3 className="text-xl font-semibold text-[#472014] mb-2">
+                            {webinar.title}
+                          </h3>
+                          <div className="flex items-center text-sm text-[#686256] mb-1">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {webinar.date}
+                          </div>
+                          <div className="flex items-center text-sm text-[#686256] mb-1">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {webinar.place}
+                          </div>
+                          <p className="text-sm text-[#686256] mb-2">
+                            Topic: {webinar.topic}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={`mb-3 ${
+                              webinar.status === "APPROVED"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-[#c1502e] text-white"
+                            }`}
+                          >
+                            {webinar.status === "APPROVED"
+                              ? "UPCOMING"
+                              : webinar.status}
+                          </Badge>
+                          <div className="mt-2">
+                            <Button
+                              variant="outline"
+                              className="bg-[#c1502e] text-white hover:bg-[#472014] shadow-lg hover:shadow-xl transition-shadow duration-300"
+                            >
+                              <Link
+                                href={`/professor-profile/${webinar.professorId}`}
+                              >
+                                View Professor Profile
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

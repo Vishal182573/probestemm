@@ -29,13 +29,13 @@ export default async function StudentsPage() {
     const students = await getStudents();
     return (
       <div className="bg-white w-full h-screen">
-        <NavbarWithBg/>
-      <AnimatedContainer>
-        <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
-          Students
-        </h1>
-        <RoleList roles={students} roleType="student" />
-      </AnimatedContainer>
+        <NavbarWithBg />
+        <AnimatedContainer>
+          <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
+            Students
+          </h1>
+          <RoleList roles={students} roleType="student" />
+        </AnimatedContainer>
       </div>
     );
   } catch (error) {

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { PrismaClient, UserType, BlogAuthorType } from "@prisma/client";
 import { z } from "zod";
+import cloudinary from "../config/cloudinary";
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,7 @@ const prisma = new PrismaClient();
 const BlogSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
+  blogImage: z.string().optional(),
 });
 
 const CommentSchema = z.object({
@@ -142,6 +144,13 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
     const validatedData = BlogSchema.parse(req.body);
     const userId = req.user?.id;
     const userRole = req.user?.role;
+    const file = req.file;
+
+    let blogImage = "";
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path);
+      blogImage = result.secure_url;
+    }
 
     // if (!userId) {
     //   return res.status(401).json({ error: "User not authenticated" });
@@ -155,6 +164,8 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
 
     const blogData: any = {
       ...validatedData,
+      blogImage,
+
       authorType:
         userRole === "professor"
           ? BlogAuthorType.PROFESSOR

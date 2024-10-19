@@ -1,8 +1,28 @@
 import express from "express";
 import blogController from "../controllers/blogsControllers";
 import { authMiddleware } from "../middleware/authMiddleware";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    public_id: (req, file) => `profile_images/${file.originalname}`,
+    // folder: "profile_images",
+  },
+});
 
 const router = express.Router();
+const upload = multer({ storage: storage });
 
 // Public routes
 router.get("/blogs", async (req, res) => {
@@ -24,14 +44,19 @@ router.get("/blogs/:id", async (req, res) => {
 });
 
 // Protected routes
-router.post("/blogs", authMiddleware, async (req, res) => {
-  try {
-    await blogController.createBlog(req, res);
-  } catch (error) {
-    console.error("Error in creating blog:", error);
-    res.status(500).json({ error: "Internal server error" });
+router.post(
+  "/blogs",
+  upload.single("blogImage"),
+  authMiddleware,
+  async (req, res) => {
+    try {
+      await blogController.createBlog(req, res);
+    } catch (error) {
+      console.error("Error in creating blog:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
-});
+);
 
 router.put("/blogs/:id", async (req, res) => {
   try {

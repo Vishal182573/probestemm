@@ -61,11 +61,6 @@ const ProjectsPage = () => {
     const fetchProjects = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Authentication token is missing. Please log in again.");
-          setLoading(false);
-          return;
-        }
 
         const [businessResponse, professorResponse] = await Promise.all([
           axios.get(`${API_URL}/project/business`, {
@@ -376,7 +371,7 @@ const ProjectCard = ({
             </Button>
           )}
 
-          <Button className=" bg-[#c1502e] hover:bg-[#472014] text-white  w-full mt-4  rounded-full ">
+          <Button className=" bg-[#c1502e] hover:bg-[#472014] text-white  w-full mt-4  rounded-full flex items-center justify-center">
             <User2Icon className="mr-2" />
             {projectType === "BUSINESS" ? (
               <Link href={`/business-profile/${project.business?.id}`}>
