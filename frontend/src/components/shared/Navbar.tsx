@@ -59,9 +59,10 @@ export const Navbar: React.FC = () => {
   };
 
   const linkTextColor = isScrolled ? "text-[#472014]" : "text-white";
+  const bgColor = isScrolled ? "bg-white shadow-md" : "";
 
   return (
-    <nav className="bg-opacity-90 backdrop-blur-md shadow-md fixed top-0 z-50 w-full transition-colors duration-300 ">
+    <nav className={`${bgColor} fixed top-0 z-50 w-full transition-colors duration-300`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
           <Link href="/">
