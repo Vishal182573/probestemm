@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { LOGO } from "../../../public";
 
 export const NavbarWithBg: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,11 +55,9 @@ export const NavbarWithBg: React.FC = () => {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300 ">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-2">
           <Link href="/">
-            <h1 className={`text-2xl font-bold ${linkTextColor}`}>
-              Probe STEM
-            </h1>
+          <Image src={LOGO} alt="logo" className="w-48"/>
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

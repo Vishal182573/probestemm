@@ -28,6 +28,10 @@ import {
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
+import Banner from "@/components/shared/Banner";
+import { LOGO } from "../../../public";
+import ContactForm from "@/components/shared/Feedback";
+import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 interface Project {
   title: string;
@@ -151,7 +155,7 @@ const ProjectsPage = () => {
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
       <main className="flex-grow">
-        <ProjectsHero />
+        <Banner imageSrc={LOGO} altText="project-banner-img" title="Cutting-Edge STEM Projects" subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."/>
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">
             <TabsTrigger
@@ -187,37 +191,13 @@ const ProjectsPage = () => {
           </TabsContent>
         </Tabs>
       </main>
+      <FeaturesDemo/>
+      <ContactForm/>
       <Footer />
     </div>
   );
 };
 
-const ProjectsHero = () => {
-  return (
-    <section className="py-20 px-4 bg-gradient-to-b from-[#c1502e] to-[#686256]">
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-6xl font-extrabold mb-6 text-[#472014] font-caveat"
-        >
-          Cutting-Edge STEM Projects
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xl mb-10 text-white"
-        >
-          Explore groundbreaking projects and collaborate with leading experts
-          in the field. Push the boundaries of science and technology with Probe
-          STEM.
-        </motion.p>
-      </div>
-    </section>
-  );
-};
 
 const ProjectsList = ({
   projects,

@@ -25,7 +25,7 @@ const router = express.Router();
 const upload = multer({ storage: storage });
 
 // Public routes
-router.get("/blogs", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     await blogController.getBlogs(req, res);
   } catch (error) {
@@ -34,7 +34,7 @@ router.get("/blogs", async (req, res) => {
   }
 });
 
-router.get("/blogs/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     await blogController.getBlogById(req, res);
   } catch (error) {
@@ -45,7 +45,7 @@ router.get("/blogs/:id", async (req, res) => {
 
 // Protected routes
 router.post(
-  "/blogs",
+  "/",
   upload.single("blogImage"),
   authMiddleware,
   async (req, res) => {
@@ -58,7 +58,7 @@ router.post(
   }
 );
 
-router.put("/blogs/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
   try {
     await blogController.updateBlog(req, res);
   } catch (error) {
@@ -67,7 +67,7 @@ router.put("/blogs/:id", async (req, res) => {
   }
 });
 
-router.delete("/blogs/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     await blogController.deleteBlog(req, res);
   } catch (error) {
@@ -76,7 +76,7 @@ router.delete("/blogs/:id", async (req, res) => {
   }
 });
 
-router.post("/blogs/:blogId/comments", authMiddleware, async (req, res) => {
+router.post("/:blogId/comments", authMiddleware, async (req, res) => {
   try {
     await blogController.createComment(req, res);
   } catch (error) {
@@ -87,7 +87,7 @@ router.post("/blogs/:blogId/comments", authMiddleware, async (req, res) => {
 
 // Comment management (only for the comment creator or the blog author)
 router.put(
-  "/blogs/:blogId/comments/:commentId",
+  "/:blogId/comments/:commentId",
   authMiddleware,
   async (req, res) => {
     try {
@@ -100,7 +100,7 @@ router.put(
 );
 
 router.delete(
-  "/blogs/:blogId/comments/:commentId",
+  "/:blogId/comments/:commentId",
   authMiddleware,
   async (req, res) => {
     try {
@@ -113,7 +113,7 @@ router.delete(
 );
 
 router.get(
-  "/blogs/:blogId/user-interactions",
+  "/:blogId/user-interactions",
   authMiddleware,
   async (req, res) => {
     try {
@@ -125,7 +125,7 @@ router.get(
   }
 );
 
-router.post("/blogs/:id/toggle-like", authMiddleware, async (req, res) => {
+router.post("/:id/toggle-like", authMiddleware, async (req, res) => {
   try {
     await blogController.toggleBlogLike(req, res);
   } catch (error) {
@@ -133,5 +133,16 @@ router.post("/blogs/:id/toggle-like", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get("/:id/related",
+  async (req, res) => {
+    try {
+      await blogController.getRelatedBlogs(req, res);
+    } catch (error) {
+      console.error("Error in getting related blogs:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 export default router;

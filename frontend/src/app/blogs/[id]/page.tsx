@@ -1,18 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { NavbarWithBg } from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThumbsUp, ThumbsDown, Send, Trash, User2, Loader } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Send, Trash, User2, Loader, ChevronRight } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import Link from "next/link";
 import Image from "next/image";
+import { LOGIN } from "../../../../public";
+import Banner from "@/components/shared/Banner";
+import ContactForm from "@/components/shared/Feedback";
+import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 interface Comment {
   id: string;
@@ -56,22 +60,30 @@ interface BlogPost {
   };
 }
 
+
+interface RelatedBlog {
+  id: string;
+  title: string;
+  blogImage: string;
+}
+
 const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
+  const [relatedBlogs, setRelatedBlogs] = useState<RelatedBlog[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
   const [error, setError] = useState("");
-  const [userInteraction, setUserInteraction] = useState<
-    "like" | "dislike" | null
-  >(null);
+  const [userInteraction, setUserInteraction] = useState<"like" | "dislike" | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     if (id) {
       fetchBlogPost();
       fetchUserInteraction();
+      fetchRelatedBlogs();
     }
   }, [id]);
 
@@ -103,6 +115,15 @@ const BlogPostPage = () => {
       setUserInteraction(response.data?.isLike ? "like" : "dislike");
     } catch (error) {
       console.error("Error fetching user interaction:", error);
+    }
+  };
+
+  const fetchRelatedBlogs = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/blogs/${id}/related`);
+      setRelatedBlogs(response.data);
+    } catch (error) {
+      console.error("Error fetching related blogs:", error);
     }
   };
 
@@ -234,12 +255,15 @@ const BlogPostPage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <NavbarWithBg />
+      <Banner imageSrc={LOGIN} altText="webinar-banner-img" title="Blog Post" subtitle={blogPost.title} />
       <main className="flex-grow container mx-auto px-4 py-12">
-        <motion.article
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8 mb-8 border-[2px] border-[#472014]"
-        >
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-2/3">
+            <motion.article
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8 mb-8 border-[2px] border-[#472014]"
+            >
           <h1 className="text-4xl font-caveat font-bold mb-4 text-[#472014]">
             {blogPost.title}
           </h1>
@@ -300,11 +324,11 @@ const BlogPostPage = () => {
         </motion.article>
 
         <motion.section
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8"
-        >
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8"
+            >
           <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">
             Comments
           </h2>
@@ -386,7 +410,46 @@ const BlogPostPage = () => {
             ))}
           </ul>
         </motion.section>
+        </div>
+        <div className="lg:w-1/3">
+            <motion.aside
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-6 sticky top-24"
+            >
+              <h2 className="text-2xl font-caveat font-bold mb-6 text-[#472014]">More Blogs</h2>
+              <div className="space-y-4">
+                {relatedBlogs.map((blog) => (
+                  <Link href={`/blog/${blog.id}`} key={blog.id}>
+                    <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-[#c1502e]/10 transition-colors duration-300">
+                      <Image
+                        src={blog.blogImage || "/placeholder-image.jpg"}
+                        alt={blog.title}
+                        width={80}
+                        height={80}
+                        className="rounded-md object-cover"
+                      />
+                      <div>
+                        <h3 className="font-semibold text-[#472014] line-clamp-2">{blog.title}</h3>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <Button
+                className="w-full mt-6 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300"
+                onClick={() => router.push('/blogs')}
+              >
+                View More Blogs
+                <ChevronRight className="ml-2" size={20} />
+              </Button>
+            </motion.aside>
+          </div>
+        </div>
       </main>
+      <FeaturesDemo />
+      <ContactForm />
       <Footer />
     </div>
   );

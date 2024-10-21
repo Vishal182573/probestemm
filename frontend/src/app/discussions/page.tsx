@@ -28,6 +28,10 @@ import { Footer } from "@/components/shared/Footer";
 import axios from "axios";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import Banner from "@/components/shared/Banner";
+import { TESTI1 } from "../../../public";
+import FeaturesDemo from "@/components/shared/TextImageComponent";
+import ContactForm from "@/components/shared/Feedback";
 
 interface Discussion {
   id: string;
@@ -155,6 +159,7 @@ const DiscussionForum: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <NavbarWithBg/>
+      <Banner imageSrc={TESTI1} altText="discussion-banner" title="lroem setkkjr" subtitle="stesekgskgnkjdn"/>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -387,6 +392,8 @@ const DiscussionForum: React.FC = () => {
           </Button>
         </div>
       </motion.div>
+      <FeaturesDemo/>
+      <ContactForm/>
       <Footer />
     </div>
   );

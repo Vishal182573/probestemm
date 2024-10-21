@@ -819,7 +819,7 @@ const ProfessorProfilePage: React.FC = () => {
                               key={achievement.id}
                               className="flex items-center"
                             >
-                              <Badge variant="outline" className="mr-2">
+                              <Badge variant="outline" className="mr-2 text-black">
                                 {achievement.year}
                               </Badge>
                               {achievement.description}
@@ -844,7 +844,7 @@ const ProfessorProfilePage: React.FC = () => {
                         <ul className="space-y-2">
                           {professor.positions.map((position) => (
                             <li key={position.id} className="flex items-center">
-                              <Badge variant="outline" className="mr-2">
+                              <Badge variant="outline" className="mr-2 text-black">
                                 {position.startYear} -{" "}
                                 {position.endYear || "Present"}
                               </Badge>

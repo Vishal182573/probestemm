@@ -18,6 +18,10 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import Banner from "@/components/shared/Banner";
+import { LOGIN } from "../../../public";
+import ContactForm from "@/components/shared/Feedback";
+import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 interface Author {
   id: string;
@@ -234,6 +238,7 @@ const BlogsPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
+      <Banner imageSrc={LOGIN} altText="webinar-banner-img" title="webinar" subtitle="weibinar-subtitle"/>
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -350,6 +355,8 @@ const BlogsPage: React.FC = () => {
           )}
         </div>
       </main>
+      <FeaturesDemo/>
+      <ContactForm/>
       <Footer />
     </div>
   );

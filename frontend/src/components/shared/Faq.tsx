@@ -1,28 +1,26 @@
 "use client"
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { API_URL } from '@/constants';
 
-interface faqItem{
-    question:string,
-    answer:string,
-}
-
-interface faqprops{
-    faqItems:[faqItem]
+interface FAQItem {
+  question: string;
+  answer: string;
 }
 
 const FAQSection = () => {
-  const [faqs, setFaqs] = useState<faqprops>([]);
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchFAQs = async () => {
       try {
-        const response = await fetch('/api/faqs');
+        const response = await fetch(`${API_URL}/faqs`);
         const data = await response.json();
         setFaqs(data);
       } catch (error) {
@@ -45,7 +43,6 @@ const FAQSection = () => {
 
   return (
     <section className="py-12 w-full">
-        
       <div className="container mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-center mb-8 text-gray-800">
           Frequently Asked Questions
@@ -72,7 +69,7 @@ const FAQSection = () => {
             <Button
               onClick={() => router.push('/faq')}
               variant="outline"
-              className="px-6 py-2 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-full transition-all duration-300"
+              className="px-6 py-2 border-2 border-gray-300 hover:border-gray-400 text-white rounded-full transition-all duration-300"
             >
               View More FAQs
             </Button>

@@ -1,4 +1,5 @@
 "use client";
+import Banner from "@/components/shared/Banner";
 import { Footer } from "@/components/shared/Footer";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import NotificationsComponent from "@/components/shared/Notifications";
@@ -6,6 +7,9 @@ import { motion, useAnimation } from "framer-motion";
 
 import { ReactNode, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import { LOGIN } from "../../../public";
+import FeaturesDemo from "@/components/shared/TextImageComponent";
+import ContactForm from "@/components/shared/Feedback";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -47,6 +51,7 @@ const WebinarPage = () => {
   return (
     <div>
       <NavbarWithBg/>
+      <Banner imageSrc={LOGIN} altText="webinar-banner-img" title="webinar" subtitle="weibinar-subtitle"/>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>
@@ -59,6 +64,8 @@ const WebinarPage = () => {
           </AnimatedSection>
         </div>
       </section>
+      <FeaturesDemo/>
+      <ContactForm/>
       <Footer />
     </div>
   );

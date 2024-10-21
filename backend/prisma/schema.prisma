@@ -435,3 +435,15 @@ model Notification {
   project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
 }
+
+// prisma/schema.prisma
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String   @db.Text
+  answer    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
