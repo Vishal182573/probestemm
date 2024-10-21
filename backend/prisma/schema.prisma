@@ -27,6 +27,7 @@ model Student {
   discussions       Discussion[]
   comments          Comment[]
   projects          Project[]
+  notifications     Notification[]
   
   superAdmin        SuperAdmin?         @relation(fields: [superAdminId], references: [id])
   superAdminId      String?
@@ -85,6 +86,7 @@ model Professor {
   comments          Comment[]
   projects          Project[]
   webinars          Webinar[]
+  notifications     Notification[]
   
   superAdmin        SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId      String?
@@ -120,6 +122,7 @@ model Business {
   answers     Answer[]
   blogs       Blog[]
   comments    Comment[]
+  notifications     Notification[]
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -145,6 +148,7 @@ model Discussion {
   answerCount  Int       @default(0)
   
   votes        Vote[]
+   notifications     Notification[]
 
   superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -204,6 +208,7 @@ model Blog {
   blogImage   String?
   
   blogLikes   BlogLike[]
+   notifications     Notification[]
 
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -259,6 +264,7 @@ model Project {
 
   appliedProfessors AppliedProfessor[] // for business
   appliedStudents   AppliedStudent[]  // for professor
+   notifications     Notification[]
 
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -295,6 +301,7 @@ model Webinar {
   isOnline    Boolean   @default(true)
   meetingLink String?
   webinarImage String?
+   notifications     Notification[]
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -388,4 +395,43 @@ model AppliedStudent {
   createdAt   DateTime @default(now())
 
   @@unique([projectId, studentId])
+}
+
+
+
+
+enum NotificationType {
+  COMMENT
+  LIKE
+  DISLIKE
+  WEBINAR_STATUS
+  DISCUSSION_ANSWER
+  DISCUSSION_VOTE
+  PROJECT_APPLICATION
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      NotificationType
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Recipients
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId String?
+  professor Professor? @relation(fields: [professorId], references: [id])
+  professorId String?
+  business  Business? @relation(fields: [businessId], references: [id])
+  businessId String?
+
+  // Related entities
+  blog      Blog?    @relation(fields: [blogId], references: [id])
+  blogId    String?
+  webinar   Webinar? @relation(fields: [webinarId], references: [id])
+  webinarId String?
+  discussion Discussion? @relation(fields: [discussionId], references: [id])
+  discussionId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
 }

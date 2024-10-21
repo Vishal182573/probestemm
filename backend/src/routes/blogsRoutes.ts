@@ -76,25 +76,6 @@ router.delete("/blogs/:id", async (req, res) => {
   }
 });
 
-// Interaction routes (require any authenticated user)
-router.post("/blogs/:id/like", authMiddleware, async (req, res) => {
-  try {
-    await blogController.likeBlog(req, res);
-  } catch (error) {
-    console.error("Error in liking blog:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.post("/blogs/:id/dislike", authMiddleware, async (req, res) => {
-  try {
-    await blogController.dislikeBlog(req, res);
-  } catch (error) {
-    console.error("Error in disliking blog:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 router.post("/blogs/:blogId/comments", authMiddleware, async (req, res) => {
   try {
     await blogController.createComment(req, res);
@@ -143,5 +124,14 @@ router.get(
     }
   }
 );
+
+router.post("/blogs/:id/toggle-like", authMiddleware, async (req, res) => {
+  try {
+    await blogController.toggleBlogLike(req, res);
+  } catch (error) {
+    console.error("Error in toggling blog like:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;
