@@ -21,6 +21,7 @@ import {
   Plus,
   User,
   Loader2,
+  Bell,
 } from "lucide-react";
 import {
   Dialog,
@@ -105,6 +106,19 @@ interface AppliedStudent {
   phoneNumber: string;
 }
 
+type Notification = {
+  id: string;
+  type: "COMMENT" | "LIKE" | "DISLIKE";
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  professorId: string;
+  blogId?: string;
+  webinarId?: string;
+  discussionId?: string;
+  projectId?: string;
+};
+
 const ProfessorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<Professor | null>(null);
@@ -120,7 +134,8 @@ const ProfessorProfilePage: React.FC = () => {
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isLoadingApplicants, setIsLoadingApplicants] = useState(false);
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
-
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -134,17 +149,25 @@ const ProfessorProfilePage: React.FC = () => {
         setProfessor(professorResponse.data);
 
         if (isLoggedInUser && token) {
-          const [webinarsResponse, projectsResponse] = await Promise.all([
-            axios.get(`${API_URL}/webinars/professor/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/project/professor/${id}/projects`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
+          const [webinarsResponse, projectsResponse, notificationsResponse] =
+            await Promise.all([
+              axios.get(`${API_URL}/webinars/professor/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              }),
+              axios.get(`${API_URL}/project/professor/${id}/projects`, {
+                headers: { Authorization: `Bearer ${token}` },
+              }),
+              axios.get(`${API_URL}/notifications/professor/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              }),
+            ]);
 
           setWebinars(webinarsResponse.data);
           setProjects(projectsResponse.data);
+          setNotifications(notificationsResponse.data);
+          setUnreadCount(
+            notificationsResponse.data.filter((n: any) => !n.isRead).length
+          );
         }
 
         setIsLoading(false);
@@ -296,6 +319,29 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to change project status. Please try again.");
     }
   };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      await axios.patch(
+        `${API_URL}/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setNotifications(
+        notifications.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount((prev) => prev - 1);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read. Please try again.");
+    }
+  };
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -313,6 +359,59 @@ const ProfessorProfilePage: React.FC = () => {
   if (!professor) {
     return <div>Professor not found</div>;
   }
+
+  const renderNotificationsTab = () => (
+    <TabsContent value="notifications">
+      <Card className="border border-[#c1502e] bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+            <Bell className="mr-2 text-[#c1502e]" />
+            Notifications
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {notifications.length > 0 ? (
+            <ul className="space-y-4">
+              {notifications.map((notification) => (
+                <li
+                  key={notification.id}
+                  className="flex items-center justify-between border-b pb-4"
+                >
+                  <div>
+                    <p
+                      className={`${
+                        notification.isRead ? "text-gray-600" : "font-semibold"
+                      }`}
+                    >
+                      {/* // amazing font and design for notifications
+                       */}
+                      <p className="text-[#472014] font-caveat text-2xl font-bold leading-tight line-clamp-2">
+                        {notification.content}
+                      </p>
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(notification.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {!notification.isRead && (
+                    <Button
+                      onClick={() => handleMarkAsRead(notification.id)}
+                      size="sm"
+                      className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                    >
+                      Mark as Read
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No notifications yet.</p>
+          )}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  );
 
   const renderProjectsTab = () => (
     <TabsContent value="projects">
@@ -575,6 +674,7 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "projects", label: "My Projects", icon: <Briefcase /> },
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
+          { id: "notifications", label: "Notifications", icon: <Bell /> },
         ]
       : []),
   ];
@@ -656,6 +756,11 @@ const ProfessorProfilePage: React.FC = () => {
                   >
                     {item.icon}
                     <span>{item.label}</span>
+                    {item.id === "notifications" && unreadCount > 0 && (
+                      <Badge variant="destructive" className="ml-2">
+                        {unreadCount}
+                      </Badge>
+                    )}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -1098,6 +1203,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </motion.div>
                   </TabsContent>
                   {renderProjectsTab()}
+                  {renderNotificationsTab()}
                 </>
               )}
             </Tabs>

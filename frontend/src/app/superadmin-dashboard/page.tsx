@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,7 +34,7 @@ type Professor = {
   email: string;
   photoUrl?: string | null;
   department: string;
-  status?: 'APPROVED' | 'PENDING' | 'REJECTED';
+  status?: "APPROVED" | "PENDING" | "REJECTED";
 };
 
 type Student = {
@@ -43,7 +43,7 @@ type Student = {
   email: string;
   imageUrl?: string | null;
   university: string;
-  status?: 'APPROVED' | 'PENDING' | 'REJECTED';
+  status?: "APPROVED" | "PENDING" | "REJECTED";
 };
 
 type Business = {
@@ -52,14 +52,14 @@ type Business = {
   email: string;
   profileImageUrl?: string | null;
   industry: string;
-  status?: 'APPROVED' | 'PENDING' | 'REJECTED';
+  status?: "APPROVED" | "PENDING" | "REJECTED";
 };
 
 type Webinar = {
   id: string;
   title: string;
   professor: Professor;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
   date: string;
   place: string;
   isOnline: boolean;
@@ -80,7 +80,9 @@ const dashboardItems: DashboardItem[] = [
 ];
 
 const SuperAdminDashboard = () => {
-  const [expandedSection, setExpandedSection] = useState<DashboardItem["id"] | null>(null);
+  const [expandedSection, setExpandedSection] = useState<
+    DashboardItem["id"] | null
+  >(null);
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -135,7 +137,10 @@ const SuperAdminDashboard = () => {
     };
 
     return (
-      <Badge variant="outline" className={statusColors[status as keyof typeof statusColors]}>
+      <Badge
+        variant="outline"
+        className={statusColors[status as keyof typeof statusColors]}
+      >
         {status.charAt(0) + status.slice(1).toLowerCase()}
       </Badge>
     );
@@ -145,30 +150,45 @@ const SuperAdminDashboard = () => {
     profile: Professor | Student | Business,
     type: "professor" | "student" | "business"
   ) => (
-    <Card key={profile.id} className="mb-4 border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card
+      key={profile.id}
+      className="mb-4 border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300"
+    >
       <CardContent className="flex items-center space-x-4 p-4">
         <Avatar className="w-16 h-16 border-2 border-[#c1502e]">
-          <AvatarImage src={
-            type === "professor" ? (profile as Professor).photoUrl :
-            type === "student" ? (profile as Student).imageUrl :
-            (profile as Business).profileImageUrl 
-          } />
+          <AvatarImage
+            src={
+              type === "professor"
+                ? (profile as Professor).photoUrl ?? ""
+                : type === "student"
+                ? (profile as Student).imageUrl ?? ""
+                : (profile as Business).profileImageUrl ?? ""
+            }
+          />
           <AvatarFallback className="bg-[#472014] text-white">
-            {type === "business" 
-              ? (profile as Business).companyName.split(" ").map(n => n[0]).join("")
-              : (profile as (Professor | Student)).fullName.split(" ").map(n => n[0]).join("")}
+            {type === "business"
+              ? (profile as Business).companyName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+              : (profile as Professor | Student).fullName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
           </AvatarFallback>
         </Avatar>
         <div>
           <h3 className="text-lg font-bold text-[#472014]">
-            {type === "business" 
+            {type === "business"
               ? (profile as Business).companyName
-              : (profile as (Professor | Student)).fullName}
+              : (profile as Professor | Student).fullName}
           </h3>
           <p className="text-[#686256]">
-            {type === "professor" ? (profile as Professor).department :
-             type === "student" ? (profile as Student).university :
-             (profile as Business).industry}
+            {type === "professor"
+              ? (profile as Professor).department
+              : type === "student"
+              ? (profile as Student).university
+              : (profile as Business).industry}
           </p>
           <p className="text-[#686256] text-sm">{profile.email}</p>
         </div>
@@ -184,10 +204,13 @@ const SuperAdminDashboard = () => {
       case "professors":
       case "student":
       case "business":
-        const data = section === "professors" ? professors :
-                    section === "student" ? students :
-                    businesses;
-        
+        const data =
+          section === "professors"
+            ? professors
+            : section === "student"
+            ? students
+            : businesses;
+
         return (
           <Tabs defaultValue="APPROVED" className="w-full">
             <TabsList className="bg-[#c1502e]/10">
@@ -195,18 +218,22 @@ const SuperAdminDashboard = () => {
               <TabsTrigger value="PENDING">Pending</TabsTrigger>
               <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
             </TabsList>
-            
+
             {["APPROVED", "PENDING", "REJECTED"].map((status) => (
               <TabsContent key={status} value={status}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data
-                    .filter(item => item.status === status)
-                    .map(profile => renderProfileCard(
-                      profile,
-                      section === "professors" ? "professor" :
-                      section === "student" ? "student" :
-                      "business"
-                    ))}
+                    .filter((item) => item.status === status)
+                    .map((profile) =>
+                      renderProfileCard(
+                        profile,
+                        section === "professors"
+                          ? "professor"
+                          : section === "student"
+                          ? "student"
+                          : "business"
+                      )
+                    )}
                 </div>
               </TabsContent>
             ))}
@@ -223,56 +250,66 @@ const SuperAdminDashboard = () => {
               <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
               <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
             </TabsList>
-            
-            {["PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED"].map((status) => (
-              <TabsContent key={status} value={status}>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Professor</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Mode</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {webinars
-                      .filter(w => w.status === status)
-                      .map(webinar => (
-                        <TableRow key={webinar.id}>
-                          <TableCell>{webinar.title}</TableCell>
-                          <TableCell>{webinar.professor.fullName}</TableCell>
-                          <TableCell>{renderStatusBadge(webinar.status)}</TableCell>
-                          <TableCell>{new Date(webinar.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{webinar.isOnline ? "Online" : webinar.place}</TableCell>
-                          <TableCell>
-                            {webinar.status === "PENDING" && (
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-green-100 text-green-800"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-red-100 text-red-800"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-            ))}
+
+            {["PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED"].map(
+              (status) => (
+                <TabsContent key={status} value={status}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Professor</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Mode</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {webinars
+                        .filter((w) => w.status === status)
+                        .map((webinar) => (
+                          <TableRow key={webinar.id}>
+                            <TableCell>{webinar.title}</TableCell>
+                            <TableCell>
+                              {webinar?.professor?.fullName ?? undefined}
+                            </TableCell>
+                            <TableCell>
+                              {renderStatusBadge(webinar.status)}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(webinar.date).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              {webinar.isOnline ? "Online" : webinar.place}
+                            </TableCell>
+                            <TableCell>
+                              {webinar.status === "PENDING" && (
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-green-100 text-green-800"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-red-100 text-red-800"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+              )
+            )}
           </Tabs>
         );
     }
@@ -307,7 +344,9 @@ const SuperAdminDashboard = () => {
                 <div className="text-[#c1502e]">{item.icon}</div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#472014]">{item.count}</div>
+                <div className="text-2xl font-bold text-[#472014]">
+                  {item.count}
+                </div>
                 {expandedSection === item.id ? (
                   <ChevronUp className="h-4 w-4 text-[#c1502e]" />
                 ) : (
@@ -331,12 +370,14 @@ const SuperAdminDashboard = () => {
             <Card className="mb-8 border-2 border-[#c1502e]/20">
               <CardHeader>
                 <CardTitle className="text-[#472014] font-caveat text-2xl">
-                  {dashboardItems.find(item => item.id === expandedSection)?.name} Management
+                  {
+                    dashboardItems.find((item) => item.id === expandedSection)
+                      ?.name
+                  }{" "}
+                  Management
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderSection(expandedSection)}
-              </CardContent>
+              <CardContent>{renderSection(expandedSection)}</CardContent>
             </Card>
           </motion.div>
         )}

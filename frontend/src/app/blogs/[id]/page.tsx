@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Navbar } from "@/components/shared/Navbar";
+import { NavbarWithBg } from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ThumbsUp, ThumbsDown, Send, Trash, User2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Send, Trash, User2, Loader } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import Link from "next/link";
-import { NavbarWithBg } from "@/components/shared/NavbarWithbg";
 import Image from "next/image";
+
 interface Comment {
   id: string;
   content: string;
@@ -61,6 +61,7 @@ const BlogPostPage = () => {
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [commentLoading, setCommentLoading] = useState(false);
   const [error, setError] = useState("");
   const [userInteraction, setUserInteraction] = useState<
     "like" | "dislike" | null
@@ -116,27 +117,20 @@ const BlogPostPage = () => {
         return;
       }
 
-      let endpoint = `${API_URL}/blogs/${id}/${action}`;
-      let method = "POST";
-
-      if (userInteraction === action) {
-        // Remove like/dislike
-        endpoint = `${API_URL}/blogs/${id}/${action}`;
-        method = "DELETE";
-      } else if (userInteraction) {
-        // Change from like to dislike or vice versa
-        await axios.delete(`${API_URL}/blogs/${id}/${userInteraction}`, {
+      const response = await axios.post(
+        `${API_URL}/blogs/${id}/toggle-like`,
+        { isLike: action === "like" },
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }
+      );
+
+      if (response.data.message === "Interaction removed") {
+        setUserInteraction(null);
+      } else {
+        setUserInteraction(action);
       }
 
-      await axios({
-        method,
-        url: endpoint,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setUserInteraction(userInteraction === action ? null : action);
       fetchBlogPost(); // Refetch to get updated likes/dislikes count
       toast({
         title: `Blog ${action === "like" ? "liked" : "disliked"} successfully`,
@@ -150,6 +144,7 @@ const BlogPostPage = () => {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setCommentLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         toast({ title: "Please log in to comment", variant: "destructive" });
@@ -166,7 +161,7 @@ const BlogPostPage = () => {
 
       setBlogPost((prevPost) =>
         prevPost
-          ? { ...prevPost, comments: [...prevPost.comments, response.data] }
+          ? { ...prevPost, comments: [response.data, ...prevPost.comments] }
           : null
       );
       setNewComment("");
@@ -174,6 +169,8 @@ const BlogPostPage = () => {
     } catch (error) {
       console.error("Error submitting comment:", error);
       toast({ title: "Failed to add comment", variant: "destructive" });
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -212,9 +209,9 @@ const BlogPostPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] flex flex-col">
-        <Navbar />
+        <NavbarWithBg />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-[#472014] text-4xl font-caveat">
+          <div className="text-[#472014] text-4xl font-caveat flex items-center">
             Loading blog post...
           </div>
         </main>
@@ -311,7 +308,27 @@ const BlogPostPage = () => {
           <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">
             Comments
           </h2>
-          <ul className="space-y-6 mb-8">
+          <form onSubmit={handleCommentSubmit} className="flex space-x-4 mb-8">
+            <Input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="flex-grow p-4 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-lg bg-white text-[#472014]"
+            />
+            <Button
+              type="submit"
+              className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-6 py-3 rounded-full transition-all duration-300"
+              disabled={commentLoading}
+            >
+              {commentLoading ? (
+                <Loader className="animate-spin h-5 w-5" />
+              ) : (
+                <Send size={20} />
+              )}
+            </Button>
+          </form>
+          <ul className="space-y-6">
             {blogPost.comments.map((comment) => (
               <li
                 key={comment.id}
@@ -346,13 +363,12 @@ const BlogPostPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-[#c1502e bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
+                        className=" bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
                       >
                         <User2 size={18} className="mr-2" />
                         View Profile
                       </Button>
                     </Link>
-
                     <p className="text-sm text-[#686256]">
                       {new Date(comment.createdAt).toLocaleString()}
                     </p>
@@ -360,7 +376,7 @@ const BlogPostPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
+                    className=" text-red-700 hover:bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
                     onClick={() => handleDeleteComment(comment.id)}
                   >
                     <Trash size={18} />
@@ -369,21 +385,6 @@ const BlogPostPage = () => {
               </li>
             ))}
           </ul>
-          <form onSubmit={handleCommentSubmit} className="flex space-x-4">
-            <Input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-grow p-4 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-lg bg-white text-[#472014]"
-            />
-            <Button
-              type="submit"
-              className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-6 py-3 rounded-full transition-all duration-300"
-            >
-              <Send size={20} />
-            </Button>
-          </form>
         </motion.section>
       </main>
       <Footer />

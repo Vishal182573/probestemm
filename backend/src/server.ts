@@ -13,6 +13,7 @@ import businessRoutes from "./routes/businessRoutes";
 import superAdminRoutes from "./routes/superadminRoutes";
 import imageUploadRoutes from "./routes/uploadImageRoutes";
 import contactRoutes from "./routes/contactRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use("/api/business", businessRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/image", imageUploadRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

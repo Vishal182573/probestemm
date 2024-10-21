@@ -27,6 +27,10 @@ interface Author {
   companyName?: string;
 }
 
+interface UserInteraction {
+  isLike: boolean | null;
+}
+
 interface Comment {
   id: string;
   content: string;
@@ -69,6 +73,9 @@ const BlogsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userInteractions, setUserInteractions] = useState<{
+    [key: string]: UserInteraction;
+  }>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -82,6 +89,7 @@ const BlogsPage: React.FC = () => {
       setLoading(true);
       const response = await axios.get(`${API_URL}/blogs`);
       setBlogs(response.data);
+      fetchUserInteractions(response.data.map((blog: Blog) => blog.id));
       setError("");
     } catch (error) {
       setError("Failed to fetch blogs");
@@ -91,65 +99,106 @@ const BlogsPage: React.FC = () => {
     }
   };
 
-  const handleLike = async (blogId: string) => {
+  const fetchUserInteractions = async (blogIds: string[]) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({ title: "Please log in to like blogs", variant: "destructive" });
-        return;
-      }
-
-      await axios.post(
-        `${API_URL}/blogs/${blogId}/like`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const interactions = await Promise.all(
+        blogIds.map(async (blogId) => {
+          const response = await axios.get(
+            `${API_URL}/blogs/${blogId}/user-interactions`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          return { blogId, interaction: response.data };
+        })
       );
 
-      setBlogs((prevBlogs) =>
-        prevBlogs.map((blog) =>
-          blog.id === blogId ? { ...blog, likes: blog.likes + 1 } : blog
-        )
+      const interactionsObject = interactions.reduce(
+        (acc, { blogId, interaction }) => {
+          acc[blogId] = interaction;
+          return acc;
+        },
+        {} as { [key: string]: UserInteraction }
       );
-      toast({ title: "Blog liked successfully" });
+
+      setUserInteractions(interactionsObject);
     } catch (error) {
-      console.error("Error liking blog:", error);
-      toast({ title: "Failed to like blog", variant: "destructive" });
+      console.error("Error fetching user interactions:", error);
     }
   };
 
-  const handleDislike = async (blogId: string) => {
+  const handleLikeToggle = async (blogId: string, isLike: boolean) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         toast({
-          title: "Please log in to dislike blogs",
+          title: "Please log in to interact with blogs",
           variant: "destructive",
         });
         return;
       }
 
       await axios.post(
-        `${API_URL}/blogs/${blogId}/dislike`,
-        {},
+        `${API_URL}/blogs/${blogId}/toggle-like`,
+        { isLike },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       setBlogs((prevBlogs) =>
-        prevBlogs.map((blog) =>
-          blog.id === blogId ? { ...blog, dislikes: blog.dislikes + 1 } : blog
-        )
+        prevBlogs.map((blog) => {
+          if (blog.id === blogId) {
+            const currentInteraction = userInteractions[blogId];
+            if (currentInteraction?.isLike === isLike) {
+              // Remove the like/dislike
+              return {
+                ...blog,
+                likes: isLike ? blog.likes - 1 : blog.likes,
+                dislikes: !isLike ? blog.dislikes - 1 : blog.dislikes,
+              };
+            } else {
+              // Toggle the like/dislike
+              return {
+                ...blog,
+                likes: isLike
+                  ? blog.likes + 1
+                  : currentInteraction?.isLike
+                  ? blog.likes - 1
+                  : blog.likes,
+                dislikes: !isLike
+                  ? blog.dislikes + 1
+                  : currentInteraction?.isLike === false
+                  ? blog.dislikes - 1
+                  : blog.dislikes,
+              };
+            }
+          }
+          return blog;
+        })
       );
-      toast({ title: "Blog disliked successfully" });
+
+      setUserInteractions((prev) => ({
+        ...prev,
+        [blogId]: { isLike: prev[blogId]?.isLike === isLike ? null : isLike },
+      }));
+
+      toast({
+        title: isLike
+          ? "Blog liked successfully"
+          : "Blog disliked successfully",
+      });
     } catch (error) {
-      console.error("Error disliking blog:", error);
-      toast({ title: "Failed to dislike blog", variant: "destructive" });
+      console.error("Error toggling blog like:", error);
+      toast({
+        title: "Failed to update blog interaction",
+        variant: "destructive",
+      });
     }
   };
-
   const getAuthorInfo = (blog: Blog) => {
     if (blog.professor) {
       return {
@@ -231,8 +280,12 @@ const BlogsPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-[#c1502e] hover:text-white"
-                      onClick={() => handleLike(blog.id)}
+                      className={`${
+                        userInteractions[blog.id]?.isLike === true
+                          ? "text-blue-500"
+                          : "text-[#c1502e]"
+                      } hover:text-white`}
+                      onClick={() => handleLikeToggle(blog.id, true)}
                     >
                       <ThumbsUp className="mr-2 h-4 w-4" />
                       {blog.likes}
@@ -240,14 +293,17 @@ const BlogsPage: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-[#c1502e] hover:text-white "
-                      onClick={() => handleDislike(blog.id)}
+                      className={`${
+                        userInteractions[blog.id]?.isLike === false
+                          ? "text-red-500"
+                          : "text-[#c1502e]"
+                      } hover:text-white`}
+                      onClick={() => handleLikeToggle(blog.id, false)}
                     >
                       <ThumbsDown className="mr-2 h-4 w-4" />
                       {blog.dislikes}
                     </Button>
                   </div>
-
                   <Link href={`/blogs/${blog.id}`}>
                     <Button
                       variant="outline"
