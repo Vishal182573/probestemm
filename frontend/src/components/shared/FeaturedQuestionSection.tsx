@@ -88,7 +88,7 @@ const FeaturedQuestionsSection: React.FC = () => {
                         variant="outline"
                         className="px-2 py-1 sm:mb-2 hover:bg-[#c1502e] hover:text-white transition-colors duration-300"
                       >
-                        <FaArrowUp className="text-[#472014]" />
+                        <FaArrowUp className="text-white hover:text-[#472014]" />
                       </Button>
                       <span className="text-sm font-medium text-[#472014]">
                         {question.votes}

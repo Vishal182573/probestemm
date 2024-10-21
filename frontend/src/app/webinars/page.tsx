@@ -51,7 +51,9 @@ const WebinarPage = () => {
   return (
     <div>
       <NavbarWithBg/>
-      <Banner imageSrc={LOGIN} altText="webinar-banner-img" title="webinar" subtitle="weibinar-subtitle"/>
+      <Banner imageSrc={LOGIN} altText="webinar-banner-img" 
+    title="Stay Ahead of the Curve"
+    subtitle="Attend virtual seminars and discussions"/>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>
@@ -64,7 +66,7 @@ const WebinarPage = () => {
           </AnimatedSection>
         </div>
       </section>
-      <FeaturesDemo/>
+      <FeaturesDemo imagePosition="left"/>
       <ContactForm/>
       <Footer />
     </div>

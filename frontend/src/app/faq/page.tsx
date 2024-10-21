@@ -68,7 +68,7 @@ export default function FAQPage() {
                 transition={{ duration: 0.5 }}
                 className="text-4xl md:text-5xl font-bold text-center lg:text-left mb-8 text-gray-800"
               >
-                Frequently Asked <span className="text-blue-600">Questions</span>
+                Frequently Asked <span className="text-[#c1502e]">Questions</span>
               </motion.h1>
 
               <motion.div 

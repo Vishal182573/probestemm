@@ -42,7 +42,7 @@ const HomePage = () => {
         <HeroSection />
         <FeaturesSection />
         <WebinarSliderSection/>
-        <FeaturesDemo/>
+        <FeaturesDemo imagePosition="right"/>
         <FeaturedQuestionsSection />
         <TestimonialsSection/>
         <FAQSection/>
@@ -210,22 +210,27 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="py-24 px-4 bg-white">
-      <h2 className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat">
+    <section className=" py-24 px-4">
+      <motion.h2
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="text-5xl font-bold text-center mb-16 text-[#472014] font-caveat"
+      >
         Why Choose Probe STEM?
-      </h2>
+      </motion.h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
         {features.map((feature, index) => (
-
           <motion.div
             key={index}
-            className="p-8 rounded-xl shadow-xl h-50vh flex flex-col border-[40px] border-[#c1502e]"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+            className="bg-white p-8 rounded-xl shadow-xl border-4 border-[#c1502e] hover:scale-105 transition-transform duration-300"
           >
             <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
               {feature.icon}
-              <h3 className="text-4xl font-semibold mt-6 mb-4 text-[#472014] font-caveat">
+              <h3 className="text-3xl font-bold mt-6 mb-4 text-[#472014] font-caveat">
                 {feature.title}
               </h3>
               <p className="text-[#472014] text-lg mb-6">
@@ -234,14 +239,16 @@ const FeaturesSection = () => {
               <ul className="text-left w-full mb-6">
                 {feature.benefits.map((benefit, idx) => (
                   <li key={idx} className="flex items-center mb-2">
-                    <Star className="h-5 w-5 text-[#472014] mr-2 " />
+                    <Star className="h-5 w-5 text-[#472014] mr-2" />
                     <span className="text-[#472014]">{benefit}</span>
                   </li>
                 ))}
               </ul>
-                    <Link href={feature.link} className="mt-auto">
-                    <Button className="text-white">Explore more <ArrowRight className=""/></Button>
-            </Link>
+              <Link href={feature.link}>
+                <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                  Explore more <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
             </div>
           </motion.div>
         ))}

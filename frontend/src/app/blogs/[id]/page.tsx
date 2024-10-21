@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import Link from "next/link";
 import Image from "next/image";
-import { LOGIN } from "../../../../public";
+import {  LOGO } from "../../../../public";
 import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
@@ -230,13 +230,12 @@ const BlogPostPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] flex flex-col">
-        <NavbarWithBg />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <Image src={LOGO} alt="logo" className="w-24"/>
           <div className="text-[#472014] text-4xl font-caveat flex items-center">
             Loading blog post...
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -255,7 +254,9 @@ const BlogPostPage = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <NavbarWithBg />
-      <Banner imageSrc={LOGIN} altText="webinar-banner-img" title="Blog Post" subtitle={blogPost.title} />
+      <Banner imageSrc={LOGO} altText="webinar-banner-img" 
+    title="Thought-Provoking Perspectives"
+    subtitle="Explore diverse opinions and ideas"/>
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-2/3">
@@ -448,7 +449,7 @@ const BlogPostPage = () => {
           </div>
         </div>
       </main>
-      <FeaturesDemo />
+      <FeaturesDemo imagePosition="right"/>
       <ContactForm />
       <Footer />
     </div>

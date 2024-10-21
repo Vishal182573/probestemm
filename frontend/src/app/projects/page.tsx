@@ -191,7 +191,7 @@ const ProjectsPage = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <FeaturesDemo/>
+      <FeaturesDemo imagePosition="left"/>
       <ContactForm/>
       <Footer />
     </div>

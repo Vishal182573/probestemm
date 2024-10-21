@@ -66,6 +66,12 @@ export const NavbarWithBg: React.FC = () => {
             <NavLink to="/" className={linkTextColor}>
               HOME
             </NavLink>
+            <NavLink to="/about" className={linkTextColor}>
+              ABOUT US
+            </NavLink>
+            <NavLink to="/contact" className={linkTextColor}>
+              CONTACT
+            </NavLink>
             <NavLink to="/discussions" className={linkTextColor}>
               DISCUSSION FORUM
             </NavLink>
@@ -77,9 +83,6 @@ export const NavbarWithBg: React.FC = () => {
             </NavLink>
             <NavLink to="/projects" className={linkTextColor}>
               PROJECTS
-            </NavLink>
-            <NavLink to="/about" className={linkTextColor}>
-              ABOUT
             </NavLink>
             {isLoggedIn && user ? (
               <Link href={`/${user.role}-profile/${user.id}`}>
@@ -106,23 +109,26 @@ export const NavbarWithBg: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-2">
-              <MobileNavLink to="/" className={linkTextColor}>
+            <MobileNavLink to="/" className={linkTextColor}>
                 HOME
+              </MobileNavLink>
+              <MobileNavLink to="/about" className={linkTextColor}>
+                ABOUT Us
+              </MobileNavLink>
+              <MobileNavLink to="/contact" className={linkTextColor}>
+                CONTACT
               </MobileNavLink>
               <MobileNavLink to="/discussions" className={linkTextColor}>
                 DISCUSSION FORUM
+              </MobileNavLink>
+              <MobileNavLink to="/webinars" className={linkTextColor}>
+                WEBINARS
               </MobileNavLink>
               <MobileNavLink to="/blogs" className={linkTextColor}>
                 BLOGS
               </MobileNavLink>
               <MobileNavLink to="/projects" className={linkTextColor}>
                 PROJECTS
-              </MobileNavLink>
-              <MobileNavLink to="/webinars" className={linkTextColor}>
-                WEBINARS
-              </MobileNavLink>
-              <MobileNavLink to="/about" className={linkTextColor}>
-                ABOUT
               </MobileNavLink>
               {isLoggedIn && user ? (
                 <Link href={`/${user.role}-profile/${user.id}`}>
@@ -159,7 +165,7 @@ const NavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`${className} hover:bg-blue-50 font-semibold text-lg hover:text-[#472014]`}
+      className={`${className} hover:bg-blue-50 font-semibold text-md hover:text-[#472014]`}
     >
       {children}
     </Button>
