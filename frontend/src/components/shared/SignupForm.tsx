@@ -19,6 +19,7 @@ import axios from "axios";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
+import { Modal } from "./Modal";
 
 const authApi = axios.create({
   baseURL: `${API_URL}/auth`,
@@ -85,6 +86,8 @@ const buttonStyles = "bg-[#c1502e] hover:bg-[#472014] text-white font-bold trans
 const labelStyles = "text-[#472014] font-semibold";
 
 export const SignupForm: React.FC = () => {
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
     fullName: "",
@@ -196,6 +199,7 @@ export const SignupForm: React.FC = () => {
   };
 
   const renderInitialForm = () => (
+    <>
     <form className="space-y-4" onSubmit={handleInitialSubmit}>
       <div className="space-y-2">
         <Label htmlFor="fullName" className={labelStyles}>Full Name</Label>
@@ -258,7 +262,15 @@ export const SignupForm: React.FC = () => {
       <div className="flex items-center space-x-2 pt-2">
         <Checkbox id="terms" required className="border-[#472014]"/>
         <Label htmlFor="terms" className="text-sm text-[#472014]">
-          I agree to the Terms of Service and Privacy Policy
+          I agree to the <button
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="text-sm text-blue-500"
+                >Privacy Policy
+                </button> and <button
+                  onClick={() => setIsTermsOpen(true)}
+                  className="text-sm text-blue-500"
+                >Terms of Service
+                </button>
         </Label>
       </div>
 
@@ -274,6 +286,24 @@ export const SignupForm: React.FC = () => {
         <Rocket className="ml-2 h-4 w-4" />
       </Button>
     </form>
+    <Modal
+    isOpen={isPrivacyOpen}
+    onClose={() => setIsPrivacyOpen(false)}
+    title="Privacy Policy"
+  >
+    <div className="prose text-black">lorem700
+    </div>
+  </Modal>
+
+  <Modal
+    isOpen={isTermsOpen}
+    onClose={() => setIsTermsOpen(false)}
+    title="Terms of Service"
+  >
+    <div className="prose text-black"> ex
+    </div>
+  </Modal>
+  </>
   );
 
   const renderEducationForm = () => (

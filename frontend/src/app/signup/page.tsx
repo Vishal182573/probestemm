@@ -8,7 +8,7 @@ import { SIGNUP } from "../../../public";
 
 const SignupPage: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] ">
+    <div className="flex flex-col min-h-screen bg-white ">
       <NavbarWithBg/>
       <main className="flex-grow flex items-center justify-center p-4 h-screen">
         <div className="w-full max-w-6xl flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-8">

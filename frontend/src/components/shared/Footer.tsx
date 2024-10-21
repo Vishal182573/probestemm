@@ -25,11 +25,11 @@ export const Footer: React.FC = () => {
                 </li>
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
                   <MdPhone className="mr-3 text-[#c1502e]" size={20} />
-                  <a href="tel:+11234567890">+1 123-456-7890</a>
+                  <a href="tel:+11234567890">+91 -1905-237928</a>
                 </li>
                 <li className="flex items-start">
                   <MdLocationOn className="mr-3 text-[#c1502e] mt-1" size={20} />
-                  <span>123 Education St., Science City,<br />Innovation Hub, 12345</span>
+                  <span>School of Mathematical and Statistical Sciences, Indian Institute of Technology - Mandi<br />Himachal Pradesh 175001, India</span>
                 </li>
               </ul>
             </div>
