@@ -1,16 +1,19 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { motion} from "framer-motion";
+import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Award, Briefcase, GraduationCap, Star} from "lucide-react";
+import { Award, Briefcase, GraduationCap, Star } from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
-
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Bell } from "lucide-react";
 
 interface Student {
   id: string;
@@ -30,7 +33,38 @@ interface Student {
     passingYear: string;
   }>;
   achievements: Array<{ id: string; year: string; description: string }>;
+  discussions: Array<{
+    id: string;
+    title: string;
+    category: string;
+    subcategory: string;
+    status: string;
+    upvotes: number;
+    downvotes: number;
+  }>;
+  projects: Array<{
+    id: string;
+    topic: string;
+    difficulty: string;
+    timeline: string;
+    status: string;
+  }>;
 }
+
+type Notification = {
+  id: string;
+  type:
+    | "COMMENT"
+    | "LIKE"
+    | "DISLIKE"
+    | "DISCUSSION_ANSWER"
+    | "DISCUSSION_VOTE";
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  studentId: string;
+  discussionId?: string;
+};
 
 const StudentProfilePage: React.FC = () => {
   const { id } = useParams();
@@ -38,6 +72,8 @@ const StudentProfilePage: React.FC = () => {
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [, setUnreadCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -48,11 +84,21 @@ const StudentProfilePage: React.FC = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/student/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [studentResponse, notificationsResponse] = await Promise.all([
+          axios.get(`${API_URL}/student/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_URL}/notifications/student/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        setStudent(response.data);
+        setStudent(studentResponse.data);
+        setNotifications(notificationsResponse.data);
+        setUnreadCount(
+          notificationsResponse.data.filter((n: Notification) => !n.isRead)
+            .length
+        );
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -64,10 +110,86 @@ const StudentProfilePage: React.FC = () => {
     fetchStudentData();
   }, [id, router]);
 
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      await axios.patch(
+        `${API_URL}/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setNotifications(
+        notifications.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount((prev) => prev - 1);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read. Please try again.");
+    }
+  };
+
+  const renderNotificationsTab = () => (
+    <TabsContent value="notifications">
+      <Card className="border border-[#c1502e] bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+            <Bell className="mr-2 text-[#c1502e]" />
+            Notifications
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {notifications.length > 0 ? (
+            <ul className="space-y-4">
+              {notifications.map((notification) => (
+                <li
+                  key={notification.id}
+                  className="flex items-center justify-between border-b pb-4"
+                >
+                  <div>
+                    <p
+                      className={`${
+                        notification.isRead ? "text-gray-600" : "font-semibold"
+                      }`}
+                    >
+                      <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
+                        {notification.content}
+                      </p>
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(notification.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {!notification.isRead && (
+                    <Button
+                      onClick={() => handleMarkAsRead(notification.id)}
+                      size="sm"
+                      className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                    >
+                      Mark as Read
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No notifications yet.</p>
+          )}
+        </CardContent>
+      </Card>
+    </TabsContent>
+  );
+
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
-        <div className="loader text-[#c1502e] font-caveat text-2xl">Loading...</div>
+        <div className="loader text-[#c1502e] font-caveat text-2xl">
+          Loading...
+        </div>
         <div className="text-[#472014] ml-2">please wait</div>
       </div>
     );
@@ -78,7 +200,9 @@ const StudentProfilePage: React.FC = () => {
   }
 
   if (!student) {
-    return <div className="text-[#472014] text-center p-4">Student not found</div>;
+    return (
+      <div className="text-[#472014] text-center p-4">Student not found</div>
+    );
   }
 
   const staggerChildren = {
@@ -89,9 +213,12 @@ const StudentProfilePage: React.FC = () => {
     },
   };
 
+  const userId = localStorage.getItem("userId");
+  const isOwnProfile = student.id === userId;
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
-      <NavbarWithBg/>
+      <NavbarWithBg />
 
       <main className="flex-grow">
         <motion.section
@@ -108,14 +235,22 @@ const StudentProfilePage: React.FC = () => {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Avatar className="w-32 h-32 border-4 border-white">
-                    <AvatarImage src={student.imageUrl || ""} alt={student.fullName} />
+                    <AvatarImage
+                      src={student.imageUrl || ""}
+                      alt={student.fullName}
+                    />
                     <AvatarFallback className="bg-[#472014] text-white">
-                      {student.fullName.split(" ").map((n) => n[0]).join("")}
+                      {student.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                 </motion.div>
                 <div>
-                  <h1 className="text-4xl font-extrabold mb-2 font-caveat">{student.fullName}</h1>
+                  <h1 className="text-4xl font-extrabold mb-2 font-caveat">
+                    {student.fullName}
+                  </h1>
                   <p className="text-xl font-bold">{student.course}</p>
                   <p className="text-lg">{student.university}</p>
                 </div>
@@ -143,8 +278,8 @@ const StudentProfilePage: React.FC = () => {
                   <ul className="space-y-2">
                     {student.researchHighlights.map((highlight) => (
                       <li key={highlight.id} className="flex items-center">
-                        <Badge 
-                          variant="secondary" 
+                        <Badge
+                          variant="secondary"
                           className="mr-2 bg-[#c1502e]/10 text-[#c1502e] font-semibold"
                         >
                           {highlight.status}
@@ -179,7 +314,9 @@ const StudentProfilePage: React.FC = () => {
                   <ul className="space-y-4">
                     {student.education.map((edu) => (
                       <li key={edu.id}>
-                        <h3 className="font-bold text-[#472014]">{edu.degree}</h3>
+                        <h3 className="font-bold text-[#472014]">
+                          {edu.degree}
+                        </h3>
                         <p className="text-sm text-[#686256] font-medium">
                           {edu.institution}
                         </p>
@@ -203,19 +340,65 @@ const StudentProfilePage: React.FC = () => {
                   <ul className="space-y-2">
                     {student.achievements.map((achievement) => (
                       <li key={achievement.id} className="flex items-center">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className="mr-2 border-[#c1502e] text-[#c1502e] font-semibold"
                         >
                           {achievement.year}
                         </Badge>
-                        <span className="font-medium">{achievement.description}</span>
+                        <span className="font-medium">
+                          {achievement.description}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
               </Card>
+
+              {isOwnProfile && (
+                <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                      <GraduationCap className="mr-2" />
+                      Discussions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-[#472014]">
+                    <ul className="space-y-2">
+                      {student.discussions.map((discussion) => (
+                        <li key={discussion.id}>
+                          <h3 className="font-bold">{discussion.title}</h3>
+                          <p className="text-sm text-[#686256] font-medium">
+                            Category: {discussion.category} /{" "}
+                            {discussion.subcategory}
+                          </p>
+                          <p className="text-sm text-[#686256] font-medium">
+                            Status: {discussion.status}
+                          </p>
+                          <p className="text-sm text-[#686256] font-medium">
+                            Upvotes: {discussion.upvotes}, Downvotes:{" "}
+                            {discussion.downvotes}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
+          </div>
+        </section>
+
+        <section>
+          <div className="container mx-auto px-4">
+            <Tabs defaultValue="notifications">
+              <TabsList>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                {/* Add more tabs as needed */}
+              </TabsList>
+              {renderNotificationsTab()}
+              {/* Add more tab content as needed */}
+            </Tabs>
           </div>
         </section>
       </main>

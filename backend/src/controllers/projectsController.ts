@@ -1,5 +1,7 @@
 import { PrismaClient, ProjectType, Status } from "@prisma/client";
 import type { Request, Response } from "express";
+import { createNotification } from "./notificationController";
+import { NotificationType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -215,6 +217,15 @@ export const applyToBusinessProject = async (req: Request, res: Response) => {
       },
     });
 
+    await createNotification(
+      NotificationType.PROJECT_APPLICATION,
+      `A new professor (${professorName}) has applied to your project "${project.topic}".`,
+      project.businessId!,
+      "business",
+      projectId,
+      "project"
+    );
+
     res.status(200).json(appliedProfessor);
   } catch (error) {
     res.status(500).json({ error: "Failed to apply to project" });
@@ -258,6 +269,14 @@ export const applyToProfessorProject = async (req: Request, res: Response) => {
         phoneNumber: studentPhoneNumber,
       },
     });
+    await createNotification(
+      NotificationType.PROJECT_APPLICATION,
+      `A new student (${studentName}) has applied to your project "${project.topic}".`,
+      project.professorId!,
+      "professor",
+      projectId,
+      "project"
+    );
 
     res.status(200).json(appliedStudent);
   } catch (error) {
