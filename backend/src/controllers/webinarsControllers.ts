@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { PrismaClient, WebinarStatus } from "@prisma/client";
+import { NotificationType, PrismaClient, WebinarStatus } from "@prisma/client";
 import cloudinary from "../config/cloudinary";
+import { createNotification } from "./notificationController";
 
 const prisma = new PrismaClient();
 
@@ -71,11 +72,11 @@ export const requestWebinar = async (req: Request, res: Response) => {
       },
     });
 
-    if (existingWebinar) {
-      return res.status(400).json({
-        error: "A webinar request with 'PENDING' status already exists.",
-      });
-    }
+    // if (existingWebinar) {
+    //   return res.status(400).json({
+    //     error: "A webinar request with 'PENDING' status already exists.",
+    //   });
+    // }
 
     // Create a new webinar request
     const newWebinar = await prisma.webinar.create({
@@ -119,6 +120,18 @@ export const updateWebinarStatus = async (req: Request, res: Response) => {
       where: { id: webinarId },
       data: { status },
     });
+
+    await createNotification(
+      NotificationType.WEBINAR_STATUS,
+      `Your webinar "${
+        updatedWebinar.title
+      }" has been ${status.toLowerCase()}.`,
+      updatedWebinar.professorId,
+      "professor",
+      webinarId,
+      "webinar"
+    );
+
     res.status(200).json(updatedWebinar);
   } catch (error) {
     res.status(500).json({ error: "Failed to update webinar status" });

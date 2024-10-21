@@ -539,8 +539,9 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
+    const userRole = req.user?.role;
 
-    if (!userId) {
+    if (!userId || !userRole) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
@@ -552,6 +553,18 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
         },
       },
     });
+
+    const blog = await prisma.blog.findUnique({
+      where: { id },
+      include: {
+        professor: true,
+        business: true,
+      },
+    });
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
 
     if (existingLike) {
       // If like exists, remove it
@@ -577,7 +590,7 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
     } else {
       // If no like exists, create a new one
       const isLike = req.body.isLike;
-      await prisma.blogLike.create({
+      const newLike = await prisma.blogLike.create({
         data: {
           blogId: id,
           userId,
@@ -594,6 +607,42 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
         },
       });
 
+      // Fetch user details based on role
+      let userName = "Anonymous";
+      if (userRole === "student") {
+        const student = await prisma.student.findUnique({
+          where: { id: userId },
+        });
+        userName = student?.fullName || "Anonymous Student";
+      } else if (userRole === "professor") {
+        const professor = await prisma.professor.findUnique({
+          where: { id: userId },
+        });
+        userName = professor?.fullName || "Anonymous Professor";
+      } else if (userRole === "business") {
+        const business = await prisma.business.findUnique({
+          where: { id: userId },
+        });
+        userName = business?.companyName || "Anonymous Business";
+      }
+
+      // Determine blog author and create notification
+      const authorId = blog.professorId || blog.businessId;
+      const authorType = blog.professorId ? "professor" : "business";
+
+      if (authorId) {
+        await createNotification(
+          NotificationType.LIKE,
+          `New ${isLike ? "like" : "dislike"} on your blog "${
+            blog.title
+          }" by ${userName}`,
+          authorId,
+          authorType,
+          id,
+          "blog"
+        );
+      }
+
       return res.status(200).json({ message: "Interaction added" });
     }
   } catch (error) {
@@ -601,33 +650,6 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
     return res
       .status(500)
       .json({ error: "Failed to toggle blog like/dislike" });
-  }
-};
-
-const getRelatedBlogs = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const relatedBlogs = await prisma.blog.findMany({
-      where: {
-        NOT: {
-          id: id,
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        blogImage: true,
-      },
-      take: 5,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return res.status(200).json(relatedBlogs);
-  } catch (error) {
-    console.error("Error in getRelatedBlogs:", error);
-    return res.status(500).json({ error: "Failed to fetch related blogs" });
   }
 };
 
@@ -643,5 +665,4 @@ export default {
   deleteComment,
   userInteraction,
   toggleBlogLike,
-  getRelatedBlogs
 };

@@ -5,6 +5,8 @@ import {
   VoteType,
 } from "@prisma/client";
 import type { Request, Response } from "express";
+import { createNotification } from "./notificationController";
+import { NotificationType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -44,13 +46,23 @@ export const answerDiscussion = async (req: Request, res: Response) => {
       },
     });
 
-    await prisma.discussion.update({
+    const updatedDiscussion = await prisma.discussion.update({
       where: { id: discussionId },
       data: {
         status: DiscussionStatus.ANSWERED,
         answerCount: { increment: 1 },
       },
+      include: { student: true },
     });
+
+    await createNotification(
+      NotificationType.DISCUSSION_ANSWER,
+      `Your discussion "${updatedDiscussion.title}" has received a new answer.`,
+      updatedDiscussion.studentId,
+      "student",
+      discussionId,
+      "discussion"
+    );
 
     res.status(201).json(answer);
   } catch (error) {
@@ -72,6 +84,8 @@ export const voteDiscussion = async (req: Request, res: Response) => {
       },
     });
 
+    let voteAction: string;
+
     if (existingVote) {
       if (existingVote.voteType === voteType) {
         return res.status(400).json({ error: "You have already voted" });
@@ -81,6 +95,10 @@ export const voteDiscussion = async (req: Request, res: Response) => {
         where: { id: existingVote.id },
         data: { voteType },
       });
+      voteAction =
+        existingVote.voteType === VoteType.UPVOTE
+          ? "changed their upvote to a downvote"
+          : "changed their downvote to an upvote";
     } else {
       await prisma.vote.create({
         data: {
@@ -90,6 +108,7 @@ export const voteDiscussion = async (req: Request, res: Response) => {
           voteType,
         },
       });
+      voteAction = voteType === VoteType.UPVOTE ? "upvoted" : "downvoted";
     }
 
     const updatedDiscussion = await prisma.discussion.update({
@@ -102,7 +121,18 @@ export const voteDiscussion = async (req: Request, res: Response) => {
           increment: voteType === VoteType.DOWNVOTE ? 1 : 0,
         },
       },
+      include: { student: true },
     });
+
+    // Create notification for the student who posted the discussion
+    await createNotification(
+      NotificationType.DISCUSSION_VOTE,
+      `Someone ${voteAction} your discussion "${updatedDiscussion.title}".`,
+      updatedDiscussion.studentId,
+      "student",
+      discussionId,
+      "discussion"
+    );
 
     res.status(200).json(updatedDiscussion);
   } catch (error) {

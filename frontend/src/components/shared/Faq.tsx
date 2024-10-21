@@ -1,11 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { API_URL } from '@/constants';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { API_URL } from "@/constants";
 
 interface FAQItem {
   question: string;
@@ -24,7 +29,7 @@ const FAQSection = () => {
         const data = await response.json();
         setFaqs(data);
       } catch (error) {
-        console.error('Error fetching FAQs:', error);
+        console.error("Error fetching FAQs:", error);
       } finally {
         setLoading(false);
       }
@@ -64,10 +69,10 @@ const FAQSection = () => {
               </AccordionItem>
             ))}
           </Accordion>
-          
+
           <div className="mt-8 text-center">
             <Button
-              onClick={() => router.push('/faq')}
+              onClick={() => router.push("/faq")}
               variant="outline"
               className="px-6 py-2 border-2 border-gray-300 hover:border-gray-400 text-white rounded-full transition-all duration-300"
             >

@@ -383,9 +383,7 @@ const ProfessorProfilePage: React.FC = () => {
                         notification.isRead ? "text-gray-600" : "font-semibold"
                       }`}
                     >
-                      {/* // amazing font and design for notifications
-                       */}
-                      <p className="text-[#472014] font-caveat text-2xl font-bold leading-tight line-clamp-2">
+                      <p className="text-[#472014]  text-2xl font-bold leading-tight line-clamp-2">
                         {notification.content}
                       </p>
                     </p>
@@ -819,7 +817,10 @@ const ProfessorProfilePage: React.FC = () => {
                               key={achievement.id}
                               className="flex items-center"
                             >
-                              <Badge variant="outline" className="mr-2 text-black">
+                              <Badge
+                                variant="outline"
+                                className="mr-2 text-black"
+                              >
                                 {achievement.year}
                               </Badge>
                               {achievement.description}
@@ -844,7 +845,10 @@ const ProfessorProfilePage: React.FC = () => {
                         <ul className="space-y-2">
                           {professor.positions.map((position) => (
                             <li key={position.id} className="flex items-center">
-                              <Badge variant="outline" className="mr-2 text-black">
+                              <Badge
+                                variant="outline"
+                                className="mr-2 text-black"
+                              >
                                 {position.startYear} -{" "}
                                 {position.endYear || "Present"}
                               </Badge>
