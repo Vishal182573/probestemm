@@ -135,52 +135,56 @@ const StudentProfilePage: React.FC = () => {
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
-      <Card className="border border-[#c1502e] bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-            <Bell className="mr-2 text-[#c1502e]" />
-            Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {notifications.length > 0 ? (
-            <ul className="space-y-4">
-              {notifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex items-center justify-between border-b pb-4"
-                >
-                  <div>
-                    <p
-                      className={`${
-                        notification.isRead ? "text-gray-600" : "font-semibold"
-                      }`}
-                    >
-                      <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
-                        {notification.content}
+      {isOwnProfile && (
+        <Card className="border border-[#c1502e] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Bell className="mr-2 text-[#c1502e]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notifications.length > 0 ? (
+              <ul className="space-y-4">
+                {notifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className="flex items-center justify-between border-b pb-4"
+                  >
+                    <div>
+                      <p
+                        className={`${
+                          notification.isRead
+                            ? "text-gray-600"
+                            : "font-semibold"
+                        }`}
+                      >
+                        <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
+                          {notification.content}
+                        </p>
                       </p>
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(notification.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {!notification.isRead && (
-                    <Button
-                      onClick={() => handleMarkAsRead(notification.id)}
-                      size="sm"
-                      className="bg-[#c1502e] hover:bg-[#472014] text-white"
-                    >
-                      Mark as Read
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No notifications yet.</p>
-          )}
-        </CardContent>
-      </Card>
+                      <p className="text-sm text-gray-500">
+                        {new Date(notification.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {!notification.isRead && (
+                      <Button
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        size="sm"
+                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                      >
+                        Mark as Read
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No notifications yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </TabsContent>
   );
 
@@ -255,6 +259,9 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg">{student.university}</p>
                 </div>
               </div>
+              <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                Edit Profile
+              </Button>
             </div>
           </div>
         </motion.section>

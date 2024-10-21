@@ -29,7 +29,7 @@ import axios from "axios";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import { LOGO, TESTI1 } from "../../../public";
+import { LOGO } from "../../../public";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
 import ContactForm from "@/components/shared/Feedback";
 
@@ -158,17 +158,19 @@ const DiscussionForum: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavbarWithBg/>
-      <Banner imageSrc={LOGO} altText="discussion-banner" 
-    title="Insightful Discussions"
-    subtitle="Connect with experts and peers"/>
+      <NavbarWithBg />
+      <Banner
+        imageSrc={LOGO}
+        altText="discussion-banner"
+        title="Insightful Discussions"
+        subtitle="Connect with experts and peers"
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="container mx-auto p-4 sm:p-6 md:p-8"
       >
-
         <motion.div
           className="flex flex-col sm:flex-row items-center sm:space-x-4 mb-6 md:mb-8"
           initial={{ y: 50, opacity: 0 }}
@@ -366,7 +368,7 @@ const DiscussionForum: React.FC = () => {
                   className="text-white bg-[#c1502e] hover:bg-[#472014] hover:text-white rounded-full transition-all duration-300 flex items-center space-x-2"
                 >
                   <FaUserCircle className="text-lg" />
-                  <span>View Profile</span>
+                  <span>{discussion.studentName || "student profile"}</span>
                 </Button>
               </div>
             </motion.div>
@@ -394,8 +396,8 @@ const DiscussionForum: React.FC = () => {
           </Button>
         </div>
       </motion.div>
-      <FeaturesDemo imagePosition="left"/>
-      <ContactForm/>
+      <FeaturesDemo imagePosition="left" />
+      <ContactForm />
       <Footer />
     </div>
   );

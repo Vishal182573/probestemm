@@ -155,7 +155,12 @@ const ProjectsPage = () => {
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
       <main className="flex-grow">
-        <Banner imageSrc={LOGO} altText="project-banner-img" title="Cutting-Edge STEM Projects" subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."/>
+        <Banner
+          imageSrc={LOGO}
+          altText="project-banner-img"
+          title="Cutting-Edge STEM Projects"
+          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+        />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">
             <TabsTrigger
@@ -191,13 +196,12 @@ const ProjectsPage = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <FeaturesDemo imagePosition="left"/>
-      <ContactForm/>
+      <FeaturesDemo imagePosition="left" />
+      <ContactForm />
       <Footer />
     </div>
   );
 };
-
 
 const ProjectsList = ({
   projects,
@@ -355,11 +359,11 @@ const ProjectCard = ({
             <User2Icon className="mr-2" />
             {projectType === "BUSINESS" ? (
               <Link href={`/business-profile/${project.business?.id}`}>
-                View Business Profile
+                {project.business?.companyName}
               </Link>
             ) : (
               <Link href={`/professor-profile/${project.professor?.id}`}>
-                View Professor Profile
+                {project.professor?.fullName}
               </Link>
             )}
           </Button>

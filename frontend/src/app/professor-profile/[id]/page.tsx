@@ -13,7 +13,6 @@ import Image from "next/image";
 import {
   Award,
   Briefcase,
-  ExternalLink,
   Globe,
   GraduationCap,
   Video,
@@ -730,12 +729,8 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
-                <Button
-                  variant="outline"
-                  className="bg-[#c1502e] hover:bg-[#472014] text-white"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Google Scholar
+                <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                  Edit Profile
                 </Button>
               </div>
             </div>

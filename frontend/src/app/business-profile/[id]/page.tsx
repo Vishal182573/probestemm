@@ -273,6 +273,9 @@ const BusinessProfilePage: React.FC = () => {
                   <p className="text-xl text-white/80">{business.location}</p>
                 </div>
               </div>
+              <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                Edit Profile
+              </Button>
             </div>
           </div>
         </motion.section>

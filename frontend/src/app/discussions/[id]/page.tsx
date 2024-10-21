@@ -21,7 +21,7 @@ import Link from "next/link";
 import { LucideUserCheck, Rocket } from "lucide-react";
 import { LOGO } from "../../../../public";
 import Image from "next/image";
-import Banner from "@/components/shared/Banner"; 
+import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
 
@@ -114,7 +114,7 @@ const QuestionDetailPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         <p className="text-[#472014] font-caveat text-2xl">
-        <Image src={LOGO} alt="logo" className="w-36"/>
+          <Image src={LOGO} alt="logo" className="w-36" />
           <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
           Loading discussion...
         </p>
@@ -137,9 +137,12 @@ const QuestionDetailPage: React.FC = () => {
   return (
     <div className="bg-white min-h-screen">
       <NavbarWithBg />
-      <Banner imageSrc={LOGO} altText="discuccions-id-img" title="Collaborative Problem-Solving"
-    subtitle="Brainstorm solutions to real-world challenges"
-/>
+      <Banner
+        imageSrc={LOGO}
+        altText="discuccions-id-img"
+        title="Collaborative Problem-Solving"
+        subtitle="Brainstorm solutions to real-world challenges"
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -248,7 +251,8 @@ const QuestionDetailPage: React.FC = () => {
                             className="text-white bg-[#c1502e] hover: rounded-full transition-all duration-300 shadow-lg hover:shadow-xl space-x-3"
                           >
                             <LucideUserCheck size={18} />
-                            View Profile
+                            {answer.professor?.fullName ||
+                              answer.business?.companyName}
                           </Button>
                         </Link>
                       </div>
@@ -286,8 +290,8 @@ const QuestionDetailPage: React.FC = () => {
           </motion.div>
         )}
       </motion.div>
-      <FeaturesDemo imagePosition="right"/>
-      <ContactForm/>
+      <FeaturesDemo imagePosition="right" />
+      <ContactForm />
       <Footer />
     </div>
   );

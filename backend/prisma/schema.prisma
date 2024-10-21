@@ -436,7 +436,6 @@ model Notification {
   projectId String?
 }
 
-// prisma/schema.prisma
 
 model FAQ {
   id        String   @id @default(cuid())

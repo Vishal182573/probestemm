@@ -238,9 +238,12 @@ const BlogsPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
-      <Banner imageSrc={LOGIN} altText="webinar-banner-img" 
-    title="Insights and Innovations"
-    subtitle="Stay up-to-date with the latest trends"/>
+      <Banner
+        imageSrc={LOGIN}
+        altText="webinar-banner-img"
+        title="Insights and Innovations"
+        subtitle="Stay up-to-date with the latest trends"
+      />
       <main className="flex-grow container mx-auto px-4 py-8">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -334,7 +337,7 @@ const BlogsPage: React.FC = () => {
                           : `/business-profile/${blog.business?.id}`
                       }
                     >
-                      View Profile
+                      {blog.professor?.fullName || blog.business?.companyName}
                     </Link>
                   </Button>
                 </div>
@@ -357,8 +360,8 @@ const BlogsPage: React.FC = () => {
           )}
         </div>
       </main>
-      <FeaturesDemo imagePosition="left"/>
-      <ContactForm/>
+      <FeaturesDemo imagePosition="left" />
+      <ContactForm />
       <Footer />
     </div>
   );
