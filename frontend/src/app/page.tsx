@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, ReactNode } from "react";
 import Link from "next/link";
@@ -41,11 +42,11 @@ const HomePage = () => {
       <main className="flex-grow">
         <HeroSection />
         <FeaturesSection />
-        <WebinarSliderSection/>
-        <FeaturesDemo imagePosition="right"/>
+        <WebinarSliderSection />
+        <FeaturesDemo imagePosition="right" />
         <FeaturedQuestionsSection />
-        <TestimonialsSection/>
-        <FAQSection/>
+        <TestimonialsSection />
+        <FAQSection />
         <ContactForm />
       </main>
       <Footer />
@@ -256,6 +257,5 @@ const FeaturesSection = () => {
     </section>
   );
 };
-
 
 export default HomePage;
