@@ -277,102 +277,102 @@ const DiscussionForum: React.FC = () => {
         </motion.div>
 
         <AnimatePresence>
-          {discussions.map((discussion, index) => (
-            <motion.div
-              key={discussion.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ delay: index * 0.1 }}
+        {discussions.map((discussion, index) => (
+  <motion.div
+    key={discussion.id}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -50 }}
+    transition={{ delay: index * 0.1 }}
+  >
+    <Card className="mb-4 hover:shadow-lg transition-all duration-300 bg-white border border-[#c1502e] overflow-hidden">
+      <CardContent className="p-6">
+        <div className="flex gap-6">
+          {/* Voting Section */}
+          <div className="flex flex-col items-center space-y-2">
+            <Button
+              variant="outline"
+              className="w-10 h-10 rounded-full hover:bg-[#c1502e] text-white transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleVote(discussion.id, "UPVOTE");
+              }}
             >
-              <Card
-                className="mb-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer bg-white border border-[#c1502e]"
+              <FaArrowUp className="text-white" />
+            </Button>
+            <span className="text-lg font-semibold text-[#472014]">
+              {discussion.upvotes - discussion.downvotes}
+            </span>
+            <Button
+              variant="outline"
+              className="w-10 h-10 rounded-full hover:bg-[#c1502e] text-white transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleVote(discussion.id, "DOWNVOTE");
+              }}
+            >
+              <FaArrowDown className="text-white" />
+            </Button>
+          </div>
+
+          {/* Content Section */}
+          <div className="flex-grow">
+            <div className="flex justify-between items-start mb-3">
+              <h3 
+                className="text-xl font-semibold text-[#472014] hover:text-[#c1502e] cursor-pointer transition-colors"
                 onClick={() => handleQuestionClick(discussion.id)}
               >
-                <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-start space-x-4">
-                  <div className="flex flex-col items-center mb-4 sm:mb-0">
-                    <Button
-                      variant="outline"
-                      className="px-2 py-1 mb-2 hover:bg-[#c1502e] hover:text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVote(discussion.id, "UPVOTE");
-                      }}
-                    >
-                      <FaArrowUp className="text-white" />
-                    </Button>
-                    <span className="text-sm font-medium text-[#472014]">
-                      {discussion.upvotes - discussion.downvotes}
-                    </span>
-                    <Button
-                      variant="outline"
-                      className="px-2 py-1 mt-2 hover:bg-[#c1502e] hover:text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVote(discussion.id, "DOWNVOTE");
-                      }}
-                    >
-                      <FaArrowDown className="text-white" />
-                    </Button>
-                  </div>
-                  <div className="flex-grow">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-[#472014]">
-                      {discussion.title}
-                    </h3>
-                    <div className="flex flex-col sm:flex-row items-start text-sm text-[#686256] space-y-1 sm:space-y-0 sm:space-x-2">
-                      <div className="flex items-center">
-                        <FaUser className="mr-1" />
-                        <span>{discussion.studentName}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <FaClock className="mr-1" />
-                        <span>
-                          {new Date(discussion.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <div
-                        className={`flex items-center ${
-                          discussion.status === "ANSWERED"
-                            ? "text-green-600"
-                            : "text-blue-600"
-                        }`}
-                      >
-                        <span>
-                          {discussion.status === "ANSWERED"
-                            ? "Answered"
-                            : "Unanswered"}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <FaComment className="mr-1" />
-                        <span>{discussion.answerCount} answers</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span>
-                          {discussion.category} - {discussion.subcategory}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                {discussion.title}
+              </h3>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/profile/${discussion.studentId}`);
+                }}
+                variant="ghost"
+                className="flex items-center space-x-2 text-[#472014] hover:text-[#c1502e] transition-colors"
+              >
+                <FaUserCircle className="text-lg" />
+                <span className="font-medium">{discussion.studentName}</span>
+              </Button>
+            </div>
 
-              <div className="flex justify-end items-center mb-6">
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/student-profile/${discussion.studentId}`);
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="text-white bg-[#c1502e] hover:bg-[#472014] hover:text-white rounded-full transition-all duration-300 flex items-center space-x-2"
-                >
-                  <FaUserCircle className="text-lg" />
-                  <span>{discussion.studentName || "student profile"}</span>
-                </Button>
+            {/* Tags and Metadata */}
+            <div className="flex flex-wrap gap-4 text-sm text-[#686256] mb-3">
+              <div className="flex items-center gap-1">
+                <FaClock />
+                <span>{new Date(discussion.createdAt).toLocaleString()}</span>
               </div>
-            </motion.div>
-          ))}
+              <div className={`flex items-center gap-1 ${
+                discussion.status === "ANSWERED" 
+                  ? "text-green-600" 
+                  : "text-blue-600"
+              }`}>
+                <span className="font-medium">
+                  {discussion.status === "ANSWERED" ? "Answered" : "Unanswered"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <FaComment />
+                <span>{discussion.answerCount} answers</span>
+              </div>
+            </div>
+
+            {/* Category Tags */}
+            <div className="flex gap-2">
+              <span className="px-3 py-1 bg-[#f8f0ea] text-[#472014] rounded-full text-sm">
+                {discussion.category}
+              </span>
+              <span className="px-3 py-1 bg-[#f8f0ea] text-[#472014] rounded-full text-sm">
+                {discussion.subcategory}
+              </span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
+))}
         </AnimatePresence>
 
         {/* Pagination controls */}

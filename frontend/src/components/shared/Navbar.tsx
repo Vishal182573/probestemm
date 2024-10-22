@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { LOGO } from "../../../public";
+import { LOGO, LOGOWHITE } from "../../../public";
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,7 +67,7 @@ export const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-1">
           <Link href="/">
-          <Image src={LOGO} alt="logo" className="w-48"/>
+          {isScrolled? <Image src={LOGO} alt="logo" className="w-24"/> : <Image src={LOGOWHITE} alt="logo" className="w-24"/>}
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -123,7 +123,7 @@ export const Navbar: React.FC = () => {
                 HOME
               </MobileNavLink>
               <MobileNavLink to="/about" className={linkTextColor}>
-                ABOUT Us
+                ABOUT US
               </MobileNavLink>
               <MobileNavLink to="/discussions" className={linkTextColor}>
                 DISCUSSION FORUM

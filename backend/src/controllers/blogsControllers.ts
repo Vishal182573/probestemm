@@ -653,6 +653,32 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+const getRelatedBlogs = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const relatedBlogs = await prisma.blog.findMany({
+      where: {
+        NOT: {
+          id: id,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        blogImage: true,
+      },
+      take: 5,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return res.status(200).json(relatedBlogs);
+  } catch (error) {
+    console.error("Error in getRelatedBlogs:", error);
+    return res.status(500).json({ error: "Failed to fetch related blogs" });
+  }
+};
+
 export default {
   getBlogs,
   getBlogById,
@@ -665,4 +691,5 @@ export default {
   deleteComment,
   userInteraction,
   toggleBlogLike,
+  getRelatedBlogs
 };

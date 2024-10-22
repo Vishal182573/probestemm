@@ -55,9 +55,9 @@ export const NavbarWithBg: React.FC = () => {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300 ">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-2">
+        <div className="flex justify-between items-center">
           <Link href="/">
-          <Image src={LOGO} alt="logo" className="w-48"/>
+          <Image src={LOGO} alt="logo" className="w-28"/>
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -82,7 +82,7 @@ export const NavbarWithBg: React.FC = () => {
               PROJECTS
             </NavLink>
             <NavLink to="/contact" className={linkTextColor}>
-              CONTACT Us
+              CONTACT US
             </NavLink>
             {isLoggedIn && user ? (
               <Link href={`/${user.role}-profile/${user.id}`}>
@@ -113,7 +113,7 @@ export const NavbarWithBg: React.FC = () => {
                 HOME
               </MobileNavLink>
               <MobileNavLink to="/about" className={linkTextColor}>
-                ABOUT Us
+                ABOUT US
               </MobileNavLink>
               <MobileNavLink to="/discussions" className={linkTextColor}>
                 DISCUSSION FORUM

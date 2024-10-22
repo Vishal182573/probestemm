@@ -261,7 +261,10 @@ const StudentProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <EditProfileForm role="student" userId={student.id} />
+              {/* <EditProfileForm role="student" userId={student.id} /> */}
+              <Button className="bg-transparent text-white border-2 border-white">
+                Edit Profile
+              </Button>
             </div>
           </div>
         </motion.section>
