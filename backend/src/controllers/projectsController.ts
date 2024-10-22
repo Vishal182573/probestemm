@@ -327,3 +327,44 @@ export const getAppliedStudents = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch applied students" });
   }
 };
+
+export const getStudentEnrolledProjectbyStudentId = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { studentId } = req.params;
+
+    const projects = await prisma.project.findMany({
+      where: {
+        studentId,
+        status: Status.ONGOING,
+      },
+      include: { professor: true, student: true },
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
+};
+
+export const getProfessorEnrolledProjectbyProfessorId = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { professorId } = req.params;
+
+    const projects = await prisma.appliedProfessor.findMany({
+      where: {
+        professorId,
+      },
+      include: { project: true },
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
+};

@@ -42,7 +42,7 @@ app.use("/api/discussion", discussionRoutes);
 app.use("/api/blogs", blogsRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/webinars", webinarRoutes);
-app.use("/api/business", businessRoutes);
+app.use("/api/businesss", businessRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/image", imageUploadRoutes);
 app.use("/api/contact", contactRoutes);

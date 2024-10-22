@@ -10,7 +10,7 @@ import { Footer } from "@/components/shared/Footer";
 
 async function getBusinesses() {
   try {
-    const res = await fetch(`${API_URL}/business`, {
+    const res = await fetch(`${API_URL}/businesss`, {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
@@ -33,16 +33,21 @@ export default async function BusinessesPage() {
     const businesses = await getBusinesses();
     return (
       <div className="w-full bg-white">
-        <NavbarWithBg/>
-        <Banner imageSrc={LOGO} altText="project-banner-img" title="Cutting-Edge STEM Projects" subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."/>
-      <AnimatedContainer>
-        <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
-          Businesses
-        </h1>
-        <RoleList roles={businesses} roleType="business" />
-      </AnimatedContainer>
-      <ContactForm/>
-      <Footer/>
+        <NavbarWithBg />
+        <Banner
+          imageSrc={LOGO}
+          altText="project-banner-img"
+          title="Cutting-Edge STEM Projects"
+          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+        />
+        <AnimatedContainer>
+          <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
+            Businesses
+          </h1>
+          <RoleList roles={businesses} roleType="business" />
+        </AnimatedContainer>
+        <ContactForm />
+        <Footer />
       </div>
     );
   } catch (error) {

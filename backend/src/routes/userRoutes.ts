@@ -54,7 +54,7 @@ router.put(
 );
 
 router.put(
-  "/business/:id",
+  "/businesss/:id",
   authMiddleware,
   upload.single("profileImage"),
   async (req, res) => {
