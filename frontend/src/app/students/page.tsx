@@ -10,7 +10,7 @@ import ContactForm from "@/components/shared/Feedback";
 
 async function getStudents() {
   try {
-    const res = await fetch(`${API_URL}/student`, {
+    const res = await fetch(`${API_URL}/students`, {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
@@ -34,15 +34,20 @@ export default async function StudentsPage() {
     return (
       <div className="bg-white w-full">
         <NavbarWithBg />
-        <Banner imageSrc={LOGO} altText="project-banner-img" title="Cutting-Edge STEM Projects" subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."/>
+        <Banner
+          imageSrc={LOGO}
+          altText="project-banner-img"
+          title="Cutting-Edge STEM Projects"
+          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+        />
         <AnimatedContainer>
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
             Students
           </h1>
           <RoleList roles={students} roleType="student" />
         </AnimatedContainer>
-        <ContactForm/>
-        <Footer/>
+        <ContactForm />
+        <Footer />
       </div>
     );
   } catch (error) {

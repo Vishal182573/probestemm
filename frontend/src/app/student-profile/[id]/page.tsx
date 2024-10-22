@@ -14,6 +14,7 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
+import EditProfileForm from "@/components/shared/EditProfile";
 
 interface Student {
   id: string;
@@ -85,7 +86,7 @@ const StudentProfilePage: React.FC = () => {
         }
 
         const [studentResponse, notificationsResponse] = await Promise.all([
-          axios.get(`${API_URL}/student/${id}`, {
+          axios.get(`${API_URL}/students/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get(`${API_URL}/notifications/student/${id}`, {
@@ -259,9 +260,8 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg">{student.university}</p>
                 </div>
               </div>
-              <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
-                Edit Profile
-              </Button>
+
+              <EditProfileForm role="student" userId={student.id} />
             </div>
           </div>
         </motion.section>
