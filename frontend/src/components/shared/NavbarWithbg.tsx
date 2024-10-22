@@ -69,9 +69,6 @@ export const NavbarWithBg: React.FC = () => {
             <NavLink to="/about" className={linkTextColor}>
               ABOUT US
             </NavLink>
-            <NavLink to="/contact" className={linkTextColor}>
-              CONTACT
-            </NavLink>
             <NavLink to="/discussions" className={linkTextColor}>
               DISCUSSION FORUM
             </NavLink>
@@ -83,6 +80,9 @@ export const NavbarWithBg: React.FC = () => {
             </NavLink>
             <NavLink to="/projects" className={linkTextColor}>
               PROJECTS
+            </NavLink>
+            <NavLink to="/contact" className={linkTextColor}>
+              CONTACT Us
             </NavLink>
             {isLoggedIn && user ? (
               <Link href={`/${user.role}-profile/${user.id}`}>
@@ -115,9 +115,6 @@ export const NavbarWithBg: React.FC = () => {
               <MobileNavLink to="/about" className={linkTextColor}>
                 ABOUT Us
               </MobileNavLink>
-              <MobileNavLink to="/contact" className={linkTextColor}>
-                CONTACT
-              </MobileNavLink>
               <MobileNavLink to="/discussions" className={linkTextColor}>
                 DISCUSSION FORUM
               </MobileNavLink>
@@ -129,6 +126,9 @@ export const NavbarWithBg: React.FC = () => {
               </MobileNavLink>
               <MobileNavLink to="/projects" className={linkTextColor}>
                 PROJECTS
+              </MobileNavLink>
+              <MobileNavLink to="/contact" className={linkTextColor}>
+                CONTACT US
               </MobileNavLink>
               {isLoggedIn && user ? (
                 <Link href={`/${user.role}-profile/${user.id}`}>

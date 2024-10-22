@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaGithub } from "react-icons/fa";
-import { MdEmail, MdPhone, MdLocationOn, MdSchool, MdScience, MdBusiness } from "react-icons/md";
+import { FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaGoogle } from "react-icons/fa";
+import { MdEmail, MdPhone, MdLocationOn } from "react-icons/md";
 import { Modal } from "./Modal";
 import { LOGO } from "../../../public";
 
@@ -37,55 +37,60 @@ export const Footer: React.FC = () => {
             {/* Quick Links */}
             <div className="space-y-4">
               <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Quick Links</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <ul className="space-y-3">
-                  <li>
-                    <a href="#" className="hover:text-[#c1502e] transition-colors flex items-center">
-                      <MdSchool className="mr-2" />
-                      Academic Programs
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-[#c1502e] transition-colors flex items-center">
-                      <MdScience className="mr-2" />
-                      Research Projects
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-[#c1502e] transition-colors flex items-center">
-                      <MdBusiness className="mr-2" />
-                      Industry Partners
-                    </a>
-                  </li>
-                </ul>
-                <ul className="space-y-3">
-                  {["Webinars", "Resources", "Careers", "Support"].map((item) => (
-                    <li key={item}>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors">
-                        {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Student Profiles
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Industry Profiles
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Professor Profiles
+                  </a>
+                </li>
+              </ul>
             </div>
 
-            {/* Connect With Us */}
+            {/* Pages */}
             <div className="space-y-4">
-              <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Connect With Us</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {[FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaGithub].map(
-                  (Icon, index) => (
-                    <a
-                      key={index}
-                      href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-full bg-[#f8f4f1] hover:bg-[#c1502e] text-[#472014] hover:text-white transition-all duration-300"
-                    >
-                      <Icon size={24} />
-                    </a>
-                  )
-                )}
-              </div>
+              <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Pages</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Discussion Forum
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Webinars
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Blogs
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Projects
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-[#c1502e] transition-colors">
+                    Contact Us
+                  </a>
+                </li>
+              </ul>
             </div>
 
             {/* Logo Section */}
@@ -135,7 +140,7 @@ export const Footer: React.FC = () => {
         onClose={() => setIsPrivacyOpen(false)}
         title="Privacy Policy"
       >
-        <div className="prose text-black">lorem700
+        <div className="prose text-black">
         </div>
       </Modal>
 
@@ -144,7 +149,8 @@ export const Footer: React.FC = () => {
         onClose={() => setIsTermsOpen(false)}
         title="Terms of Service"
       >
-        <div className="prose text-black"> ex
+        <div className="prose text-black">
+          {/* Terms of service content */}
         </div>
       </Modal>
     </>
