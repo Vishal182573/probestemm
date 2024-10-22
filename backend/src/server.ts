@@ -14,7 +14,8 @@ import superAdminRoutes from "./routes/superadminRoutes";
 import imageUploadRoutes from "./routes/uploadImageRoutes";
 import contactRoutes from "./routes/contactRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
-import faqRoutes from "./routes/faqRoutes"
+import faqRoutes from "./routes/faqRoutes";
+import userRoutes from "./routes/userRoutes";
 
 dotenv.config();
 
@@ -35,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/student", studentsRoutes);
+app.use("/api/students", studentsRoutes);
 app.use("/api/professors", professorRoutes);
 app.use("/api/discussion", discussionRoutes);
 app.use("/api/blogs", blogsRoutes);
@@ -47,6 +48,7 @@ app.use("/api/image", imageUploadRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/user", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

@@ -1,6 +1,6 @@
-import { type Request, type Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import { type Request, type Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +21,7 @@ export const getAllBusinesses = async (req: Request, res: Response) => {
     const businesses = await prisma.business.findMany();
     return res.status(200).json(businesses);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch businesses' });
+    return res.status(500).json({ error: "Failed to fetch businesses" });
   }
 };
 
@@ -41,12 +41,12 @@ export const getBusinessById = async (req: Request, res: Response) => {
     });
 
     if (!business) {
-      return res.status(404).json({ error: 'Business not found' });
+      return res.status(404).json({ error: "Business not found" });
     }
 
     return res.status(200).json(business);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to fetch business' });
+    return res.status(500).json({ error: "Failed to fetch business" });
   }
 };
 
@@ -65,6 +65,6 @@ export const updateBusiness = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: 'Failed to update business' });
+    return res.status(500).json({ error: "Failed to update business" });
   }
 };
