@@ -89,8 +89,8 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-5xl sm:text-6xl lg:text-[150px] font-extrabold mb-6 text-[#472014] font-caveat"
         >
-          Connecting <span className="">Minds</span>{" "}
-          <span className="bg-clip-text ">Globally</span>
+          Revolutionize <span className="">your STEM</span>{" "}
+          <span className="bg-clip-text ">Research</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 50 }}
@@ -98,9 +98,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
         >
-          <span className=" text-[#472014] font-bold">Probe STEM:</span>{" "}
-          fostering dynamic collaboration among students, faculty, and industry
-          experts to drive innovation
+          Connecting global thinkers to inspire impactful collaborations.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}

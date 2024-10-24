@@ -7,14 +7,19 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Award, Briefcase, GraduationCap, Star } from "lucide-react";
+import {
+  Award,
+  Briefcase,
+  GraduationCap,
+  Star,
+  Bell,
+  Folder,
+} from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
-// import EditProfileForm from "@/components/shared/EditProfile";
 import Link from "next/link";
 
 interface Student {
@@ -53,6 +58,19 @@ interface Student {
   }>;
 }
 
+interface EnrolledProject {
+  id: string;
+  topic: string;
+  content: string;
+  difficulty: string;
+  timeline: string;
+  status: string;
+  professor: {
+    fullName: string;
+    email: string;
+  };
+}
+
 type Notification = {
   id: string;
   type:
@@ -72,13 +90,16 @@ const StudentProfilePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
+  const [enrolledProjects, setEnrolledProjects] = useState<EnrolledProject[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [, setUnreadCount] = useState<number>(0);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -86,17 +107,22 @@ const StudentProfilePage: React.FC = () => {
           return;
         }
 
-        const [studentResponse, notificationsResponse] = await Promise.all([
-          axios.get(`${API_URL}/students/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/notifications/student/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+        const [studentResponse, notificationsResponse, projectsResponse] =
+          await Promise.all([
+            axios.get(`${API_URL}/students/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/notifications/student/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/project/student/${id}/projects`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
         setStudent(studentResponse.data);
         setNotifications(notificationsResponse.data);
+        setEnrolledProjects(projectsResponse.data);
         setUnreadCount(
           notificationsResponse.data.filter((n: Notification) => !n.isRead)
             .length
@@ -109,7 +135,7 @@ const StudentProfilePage: React.FC = () => {
       }
     };
 
-    fetchStudentData();
+    fetchData();
   }, [id, router]);
 
   const handleMarkAsRead = async (notificationId: string) => {
@@ -133,60 +159,10 @@ const StudentProfilePage: React.FC = () => {
       console.error("Error marking notification as read:", error);
       setError("Failed to mark notification as read. Please try again.");
     }
-  };const renderNotificationsTab = () => (
-    <TabsContent value="notifications">
-      {isOwnProfile && (
-        <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
-          <CardHeader className="border-b border-[#c1502e]/10">
-          </CardHeader>
-          <CardContent className="p-6">
-            {notifications.length > 0 ? (
-              <ul className="space-y-6">
-                {notifications.map((notification) => (
-                  <li
-                    key={notification.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#c1502e]/20 hover:bg-gray-50"
-                  >
-                    <div className="space-y-2">
-                      <p
-                        className={`${
-                          notification.isRead
-                            ? "text-gray-600"
-                            : "font-semibold"
-                        }`}
-                      >
-                        <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
-                          {notification.content}
-                        </p>
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                    {!notification.isRead && (
-                      <Button
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        size="sm"
-                        className="ml-4 bg-[#c1502e] text-white transition-colors hover:bg-[#472014]"
-                      >
-                        Mark as Read
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center py-8 text-gray-500">No notifications yet.</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </TabsContent>
-  );
+  };
+
+  const userId = localStorage.getItem("userId");
+  const isOwnProfile = student?.id === userId;
 
   if (isLoading) {
     return (
@@ -210,15 +186,154 @@ const StudentProfilePage: React.FC = () => {
   }
 
   const staggerChildren = {
+    initial: { opacity: 0 },
     animate: {
+      opacity: 1,
       transition: {
         staggerChildren: 0.1,
       },
     },
   };
 
-  const userId = localStorage.getItem("userId");
-  const isOwnProfile = student.id === userId;
+  const renderNotificationsTab = () => (
+    <TabsContent value="notifications">
+      {isOwnProfile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                <Bell className="mr-2" />
+                Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {notifications.length > 0 ? (
+                <ul className="space-y-6">
+                  {notifications.map((notification) => (
+                    <motion.li
+                      key={notification.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#c1502e]/10 pb-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="flex-grow mb-4 sm:mb-0">
+                        <p
+                          className={`text-[#472014] ${
+                            notification.isRead
+                              ? "text-[#472014]/70"
+                              : "font-semibold"
+                          }`}
+                        >
+                          {notification.content}
+                        </p>
+                        <p className="text-sm text-[#686256] mt-1 font-medium">
+                          {new Date(notification.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {!notification.isRead && (
+                        <Button
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          size="sm"
+                          className="bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300 w-full sm:w-auto"
+                        >
+                          Mark as Read
+                        </Button>
+                      )}
+                    </motion.li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-[#686256] text-center py-8 font-medium">
+                  No notifications yet.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </TabsContent>
+  );
+  
+  const renderProjectsTab = () => (
+    <TabsContent value="projects">
+      {isOwnProfile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                <Folder className="mr-2" />
+                My Enrolled Projects
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {enrolledProjects.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {enrolledProjects.map((project) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card className="border-2 border-[#c1502e]/20 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
+                        <CardHeader>
+                          <CardTitle className="text-xl font-bold text-[#472014]">
+                            {project.topic}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center text-[#472014]">
+                              <span className="font-semibold w-24">Professor:</span>
+                              <span className="font-medium">
+                                {project.professor.fullName}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-[#472014]">
+                              <span className="font-semibold w-24">Difficulty:</span>
+                              <span className="font-medium">{project.difficulty}</span>
+                            </div>
+                            <div className="flex items-center text-[#472014]">
+                              <span className="font-semibold w-24">Timeline:</span>
+                              <span className="font-medium">
+                                {new Date(project.timeline).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-[#472014]">
+                              <span className="font-semibold w-24">Status:</span>
+                              <Badge className="bg-[#c1502e]/10 text-[#c1502e] font-semibold">
+                                {project.status}
+                              </Badge>
+                            </div>
+                            <p className="text-[#686256] font-medium mt-4 line-clamp-3">
+                              {project.content}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[#686256] text-center py-8 font-medium">
+                  No enrolled projects yet.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </TabsContent>
+  );
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
@@ -259,11 +374,14 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg">{student.university}</p>
                 </div>
               </div>
-              <Link href={"/edit-profile"}>
-              <Button className="bg-transparent text-white border-2 border-white">
-                Edit Profile
-              </Button>
-              </Link>
+
+              {isOwnProfile && (
+                <Link href={"/edit-profile"}>
+                <Button className="bg-white px-4 py-2 border-2 border-white">
+                  Edit Profile
+                </Button>
+                </Link>
+              )}
             </div>
           </div>
         </motion.section>
@@ -398,16 +516,21 @@ const StudentProfilePage: React.FC = () => {
           </div>
         </section>
 
-        <section>
+        <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="notifications">
               <TabsList>
-                <TabsTrigger value="notifications" className="bg-white text-black"> 
-                <Bell className="mr-3 h-6 w-6 text-[#c1502e]" />Notifications</TabsTrigger>
-                {/* Add more tabs as needed */}
+                {isOwnProfile && (
+                  <>
+                    <TabsTrigger value="notifications">
+                      Notifications {unreadCount > 0 && `(${unreadCount})`}
+                    </TabsTrigger>
+                    <TabsTrigger value="projects">My Projects</TabsTrigger>
+                  </>
+                )}
               </TabsList>
               {renderNotificationsTab()}
-              {/* Add more tab content as needed */}
+              {renderProjectsTab()}
             </Tabs>
           </div>
         </section>

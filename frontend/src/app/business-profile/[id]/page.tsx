@@ -9,10 +9,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Briefcase, Globe, Tag, Plus, User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Building,
+  Briefcase,
+  Globe,
+  Tag,
+  Plus,
+  User,
+  Bell,
+} from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import EditProfileForm from "@/components/shared/EditProfile";
+
+type Notification = {
+  id: string;
+  type: "PROJECT_APPLICATION" | "PROJECT_ACCEPTED" | "PROJECT_COMPLETED";
+  content: string;
+  createdAt: string;
+  isRead: boolean;
+  businessId: string;
+  projectId?: string;
+};
 
 interface Business {
   id: string;
@@ -57,6 +77,9 @@ const BusinessProfilePage: React.FC = () => {
   }>({});
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
 
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
   const [newProject, setNewProject] = useState<{
     topic: string;
     content: string;
@@ -78,7 +101,7 @@ const BusinessProfilePage: React.FC = () => {
         const loggedInUserId = localStorage.getItem("userId");
         setIsLoggedInUser(id === loggedInUserId);
 
-        const businessResponse = await axios.get(`${API_URL}/business/${id}`);
+        const businessResponse = await axios.get(`${API_URL}/businesss/${id}`);
         setBusiness(businessResponse.data);
 
         if (isLoggedInUser && token) {
@@ -89,6 +112,20 @@ const BusinessProfilePage: React.FC = () => {
             }
           );
           setProjects(projectsResponse.data);
+        }
+        if (token && isLoggedInUser) {
+          const notificationsResponse = await axios.get(
+            `${API_URL}/notifications/business/${id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setNotifications(notificationsResponse.data);
+
+          setUnreadCount(
+            notificationsResponse.data.filter((n: Notification) => !n.isRead)
+              .length
+          );
         }
 
         setIsLoading(false);
@@ -144,6 +181,28 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      await axios.patch(
+        `${API_URL}/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setNotifications(
+        notifications.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount((prev) => prev - 1);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read. Please try again.");
+    }
+  };
   const fetchAppliedProfessors = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -234,6 +293,60 @@ const BusinessProfilePage: React.FC = () => {
     },
   };
 
+  const renderNotificationsTab = () => (
+    <TabsContent value="notifications">
+      {isLoggedInUser && (
+        <Card className="border border-[#c1502e] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Bell className="mr-2 text-[#c1502e]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notifications.length > 0 ? (
+              <ul className="space-y-4">
+                {notifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className="flex items-center justify-between border-b pb-4"
+                  >
+                    <div>
+                      <p
+                        className={`${
+                          notification.isRead
+                            ? "text-gray-600"
+                            : "font-semibold"
+                        }`}
+                      >
+                        <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
+                          {notification.content}
+                        </p>
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(notification.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {!notification.isRead && (
+                      <Button
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        size="sm"
+                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                      >
+                        Mark as Read
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No notifications yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </TabsContent>
+  );
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
@@ -273,9 +386,11 @@ const BusinessProfilePage: React.FC = () => {
                   <p className="text-xl text-white/80">{business.location}</p>
                 </div>
               </div>
-              <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
-                Edit Profile
-              </Button>
+              <div className="flex items-center space-x-2">
+                {isLoggedInUser && (
+                  <EditProfileForm role="business" userId={business.id} />
+                )}
+              </div>
             </div>
           </div>
         </motion.section>
@@ -555,6 +670,20 @@ const BusinessProfilePage: React.FC = () => {
                 </>
               )}
             </motion.div>
+          </div>
+        </section>
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <Tabs defaultValue="notifications">
+              <TabsList>
+                {isLoggedInUser && (
+                  <TabsTrigger value="notifications">
+                    Notifications {unreadCount > 0 && `(${unreadCount})`}
+                  </TabsTrigger>
+                )}
+              </TabsList>
+              {renderNotificationsTab()}
+            </Tabs>
           </div>
         </section>
       </main>

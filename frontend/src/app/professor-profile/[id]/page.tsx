@@ -21,6 +21,7 @@ import {
   User,
   Loader2,
   Bell,
+  Building,
   ThumbsUp,
   ThumbsDown,
   MessageCircle,
@@ -124,6 +125,18 @@ type Notification = {
   projectId?: string;
 };
 
+interface BusinessProject {
+  id: string;
+  topic: string;
+  content: string;
+  status: "ONGOING";
+  type: "BUSINESS";
+  professor: {
+    id: string;
+    fullName: string;
+  };
+}
+
 const ProfessorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<Professor | null>(null);
@@ -141,6 +154,15 @@ const ProfessorProfilePage: React.FC = () => {
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [businessProjects, setBusinessProjects] = useState<BusinessProject[]>(
+    []
+  );
+  const [isLoadingBusinessProjects, setIsLoadingBusinessProjects] =
+    useState(true);
+
+  const [businessProjectsError, setBusinessProjectsError] = useState<
+    string | null
+  >(null);
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -169,17 +191,33 @@ const ProfessorProfilePage: React.FC = () => {
 
           setWebinars(webinarsResponse.data);
           setProjects(projectsResponse.data);
+
           setNotifications(notificationsResponse.data);
           setUnreadCount(
             notificationsResponse.data.filter((n: any) => !n.isRead).length
           );
+
+          try {
+            const businessProjectsResponse = await axios.get(
+              `${API_URL}/project/professor/${id}/projects`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setBusinessProjects(businessProjectsResponse.data);
+          } catch (error) {
+            console.error("Error fetching business projects:", error);
+            setBusinessProjectsError(
+              "Failed to load business projects. Please try again."
+            );
+          }
         }
 
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
+      } finally {
         setIsLoading(false);
+        setIsLoadingBusinessProjects(false);
       }
     };
 
@@ -421,6 +459,71 @@ const ProfessorProfilePage: React.FC = () => {
           </CardContent>
         </Card>
       )}
+    </TabsContent>
+  );
+
+  const renderBusinessProjectsTab = () => (
+    <TabsContent value="business-projects">
+      <motion.div
+        className="space-y-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="border border-[#c1502e] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Briefcase className="mr-2 text-[#c1502e]" />
+              Enrolled Business Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingBusinessProjects ? (
+              <div className="flex justify-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin text-[#c1502e]" />
+              </div>
+            ) : businessProjectsError ? (
+              <div className="text-center text-red-500 p-4">
+                {businessProjectsError}
+              </div>
+            ) : businessProjects.length > 0 ? (
+              <div className="space-y-6">
+                {businessProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="border-b border-[#c1502e] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor.fullName}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No business projects enrolled yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </TabsContent>
   );
 
@@ -686,6 +789,11 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
+          {
+            id: "business-projects",
+            label: "Business Projects",
+            icon: <Building />,
+          },
         ]
       : []),
   ];
@@ -743,11 +851,14 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
+                  {isLoggedInUser && (
+
                 <Link href={"/edit-profile"}>
                 <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
                   Edit Profile
                 </Button>
                 </Link>
+                  )}
               </div>
             </div>
           </div>
@@ -1231,6 +1342,7 @@ const ProfessorProfilePage: React.FC = () => {
                   </TabsContent>
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
+                  {renderBusinessProjectsTab()}
                 </>
               )}
             </Tabs>
