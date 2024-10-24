@@ -35,7 +35,6 @@ export const Navbar: React.FC = () => {
     }
   }, []);
 
-  // Scroll detection to change text color
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -65,9 +64,12 @@ export const Navbar: React.FC = () => {
   return (
     <nav className={`${bgColor} fixed top-0 z-50 w-full transition-colors duration-300`}>
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-1">
-          <Link href="/">
-          {isScrolled? <Image src={LOGO} alt="logo" className="w-24"/> : <Image src={LOGOWHITE} alt="logo" className="w-24"/>}
+        <div className="flex justify-between items-center h-20 relative">
+          <Link href="/" className="relative">
+              {isScrolled ? 
+                <Image src={LOGO} alt="logo" className="w-32 lg:w-48 lg:h-48 h-32" /> : 
+                <Image src={LOGOWHITE} alt="logo" className="w-48 lg:w-56 lg:h-56 h-48" />
+              }
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -80,7 +82,7 @@ export const Navbar: React.FC = () => {
               ABOUT US
             </NavLink>
             <NavLink to="/discussions" className={linkTextColor}>
-              DISCUSSION FORM
+              DISCUSSION FORUM
             </NavLink>
             <NavLink to="/webinars" className={linkTextColor}>
               WEBINARS
@@ -137,16 +139,14 @@ export const Navbar: React.FC = () => {
               <MobileNavLink to="/projects" className={linkTextColor}>
                 PROJECTS
               </MobileNavLink>
-
               <MobileNavLink to="/contact" className={linkTextColor}>
                 CONTACT US
               </MobileNavLink>
-              
               {isLoggedIn && user ? (
                 <Link href={`/${user.role}-profile/${user.id}`}>
                   <Button
                     variant="ghost"
-                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50 "
+                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                   >
                     <User className="mr-2" size={18} /> Profile
                   </Button>

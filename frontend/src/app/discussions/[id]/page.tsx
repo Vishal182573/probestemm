@@ -19,7 +19,7 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 import Link from "next/link";
 import { LucideUserCheck, Rocket } from "lucide-react";
-import { LOGO } from "../../../../public";
+import { DISCUSSION, LOGO } from "../../../../public";
 import Image from "next/image";
 import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
@@ -138,7 +138,7 @@ const QuestionDetailPage: React.FC = () => {
     <div className="bg-white min-h-screen">
       <NavbarWithBg />
       <Banner
-        imageSrc={LOGO}
+        imageSrc={DISCUSSION}
         altText="discuccions-id-img"
         title="Collaborative Problem-Solving"
         subtitle="Brainstorm solutions to real-world challenges"

@@ -10,10 +10,10 @@ import {
   ThumbsUp,
   ThumbsDown,
   Send,
-  Trash,
   User2,
   Loader,
   ChevronRight,
+  Share2,
 } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +21,7 @@ import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 import Link from "next/link";
 import Image from "next/image";
-import { LOGO } from "../../../../public";
+import { BLOG, LOGO } from "../../../../public";
 import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
@@ -207,37 +207,37 @@ const BlogPostPage = () => {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast({
-          title: "Please log in to delete comments",
-          variant: "destructive",
-        });
-        return;
-      }
+  // const handleDeleteComment = async (commentId: string) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     if (!token) {
+  //       toast({
+  //         title: "Please log in to delete comments",
+  //         variant: "destructive",
+  //       });
+  //       return;
+  //     }
 
-      await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  //     await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
 
-      setBlogPost((prevPost) =>
-        prevPost
-          ? {
-              ...prevPost,
-              comments: prevPost.comments.filter(
-                (comment) => comment.id !== commentId
-              ),
-            }
-          : null
-      );
-      toast({ title: "Comment deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-      toast({ title: "Failed to delete comment", variant: "destructive" });
-    }
-  };
+  //     setBlogPost((prevPost) =>
+  //       prevPost
+  //         ? {
+  //             ...prevPost,
+  //             comments: prevPost.comments.filter(
+  //               (comment) => comment.id !== commentId
+  //             ),
+  //           }
+  //         : null
+  //     );
+  //     toast({ title: "Comment deleted successfully" });
+  //   } catch (error) {
+  //     console.error("Error deleting comment:", error);
+  //     toast({ title: "Failed to delete comment", variant: "destructive" });
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -267,216 +267,220 @@ const BlogPostPage = () => {
     <div className="min-h-screen bg-white flex flex-col">
       <NavbarWithBg />
       <Banner
-        imageSrc={LOGO}
+        imageSrc={BLOG}
         altText="webinar-banner-img"
         title="Thought-Provoking Perspectives"
         subtitle="Explore diverse opinions and ideas"
       />
-      <main className="flex-grow container mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-2/3">
+      
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Main Content Section */}
+          <div className="w-full lg:w-2/3">
             <motion.article
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8 mb-8 border-[2px] border-[#472014]"
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 lg:mb-8 border-2 border-[#472014]/20 hover:border-[#472014] transition-all duration-300"
             >
-              <h1 className="text-4xl font-caveat font-bold mb-4 text-[#472014]">
-                {blogPost.title}
-              </h1>
-              <p className="text-lg text-[#c1502e] font-semibold mb-6">
-                By{" "}
-                {blogPost.professor?.fullName || blogPost.business?.companyName}
-                ,{" "}
-                {blogPost.professor
-                  ? `${blogPost.professor.title} at ${blogPost.professor.university}`
-                  : `${blogPost.business?.industry}`}
-              </p>
-              <p className="text-lg mb-8 text-[#472014]">{blogPost.content}</p>
-              {blogPost.blogImage && (
-                <Image
-                  src={blogPost.blogImage}
-                  alt={blogPost.title}
-                  width={300}
-                  height={200}
-                  className="mb-4 rounded-lg"
-                />
-              )}
+              {/* Blog Header */}
+              <div className="space-y-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-caveat font-bold text-[#472014]">
+                  {blogPost?.title}
+                </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <p className="text-base sm:text-lg text-[#c1502e] font-semibold">
+                    By {blogPost?.professor?.fullName || blogPost?.business?.companyName}
+                  </p>
+                  <p className="text-sm sm:text-base text-[#472014]/70">
+                    {blogPost?.professor
+                      ? `${blogPost.professor.title} at ${blogPost.professor.university}`
+                      : blogPost?.business?.industry}
+                  </p>
+                </div>
+              </div>
 
-              <div className="flex items-center space-x-4">
+              {/* Blog Content */}
+              <div className="my-6 space-y-6">
+                <p className="text-base sm:text-lg text-[#472014] leading-relaxed">
+                  {blogPost?.content}
+                </p>
+                {blogPost?.blogImage && (
+                  <div className="relative w-full h-48 sm:h-64 lg:h-96">
+                    <Image
+                      src={blogPost.blogImage}
+                      alt={blogPost.title}
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Interaction Buttons */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 <Button
                   variant="default"
-                  className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
+                  className={`flex items-center text-sm sm:text-base font-semibold px-4 py-2 rounded-full transition-all duration-300 ${
                     userInteraction === "like"
                       ? "bg-[#c1502e] text-white"
                       : "bg-white hover:bg-[#c1502e] hover:text-white"
                   }`}
                   onClick={() => handleLikeDislike("like")}
                 >
-                  <ThumbsUp className="mr-2" size={20} />
-                  {blogPost.likes}
+                  <ThumbsUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>{blogPost?.likes}</span>
                 </Button>
                 <Button
                   variant="default"
-                  className={`flex items-center text-lg font-semibold px-6 py-3 rounded-full transition-all duration-300 ${
+                  className={`flex items-center text-sm sm:text-base font-semibold px-4 py-2 rounded-full transition-all duration-300 ${
                     userInteraction === "dislike"
                       ? "bg-[#472014] text-white"
                       : "bg-white hover:bg-[#472014] hover:text-white"
                   }`}
                   onClick={() => handleLikeDislike("dislike")}
                 >
-                  <ThumbsDown className="mr-2" size={20} />
-                  {blogPost.dislikes}
+                  <ThumbsDown className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>{blogPost?.dislikes}</span>
                 </Button>
-                <Button className="text-[#c1502e] hover:text-white bg-white hover:bg-[#c1502e] rounded-full transition-all duration-300">
-                  <Link
-                    href={
-                      blogPost.professor
-                        ? `/professor-profile/${blogPost.professor.id}`
-                        : `/business-profile/${blogPost.business?.id ?? ""}`
-                    }
-                  >
-                    View blog author profile
-                  </Link>
+                <Button
+                  className="text-[#c1502e] hover:text-white bg-white hover:bg-[#c1502e] rounded-full transition-all duration-300 text-sm sm:text-base"
+                >
+                  <Share2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  Share
                 </Button>
               </div>
             </motion.article>
 
+            {/* Comments Section */}
             <motion.section
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-8"
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-4 sm:p-6 lg:p-8"
             >
-              <h2 className="text-4xl font-caveat font-bold mb-8 text-[#472014]">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-caveat font-bold mb-6 text-[#472014]">
                 Comments
               </h2>
-              <form
-                onSubmit={handleCommentSubmit}
-                className="flex space-x-4 mb-8"
-              >
+              
+              {/* Comment Form */}
+              <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-6">
                 <Input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-grow p-4 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-lg bg-white text-[#472014]"
+                  className="flex-grow p-3 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-base bg-white text-[#472014]"
                 />
                 <Button
                   type="submit"
-                  className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-6 py-3 rounded-full transition-all duration-300"
+                  className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-4 sm:px-6 rounded-full transition-all duration-300"
                   disabled={commentLoading}
                 >
                   {commentLoading ? (
                     <Loader className="animate-spin h-5 w-5" />
                   ) : (
-                    <Send size={20} />
+                    <Send className="h-5 w-5" />
                   )}
                 </Button>
               </form>
+
+              {/* Comments List */}
               <ul className="space-y-6">
-                {blogPost.comments.map((comment) => (
+                {blogPost?.comments.map((comment) => (
                   <li
                     key={comment.id}
-                    className="border-b border-[#c1502e]/20 pb-6"
+                    className="border-b border-[#c1502e]/20 pb-6 hover:bg-[#472014]/5 p-4 rounded-lg transition-colors duration-300"
                   >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold text-[#c1502e] text-lg">
-                          {comment.student?.fullName ||
-                            comment.professor?.fullName ||
-                            comment.business?.companyName}
-                          <span className="text-[#472014] ml-2">
-                            {comment.student
-                              ? "(Student Profile)"
-                              : comment.professor
-                              ? "(Professor Profile)"
-                              : "(Business Profile)"}
-                          </span>
-                        </p>
-                        <p className="text-lg text-[#472014] my-2">
-                          {comment.content}
-                        </p>
-                        <Link
-                          href={
-                            comment.student
-                              ? `/student-profile/${comment.student.id}`
-                              : comment.professor
-                              ? `/professor-profile/${comment.professor.id}`
-                              : `/business-profile/${
-                                  comment.business?.id ?? ""
-                                }`
-                          }
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className=" bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
-                          >
-                            <User2 size={18} className="mr-2" />
+                    <div className="flex flex-col sm:flex-row justify-between gap-4">
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-[#c1502e] text-base sm:text-lg">
                             {comment.student?.fullName ||
                               comment.professor?.fullName ||
                               comment.business?.companyName}
-                          </Button>
-                        </Link>
-                        <p className="text-sm text-[#686256]">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </p>
+                          </p>
+                          <span className="text-sm text-[#472014]/70">
+                            {comment.student
+                              ? "(Student)"
+                              : comment.professor
+                              ? "(Professor)"
+                              : "(Business)"}
+                          </span>
+                        </div>
+                        <p className="text-base text-[#472014]">{comment.content}</p>
+                        <div className="flex items-center gap-4">
+                          <Link
+                            href={
+                              comment.student
+                                ? `/student-profile/${comment.student.id}`
+                                : comment.professor
+                                ? `/professor-profile/${comment.professor.id}`
+                                : `/business-profile/${comment.business?.id ?? ""}`
+                            }
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-[#c1502e]/10 hover:bg-[#c1502e] text-black hover:text-white rounded-full transition-all duration-300 text-sm"
+                            >
+                              <User2 size={16} className="mr-2" />
+                              View Profile
+                            </Button>
+                          </Link>
+                          <p className="text-sm text-[#686256]">
+                            {new Date(comment.createdAt).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className=" text-red-700 hover:bg-[#c1502e] hover:text-white rounded-full transition-all duration-300"
-                        onClick={() => handleDeleteComment(comment.id)}
-                      >
-                        <Trash size={18} />
-                      </Button>
                     </div>
                   </li>
                 ))}
               </ul>
             </motion.section>
           </div>
-          <div className="lg:w-1/3">
+
+          {/* Sidebar */}
+          <div className="w-full lg:w-1/3">
             <motion.aside
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-6 sticky top-24"
+              className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-4 sm:p-6 sticky top-24"
             >
-              <h2 className="text-2xl font-caveat font-bold mb-6 text-[#472014]">
+              <h2 className="text-xl sm:text-2xl font-caveat font-bold mb-6 text-[#472014]">
                 More Blogs
               </h2>
-              <div className="space-y-4">
+              <div className="grid gap-4">
                 {relatedBlogs.map((blog) => (
                   <Link href={`/blog/${blog.id}`} key={blog.id}>
-                    <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-[#c1502e]/10 transition-colors duration-300">
-                      <Image
-                        src={blog.blogImage || "/placeholder-image.jpg"}
-                        alt={blog.title}
-                        width={80}
-                        height={80}
-                        className="rounded-md object-cover"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-[#472014] line-clamp-2">
-                          {blog.title}
-                        </h3>
+                    <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#c1502e]/10 transition-all duration-300">
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        <Image
+                          src={blog.blogImage || "/placeholder-image.jpg"}
+                          alt={blog.title}
+                          fill
+                          className="rounded-md object-cover"
+                        />
                       </div>
+                      <h3 className="font-semibold text-[#472014] text-sm sm:text-base line-clamp-2">
+                        {blog.title}
+                      </h3>
                     </div>
                   </Link>
                 ))}
               </div>
               <Button
-                className="w-full mt-6 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold py-2 px-4 rounded-full transition-colors duration-300"
+                className="w-full mt-6 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
                 onClick={() => router.push("/blogs")}
               >
                 View More Blogs
-                <ChevronRight className="ml-2" size={20} />
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </motion.aside>
           </div>
         </div>
       </main>
+      
       <FeaturesDemo imagePosition="right" />
       <ContactForm />
       <Footer />

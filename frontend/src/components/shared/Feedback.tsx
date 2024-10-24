@@ -84,7 +84,7 @@ const ContactForm: React.FC = () => {
                   <Image 
                   src={CONTACT}
                   alt="Contact illustration"
-                  className="object-cover "/>
+                  className="object-cover rounded-full"/>
                   </motion.div>
               </div>
             </div>

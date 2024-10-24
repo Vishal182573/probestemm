@@ -54,7 +54,7 @@ const HomePage = () => {
   );
 };
 
-const images = ["/c1.png", "/c2.png", "/c3.png"];
+const images = ["/c1.png", "/c2.png", "/c3.png","/c4.png","/c5.png"];
 
 const HeroSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

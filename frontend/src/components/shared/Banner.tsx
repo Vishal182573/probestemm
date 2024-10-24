@@ -21,7 +21,7 @@ const Banner: React.FC<BannerProps> = ({
         src={imageSrc}
         alt={altText}
         layout="fill"
-        objectFit="cover"
+        // objectFit="cover"
         className="z-0"
       />
       <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />

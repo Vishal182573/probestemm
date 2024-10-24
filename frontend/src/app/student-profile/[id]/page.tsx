@@ -14,7 +14,8 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
-import EditProfileForm from "@/components/shared/EditProfile";
+// import EditProfileForm from "@/components/shared/EditProfile";
+import Link from "next/link";
 
 interface Student {
   id: string;
@@ -132,27 +133,21 @@ const StudentProfilePage: React.FC = () => {
       console.error("Error marking notification as read:", error);
       setError("Failed to mark notification as read. Please try again.");
     }
-  };
-
-  const renderNotificationsTab = () => (
+  };const renderNotificationsTab = () => (
     <TabsContent value="notifications">
       {isOwnProfile && (
-        <Card className="border border-[#c1502e] bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Bell className="mr-2 text-[#c1502e]" />
-              Notifications
-            </CardTitle>
+        <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
+          <CardHeader className="border-b border-[#c1502e]/10">
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             {notifications.length > 0 ? (
-              <ul className="space-y-4">
+              <ul className="space-y-6">
                 {notifications.map((notification) => (
                   <li
                     key={notification.id}
-                    className="flex items-center justify-between border-b pb-4"
+                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#c1502e]/20 hover:bg-gray-50"
                   >
-                    <div>
+                    <div className="space-y-2">
                       <p
                         className={`${
                           notification.isRead
@@ -160,19 +155,23 @@ const StudentProfilePage: React.FC = () => {
                             : "font-semibold"
                         }`}
                       >
-                        <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
+                        <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
                           {notification.content}
                         </p>
                       </p>
                       <p className="text-sm text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString()}
+                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
                       </p>
                     </div>
                     {!notification.isRead && (
                       <Button
                         onClick={() => handleMarkAsRead(notification.id)}
                         size="sm"
-                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                        className="ml-4 bg-[#c1502e] text-white transition-colors hover:bg-[#472014]"
                       >
                         Mark as Read
                       </Button>
@@ -181,7 +180,7 @@ const StudentProfilePage: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <p>No notifications yet.</p>
+              <p className="text-center py-8 text-gray-500">No notifications yet.</p>
             )}
           </CardContent>
         </Card>
@@ -260,11 +259,11 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg">{student.university}</p>
                 </div>
               </div>
-
-              {/* <EditProfileForm role="student" userId={student.id} /> */}
+              <Link href={"/edit-profile"}>
               <Button className="bg-transparent text-white border-2 border-white">
                 Edit Profile
               </Button>
+              </Link>
             </div>
           </div>
         </motion.section>
@@ -403,7 +402,8 @@ const StudentProfilePage: React.FC = () => {
           <div className="container mx-auto px-4">
             <Tabs defaultValue="notifications">
               <TabsList>
-                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <TabsTrigger value="notifications" className="bg-white text-black"> 
+                <Bell className="mr-3 h-6 w-6 text-[#c1502e]" />Notifications</TabsTrigger>
                 {/* Add more tabs as needed */}
               </TabsList>
               {renderNotificationsTab()}

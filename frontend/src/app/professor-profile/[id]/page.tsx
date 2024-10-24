@@ -21,6 +21,12 @@ import {
   User,
   Loader2,
   Bell,
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  Eye,
+  BookX,
+  Calendar,
 } from "lucide-react";
 import {
   Dialog,
@@ -361,52 +367,60 @@ const ProfessorProfilePage: React.FC = () => {
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
-      <Card className="border border-[#c1502e] bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-            <Bell className="mr-2 text-[#c1502e]" />
-            Notifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {notifications.length > 0 ? (
-            <ul className="space-y-4">
-              {notifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex items-center justify-between border-b pb-4"
-                >
-                  <div>
-                    <p
-                      className={`${
-                        notification.isRead ? "text-gray-600" : "font-semibold"
-                      }`}
-                    >
-                      <p className="text-[#472014]  text-2xl font-bold leading-tight line-clamp-2">
-                        {notification.content}
+      {id==localStorage.getItem("userId") && (
+        <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
+          <CardHeader className="border-b border-[#c1502e]/10">
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Bell className="mr-3 h-6 w-6 text-[#c1502e]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {notifications.length > 0 ? (
+              <ul className="space-y-6">
+                {notifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#c1502e]/20 hover:bg-gray-50"
+                  >
+                    <div className="space-y-2">
+                      <p
+                        className={`${
+                          notification.isRead
+                            ? "text-gray-600"
+                            : "font-semibold"
+                        }`}
+                      >
+                        <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
+                          {notification.content}
+                        </p>
                       </p>
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(notification.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {!notification.isRead && (
-                    <Button
-                      onClick={() => handleMarkAsRead(notification.id)}
-                      size="sm"
-                      className="bg-[#c1502e] hover:bg-[#472014] text-white"
-                    >
-                      Mark as Read
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No notifications yet.</p>
-          )}
-        </CardContent>
-      </Card>
+                      <p className="text-sm text-gray-500">
+                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    {!notification.isRead && (
+                      <Button
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        size="sm"
+                        className="ml-4 bg-[#c1502e] text-white transition-colors hover:bg-[#472014]"
+                      >
+                        Mark as Read
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center py-8 text-gray-500">No notifications yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </TabsContent>
   );
 
@@ -729,9 +743,11 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
+                <Link href={"/edit-profile"}>
                 <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
                   Edit Profile
                 </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -740,7 +756,7 @@ const ProfessorProfilePage: React.FC = () => {
         <section className="py-12">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">
-              <TabsList className="flex justify-center bg-white border-[#c1502e] border-2 text-[#472014] p-2 rounded-lg">
+              <TabsList className="flex flex-wrap justify-center bg-white border-[#c1502e] border-2 text-[#472014] p-2 h-44 lg:h-auto rounded-lg">
                 {tabItems.map((item) => (
                   <TabsTrigger
                     key={item.id}
@@ -861,73 +877,85 @@ const ProfessorProfilePage: React.FC = () => {
               {isLoggedInUser && (
                 <>
                   <TabsContent value="blogs">
-                    <motion.div
-                      className="space-y-8"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <Card className="bg-white text-[#472014]">
-                        <CardHeader>
-                          <CardTitle className="flex items-center text-2xl font-bold ">
-                            <BookOpen className="mr-2" />
-                            My Blogs
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {professor?.blogs && professor.blogs.length > 0 ? (
-                            <ul className="space-y-4">
-                              {professor.blogs.map((blog: any) => (
-                                <li key={blog.id} className="border-b pb-4">
-                                  <h3 className="text-xl font-semibold mb-2">
-                                    {blog.title}
-                                  </h3>
-                                  <p className="text-muted-foreground mb-2">
-                                    {new Date(
-                                      blog.createdAt
-                                    ).toLocaleDateString()}
-                                  </p>
-                                  <p className="mb-2">
-                                    {blog.content.length > 150
-                                      ? `${blog.content.substring(0, 150)}...`
-                                      : blog.content}
-                                  </p>
-                                  <div className="flex items-center space-x-4">
-                                    <Badge variant="secondary">
-                                      {blog.likes} Likes
-                                    </Badge>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-black"
-                                    >
-                                      {blog.dislikes} Dislikes
-                                    </Badge>
-
-                                    <Badge
-                                      variant="outline"
-                                      className="text-black"
-                                    >
-                                      {blog.comments.length} Comments
-                                    </Badge>
-                                    <Link href={`/blogs/${blog.id}`}>
-                                      <Button
-                                        variant="outline"
-                                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
-                                      >
-                                        View Blog
-                                      </Button>
-                                    </Link>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>No blogs posted yet.</p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </TabsContent>
+  <motion.div
+    className="space-y-8"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <Card className="bg-white text-[#472014] shadow-md">
+      <CardHeader className="border-b border-gray-100">
+        <CardTitle className="flex items-center text-2xl font-bold">
+          <BookOpen className="mr-2 h-6 w-6 text-[#c1502e]" />
+          My Blogs
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6">
+        {professor?.blogs && professor.blogs.length > 0 ? (
+          <ul className="grid gap-6">
+            {professor.blogs.map((blog: any) => (
+              <motion.li
+                key={blog.id}
+                className="rounded-lg border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="flex-1 space-y-3">
+                    <h3 className="text-lg md:text-xl font-semibold text-[#472014] line-clamp-2 hover:text-[#c1502e] transition-colors">
+                      {blog.title}
+                    </h3>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <p className="text-gray-600 line-clamp-3">
+                      {blog.content.length > 150
+                        ? `${blog.content.substring(0, 150)}...`
+                        : blog.content}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3 items-start">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="bg-[#c1502e]/10 text-[#c1502e] hover:bg-[#c1502e]/20">
+                        <ThumbsUp className="h-3 w-3 mr-1" /> {blog.likes}
+                      </Badge>
+                      <Badge variant="outline" className="text-gray-600 hover:bg-gray-50">
+                        <ThumbsDown className="h-3 w-3 mr-1" /> {blog.dislikes}
+                      </Badge>
+                      <Badge variant="outline" className="text-gray-600 hover:bg-gray-50">
+                        <MessageCircle className="h-3 w-3 mr-1" /> {blog.comments.length}
+                      </Badge>
+                    </div>
+                    <Link href={`/blogs/${blog.id}`} className="w-full sm:w-auto md:w-full lg:w-auto">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300"
+                      >
+                        <Eye className="h-4 w-4 mr-2" /> View Blog
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </motion.li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center py-12">
+            <BookX className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">No blogs posted yet.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </motion.div>
+</TabsContent>
 
                   {/* webinar --section */}
 

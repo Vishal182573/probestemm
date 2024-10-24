@@ -29,9 +29,10 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
 import Banner from "@/components/shared/Banner";
-import { LOGO } from "../../../public";
+import { PROJECT } from "../../../public";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
+import { useRouter } from "next/navigation";
 
 interface Project {
   title: string;
@@ -55,6 +56,7 @@ const ProjectsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -148,7 +150,8 @@ const ProjectsPage = () => {
   }
 
   if (error) {
-    return <div className="text-[#472014]">{error}</div>;
+    router.push("/login");
+    return;
   }
 
   return (
@@ -156,7 +159,7 @@ const ProjectsPage = () => {
       <NavbarWithBg />
       <main className="flex-grow">
         <Banner
-          imageSrc={LOGO}
+          imageSrc={PROJECT}
           altText="project-banner-img"
           title="Cutting-Edge STEM Projects"
           subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."

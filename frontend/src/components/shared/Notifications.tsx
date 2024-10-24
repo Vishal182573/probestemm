@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Video, Calendar, MapPin } from "lucide-react";
+import { Video, Calendar, MapPin, User, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -11,10 +11,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { API_URL } from "@/constants";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Link from "next/link";
 import Image from "next/image";
+import { API_URL } from "@/constants";
+import axios from "axios";
 
 interface Webinar {
   id: string;
@@ -67,7 +73,7 @@ const NotificationsComponent: React.FC = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <Card className="max-w-7xl mx-auto bg-white border-[#c1502e]">
+    <Card className="max-w-7xl mx-auto bg-white shadow-lg border-[#c1502e]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-4xl font-bold text-[#472014] font-caveat">
           Webinars
@@ -77,13 +83,13 @@ const NotificationsComponent: React.FC = () => {
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
+        <div className="mb-6">
           <Select
             onValueChange={(value: "APPROVED" | "COMPLETED" | "ALL") =>
               setFilter(value)
             }
           >
-            <SelectTrigger className="w-[180px] bg-white text-[#472014]">
+            <SelectTrigger className="w-[180px] bg-white text-[#472014] border-[#c1502e]">
               <SelectValue placeholder="Filter webinars" />
             </SelectTrigger>
             <SelectContent>
@@ -100,12 +106,12 @@ const NotificationsComponent: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center text-[#472014]"
+              className="text-center text-[#472014] py-8"
             >
               No webinars found
             </motion.p>
           ) : (
-            <ul className="space-y-4">
+            <ul className="space-y-6">
               {currentWebinars.map((webinar) => (
                 <motion.li
                   key={webinar.id}
@@ -114,7 +120,7 @@ const NotificationsComponent: React.FC = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="bg-white border-[#c1502e] overflow-hidden">
+                  <Card className="bg-white border-[#c1502e] overflow-hidden hover:shadow-xl transition-shadow duration-300">
                     <CardContent className="p-0">
                       <div className="flex flex-col md:flex-row">
                         <div className="w-full md:w-1/3 h-48 md:h-auto relative">
@@ -126,49 +132,70 @@ const NotificationsComponent: React.FC = () => {
                               objectFit="cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                               <Video className="h-12 w-12 text-[#c1502e]" />
                             </div>
                           )}
                         </div>
-                        <div className="w-full md:w-2/3 p-4">
-                          <h3 className="text-xl font-semibold text-[#472014] mb-2">
-                            {webinar.title}
-                          </h3>
-                          <div className="flex items-center text-sm text-[#686256] mb-1">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            {webinar.date}
-                          </div>
-                          <div className="flex items-center text-sm text-[#686256] mb-1">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {webinar.place}
-                          </div>
-                          <p className="text-sm text-[#686256] mb-2">
-                            Topic: {webinar.topic}
-                          </p>
-                          <Badge
-                            variant="outline"
-                            className={`mb-3 ${
-                              webinar.status === "APPROVED"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-[#c1502e] text-white"
-                            }`}
-                          >
-                            {webinar.status === "APPROVED"
-                              ? "UPCOMING"
-                              : webinar.status}
-                          </Badge>
-                          <div className="mt-2">
-                            <Button
+                        <div className="w-full md:w-2/3 p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-2xl font-semibold text-[#472014]">
+                              {webinar.title}
+                            </h3>
+                            <Badge
                               variant="outline"
-                              className="bg-[#c1502e] text-white hover:bg-[#472014] shadow-lg hover:shadow-xl transition-shadow duration-300"
+                              className={`ml-2 ${
+                                webinar.status === "APPROVED"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-[#c1502e] text-white"
+                              }`}
                             >
-                              <Link
-                                href={`/professor-profile/${webinar.professorId}`}
-                              >
-                                View Professor Profile
-                              </Link>
-                            </Button>
+                              {webinar.status === "APPROVED"
+                                ? "UPCOMING"
+                                : webinar.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-sm text-[#686256]">
+                              <Calendar className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              {webinar.date}
+                            </div>
+                            <div className="flex items-center text-sm text-[#686256]">
+                              <MapPin className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              {webinar.place}
+                            </div>
+                            <div className="flex items-center text-sm text-[#686256]">
+                              <User className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              Max Attendees: {webinar.maxAttendees}
+                            </div>
+                          </div>
+                          
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-[#472014]">Topic</p>
+                                <p className="text-sm text-[#686256]">{webinar.topic}</p>
+                              </div>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Link href={`/professor-profile/${webinar.professorId}`}>
+                                      <Button
+                                        variant="outline"
+                                        className="bg-[#c1502e] text-white hover:bg-[#472014] group flex items-center gap-2"
+                                      >
+                                        View Professor
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                      </Button>
+                                    </Link>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>View professor full profile and other webinars</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -180,7 +207,7 @@ const NotificationsComponent: React.FC = () => {
           )}
         </AnimatePresence>
 
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-8">
           {Array.from(
             { length: Math.ceil(filteredWebinars.length / webinarsPerPage) },
             (_, i) => (
@@ -188,7 +215,11 @@ const NotificationsComponent: React.FC = () => {
                 key={i}
                 onClick={() => paginate(i + 1)}
                 variant={currentPage === i + 1 ? "default" : "outline"}
-                className="mx-1 bg-[#c1502e] text-white hover:bg-[#472014]"
+                className={`mx-1 ${
+                  currentPage === i + 1
+                    ? "bg-[#c1502e] text-white"
+                    : "text-[#c1502e] hover:bg-[#c1502e] hover:text-white"
+                }`}
               >
                 {i + 1}
               </Button>

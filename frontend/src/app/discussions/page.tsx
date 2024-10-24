@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   FaSearch,
   FaPlus,
   FaSort,
@@ -20,18 +26,20 @@ import {
   FaArrowDown,
   FaClock,
   FaComment,
-  FaUser,
   FaUserCircle,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { Footer } from "@/components/shared/Footer";
-import axios from "axios";
+import Link from "next/link";
 import { API_URL } from "@/constants";
+import axios from "axios";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import { LOGO } from "../../../public";
+import { DISCUSSION } from "../../../public";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
 import ContactForm from "@/components/shared/Feedback";
+import { Footer } from "@/components/shared/Footer";
 
 interface Discussion {
   id: string;
@@ -138,7 +146,7 @@ const DiscussionForum: React.FC = () => {
     try {
       await axios.post(`${API_URL}/discussion/vote`, {
         discussionId,
-        userId: "currentUserId", // Replace with actual user ID
+        userId: localStorage.getItem("userId"), // Replace with actual user ID
         userType: "STUDENT", // Replace with actual user type
         voteType,
       });
@@ -148,85 +156,94 @@ const DiscussionForum: React.FC = () => {
     }
   };
 
-  const handleQuestionClick = (questionId: string) => {
-    router.push(`/discussions/${questionId}`);
-  };
+  // const handleQuestionClick = (questionId: string) => {
+  //   router.push(`/discussions/${questionId}`);
+  // };
 
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, currentPage: newPage }));
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <NavbarWithBg />
       <Banner
-        imageSrc={LOGO}
+        imageSrc={DISCUSSION}
         altText="discussion-banner"
         title="Insightful Discussions"
         subtitle="Connect with experts and peers"
       />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="container mx-auto p-4 sm:p-6 md:p-8"
+        className="container mx-auto px-4 py-8 md:py-12"
       >
+        {/* Search and Ask Question Section */}
         <motion.div
-          className="flex flex-col sm:flex-row items-center sm:space-x-4 mb-6 md:mb-8"
+          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="relative flex-grow mb-4 sm:mb-0">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#686256]" />
-            <Input
-              type="text"
-              placeholder="Search discussions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full bg-white text-[#472014] border-[#c1502e]"
-            />
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-grow">
+              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#686256]" />
+              <Input
+                type="text"
+                placeholder="Search discussions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 pr-4 py-3 w-full bg-white text-[#472014] border-[#c1502e] rounded-full shadow-sm hover:shadow-md transition-shadow"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleSearch}
+                className="bg-[#c1502e] hover:bg-[#472014] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                Search
+              </Button>
+              {userRole === "student" && (
+                <Button
+                  onClick={() => router.push("/ask-question")}
+                  className="bg-[#472014] hover:bg-[#c1502e] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                >
+                  <FaPlus /> Ask Question
+                </Button>
+              )}
+            </div>
           </div>
-          <Button
-            onClick={handleSearch}
-            className="bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
-          >
-            Search
-          </Button>
-
-          {userRole === "student" && (
-            <Button
-              onClick={() => router.push("/ask-question")}
-              className="bg-[#c1502e] hover:bg-[#472014] text-white flex items-center mb-4 sm:mb-0 rounded-full"
-            >
-              <FaPlus className="mr-2" /> Ask Question
-            </Button>
-          )}
         </motion.div>
 
+        {/* Filters Section */}
         <motion.div
-          className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6"
+          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full bg-white text-gray-800">
-                <FaSort className="mr-2" />
-                <SelectValue placeholder="Sort by" />
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+                <div className="flex items-center gap-2">
+                  <FaSort className="text-[#c1502e]" />
+                  <SelectValue placeholder="Sort by" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="recent">Recently added</SelectItem>
                 <SelectItem value="mostVoted">Most votes</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex-1">
+
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-full bg-white text-gray-800">
-                <FaFilter className="mr-2" />
-                <SelectValue placeholder="Status" />
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+                <div className="flex items-center gap-2">
+                  <FaFilter className="text-[#c1502e]" />
+                  <SelectValue placeholder="Status" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
@@ -234,8 +251,7 @@ const DiscussionForum: React.FC = () => {
                 <SelectItem value="open">Unanswered</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex-1">
+
             <Select
               value={category}
               onValueChange={(value) => {
@@ -243,7 +259,7 @@ const DiscussionForum: React.FC = () => {
                 setSubcategory(undefined);
               }}
             >
-              <SelectTrigger className="w-full bg-white text-gray-800">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -254,14 +270,13 @@ const DiscussionForum: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex-1">
+
             <Select
               value={subcategory}
               onValueChange={setSubcategory}
               disabled={!category}
             >
-              <SelectTrigger className="w-full bg-white text-gray-800">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
                 <SelectValue placeholder="Select a subcategory" />
               </SelectTrigger>
               <SelectContent>
@@ -276,126 +291,145 @@ const DiscussionForum: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Discussions List */}
         <AnimatePresence>
-        {discussions.map((discussion, index) => (
-  <motion.div
-    key={discussion.id}
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -50 }}
-    transition={{ delay: index * 0.1 }}
-  >
-    <Card className="mb-4 hover:shadow-lg transition-all duration-300 bg-white border border-[#c1502e] overflow-hidden">
-      <CardContent className="p-6">
-        <div className="flex gap-6">
-          {/* Voting Section */}
-          <div className="flex flex-col items-center space-y-2">
-            <Button
-              variant="outline"
-              className="w-10 h-10 rounded-full hover:bg-[#c1502e] text-white transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleVote(discussion.id, "UPVOTE");
-              }}
+          {discussions.map((discussion, index) => (
+            <motion.div
+              key={discussion.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <FaArrowUp className="text-white" />
-            </Button>
-            <span className="text-lg font-semibold text-[#472014]">
-              {discussion.upvotes - discussion.downvotes}
-            </span>
-            <Button
-              variant="outline"
-              className="w-10 h-10 rounded-full hover:bg-[#c1502e] text-white transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleVote(discussion.id, "DOWNVOTE");
-              }}
-            >
-              <FaArrowDown className="text-white" />
-            </Button>
-          </div>
+              <Link href={`/discussions/${discussion.id}`}>
+                <Card className="mb-4 hover:shadow-xl transition-all duration-300 bg-white border-[#c1502e] rounded-xl overflow-hidden group">
+                  <CardContent className="p-6">
+                    <div className="flex gap-6">
+                      {/* Voting Section */}
+                      <TooltipProvider>
+                        <div className="flex flex-col items-center space-y-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#c1502e] group-hover:border-[#c1502e] transition-colors"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleVote(discussion.id, "UPVOTE");
+                                }}
+                              >
+                                <FaArrowUp className="text-[#472014] group-hover:text-white transition-colors" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Upvote this discussion</TooltipContent>
+                          </Tooltip>
 
-          {/* Content Section */}
-          <div className="flex-grow">
-            <div className="flex justify-between items-start mb-3">
-              <h3 
-                className="text-xl font-semibold text-[#472014] hover:text-[#c1502e] cursor-pointer transition-colors"
-                onClick={() => handleQuestionClick(discussion.id)}
-              >
-                {discussion.title}
-              </h3>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/profile/${discussion.studentId}`);
-                }}
-                variant="ghost"
-                className="flex items-center space-x-2 text-[#472014] hover:text-[#c1502e] transition-colors"
-              >
-                <FaUserCircle className="text-lg" />
-                <span className="font-medium">{discussion.studentName}</span>
-              </Button>
-            </div>
+                          <span className="text-lg font-semibold text-[#472014]">
+                            {discussion.upvotes - discussion.downvotes}
+                          </span>
 
-            {/* Tags and Metadata */}
-            <div className="flex flex-wrap gap-4 text-sm text-[#686256] mb-3">
-              <div className="flex items-center gap-1">
-                <FaClock />
-                <span>{new Date(discussion.createdAt).toLocaleString()}</span>
-              </div>
-              <div className={`flex items-center gap-1 ${
-                discussion.status === "ANSWERED" 
-                  ? "text-green-600" 
-                  : "text-blue-600"
-              }`}>
-                <span className="font-medium">
-                  {discussion.status === "ANSWERED" ? "Answered" : "Unanswered"}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FaComment />
-                <span>{discussion.answerCount} answers</span>
-              </div>
-            </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#c1502e] group-hover:border-[#c1502e] transition-colors"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleVote(discussion.id, "DOWNVOTE");
+                                }}
+                              >
+                                <FaArrowDown className="text-[#472014] group-hover:text-white transition-colors" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Downvote this discussion</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
 
-            {/* Category Tags */}
-            <div className="flex gap-2">
-              <span className="px-3 py-1 bg-[#f8f0ea] text-[#472014] rounded-full text-sm">
-                {discussion.category}
-              </span>
-              <span className="px-3 py-1 bg-[#f8f0ea] text-[#472014] rounded-full text-sm">
-                {discussion.subcategory}
-              </span>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </motion.div>
-))}
+                      {/* Content Section */}
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="text-xl font-semibold text-[#472014] group-hover:text-[#c1502e] transition-colors">
+                            {discussion.title}
+                          </h3>
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              router.push(`/student-profile/${discussion.studentId}`);
+                            }}
+                            variant="ghost"
+                            className="flex items-center gap-2 text-[#472014] hover:text-[#c1502e] transition-colors"
+                          >
+                            <FaUserCircle className="text-lg" />
+                            <span className="font-medium">{discussion.studentName}</span>
+                          </Button>
+                        </div>
+
+                        {/* Metadata */}
+                        <div className="flex flex-wrap gap-4 text-sm text-[#686256] mb-4">
+                          <div className="flex items-center gap-2">
+                            <FaClock className="text-[#c1502e]" />
+                            <span>{new Date(discussion.createdAt).toLocaleString()}</span>
+                          </div>
+                          <div className={`flex items-center gap-2 ${
+                            discussion.status === "ANSWERED" 
+                              ? "text-green-600" 
+                              : "text-blue-600"
+                          }`}>
+                            <span className="px-3 py-1 rounded-full bg-opacity-20 font-medium">
+                              {discussion.status === "ANSWERED" ? "Answered" : "Unanswered"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaComment className="text-[#c1502e]" />
+                            <span>{discussion.answerCount} answers</span>
+                          </div>
+                        </div>
+
+                        {/* Category Tags */}
+                        <div className="flex gap-2">
+                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#c1502e] hover:text-white transition-colors">
+                            {discussion.category}
+                          </span>
+                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#c1502e] hover:text-white transition-colors">
+                            {discussion.subcategory}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
         </AnimatePresence>
 
-        {/* Pagination controls */}
-        <div className="flex justify-center mt-6">
+        {/* Pagination */}
+        <div className="flex justify-center items-center gap-4 mt-8">
           <Button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1}
-            className="mr-2 bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
+            className="bg-[#f8f0ea] hover:bg-[#c1502e] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
           >
+            <FaChevronLeft />
             Previous
           </Button>
-          <span className="mx-4 text-[#472014]">
+          
+          <div className="px-4 py-2 bg-white rounded-xl shadow text-[#472014] font-medium">
             Page {pagination.currentPage} of {pagination.totalPages}
-          </span>
+          </div>
+          
           <Button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={pagination.currentPage === pagination.totalPages}
-            className="ml-2 bg-[#c1502e] hover:bg-[#472014] text-white rounded-full"
+            className="bg-[#f8f0ea] hover:bg-[#c1502e] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
           >
             Next
+            <FaChevronRight />
           </Button>
         </div>
       </motion.div>
+
       <FeaturesDemo imagePosition="left" />
       <ContactForm />
       <Footer />

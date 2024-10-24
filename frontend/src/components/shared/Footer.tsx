@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
 import { FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaGoogle } from "react-icons/fa";
-import { MdEmail, MdPhone, MdLocationOn, MdSchool, MdScience, MdBusiness } from "react-icons/md";
+import { MdEmail, MdPhone, MdLocationOn } from "react-icons/md";
 import { Modal } from "./Modal";
 import { LOGO } from "../../../public";
 
@@ -166,7 +167,7 @@ export const Footer: React.FC = () => {
         <div className="prose text-black">With effective from 1st November, 2024
 By using our services, you agree to abide by our User Agreement. Your use of the services is also governed by our Professional Privacy Policies, which outline the standards of conduct expected while using the platform. Additionally, your personal data is handled in accordance with our Privacy Policy and Cookie Policy, which detail how we collect, use, share, and store your information.
 
-Probe STEM, the online research platform is focused on fostering collaboration between students, faculty, and industry experts. Its policies and guidelines are tailored to reflect the platform's mission of bridging academia and industry through innovation and research. 
+Probe STEM, the online research platform is focused on fostering collaboration between students, faculty, and industry experts. Its policies and guidelines are tailored to reflect the platform mission of bridging academia and industry through innovation and research. 
 
 
 Below are customized policies for Probe STEM:
@@ -176,7 +177,7 @@ However, as the platform grows, it may become increasingly challenging to conduc
 Please note:
     • Students’ credentials will not be subject to formal verification.
     • Users are responsible for assessing the credibility of their collaborators and ensuring that proper agreements are in place before entering into partnerships.
-This policy emphasizes shared responsibility among all users to maintain the platform's trust and reliability.
+This policy emphasizes shared responsibility among all users to maintain the platform trust and reliability.
 2. Liability Disclaimer Policy
 Probe STEM is a platform designed to facilitate collaboration and innovation in research. While the platform provides a space for academic and industry interactions, it is not responsible for any financial losses incurred by any party due to misrepresentation, fraudulent activities, or any other deceptive practices by users.
 Probe STEM disclaims any liability for:
@@ -226,7 +227,7 @@ The removal of such content ensures that Probe STEM remains a space where produc
 12. Legal Compliance
     • Data Protection Laws: The platform will comply with international data protection laws such as GDPR and other relevant regulations in regions where the platform operates.
     • Copyright Compliance: Users are responsible for ensuring that all content uploaded adheres to copyright laws. If any copyrighted content is found, it will be promptly removed.
-    • Dispute Resolution: Disputes regarding research ownership, plagiarism, or misconduct will be handled through a formal review process with the platform's ethics committee.
+    • Dispute Resolution: Disputes regarding research ownership, plagiarism, or misconduct will be handled through a formal review process with the platform ethics committee.
 13. Cookie Policy
 When you use our services, we collect information such as the URLs of the sites you visit before and after, the time of your visit, and details about your device and network (e.g., IP address, browser, operating system). If you access the services from a mobile device, we may also receive location data based on your phone settings, and we will request your permission before using GPS to determine your precise location.
 All users are encouraged to conduct due diligence when entering into partnerships or agreements with others on the platform. 

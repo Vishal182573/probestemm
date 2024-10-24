@@ -34,7 +34,6 @@ export const NavbarWithBg: React.FC = () => {
     }
   }, []);
 
-
   const getProfileImageSrc = () => {
     if (!user || !user.role) return "/user.png";
 
@@ -53,11 +52,11 @@ export const NavbarWithBg: React.FC = () => {
   const linkTextColor = "text-[#472014]";
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300 ">
+    <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <Link href="/">
-          <Image src={LOGO} alt="logo" className="w-28"/>
+        <div className="flex justify-between items-center h-20 relative">
+          <Link href="/" className="relative">
+            <Image src={LOGO} alt="logo" className="w-32 h-28" />
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -109,7 +108,7 @@ export const NavbarWithBg: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-2">
-            <MobileNavLink to="/" className={linkTextColor}>
+              <MobileNavLink to="/" className={linkTextColor}>
                 HOME
               </MobileNavLink>
               <MobileNavLink to="/about" className={linkTextColor}>
@@ -186,4 +185,5 @@ const MobileNavLink: React.FC<{
     </Button>
   </Link>
 );
+
 export default NavbarWithBg;
