@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import RoleList from "@/components/shared/RoleList";
 import AnimatedContainer from "@/components/shared/AnimatedContainer";

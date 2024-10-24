@@ -53,33 +53,19 @@ const EditProfileForm = () => {
   const [profileData, setProfileData] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const userId = localStorage.getItem("userId");
-  const role = localStorage.getItem("role");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
+  // Move localStorage access to useEffect
   useEffect(() => {
-    fetchProfileData();
-  }, [userId, role]);
-
-  const fetchProfileData = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/${role}s/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      setProfileData(data);
-      setImagePreview(data.photoUrl || data.profileImageUrl);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch profile data",
-        variant: "destructive",
-      });
+    // Only access localStorage on the client side
+    if (typeof window !== 'undefined') {
+      const storedUserId = localStorage.getItem("userId");
+      const storedRole = localStorage.getItem("role");
+      setUserId(storedUserId);
+      setRole(storedRole);
     }
-  };
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -210,14 +196,47 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, researchHighlights: newHighlights });
   };
 
+  // Modify fetchProfileData to depend on userId and role being set
+  useEffect(() => {
+    if (userId && role) {
+      fetchProfileData();
+    }
+  }, [userId, role]);
+
+  const fetchProfileData = async () => {
+    try {
+      if (typeof window === 'undefined') return; // Guard against server-side execution
+      
+      const token = localStorage.getItem("token");
+      if (!token || !userId || !role) return;
+
+      const response = await fetch(`${API_URL}/${role}s/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      setProfileData(data);
+      setImagePreview(data.photoUrl || data.profileImageUrl);
+    } catch (error :any) {
+      toast({
+        title: error,
+        description: "Failed to fetch profile data",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      if (typeof window === 'undefined') return; // Guard against server-side execution
+      
       const token = localStorage.getItem("token");
-      if (!token) {
+      if (!token || !userId || !role) {
         throw new Error("No authentication token found");
       }
 
@@ -232,7 +251,6 @@ const EditProfileForm = () => {
         }
       });
 
-      // Add profile image if changed
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
@@ -269,6 +287,8 @@ const EditProfileForm = () => {
 
   return (
     <>
+    {(userId && role) ? (
+        <>
     <NavbarWithBg/>
     <Card className="w-full max-w-2xl mx-auto min-h-screen my-12">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -748,6 +768,12 @@ const EditProfileForm = () => {
       </CardContent>
     </Card>
     <Footer/>
+        </>
+      ) : (
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Loading...</p>
+        </div>
+      )}
     </>
   );
 };
