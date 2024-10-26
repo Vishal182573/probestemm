@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any*/
+/* eslint-disable @typescript-eslint/no-unused-vars*/ 
 "use client";
 import React from "react";
 import Image from "next/image";
@@ -11,6 +12,7 @@ import {
   Tag,
   Truck,
 } from "lucide-react";
+import { WEBINARHOME } from "../../../public";
 
 interface FeatureItem {
   icon: React.ReactNode;
@@ -20,7 +22,7 @@ interface FeatureItem {
 
 interface FeaturesSectionProps {
   features: FeatureItem[];
-  mediaUrl: string;
+  mediaUrl: any;
   mediaAlt: string;
   isGif?: boolean;
   imagePosition: "left" | "right";
@@ -123,36 +125,36 @@ const FeaturesDemo: React.FC<{ imagePosition: "left" | "right" }> = ({
 }) => {
   const features: FeatureItem[] = [
     {
-      icon: <Video className="w-8 h-8 text-[#4CAF50]" />,
-      title: "Interactive Webinars",
+      icon: <Video className="w-8 h-8 text-yellow-300" />,
+      title: "Personal Journeys",
       description:
-        "Attend live webinars and discussions with industry experts and renowned professors.",
+        " Presenters share their experiences, motivations, and challenges, offering participants inspiration and guidance for their own careers.",
     },
     {
-      icon: <Briefcase className="w-8 h-8 text-[#4CAF50]" />,
-      title: "Industry-Academia Projects",
+      icon: <Briefcase className="w-8 h-8 text-yellow-300" />,
+      title: "Career Insights",
       description:
-        "Collaborate on cutting-edge research projects with partners from both academia and industry.",
+        "Learn about diverse career paths, required skills, and growth opportunities in various STEM fields, from research to industry.",
     },
     {
-      icon: <ChartArea className="w-8 h-8 text-[#4CAF50]" />,
-      title: "Engaging Discussions",
+      icon: <ChartArea className="w-8 h-8 text-yellow-300" />,
+      title: "Unique Research Areas",
       description:
-        "Participate in thought-provoking discussions and Q&A sessions with peers and mentors.",
+        "Discover the distinct characteristics of each field, its real-world impact, and why innovation in these areas is crucial.",
     },
     {
-      icon: <Book className="w-8 h-8 text-[#4CAF50]" />,
-      title: "Insightful Blogs",
+      icon: <Book className="w-8 h-8 text-yellow-300" />,
+      title: "Our Webinars",
       description:
-        "Stay updated with the latest trends and innovations through our curated blog posts.",
+        "Aim to inform, inspire, and connect participants with professionals who can mentor and guide them. Join us to learn, ask questions, and explore the endless possibilities within STEM!",
     },
   ];
 
   return (
     <FeaturesSection
-      mediaUrl="https://yellowcherry.uk/wp-content/uploads/2022/05/website-design-animation-scene-2023-11-27-05-26-42-utc1.gif"
+      mediaUrl={WEBINARHOME}
       mediaAlt="Probe STEM Features"
-      isGif={true}
+      isGif={false}
       imagePosition={imagePosition}
       backgroundColor="bg-white"
       textColor="text-gray-900"

@@ -10,6 +10,11 @@ import PROJECT from "./project.png"
 import CONTACT from "./contact.png"
 import BLOG from "./blog.png"
 import DISCUSSION from "./discussion.png"
+import WEBINARHOME from "./webinar-home.png"
+import STUDENT from "./student.png"
+import PROFESSOR from "./professor.png"
+import INDUSTRY from "./industry.png"
+import FAQ from "./faq.png"
 
 export {
     LOGIN,
@@ -23,5 +28,10 @@ export {
     WEBINAR,
     PROJECT,
     BLOG,
-    DISCUSSION
+    DISCUSSION,
+    WEBINARHOME,
+    STUDENT,
+    PROFESSOR,
+    INDUSTRY,
+    FAQ
 }

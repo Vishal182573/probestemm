@@ -29,6 +29,8 @@ import WebinarSliderSection from "@/components/shared/WebinarSliding";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
 import TestimonialsSection from "@/components/shared/Testimonials";
 import FAQSection from "@/components/shared/Faq";
+import Image from "next/image";
+import { INDUSTRY, PROFESSOR, STUDENT } from "../../public";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -42,8 +44,21 @@ const HomePage = () => {
       <main className="flex-grow">
         <HeroSection />
         <FeaturesSection />
-        <WebinarSliderSection />
+        {/* <WebinarSliderSection /> */}
+        <section className="py-10 md:py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4">
+      <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-5xl font-bold text-center mb-6 text-gray-800"
+        >
+          Webinars
+        </motion.h2>
+        {/* <WebinarSlider /> */}
         <FeaturesDemo imagePosition="right" />
+      </div>
+    </section>
         <FeaturedQuestionsSection />
         <TestimonialsSection />
         <FAQSection />
@@ -54,7 +69,7 @@ const HomePage = () => {
   );
 };
 
-const images = ["/c1.png", "/c2.png", "/c3.png","/c4.png","/c5.png"];
+const images = [ "/c5.png","/c2.png","/c3.jpg","/c4.png","/c1.png","/c6.png"];
 
 const HeroSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -81,7 +96,7 @@ const HeroSection = () => {
           style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
         />
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#c1502e] to-[#686256] opacity-80 z-10" />
+      <div className="absolute inset-0  bg-[#f0d80f] opacity-60 z-10" />
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -106,7 +121,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"
         >
-          <Link href="/login">
+          <Link href="/signup">
             <Button
               size="lg"
               className="bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
@@ -174,42 +189,45 @@ const FeaturesSection = () => {
       icon: <UserCircle className="h-16 w-16 text-[#472014]" />,
       title: "Student Profile",
       description:
-        "Showcase your academic journey, research highlights, and achievements. Connect with professors and industry partners for exciting opportunities.",
+        "Showcase your academic journey by highlighting your research, connect with professors and industry experts.",
       benefits: [
-        "Personalized learning dashboard",
-        "Project collaboration tools",
-        "Research publication tracking",
+        "Engage in insightful discussions",
+        "Webinars to enhance your skills",
+        "Collaborate on research projects",
       ],
       link: "/students",
+      bgImage: STUDENT
     },
     {
       icon: <GraduationCap className="h-16 w-16 text-[#472014]" />,
       title: "Professor Profile",
       description:
-        "Manage your academic portfolio, showcase research projects, and connect with talented students and industry partners.",
+        " Curate your academic portfolio, showcase research projects, and build connections with industry partners .",
       benefits: [
         "Webinar hosting platform",
-        "Research project management",
-        "Student talent pool access",
+        "Commercialise your products",
+        "Transform research into solutions"
       ],
       link: "/professors",
+      bgImage: PROFESSOR
     },
     {
       icon: <Briefcase className="h-16 w-16 text-[#472014]" />,
       title: "Industry Profile",
       description:
-        "Discover top talent, collaborate on cutting-edge research projects, and stay at the forefront of innovation in your industry.",
+        "Discover top talent, collaborate on cutting-edge research, and stay at the forefront of innovation in your industry.",
       benefits: [
-        "AI-powered talent matching",
-        "Research collaboration tools",
-        "Industry-academia networking",
+        "Conduct engaging webinars",
+        "Connect with researchers",
+        "Inovative problem solving",
       ],
       link: "/businesses",
+      bgImage: INDUSTRY
     },
   ];
 
   return (
-    <section className=" py-24 px-4">
+    <section className="py-24 px-4">
       <motion.h2
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -225,9 +243,19 @@ const FeaturesSection = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-            className="bg-white p-8 rounded-xl shadow-xl border-4 border-[#c1502e] hover:scale-105 transition-transform duration-300"
+            className="bg-white rounded-xl shadow-xl border-4 border-[#c1502e] hover:scale-105 transition-transform duration-300 overflow-hidden flex flex-col"
           >
-            <div className="flex flex-col items-center text-center flex-grow text-[#c1502e]">
+            <div className="relative h-56 w-full">
+              <Image
+                src={feature.bgImage}
+                alt={`${feature.title} background`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                priority={index === 0}
+              />
+            </div>
+            <div className="p-8 flex flex-col items-center text-center flex-grow text-[#c1502e]">
               {feature.icon}
               <h3 className="text-3xl font-bold mt-6 mb-4 text-[#472014] font-caveat">
                 {feature.title}
@@ -244,7 +272,7 @@ const FeaturesSection = () => {
                 ))}
               </ul>
               <Link href={feature.link}>
-                <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                <Button className="bg-[#f0d80f] hover:bg-[#472014] text-black hover:text-white">
                   Explore more <ArrowRight className="ml-2" />
                 </Button>
               </Link>
@@ -254,6 +282,6 @@ const FeaturesSection = () => {
       </div>
     </section>
   );
-};
+}
 
 export default HomePage;

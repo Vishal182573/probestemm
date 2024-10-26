@@ -57,36 +57,38 @@ const ContactForm: React.FC = () => {
           className="bg-white shadow-xl rounded-lg overflow-hidden border border-[#c1502e]"
         >
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/2 bg-[#c1502e] p-8 text-white flex flex-col justify-center">
-              <h2 className="text-3xl font-bold mb-4 text-white font-caveat">
-                Contact Us
-              </h2>
-              <h3 className="text-4xl font-extrabold mb-6 text-white">
-                Want to give feedback/
-                <br />
-                Suggestions?
-              </h3>
-              <p className="text-lg mb-8 text-white">
-                Send a mail directly to Us!
-              </p>
-              <div className="relative w-64 h-64 mx-auto">
-                <motion.div
-                  className="rounded-full border-4 border-white overflow-hidden"
-                  initial={{ scale: 0.8, rotate: -10 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    duration: 0.6,
-                  }}
-                >
-                  <Image 
+            <div className="md:w-1/2 bg-[#f0d80f] p-8 text-white flex flex-col justify-between relative">
+              <div>
+                <h2 className="text-3xl font-bold mb-4 text-white font-caveat">
+                  Contact Us
+                </h2>
+                <h3 className="text-4xl font-extrabold mb-6 text-white">
+                  Want to give feedback/
+                  <br />
+                  Suggestions?
+                </h3>
+                <p className="text-lg mb-8 text-white">
+                  Send a mail directly to Us!
+                </p>
+              </div>
+              <motion.div
+                className="relative h-72 mt-4 overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                  duration: 0.6,
+                }}
+              >
+                <Image 
                   src={CONTACT}
                   alt="Contact illustration"
-                  className="object-cover rounded-full"/>
-                  </motion.div>
-              </div>
+                  className="object-cover w-full h-full rounded-lg"
+                  style={{ objectPosition: 'center 30%' }}
+                />
+              </motion.div>
             </div>
             <div className="md:w-1/2 p-8 bg-white">
               <form onSubmit={handleSubmit} className="space-y-6">

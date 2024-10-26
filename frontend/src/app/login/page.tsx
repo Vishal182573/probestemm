@@ -60,8 +60,7 @@ const LoginPage: React.FC = () => {
                   <span className="block mt-2">Probe STEM</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-[#472014] max-w-xl mx-auto md:mx-0">
-                  Continue your journey in STEM education and innovation.
-                  Join our global community of learners and innovators.
+                Log in to continue your journey in STEM education and innovation to connect with our global community.
                 </p>
                 <div className="relative w-full max-w-lg mx-auto md:mx-0 aspect-video">
                   <Image
@@ -73,8 +72,6 @@ const LoginPage: React.FC = () => {
                   />
                 </div>
               </motion.div>
-
-              {/* Right column - Login Form */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}

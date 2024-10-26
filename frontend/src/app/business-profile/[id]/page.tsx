@@ -22,7 +22,7 @@ import {
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
-import EditProfileForm from "@/components/shared/EditProfile";
+import Link from "next/link";
 
 type Notification = {
   id: string;
@@ -387,9 +387,14 @@ const BusinessProfilePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                {isLoggedInUser && (
-                  <EditProfileForm role="business" userId={business.id} />
-                )}
+              {isLoggedInUser && (
+
+<Link href={"/edit-profile"}>
+<Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+  Edit Profile
+</Button>
+</Link>
+  )}
               </div>
             </div>
           </div>
