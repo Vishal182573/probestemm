@@ -37,8 +37,8 @@ import axios from "axios";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
 import { DISCUSSION } from "../../../public";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
-import ContactForm from "@/components/shared/Feedback";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
+// import ContactForm from "@/components/shared/Feedback";
 import { Footer } from "@/components/shared/Footer";
 
 interface Discussion {
@@ -171,7 +171,7 @@ const DiscussionForum: React.FC = () => {
         imageSrc={DISCUSSION}
         altText="discussion-banner"
         title="Insightful Discussions"
-        subtitle="Connect with experts and peers"
+        subtitle="Connect with experts and peers."
       />
       
       <motion.div
@@ -429,9 +429,6 @@ const DiscussionForum: React.FC = () => {
           </Button>
         </div>
       </motion.div>
-
-      <FeaturesDemo imagePosition="left" />
-      <ContactForm />
       <Footer />
     </div>
   );

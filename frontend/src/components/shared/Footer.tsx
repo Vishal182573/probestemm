@@ -122,12 +122,12 @@ export const Footer: React.FC = () => {
               <Image
                 src={LOGO}
                 alt="Probe STEM Logo"
-                width={200}
-                height={60}
+                width={400}
+                height={70}
                 className="mb-4"
               />
-              <p className="text-sm text-center lg:text-left">
-                Empowering the next generation of innovators through collaborative STEM research and education.
+              <p className="text-lg text-[#f0d80f] text-center lg:text-left">
+                Empowering collaborative STEM research and projects.
               </p>
             </div>
           </div>

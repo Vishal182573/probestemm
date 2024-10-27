@@ -16,8 +16,8 @@ const SignupPage: React.FC = () => {
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#472014] font-caveat text-center md:text-left">
               Join the Future of STEM Learning
             </h1>
-            <p className="text-xl text-white text-center md:text-left max-w-xl">
-              <span className="font-bold">Probe STEM:</span> Connect with mentors,
+            <p className="text-xl text-black text-center md:text-left max-w-xl">
+              Connect with mentors,
               collaborate on projects, and accelerate your STEM career.
             </p>
             <Image
@@ -25,7 +25,7 @@ const SignupPage: React.FC = () => {
               alt="Signup illustration"
               width={500}
               height={500}
-              className="w-full max-w-md"
+              className="w-full max-w-md rounded-lg"
             />
           </div>
           <div className="w-full md:w-1/2 flex justify-center md:justify-end">

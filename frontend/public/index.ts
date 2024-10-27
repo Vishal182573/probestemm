@@ -15,6 +15,10 @@ import STUDENT from "./student.png"
 import PROFESSOR from "./professor.png"
 import INDUSTRY from "./industry.png"
 import FAQ from "./faq.png"
+import DISCUSSIONHOME from "./discussion-home.png"
+import FAQPAGE from "./faq-page.png"
+import ABOUT from "./about.png"
+import ABOUTPAGE from "./about-page.png"
 
 export {
     LOGIN,
@@ -33,5 +37,9 @@ export {
     STUDENT,
     PROFESSOR,
     INDUSTRY,
-    FAQ
+    FAQ,
+    DISCUSSIONHOME,
+    FAQPAGE,
+    ABOUT,
+    ABOUTPAGE
 }

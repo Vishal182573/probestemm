@@ -16,7 +16,7 @@ const Banner: React.FC<BannerProps> = ({
   subtitle,
 }) => {
   return (
-    <div className="relative h-[400px] w-full overflow-hidden">
+    <div className="relative h-[320px] w-full overflow-hidden">
       <Image
         src={imageSrc}
         alt={altText}
@@ -24,13 +24,13 @@ const Banner: React.FC<BannerProps> = ({
         objectFit="cover"
         className="z-0"
       />
-      <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
+      <div className="absolute inset-0 bg-[#f0d80f] bg-opacity-60 z-10" />
       <div className="absolute inset-0 flex flex-col justify-center items-center text-white z-20 p-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center text-black">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-xl md:text-2xl mb-6 text-center max-w-2xl">
+          <p className="text-xl md:text-2xl mb-6 text-center max-w-2xl text-black">
             {subtitle}
           </p>
         )}

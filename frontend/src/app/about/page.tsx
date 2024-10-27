@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/shared/Footer";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
-import ContactForm from "@/components/shared/Feedback";
-import { LOGO } from "../../../public";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
+import { ABOUT, ABOUTPAGE} from "../../../public";
 import Link from "next/link";
+import Image from "next/image";
 
 interface CountUpAnimationProps {
-  end: number; // 'end' should be a number
-  duration?: number; // Optional prop with a default value
-  label?: string; // Optional prop
+  end: number;
+  duration?: number;
+  label?: string;
 }
 
 const CountUpAnimation: React.FC<CountUpAnimationProps> = ({
@@ -62,10 +62,10 @@ const AboutUsPage = () => {
     <div className="bg-white min-h-screen">
       <NavbarWithBg />
       <Banner
-        imageSrc={LOGO}
+        imageSrc={ABOUT}
         altText="About Us Banner"
         title="Probe STEM"
-        subtitle="Empowering the next generation of innovators"
+        subtitle="Empowering the next generation of innovators."
       />
       <motion.div
         initial={{ opacity: 0 }}
@@ -73,7 +73,8 @@ const AboutUsPage = () => {
         exit={{ opacity: 0 }}
         className="container mx-auto p-8"
       >
-        <motion.div
+
+      <motion.div
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -82,11 +83,37 @@ const AboutUsPage = () => {
           <h2 className="text-3xl font-bold text-[#472014] mb-4">Our Motto</h2>
           <p className="text-xl text-[#472014]">
             Bridging academia and industry to transform research into
-            innovation.
+            reality.
           </p>
         </motion.div>
 
         <Stats />
+        {/* New About Section */}
+        <motion.div
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-16"
+        >
+          <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Us</h2>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+              <p className="text-lg text-[#472014]">
+                Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the STEM fields. We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
+              </p>
+              <p className="text-lg text-[#472014]">
+                Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.
+              </p>
+            </div>
+            <div className="relative h-64 md:h-96 rounded-lg overflow-hidden shadow-xl">
+              <Image
+                src={ABOUTPAGE}
+                alt="Probe STEM Community"
+                className="object-cover w-full h-full"
+              />
+            </div>
+          </div>
+        </motion.div>
 
         <motion.h2
           initial={{ y: -30, opacity: 0 }}
@@ -171,7 +198,7 @@ const AboutUsPage = () => {
                 both the faculty and the industry partner.
               </p>
               <Link href={"/projects"}>
-                <Button className="mt-4 bg-[#c1502e] hover:bg-[#472014] hover:text-white">
+                <Button className="mt-4 bg-[#f0d80f] hover:bg-[#472014] hover:text-white">
                   Apply Now
                 </Button>
               </Link>
@@ -179,77 +206,6 @@ const AboutUsPage = () => {
           </Card>
         </motion.div>
       </motion.div>
-
-      <div className=" py-16">
-        <div className="container mx-auto">
-          <motion.h2
-            initial={{ y: -30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl font-bold mb-12 text-center text-[#472014]"
-          >
-            Our Key Partnerships
-          </motion.h2>
-
-          <div className="space-y-16">
-            <motion.div
-              initial={{ x: -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h3 className="text-3xl font-bold mb-4 text-center text-[#c1502e]">
-                For Students
-              </h3>
-              <FeaturesDemo imagePosition="left" />
-              <div className="text-center mt-6">
-                <Link href="/students">
-                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
-                    View Students
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ x: 100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <h3 className="text-3xl font-bold mb-4 text-center text-[#c1502e]">
-                For Professors
-              </h3>
-              <FeaturesDemo imagePosition="right" />
-              <div className="text-center mt-6">
-                <Link href="/professors">
-                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
-                    View Professors
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ x: -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <h3 className="text-3xl font-bold mb-4 text-center text-[#c1502e]">
-                For Industry
-              </h3>
-              <FeaturesDemo imagePosition="left" />
-              <div className="text-center mt-6">
-                <Link href="/industry">
-                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
-                    View Industries
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      <ContactForm />
       <Footer />
     </div>
   );

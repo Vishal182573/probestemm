@@ -9,6 +9,7 @@ import NavbarWithBg from '@/components/shared/NavbarWithbg';
 import { Footer } from '@/components/shared/Footer';
 import { API_URL } from '@/constants';
 import { motion } from 'framer-motion';
+import { FAQPAGE } from '../../../public';
 
 interface FAQ {
   question: string;
@@ -68,7 +69,7 @@ export default function FAQPage() {
                 transition={{ duration: 0.5 }}
                 className="text-4xl md:text-5xl font-bold text-center lg:text-left mb-8 text-gray-800"
               >
-                Frequently Asked <span className="text-[#c1502e]">Questions</span>
+                Frequently Asked <span className="text-[#f0d80f]">Questions</span>
               </motion.h1>
 
               <motion.div 
@@ -111,7 +112,7 @@ export default function FAQPage() {
             >
               <div className="relative aspect-square max-w-md mx-auto">
                 <Image
-                  src="https://media.tenor.com/8tr_CU6730MAAAAM/web-dev-website-development.gif"  // Add your GIF file in the public folder
+                  src={FAQPAGE}  // Add your GIF file in the public folder
                   alt="FAQ Illustration"
                   fill
                   className="object-contain rounded-2xl shadow-xl"

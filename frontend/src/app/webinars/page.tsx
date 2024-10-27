@@ -8,8 +8,8 @@ import { motion, useAnimation } from "framer-motion";
 import { ReactNode, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { WEBINAR } from "../../../public";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
-import ContactForm from "@/components/shared/Feedback";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
+// import ContactForm from "@/components/shared/Feedback";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -52,8 +52,8 @@ const WebinarPage = () => {
     <div>
       <NavbarWithBg/>
       <Banner imageSrc={WEBINAR} altText="webinar-banner-img" 
-    title="Stay Ahead of the Curve"
-    subtitle="Attend virtual seminars and discussions"/>
+    title="Stay ahead of the Curve"
+    subtitle="Attend virtual seminars and discussions."/>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>
@@ -66,8 +66,6 @@ const WebinarPage = () => {
           </AnimatedSection>
         </div>
       </section>
-      <FeaturesDemo imagePosition="left"/>
-      <ContactForm/>
       <Footer />
     </div>
   );

@@ -150,7 +150,7 @@ export const LoginForm: React.FC = () => {
           </div>
           <Button
             type="submit"
-            className="w-full h-12 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold transition-colors duration-300"
+            className="w-full h-12 bg-[#f0d80f] text-black font-semibold transition-colors duration-300"
             disabled={isLoading}
           >
             {isLoading ? (

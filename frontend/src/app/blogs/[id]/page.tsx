@@ -23,8 +23,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { BLOG, LOGO } from "../../../../public";
 import Banner from "@/components/shared/Banner";
-import ContactForm from "@/components/shared/Feedback";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
+// import ContactForm from "@/components/shared/Feedback";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 interface Comment {
   id: string;
@@ -270,7 +270,7 @@ const BlogPostPage = () => {
         imageSrc={BLOG}
         altText="webinar-banner-img"
         title="Thought-Provoking Perspectives"
-        subtitle="Explore diverse opinions and ideas"
+        subtitle="Explore diverse opinions and ideas."
       />
       
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -480,9 +480,6 @@ const BlogPostPage = () => {
           </div>
         </div>
       </main>
-      
-      <FeaturesDemo imagePosition="right" />
-      <ContactForm />
       <Footer />
     </div>
   );

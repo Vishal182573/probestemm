@@ -183,7 +183,7 @@ const NotificationsComponent: React.FC = () => {
                                     <Link href={`/professor-profile/${webinar.professorId}`}>
                                       <Button
                                         variant="outline"
-                                        className="bg-[#c1502e] text-white hover:bg-[#472014] group flex items-center gap-2"
+                                        className="bg-[#f0d80f] text-black hover:bg-[#472014] group flex items-center gap-2"
                                       >
                                         View Professor
                                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />

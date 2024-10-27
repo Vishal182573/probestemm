@@ -30,8 +30,8 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
 import Banner from "@/components/shared/Banner";
 import { PROJECT } from "../../../public";
-import ContactForm from "@/components/shared/Feedback";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
+// import ContactForm from "@/components/shared/Feedback";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
 import { useRouter } from "next/navigation";
 
 interface Project {
@@ -161,21 +161,21 @@ const ProjectsPage = () => {
         <Banner
           imageSrc={PROJECT}
           altText="project-banner-img"
-          title="Cutting-Edge STEM Projects"
+          title="Cutting-edge STEM Projects"
           subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
         />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">
             <TabsTrigger
               value="business"
-              className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+              className="text-[#472014] bg-[#f0d80f] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
             >
               <GraduationCap className="mr-2 h-5 w-5" />
               Business Projects
             </TabsTrigger>
             <TabsTrigger
               value="professor"
-              className="text-[#472014] bg-[#c1502e] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+              className="text-[#472014] bg-[#f0d80f] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
             >
               <UserCircle className="mr-2 h-5 w-5" />
               Professor Projects
@@ -199,8 +199,6 @@ const ProjectsPage = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <FeaturesDemo imagePosition="left" />
-      <ContactForm />
       <Footer />
     </div>
   );

@@ -20,8 +20,8 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
 import { BLOG } from "../../../public";
-import ContactForm from "@/components/shared/Feedback";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
+// import ContactForm from "@/components/shared/Feedback";
+// import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 interface Author {
   id: string;
@@ -241,8 +241,8 @@ const BlogsPage: React.FC = () => {
       <Banner
         imageSrc={BLOG}
         altText="webinar-banner-img"
-        title="Insights and Innovations"
-        subtitle="Stay up-to-date with the latest trends"
+        title="Insights and Perspectives"
+        subtitle="Stay up-to-date with the latest trends."
       />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <motion.h1
@@ -370,8 +370,6 @@ const BlogsPage: React.FC = () => {
           )}
         </div>
       </main>
-      <FeaturesDemo imagePosition="left" />
-      <ContactForm />
       <Footer />
     </div>
   );

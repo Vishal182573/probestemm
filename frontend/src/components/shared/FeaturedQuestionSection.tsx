@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FaArrowUp, FaUser, FaClock, FaComment } from "react-icons/fa";
+import { DISCUSSIONHOME } from "../../../public";
 
 interface FeaturedQuestion {
   id: string;
@@ -83,7 +84,7 @@ const FeaturedQuestionsSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-5xl font-bold text-center mb-16 text-gray-800"
         >
-          Featured <span className="text-[#c1502e]">Discussions</span>
+          Featured <span className="text-[#f0d80f]">Discussions</span>
         </motion.h2>
 
         <div className="flex flex-col lg:flex-row items-start gap-12 relative z-10">
@@ -154,7 +155,7 @@ const FeaturedQuestionsSection: React.FC = () => {
           >
             <div className="relative aspect-square max-w-md mx-auto">
               <Image
-                src="/api/placeholder/400/400"
+                src={DISCUSSIONHOME}
                 alt="Discussion Illustration"
                 fill
                 className="object-contain rounded-2xl shadow-xl"
