@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
+import PatentsTab from "@/components/shared/patentstab";
 
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -52,6 +53,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
+interface Patent {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string[];
+  createdAt: string;
+  professorId: string;
+}
+
 interface Professor {
   id: string;
   fullName: string;
@@ -65,7 +75,11 @@ interface Professor {
   degree: string;
   department: string;
   position: string;
-  researchInterests: string;
+  researchInterests: Array<{
+    title: string;
+    description: string;
+    imageUrl: string;
+  }>;
   positions: Array<{
     id: string;
     title: string;
@@ -77,6 +91,10 @@ interface Professor {
   achievements: Array<{ id: string; year: string; description: string }>;
   blogs: any;
   projects: Array<{ id: string; topic: string; status: string }>;
+  tags: Array<{
+    category: string;
+    subcategory: string;
+  }>;
 }
 
 interface Webinar {
@@ -91,6 +109,7 @@ interface Webinar {
   meetingLink?: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
   webinarImage?: string;
+  webinarDocument?: string;
 }
 
 interface Project {
@@ -163,6 +182,10 @@ const ProfessorProfilePage: React.FC = () => {
   const [businessProjectsError, setBusinessProjectsError] = useState<
     string | null
   >(null);
+
+  const [patents, setPatents] = useState<Patent[]>([]);
+  const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
+  const [isCreatingPatent, setIsCreatingPatent] = useState(false);
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -176,23 +199,30 @@ const ProfessorProfilePage: React.FC = () => {
         setProfessor(professorResponse.data);
 
         if (isLoggedInUser && token) {
-          const [webinarsResponse, projectsResponse, notificationsResponse] =
-            await Promise.all([
-              axios.get(`${API_URL}/webinars/professor/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              }),
-              axios.get(`${API_URL}/project/professor/${id}/projects`, {
-                headers: { Authorization: `Bearer ${token}` },
-              }),
-              axios.get(`${API_URL}/notifications/professor/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-              }),
-            ]);
+          const [
+            webinarsResponse,
+            projectsResponse,
+            notificationsResponse,
+            patentsResponse,
+          ] = await Promise.all([
+            axios.get(`${API_URL}/webinars/professor/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/project/professor/${id}/projects`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/notifications/professor/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/patents/professor/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
           setWebinars(webinarsResponse.data);
           setProjects(projectsResponse.data);
-
           setNotifications(notificationsResponse.data);
+          setPatents(patentsResponse.data);
           setUnreadCount(
             notificationsResponse.data.filter((n: any) => !n.isRead).length
           );
@@ -226,7 +256,8 @@ const ProfessorProfilePage: React.FC = () => {
 
   const handleCreateWebinar = async (
     webinarData: any,
-    webinarImage: File | null
+    webinarImage: File | null,
+    webinarDocument: File | null
   ) => {
     try {
       const token = localStorage.getItem("token");
@@ -236,7 +267,7 @@ const ProfessorProfilePage: React.FC = () => {
 
       const formData = new FormData();
 
-      // Append webinar data to formData
+      // Append webinar data
       Object.keys(webinarData).forEach((key) => {
         formData.append(key, webinarData[key]);
       });
@@ -246,8 +277,14 @@ const ProfessorProfilePage: React.FC = () => {
         formData.append("webinarImage", webinarImage);
       }
 
+      // Append document if it exists
+      if (webinarDocument) {
+        formData.append("webinarDocument", webinarDocument);
+      }
+
       console.log("Sending webinar data:", webinarData);
       console.log("Sending webinar image:", webinarImage);
+      console.log("Sending webinar document:", webinarDocument);
 
       const response = await axios.post(`${API_URL}/webinars`, formData, {
         headers: {
@@ -385,6 +422,26 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to mark notification as read. Please try again.");
     }
   };
+
+  const handleCreatePatent = async (formData: FormData) => {
+    setIsCreatingPatent(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(`${API_URL}/patents`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setPatents([...patents, response.data]);
+      setIsPatentDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating patent:", error);
+      setError("Failed to create patent. Please try again.");
+    } finally {
+      setIsCreatingPatent(false);
+    }
+  };
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -405,7 +462,7 @@ const ProfessorProfilePage: React.FC = () => {
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
-      {id==localStorage.getItem("userId") && (
+      {id == localStorage.getItem("userId") && (
         <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
           <CardHeader className="border-b border-[#c1502e]/10">
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
@@ -434,11 +491,14 @@ const ProfessorProfilePage: React.FC = () => {
                         </p>
                       </p>
                       <p className="text-sm text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                        {new Date(notification.createdAt).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )}
                       </p>
                     </div>
                     {!notification.isRead && (
@@ -454,11 +514,202 @@ const ProfessorProfilePage: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-center py-8 text-gray-500">No notifications yet.</p>
+              <p className="text-center py-8 text-gray-500">
+                No notifications yet.
+              </p>
             )}
           </CardContent>
         </Card>
       )}
+    </TabsContent>
+  );
+
+  const renderPatentsTab = () => (
+    <TabsContent value="patents">
+      <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
+        <CardHeader className="border-b border-[#c1502e]/10">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <BookOpen className="mr-3 h-6 w-6 text-[#c1502e]" />
+              Patents
+            </CardTitle>
+            {isLoggedInUser && (
+              <Dialog
+                open={isPatentDialogOpen}
+                onOpenChange={setIsPatentDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button className="bg-[#c1502e] text-white hover:bg-[#472014]">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Patent
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Create New Patent</DialogTitle>
+                  </DialogHeader>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData();
+
+                      // Get form values
+                      const titleInput = e.currentTarget.querySelector(
+                        "#title"
+                      ) as HTMLInputElement;
+                      const descriptionInput = e.currentTarget.querySelector(
+                        "#description"
+                      ) as HTMLTextAreaElement;
+
+                      const fileInput = e.currentTarget.querySelector(
+                        "#patentImages"
+                      ) as HTMLInputElement;
+
+                      formData.append("title", titleInput.value);
+                      formData.append("description", descriptionInput.value);
+                      formData.append(
+                        "professorId",
+                        localStorage.getItem("userId") || ""
+                      );
+
+                      // Append multiple files
+                      if (fileInput.files) {
+                        Array.from(fileInput.files).forEach((file) => {
+                          formData.append("patentImages", file);
+                        });
+                      }
+                      handleCreatePatent(formData);
+                    }}
+                  >
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" name="title" required />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="description">
+                          Description (max 200 words)
+                        </Label>
+                        <Textarea
+                          id="description"
+                          name="description"
+                          required
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="patentImages">
+                          Images (1-4 images required)
+                        </Label>
+                        <Input
+                          id="patentImages"
+                          name="patentImages"
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          required
+                          onChange={(e) => {
+                            const files = e.target.files;
+                            if (files && files.length > 4) {
+                              e.target.value = "";
+                              alert("Please select up to 4 images only");
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsPatentDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="bg-[#c1502e] text-white hover:bg-[#472014]"
+                        disabled={isCreatingPatent}
+                      >
+                        {isCreatingPatent ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          "Create Patent"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {patents.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {patents.map((patent) => (
+                <Card key={patent.id} className="overflow-hidden">
+                  <div
+                    className={`grid gap-2 ${
+                      Array.isArray(patent.imageUrl) &&
+                      patent.imageUrl.length === 1
+                        ? "grid-cols-1"
+                        : Array.isArray(patent.imageUrl) &&
+                          patent.imageUrl.length === 2
+                        ? "grid-cols-2"
+                        : Array.isArray(patent.imageUrl) &&
+                          patent.imageUrl.length === 3
+                        ? "grid-cols-2"
+                        : "grid-cols-2"
+                    }`}
+                  >
+                    {Array.isArray(patent.imageUrl) &&
+                      patent.imageUrl.map((url: string, index: number) => (
+                        <div
+                          key={index}
+                          className={`relative ${
+                            patent.imageUrl.length === 1
+                              ? "aspect-video w-full"
+                              : patent.imageUrl.length === 2
+                              ? "aspect-square"
+                              : patent.imageUrl.length === 3 && index === 0
+                              ? "aspect-video col-span-2"
+                              : "aspect-square"
+                          }`}
+                        >
+                          <Image
+                            src={url}
+                            alt={`${patent.title} - Image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold text-[#472014]">
+                      {patent.title}
+                    </h3>
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+                      {patent.description}
+                    </p>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Created on{" "}
+                      {new Date(patent.createdAt).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center py-8 text-gray-500">
+              No patents available.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </TabsContent>
   );
 
@@ -789,6 +1040,7 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
+          { id: "patents", label: "Patents", icon: <BookOpen /> },
           {
             id: "business-projects",
             label: "Business Projects",
@@ -851,14 +1103,13 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
-                  {isLoggedInUser && (
-
-                <Link href={"/edit-profile"}>
-                <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
-                  Edit Profile
-                </Button>
-                </Link>
-                  )}
+                {isLoggedInUser && (
+                  <Link href={"/edit-profile"}>
+                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                      Edit Profile
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -917,8 +1168,31 @@ const ProfessorProfilePage: React.FC = () => {
                           <strong>Position:</strong> {professor.position}
                         </li>
                         <li>
-                          <strong>Research Interests:</strong>{" "}
-                          {professor.researchInterests}
+                          <strong>Research Interests :</strong>{" "}
+                          {professor.researchInterests.map(
+                            (interest, index) => (
+                              <span key={index}>
+                                {interest.title}
+
+                                {index < professor.researchInterests.length - 1
+                                  ? ", "
+                                  : ""}
+                              </span>
+                            )
+                          )}
+                        </li>
+                        <li>
+                          <strong>Professor tags: </strong>
+                          {professor.tags.map((tag, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-black"
+                            >
+                              {tag.category}
+                              {tag.subcategory && ` - ${tag.subcategory}`}
+                            </Badge>
+                          ))}
                         </li>
                       </ul>
                     </CardContent>
@@ -988,85 +1262,108 @@ const ProfessorProfilePage: React.FC = () => {
               {isLoggedInUser && (
                 <>
                   <TabsContent value="blogs">
-  <motion.div
-    className="space-y-8"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <Card className="bg-white text-[#472014] shadow-md">
-      <CardHeader className="border-b border-gray-100">
-        <CardTitle className="flex items-center text-2xl font-bold">
-          <BookOpen className="mr-2 h-6 w-6 text-[#c1502e]" />
-          My Blogs
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 md:p-6">
-        {professor?.blogs && professor.blogs.length > 0 ? (
-          <ul className="grid gap-6">
-            {professor.blogs.map((blog: any) => (
-              <motion.li
-                key={blog.id}
-                className="rounded-lg border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-all duration-300"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div className="flex-1 space-y-3">
-                    <h3 className="text-lg md:text-xl font-semibold text-[#472014] line-clamp-2 hover:text-[#c1502e] transition-colors">
-                      {blog.title}
-                    </h3>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {new Date(blog.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                    <p className="text-gray-600 line-clamp-3">
-                      {blog.content.length > 150
-                        ? `${blog.content.substring(0, 150)}...`
-                        : blog.content}
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3 items-start">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="bg-[#c1502e]/10 text-[#c1502e] hover:bg-[#c1502e]/20">
-                        <ThumbsUp className="h-3 w-3 mr-1" /> {blog.likes}
-                      </Badge>
-                      <Badge variant="outline" className="text-gray-600 hover:bg-gray-50">
-                        <ThumbsDown className="h-3 w-3 mr-1" /> {blog.dislikes}
-                      </Badge>
-                      <Badge variant="outline" className="text-gray-600 hover:bg-gray-50">
-                        <MessageCircle className="h-3 w-3 mr-1" /> {blog.comments.length}
-                      </Badge>
-                    </div>
-                    <Link href={`/blogs/${blog.id}`} className="w-full sm:w-auto md:w-full lg:w-auto">
-                      <Button
-                        variant="outline"
-                        className="w-full bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300"
-                      >
-                        <Eye className="h-4 w-4 mr-2" /> View Blog
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </motion.li>
-            ))}
-          </ul>
-        ) : (
-          <div className="text-center py-12">
-            <BookX className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">No blogs posted yet.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  </motion.div>
-</TabsContent>
+                    <motion.div
+                      className="space-y-8"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Card className="bg-white text-[#472014] shadow-md">
+                        <CardHeader className="border-b border-gray-100">
+                          <CardTitle className="flex items-center text-2xl font-bold">
+                            <BookOpen className="mr-2 h-6 w-6 text-[#c1502e]" />
+                            My Blogs
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 md:p-6">
+                          {professor?.blogs && professor.blogs.length > 0 ? (
+                            <ul className="grid gap-6">
+                              {professor.blogs.map((blog: any) => (
+                                <motion.li
+                                  key={blog.id}
+                                  className="rounded-lg border border-gray-100 p-4 md:p-6 hover:shadow-lg transition-all duration-300"
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  whileHover={{ scale: 1.02 }}
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                    <div className="flex-1 space-y-3">
+                                      <h3 className="text-lg md:text-xl font-semibold text-[#472014] line-clamp-2 hover:text-[#c1502e] transition-colors">
+                                        {blog.title}
+                                      </h3>
+                                      <div className="flex items-center text-sm text-gray-500">
+                                        <Calendar className="h-4 w-4 mr-2" />
+                                        {new Date(
+                                          blog.createdAt
+                                        ).toLocaleDateString("en-US", {
+                                          year: "numeric",
+                                          month: "long",
+                                          day: "numeric",
+                                        })}
+                                      </div>
+                                      <p className="text-gray-600 line-clamp-3">
+                                        {blog.content.length > 150
+                                          ? `${blog.content.substring(
+                                              0,
+                                              150
+                                            )}...`
+                                          : blog.content}
+                                      </p>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3 items-start">
+                                      <div className="flex flex-wrap gap-2">
+                                        <Badge
+                                          variant="secondary"
+                                          className="bg-[#c1502e]/10 text-[#c1502e] hover:bg-[#c1502e]/20"
+                                        >
+                                          <ThumbsUp className="h-3 w-3 mr-1" />{" "}
+                                          {blog.likes}
+                                        </Badge>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-gray-600 hover:bg-gray-50"
+                                        >
+                                          <ThumbsDown className="h-3 w-3 mr-1" />{" "}
+                                          {blog.dislikes}
+                                        </Badge>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-gray-600 hover:bg-gray-50"
+                                        >
+                                          <MessageCircle className="h-3 w-3 mr-1" />{" "}
+                                          {blog.comments.length}
+                                        </Badge>
+                                      </div>
+                                      <Link
+                                        href={`/blogs/${blog.id}`}
+                                        className="w-full sm:w-auto md:w-full lg:w-auto"
+                                      >
+                                        <Button
+                                          variant="outline"
+                                          className="w-full bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300"
+                                        >
+                                          <Eye className="h-4 w-4 mr-2" /> View
+                                          Blog
+                                        </Button>
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </motion.li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="text-center py-12">
+                              <BookX className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                              <p className="text-gray-500 text-lg">
+                                No blogs posted yet.
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </TabsContent>
 
                   {/* webinar --section */}
 
@@ -1126,12 +1423,17 @@ const ProfessorProfilePage: React.FC = () => {
                                           "meetingLink"
                                         ) as string,
                                       };
+
                                       const webinarImage = formData.get(
                                         "webinarImage"
                                       ) as File;
+                                      const webinarDocument = formData.get(
+                                        "webinarDocument"
+                                      ) as File;
                                       handleCreateWebinar(
                                         webinarData,
-                                        webinarImage
+                                        webinarImage,
+                                        webinarDocument
                                       );
                                     }}
                                     className="space-y-4"
@@ -1234,6 +1536,21 @@ const ProfessorProfilePage: React.FC = () => {
                                         accept="image/*"
                                       />
                                     </div>
+                                    <div>
+                                      <Label htmlFor="webinar-document">
+                                        Webinar Document (PDF/DOC)
+                                      </Label>
+                                      <Input
+                                        id="webinar-document"
+                                        name="webinarDocument"
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                      />
+                                      <p className="text-sm text-gray-500">
+                                        Upload a detailed document about the
+                                        webinar (max 10MB)
+                                      </p>
+                                    </div>
                                     <Button type="submit">
                                       Submit for Approval
                                     </Button>
@@ -1277,6 +1594,25 @@ const ProfessorProfilePage: React.FC = () => {
                                               className="w-16 h-16 object-cover rounded"
                                             />
                                           )}
+                                          <div>
+                                            <span className="font-semibold">
+                                              {webinar.title}
+                                            </span>
+                                            <p className="text-sm text-gray-500">
+                                              {webinar.topic}
+                                            </p>
+                                            {webinar.webinarDocument && (
+                                              <Link
+                                                href={webinar.webinarDocument}
+                                                className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                                                target="_blank"
+                                              >
+                                                <BookOpen className="w-4 h-4" />
+                                                View Document
+                                              </Link>
+                                            )}
+                                          </div>
+
                                           <div>
                                             <span className="font-semibold">
                                               {webinar.title}
@@ -1342,6 +1678,13 @@ const ProfessorProfilePage: React.FC = () => {
                   </TabsContent>
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
+                  {
+                    <PatentsTab
+                      isLoggedInUser={isLoggedInUser}
+                      patents={patents}
+                      API_URL={API_URL}
+                    />
+                  }
                   {renderBusinessProjectsTab()}
                 </>
               )}

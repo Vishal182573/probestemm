@@ -32,5 +32,14 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+// super admin approval route
+router.put("/:professorId/approval-status", async (req, res) => {
+  try {
+    await professorController.updateProfessorApprovalStatus(req, res);
+  } catch (error) {
+    console.error("Error in updating professor approval status:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;

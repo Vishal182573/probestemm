@@ -24,6 +24,32 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
 
+const categories = {
+  Science: [
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Earth Sciences",
+    "Space Science",
+  ],
+  Technology: ["Computer Science", "Engineering"],
+  Engineering: [
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+  ],
+  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
+  "Engineering Technology": [
+    "Data Engineering",
+    "Robotics",
+    "Biotechnology",
+    "Environmental Technology",
+    "Space Technology",
+    "Pharmaceutical Engineering",
+  ],
+} as const;
+
 type Notification = {
   id: string;
   type: "PROJECT_APPLICATION" | "PROJECT_ACCEPTED" | "PROJECT_COMPLETED";
@@ -65,6 +91,8 @@ interface AppliedProfessor {
   phoneNumber: string;
 }
 
+type Category = keyof typeof categories;
+
 const BusinessProfilePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -86,12 +114,16 @@ const BusinessProfilePage: React.FC = () => {
     difficulty: "EASY" | "INTERMEDIATE" | "HARD";
     timeline: string;
     tags: string;
+    category: Category | "";
+    subcategory: string;
   }>({
     topic: "",
     content: "",
     difficulty: "EASY",
     timeline: new Date().toISOString().split("T")[0],
     tags: "",
+    category: "",
+    subcategory: "",
   });
 
   useEffect(() => {
@@ -138,7 +170,13 @@ const BusinessProfilePage: React.FC = () => {
 
     fetchBusinessData();
   }, [id, isLoggedInUser]);
-
+  const handleCategoryChange = (category: string) => {
+    setNewProject((prev) => ({
+      ...prev,
+      category: category as Category,
+      subcategory: "", // Reset subcategory when category changes
+    }));
+  };
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -155,6 +193,8 @@ const BusinessProfilePage: React.FC = () => {
           ...newProject,
           tags: newProject.tags.split(",").map((tag) => tag.trim()),
           businessId: id,
+          category: newProject.category,
+          subcategory: newProject.subcategory,
         },
         {
           headers: {
@@ -171,6 +211,8 @@ const BusinessProfilePage: React.FC = () => {
         difficulty: "EASY",
         timeline: new Date().toISOString().split("T")[0],
         tags: "",
+        category: "",
+        subcategory: "",
       });
       setError(null);
     } catch (error) {
@@ -387,14 +429,13 @@ const BusinessProfilePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-              {isLoggedInUser && (
-
-<Link href={"/edit-profile"}>
-<Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
-  Edit Profile
-</Button>
-</Link>
-  )}
+                {isLoggedInUser && (
+                  <Link href={"/edit-profile"}>
+                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                      Edit Profile
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -521,6 +562,57 @@ const BusinessProfilePage: React.FC = () => {
                           className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                           required
                         />
+
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Category
+                            </label>
+                            <select
+                              value={newProject.category}
+                              onChange={(e) =>
+                                handleCategoryChange(e.target.value)
+                              }
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                              required
+                            >
+                              <option value="">Select a category</option>
+                              {Object.keys(categories).map((category) => (
+                                <option key={category} value={category}>
+                                  {category}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {newProject.category && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">
+                                Subcategory
+                              </label>
+                              <select
+                                value={newProject.subcategory}
+                                onChange={(e) =>
+                                  setNewProject((prev) => ({
+                                    ...prev,
+                                    subcategory: e.target.value,
+                                  }))
+                                }
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                              >
+                                <option value="">Select a subcategory</option>
+                                {categories[
+                                  newProject.category as Category
+                                ].map((subcategory) => (
+                                  <option key={subcategory} value={subcategory}>
+                                    {subcategory}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
                         <Button
                           type="submit"
                           className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"

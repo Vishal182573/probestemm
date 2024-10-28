@@ -13,18 +13,49 @@ import type {
 
 const prisma = new PrismaClient();
 
+interface FileRequest extends Request {
+  files?: {
+    [fieldname: string]: Express.Multer.File[];
+  };
+}
+
 const generateToken = (id: string, role: UserRole) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET as string, {
     expiresIn: "1d",
   });
 };
 
+export const categories = {
+  Science: [
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Earth Sciences",
+    "Space Science",
+  ],
+  Technology: ["Computer Science", "Engineering"],
+  Engineering: [
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+  ],
+  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
+  "Engineering Technology": [
+    "Data Engineering",
+    "Robotics",
+    "Biotechnology",
+    "Environmental Technology",
+    "Space Technology",
+    "Pharmaceutical Engineering",
+  ],
+} as const;
+
 export const studentSignup = async (req: Request, res: Response) => {
   try {
     const userData: StudentData = req.body;
     const file = req.file;
 
-    // Check if email exists in the request body
     if (!userData.email) {
       return res.status(400).json({ error: "Email is required" });
     }
@@ -45,18 +76,18 @@ export const studentSignup = async (req: Request, res: Response) => {
       imageUrl = result.secure_url;
     }
 
-    // Parse nested data if it's sent as JSON strings
-    const researchHighlights = Array.isArray(userData.researchHighlights)
-      ? userData.researchHighlights
-      : JSON.parse(userData.researchHighlights as string);
+    // Safely parse JSON strings or use arrays directly
+    const education = userData.education
+      ? Array.isArray(userData.education)
+        ? userData.education
+        : JSON.parse(userData.education)
+      : [];
 
-    const education = Array.isArray(userData.education)
-      ? userData.education
-      : JSON.parse(userData.education as string);
-
-    const achievements = Array.isArray(userData.achievements)
-      ? userData.achievements
-      : JSON.parse(userData.achievements as string);
+    const achievements = userData.achievements
+      ? Array.isArray(userData.achievements)
+        ? userData.achievements
+        : JSON.parse(userData.achievements)
+      : [];
 
     const user = await prisma.student.create({
       data: {
@@ -69,9 +100,6 @@ export const studentSignup = async (req: Request, res: Response) => {
         university: userData.university,
         course: userData.course,
         experience: userData.experience,
-        researchHighlights: {
-          create: researchHighlights,
-        },
         education: {
           create: education,
         },
@@ -81,7 +109,11 @@ export const studentSignup = async (req: Request, res: Response) => {
       },
     });
 
-    const token = generateToken(user.id, "student");
+    const token = jwt.sign(
+      { id: user.id, role: "student" },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1d" }
+    );
 
     res.status(201).json({ user, token, role: "student" });
   } catch (error) {
@@ -90,16 +122,17 @@ export const studentSignup = async (req: Request, res: Response) => {
   }
 };
 
-export const professorSignup = async (req: Request, res: Response) => {
+export const professorSignup = async (req: FileRequest, res: Response) => {
   try {
     const userData: ProfessorData = req.body;
-    const file = req.file;
+    const files = req.files || {};
 
-    // Check if email exists in the request body
+    // Validate required fields
     if (!userData.email) {
       return res.status(400).json({ error: "Email is required" });
     }
 
+    // Check for existing user
     const existingUser = await prisma.professor.findUnique({
       where: { email: userData.email },
     });
@@ -108,53 +141,151 @@ export const professorSignup = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    let photoUrl = "";
-    if (file) {
-      const result = await cloudinary.uploader.upload(file.path);
-      photoUrl = result.secure_url;
+    // Parse JSON strings from form data
+    let researchInterests = [];
+    let tags = [];
+    let positions = [];
+    let achievements = [];
+
+    try {
+      researchInterests = userData.researchInterests
+        ? Array.isArray(userData.researchInterests)
+          ? userData.researchInterests
+          : JSON.parse(userData.researchInterests)
+        : [];
+
+      tags = userData.tags
+        ? Array.isArray(userData.tags)
+          ? userData.tags
+          : JSON.parse(userData.tags)
+        : [];
+
+      positions = userData.positions
+        ? Array.isArray(userData.positions)
+          ? userData.positions
+          : JSON.parse(userData.positions)
+        : [];
+
+      achievements = userData.achievements
+        ? Array.isArray(userData.achievements)
+          ? userData.achievements
+          : JSON.parse(userData.achievements)
+        : [];
+    } catch (error) {
+      return res.status(400).json({ error: "Invalid JSON data provided" });
     }
 
-    // Parse nested data if it's sent as JSON strings
-    const positions = Array.isArray(userData.positions)
-      ? userData.positions
-      : JSON.parse(userData.positions as string);
+    // Process research interests and their images
+    const processedInterests = await Promise.all(
+      researchInterests.map(async (interest: any, index: number) => {
+        const imageFile = files[`researchInterestImage_${index}`]?.[0];
+        let imageUrl = "";
 
-    const achievements = Array.isArray(userData.achievements)
-      ? userData.achievements
-      : JSON.parse(userData.achievements as string);
+        if (imageFile) {
+          try {
+            const result = await cloudinary.uploader.upload(imageFile.path);
+            imageUrl = result.secure_url;
+          } catch (error) {
+            console.error(
+              `Error uploading image for research interest ${index}:`,
+              error
+            );
+          }
+        }
 
+        return {
+          title: interest.title,
+          description: interest.description || "",
+          imageUrl: imageUrl,
+        };
+      })
+    );
+
+    // Create professor in database
     const user = await prisma.professor.create({
       data: {
         fullName: userData.fullName,
         email: userData.email,
         password: hashedPassword,
-        phoneNumber: userData.phoneNumber,
-        location: userData.location,
-        photoUrl,
-        title: userData.title,
-        university: userData.university,
-        website: userData.website,
-        degree: userData.degree, // Add this line
-        department: userData.department,
-        position: userData.position,
-        researchInterests: userData.researchInterests,
+        phoneNumber: userData.phoneNumber || "",
+        location: userData.location || "",
+        title: userData.title || "",
+        university: userData.university || "",
+        website: userData.website || "",
+        degree: userData.degree || "",
+        department: userData.department || "",
+        position: userData.position || "",
+        isApproved: false,
+        researchInterests: {
+          create: processedInterests.map((interest) => ({
+            title: interest.title,
+            description: interest.description,
+            imageUrl: interest.imageUrl,
+          })),
+        },
+        tags: {
+          create: tags.map((tag: { category: any; subcategory: any }) => ({
+            category: tag.category,
+            subcategory: tag.subcategory,
+          })),
+        },
         positions: {
-          create: positions,
+          create: positions.map(
+            (position: {
+              title: any;
+              institution: any;
+              startYear: any;
+              endYear: any;
+              current: any;
+            }) => ({
+              title: position.title,
+              institution: position.institution,
+              startYear: position.startYear,
+              endYear: position.endYear,
+              current: position.current,
+            })
+          ),
         },
         achievements: {
-          create: achievements,
+          create: achievements.map(
+            (achievement: { year: any; description: any }) => ({
+              year: achievement.year,
+              description: achievement.description,
+            })
+          ),
         },
+      },
+      include: {
+        researchInterests: true,
+        tags: true,
+        positions: true,
+        achievements: true,
       },
     });
 
-    const token = generateToken(user.id, "professor");
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, role: "professor" },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "1d" }
+    );
 
-    res.status(201).json({ user, token, role: "professor" });
+    // Return success response
+    res.status(201).json({
+      user,
+      token,
+      role: "professor",
+      message: "Account created successfully. Waiting for admin approval.",
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error creating user" });
+    console.error("Professor signup error:", error);
+    res.status(500).json({
+      error: "Error creating professor account",
+      details: process.env.NODE_ENV === "development" ? error : undefined,
+    });
   }
 };
 export const businessSignup = async (req: Request, res: Response) => {

@@ -33,6 +33,7 @@ type Professor = {
   fullName: string;
   email: string;
   photoUrl?: string | null;
+  isApproved?: boolean;
   department: string;
   status?: "APPROVED" | "PENDING" | "REJECTED";
 };
@@ -66,17 +67,37 @@ type Webinar = {
 };
 
 type DashboardItem = {
-  id: "professors" | "student" | "business" | "webinars";
+  id: "professor" | "student" | "business" | "webinar";
   name: string;
   icon: JSX.Element;
   count: number;
 };
 
 const dashboardItems: DashboardItem[] = [
-  { id: "professors", name: "Professors", icon: <Users />, count: 150 },
-  { id: "student", name: "Students", icon: <GraduationCap />, count: 5000 },
-  { id: "business", name: "Businesses", icon: <Briefcase />, count: 75 },
-  { id: "webinars", name: "Webinars", icon: <Video />, count: 30 },
+  {
+    id: "professor",
+    name: "Professors",
+    icon: <Users className="text-[#472014]" />,
+    count: 150,
+  },
+  {
+    id: "student",
+    name: "Students",
+    icon: <GraduationCap className="text-[#472014]" />,
+    count: 5000,
+  },
+  {
+    id: "business",
+    name: "Businesses",
+    icon: <Briefcase className="text-[#472014]" />,
+    count: 75,
+  },
+  {
+    id: "webinar",
+    name: "Webinars",
+    icon: <Video className="text-[#472014]" />,
+    count: 30,
+  },
 ];
 
 const SuperAdminDashboard = () => {
@@ -90,6 +111,27 @@ const SuperAdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleWebinarStatusUpdate = async (
+    webinarId: string,
+    status: "APPROVED" | "REJECTED"
+  ) => {
+    try {
+      await axios.put(`${API_URL}/webinars/${webinarId}/status`, { status });
+      await fetchData("webinar");
+    } catch (error) {
+      console.error("Error updating webinar status:", error);
+    }
+  };
+
+  const handleProfessorApproval = async (professorId: string) => {
+    try {
+      await axios.put(`${API_URL}/professors/${professorId}/approval-status`);
+      await fetchData("professor");
+    } catch (error) {
+      console.error("Error approving professor:", error);
+    }
+  };
+
   useEffect(() => {
     if (expandedSection) {
       fetchData(expandedSection);
@@ -100,9 +142,9 @@ const SuperAdminDashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_URL}/${section}`);
+      const response = await axios.get(`${API_URL}/${section}s`);
       switch (section) {
-        case "professors":
+        case "professor":
           setProfessors(response.data);
           break;
         case "student":
@@ -111,7 +153,7 @@ const SuperAdminDashboard = () => {
         case "business":
           setBusinesses(response.data);
           break;
-        case "webinars":
+        case "webinar":
           setWebinars(response.data);
           break;
       }
@@ -129,17 +171,19 @@ const SuperAdminDashboard = () => {
 
   const renderStatusBadge = (status: string) => {
     const statusColors = {
-      PENDING: "bg-yellow-100 text-yellow-800",
-      APPROVED: "bg-green-100 text-green-800",
-      REJECTED: "bg-red-100 text-red-800",
-      COMPLETED: "bg-blue-100 text-blue-800",
-      CANCELLED: "bg-gray-100 text-gray-800",
+      PENDING: "bg-yellow-300 text-yellow-800",
+      APPROVED: "bg-green-300 text-green-800",
+      REJECTED: "bg-red-300 text-red-800",
+      COMPLETED: "bg-blue-300 text-blue-800",
+      CANCELLED: "bg-gray-300 text-gray-800",
     };
 
     return (
       <Badge
         variant="outline"
-        className={statusColors[status as keyof typeof statusColors]}
+        className={`px-2 py-1 rounded-full font-medium ${
+          statusColors[status as keyof typeof statusColors]
+        }`}
       >
         {status.charAt(0) + status.slice(1).toLowerCase()}
       </Badge>
@@ -154,44 +198,55 @@ const SuperAdminDashboard = () => {
       key={profile.id}
       className="mb-4 border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300"
     >
-      <CardContent className="flex items-center space-x-4 p-4">
-        <Avatar className="w-16 h-16 border-2 border-[#c1502e]">
-          <AvatarImage
-            src={
-              type === "professor"
-                ? (profile as Professor).photoUrl ?? ""
+      <CardContent className="flex items-center justify-between p-4">
+        <div className="flex items-center space-x-4">
+          <Avatar className="w-16 h-16 border-2 border-[#c1502e]">
+            <AvatarImage
+              src={
+                type === "professor"
+                  ? (profile as Professor).photoUrl ?? ""
+                  : type === "student"
+                  ? (profile as Student).imageUrl ?? ""
+                  : (profile as Business).profileImageUrl ?? ""
+              }
+            />
+            <AvatarFallback className="bg-[#472014] text-white">
+              {type === "business"
+                ? (profile as Business).companyName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                : (profile as Professor | Student).fullName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="text-lg font-bold text-[#472014]">
+              {type === "business"
+                ? (profile as Business).companyName
+                : (profile as Professor | Student).fullName}
+            </h3>
+            <p className="text-[#686256]">
+              {type === "professor"
+                ? (profile as Professor).department
                 : type === "student"
-                ? (profile as Student).imageUrl ?? ""
-                : (profile as Business).profileImageUrl ?? ""
-            }
-          />
-          <AvatarFallback className="bg-[#472014] text-white">
-            {type === "business"
-              ? (profile as Business).companyName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-              : (profile as Professor | Student).fullName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h3 className="text-lg font-bold text-[#472014]">
-            {type === "business"
-              ? (profile as Business).companyName
-              : (profile as Professor | Student).fullName}
-          </h3>
-          <p className="text-[#686256]">
-            {type === "professor"
-              ? (profile as Professor).department
-              : type === "student"
-              ? (profile as Student).university
-              : (profile as Business).industry}
-          </p>
-          <p className="text-[#686256] text-sm">{profile.email}</p>
+                ? (profile as Student).university
+                : (profile as Business).industry}
+            </p>
+            <p className="text-[#686256] text-sm">{profile.email}</p>
+          </div>
         </div>
+        {type === "professor" && !(profile as Professor).isApproved && (
+          <Button
+            onClick={() => handleProfessorApproval(profile.id)}
+            className="bg-green-300 text-green-800 hover:bg-green-400"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Approve Professor
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -201,11 +256,11 @@ const SuperAdminDashboard = () => {
     if (error) return <p className="text-red-500">{error}</p>;
 
     switch (section) {
-      case "professors":
+      case "professor":
       case "student":
       case "business":
         const data =
-          section === "professors"
+          section === "professor"
             ? professors
             : section === "student"
             ? students
@@ -214,9 +269,15 @@ const SuperAdminDashboard = () => {
         return (
           <Tabs defaultValue="APPROVED" className="w-full">
             <TabsList className="bg-[#c1502e]/10">
-              <TabsTrigger value="APPROVED">Approved</TabsTrigger>
-              <TabsTrigger value="PENDING">Pending</TabsTrigger>
-              <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
+              <TabsTrigger value="APPROVED" className="text-[#472014]">
+                Approved
+              </TabsTrigger>
+              <TabsTrigger value="PENDING" className="text-[#472014]">
+                Pending
+              </TabsTrigger>
+              <TabsTrigger value="REJECTED" className="text-[#472014]">
+                Rejected
+              </TabsTrigger>
             </TabsList>
 
             {["APPROVED", "PENDING", "REJECTED"].map((status) => (
@@ -227,7 +288,7 @@ const SuperAdminDashboard = () => {
                     .map((profile) =>
                       renderProfileCard(
                         profile,
-                        section === "professors"
+                        section === "professor"
                           ? "professor"
                           : section === "student"
                           ? "student"
@@ -240,15 +301,25 @@ const SuperAdminDashboard = () => {
           </Tabs>
         );
 
-      case "webinars":
+      case "webinar":
         return (
           <Tabs defaultValue="PENDING">
             <TabsList className="bg-[#c1502e]/10">
-              <TabsTrigger value="PENDING">Pending</TabsTrigger>
-              <TabsTrigger value="APPROVED">Approved</TabsTrigger>
-              <TabsTrigger value="REJECTED">Rejected</TabsTrigger>
-              <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
-              <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
+              <TabsTrigger value="PENDING" className="text-[#472014]">
+                Pending
+              </TabsTrigger>
+              <TabsTrigger value="APPROVED" className="text-[#472014]">
+                Approved
+              </TabsTrigger>
+              <TabsTrigger value="REJECTED" className="text-[#472014]">
+                Rejected
+              </TabsTrigger>
+              <TabsTrigger value="COMPLETED" className="text-[#472014]">
+                Completed
+              </TabsTrigger>
+              <TabsTrigger value="CANCELLED" className="text-[#472014]">
+                Cancelled
+              </TabsTrigger>
             </TabsList>
 
             {["PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED"].map(
@@ -257,12 +328,16 @@ const SuperAdminDashboard = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Professor</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Mode</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-[#472014]">Title</TableHead>
+                        <TableHead className="text-[#472014]">
+                          Professor
+                        </TableHead>
+                        <TableHead className="text-[#472014]">Status</TableHead>
+                        <TableHead className="text-[#472014]">Date</TableHead>
+                        <TableHead className="text-[#472014]">Mode</TableHead>
+                        <TableHead className="text-[#472014]">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -270,33 +345,47 @@ const SuperAdminDashboard = () => {
                         .filter((w) => w.status === status)
                         .map((webinar) => (
                           <TableRow key={webinar.id}>
-                            <TableCell>{webinar.title}</TableCell>
-                            <TableCell>
+                            <TableCell className="text-[#472014]">
+                              {webinar.title}
+                            </TableCell>
+                            <TableCell className="text-[#472014]">
                               {webinar?.professor?.fullName ?? undefined}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-[#472014]">
                               {renderStatusBadge(webinar.status)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-[#472014]">
                               {new Date(webinar.date).toLocaleDateString()}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-[#472014]">
                               {webinar.isOnline ? "Online" : webinar.place}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-[#472014]">
                               {webinar.status === "PENDING" && (
                                 <div className="flex space-x-2">
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="bg-green-100 text-green-800"
+                                    className="bg-green-300 text-green-800 hover:bg-green-400"
+                                    onClick={() =>
+                                      handleWebinarStatusUpdate(
+                                        webinar.id,
+                                        "APPROVED"
+                                      )
+                                    }
                                   >
                                     <Check className="h-4 w-4" />
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="bg-red-100 text-red-800"
+                                    className="bg-red-300 text-red-800 hover:bg-red-400"
+                                    onClick={() =>
+                                      handleWebinarStatusUpdate(
+                                        webinar.id,
+                                        "REJECTED"
+                                      )
+                                    }
                                   >
                                     <X className="h-4 w-4" />
                                   </Button>
@@ -322,7 +411,7 @@ const SuperAdminDashboard = () => {
       transition={{ duration: 0.5 }}
       className="p-8 bg-white min-h-screen"
     >
-      <h1 className="text-4xl font-bold mb-8 text-[#472014] font-caveat">
+      <h1 className="text-4xl font-bold mb-8 text-[#472014]">
         Super Admin Dashboard
       </h1>
 
@@ -341,7 +430,7 @@ const SuperAdminDashboard = () => {
                 <CardTitle className="text-sm font-medium text-[#472014]">
                   {item.name}
                 </CardTitle>
-                <div className="text-[#c1502e]">{item.icon}</div>
+                <div className="text-[#472014]">{item.icon}</div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[#472014]">
@@ -367,7 +456,7 @@ const SuperAdminDashboard = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="mb-8 border-2 border-[#c1502e]/20">
+            <Card className="mb-8 border-2 border-[#c1502e]/20 bg-white">
               <CardHeader>
                 <CardTitle className="text-[#472014] font-caveat text-2xl">
                   {

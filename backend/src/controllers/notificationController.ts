@@ -11,7 +11,14 @@ export const createNotification = async (
   recipientId: string,
   recipientType: "student" | "professor" | "business",
   relatedEntityId: string,
-  relatedEntityType: "blog" | "webinar" | "discussion" | "project"
+  relatedEntityType:
+    | "blog"
+    | "webinar"
+    | "discussion"
+    | "project"
+    | "patent"
+    | "tags"
+    | "professor-approval"
 ) => {
   const notificationData: any = {
     type,

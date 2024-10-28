@@ -153,6 +153,8 @@ export const updateProfessor = async (
     // Parse nested arrays
     const positions = safeJSONParse(userData.positions);
     const achievements = safeJSONParse(userData.achievements);
+    const researchInterests = safeJSONParse(userData.researchInterests);
+    const tags = safeJSONParse(userData.tags);
 
     const updatedProfessor = await prisma.professor.update({
       where: { id },
@@ -166,8 +168,9 @@ export const updateProfessor = async (
         degree: userData.degree,
         department: userData.department,
         position: userData.position,
-        researchInterests: userData.researchInterests,
         ...(photoUrl && { photoUrl }),
+
+        // Update positions
         positions: {
           deleteMany: {},
           create: positions.map((pos: any) => ({
@@ -178,6 +181,8 @@ export const updateProfessor = async (
             current: pos.current || false,
           })),
         },
+
+        // Update achievements
         achievements: {
           deleteMany: {},
           create: achievements.map((achievement: any) => ({
@@ -186,10 +191,31 @@ export const updateProfessor = async (
             year: achievement.year,
           })),
         },
+
+        // Update research interests
+        researchInterests: {
+          deleteMany: {},
+          create: researchInterests.map((interest: any) => ({
+            title: interest.title,
+            description: interest.description || null,
+            imageUrl: interest.imageUrl || null,
+          })),
+        },
+
+        // Update tags
+        tags: {
+          deleteMany: {},
+          create: tags.map((tag: any) => ({
+            category: tag.category,
+            subcategory: tag.subcategory,
+          })),
+        },
       },
       include: {
         positions: true,
         achievements: true,
+        researchInterests: true,
+        tags: true,
       },
     });
 

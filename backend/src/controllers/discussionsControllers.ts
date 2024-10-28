@@ -24,6 +24,26 @@ export const createDiscussion = async (req: Request, res: Response) => {
       },
     });
 
+    const matchingProfessors = await prisma.professorTag.findMany({
+      where: {
+        AND: [{ category: category }, { subcategory: subcategory }],
+      },
+      include: {
+        professor: true,
+      },
+    });
+
+    for (const tag of matchingProfessors) {
+      await createNotification(
+        NotificationType.DISCUSSION_TAG,
+        `New discussion in your area of expertise: "${title}"`,
+        tag.professorId,
+        "professor",
+        discussion.id,
+        "discussion"
+      );
+    }
+
     res.status(201).json(discussion);
   } catch (error) {
     res.status(500).json({ error: "Failed to create discussion" });

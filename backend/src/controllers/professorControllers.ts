@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, NotificationType } from "@prisma/client";
 import { z } from "zod";
+import { createNotification } from "./notificationController";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +17,7 @@ const ProfessorUpdateSchema = z.object({
   degree: z.string().optional(),
   department: z.string().optional(),
   position: z.string().optional(),
-  researchInterests: z.string().optional(),
+  isapproved: z.boolean().optional(),
 });
 
 interface AuthenticatedRequest extends Request {
@@ -25,8 +26,7 @@ interface AuthenticatedRequest extends Request {
     role: "student" | "professor" | "business" | "admin";
   };
 }
-
-const getProfessors = async (req: Request, res: Response) => {
+export const getProfessors = async (req: Request, res: Response) => {
   try {
     const professors = await prisma.professor.findMany({
       select: {
@@ -35,6 +35,19 @@ const getProfessors = async (req: Request, res: Response) => {
         title: true,
         university: true,
         department: true,
+        researchInterests: {
+          select: {
+            title: true,
+            description: true,
+            imageUrl: true,
+          },
+        },
+        tags: {
+          select: {
+            category: true,
+            subcategory: true,
+          },
+        },
       },
     });
     return res.status(200).json(professors);
@@ -43,14 +56,17 @@ const getProfessors = async (req: Request, res: Response) => {
   }
 };
 
-const getProfessorById = async (req: Request, res: Response) => {
+export const getProfessorById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const professor = await prisma.professor.findUnique({
       where: { id },
       include: {
+        // isapproved: true,
         positions: true,
         achievements: true,
+        researchInterests: true,
+        tags: true,
         blogs: {
           select: {
             id: true,
@@ -85,7 +101,6 @@ const getProfessorById = async (req: Request, res: Response) => {
     if (!professor) {
       return res.status(404).json({ error: "Professor not found" });
     }
-
     return res.status(200).json(professor);
   } catch (error) {
     return res.status(500).json({ error: "Failed to fetch professor" });
@@ -118,8 +133,36 @@ const updateProfessor = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
+export const updateProfessorApprovalStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { professorId } = req.params;
+
+  try {
+    const updatedProfessor = await prisma.professor.update({
+      where: { id: professorId },
+      data: { isApproved: true },
+    });
+
+    // Create notification for professor
+    await createNotification(
+      NotificationType.PROFESSOR_APPROVAL,
+      `Your professor account has been approved.`,
+      professorId,
+      "professor",
+      professorId,
+      "professor-approval"
+    );
+
+    res.status(200).json(updatedProfessor);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update professor status" });
+  }
+};
 export default {
   getProfessors,
   getProfessorById,
   updateProfessor,
+  updateProfessorApprovalStatus,
 };

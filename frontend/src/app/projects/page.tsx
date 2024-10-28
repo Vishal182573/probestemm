@@ -44,6 +44,8 @@ interface Project {
   status: "OPEN" | "ONGOING" | "CLOSED" | "APPLIED";
   difficulty: "EASY" | "INTERMEDIATE" | "HARD";
   tags: string[];
+  category: string;
+  subcategory: string;
   type: "BUSINESS" | "PROFESSOR";
   business?: { id: string; companyName: string };
   professor?: { id: string; fullName: string; email: string };
@@ -329,6 +331,15 @@ const ProjectCard = ({
                 {tag}
               </Badge>
             ))}
+          </div>
+          <div className="mt-4">
+            <h4 className="font-semibold text-[#472014]">
+              Category: {project.category ? project.category : "No Category"}
+            </h4>
+            <h4 className="font-semibold text-[#472014]">
+              Subcategory:{" "}
+              {project.subcategory ? project.subcategory : "No Subcategory"}
+            </h4>
           </div>
         </CardContent>
         <CardFooter>

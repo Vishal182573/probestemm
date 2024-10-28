@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Video, Calendar, MapPin, User, ArrowRight } from "lucide-react";
+import {
+  Video,
+  Calendar,
+  MapPin,
+  User,
+  ArrowRight,
+  Download,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -32,6 +39,7 @@ interface Webinar {
   maxAttendees: number;
   professorId: string;
   webinarImage?: string;
+  webinarDocument?: string;
 }
 
 const NotificationsComponent: React.FC = () => {
@@ -155,7 +163,7 @@ const NotificationsComponent: React.FC = () => {
                                 : webinar.status}
                             </Badge>
                           </div>
-                          
+
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
                               <Calendar className="h-4 w-4 mr-2 text-[#c1502e]" />
@@ -170,17 +178,23 @@ const NotificationsComponent: React.FC = () => {
                               Max Attendees: {webinar.maxAttendees}
                             </div>
                           </div>
-                          
+
                           <div className="bg-gray-50 p-4 rounded-lg">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-sm font-medium text-[#472014]">Topic</p>
-                                <p className="text-sm text-[#686256]">{webinar.topic}</p>
+                                <p className="text-sm font-medium text-[#472014]">
+                                  Topic
+                                </p>
+                                <p className="text-sm text-[#686256]">
+                                  {webinar.topic}
+                                </p>
                               </div>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Link href={`/professor-profile/${webinar.professorId}`}>
+                                    <Link
+                                      href={`/professor-profile/${webinar.professorId}`}
+                                    >
                                       <Button
                                         variant="outline"
                                         className="bg-[#f0d80f] text-black hover:bg-[#472014] group flex items-center gap-2"
@@ -191,7 +205,30 @@ const NotificationsComponent: React.FC = () => {
                                     </Link>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>View professor full profile and other webinars</p>
+                                    <p>
+                                      View professor full profile and other
+                                      webinars
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      onClick={() => {
+                                        window.open(
+                                          webinar.webinarDocument,
+                                          "_blank"
+                                        );
+                                      }}
+                                      variant="outline"
+                                      className="bg-[#c1502e] text-white hover:bg-[#472014] group flex items-center gap-2"
+                                    >
+                                      <Download className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Download to view the webinar document</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>

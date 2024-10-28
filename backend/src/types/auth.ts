@@ -2,6 +2,17 @@ import type { Student, Professor, Business, SuperAdmin } from "@prisma/client";
 
 export type UserRole = "student" | "professor" | "business" | "admin";
 
+interface ResearchInterest {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+}
+
+interface Tag {
+  category: string;
+  subcategory: string;
+}
+
 export interface UserData {
   fullName: string;
   email: string;
@@ -28,9 +39,11 @@ export interface ProfessorData extends UserData {
   degree: string;
   department: string;
   position: string;
-  researchInterests: string;
+
   positions: Position[];
   achievements: Achievement[];
+  researchInterests: ResearchInterest[];
+  tags: Tag[];
 }
 
 export interface BusinessData extends UserData {

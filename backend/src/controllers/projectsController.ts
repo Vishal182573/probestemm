@@ -5,10 +5,18 @@ import { NotificationType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Create project by business
 export const createBusinessProject = async (req: Request, res: Response) => {
   try {
-    const { topic, content, difficulty, timeline, tags, businessId } = req.body;
+    const {
+      topic,
+      content,
+      difficulty,
+      timeline,
+      tags,
+      category,
+      subcategory,
+      businessId,
+    } = req.body;
 
     const project = await prisma.project.create({
       data: {
@@ -16,15 +24,47 @@ export const createBusinessProject = async (req: Request, res: Response) => {
         content,
         difficulty,
         timeline: new Date(timeline),
-        tags,
+        tags: Array.isArray(tags)
+          ? tags
+          : tags.split(",").map((tag: string) => tag.trim()),
+        category,
+        subcategory,
         status: Status.OPEN,
         type: ProjectType.BUSINESS,
         business: { connect: { id: businessId } },
       },
+      include: {
+        business: true,
+      },
     });
+
+    // Find professors with matching tags
+    const matchingProfessors = await prisma.professorTag.findMany({
+      where: {
+        AND: [{ category: category }, { subcategory: subcategory }],
+      },
+      include: {
+        professor: true,
+      },
+    });
+
+    // Create notifications for matching professors
+    for (const tag of matchingProfessors) {
+      await createNotification(
+        NotificationType.PROJECT_APPLICATION,
+        `New project in your expertise area: "${project.topic}" by ${
+          project.business?.companyName ?? " "
+        }`,
+        tag.professorId,
+        "professor",
+        project.id,
+        "project"
+      );
+    }
 
     res.status(201).json(project);
   } catch (error) {
+    console.error("Error creating project:", error);
     res.status(500).json({ error: "Failed to create project" });
   }
 };

@@ -16,6 +16,7 @@ import contactRoutes from "./routes/contactRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import userRoutes from "./routes/userRoutes";
+import patentRoutes from "./routes/patentRoutes";
 
 dotenv.config();
 
@@ -31,8 +32,8 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -49,6 +50,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/patents", patentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

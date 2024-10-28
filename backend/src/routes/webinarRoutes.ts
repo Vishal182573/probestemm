@@ -22,7 +22,18 @@ const storage = new CloudinaryStorage({
 });
 
 const router = express.Router();
-const upload = multer({ storage: storage });
+// Use memory storage for handling both Cloudinary and S3 uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+});
+
+const multiUpload = upload.fields([
+  { name: "webinarImage", maxCount: 1 },
+  { name: "webinarDocument", maxCount: 1 },
+]);
 
 // Webinar routes
 router.get("/", async (req, res) => {
@@ -43,7 +54,7 @@ router.get("/professor/:professorId", async (req, res) => {
   }
 });
 
-router.post("/", upload.single("webinarImage"), async (req, res) => {
+router.post("/", multiUpload, async (req, res) => {
   try {
     await webinarController.requestWebinar(req, res);
   } catch (error) {
@@ -51,7 +62,6 @@ router.post("/", upload.single("webinarImage"), async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 router.put("/:webinarId/status", async (req, res) => {
   try {
     await webinarController.updateWebinarStatus(req, res);

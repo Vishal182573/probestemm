@@ -2,6 +2,12 @@ import type { Request, Response } from "express";
 import { NotificationType, PrismaClient, WebinarStatus } from "@prisma/client";
 import cloudinary from "../config/cloudinary";
 import { createNotification } from "./notificationController";
+import {
+  S3Client,
+  PutObjectCommand,
+  ObjectCannedACL,
+} from "@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
 
@@ -33,22 +39,70 @@ export const getWebinarsByProfessorId = async (req: Request, res: Response) => {
   }
 };
 
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+const uploadDocumentToS3 = async (
+  file: Express.Multer.File
+): Promise<string> => {
+  const fileExtension = file.originalname.split(".").pop();
+  const key = `webinar-documents/${uuidv4()}.${fileExtension}`;
+
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME!,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ACL: ObjectCannedACL.private,
+  };
+
+  try {
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+    const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN_NAME;
+    return `https://${cloudFrontDomain}/${key}`;
+  } catch (error) {
+    console.error("Error uploading document to S3:", error);
+    throw new Error("Error uploading document to S3");
+  }
+};
+
 export const requestWebinar = async (req: Request, res: Response) => {
   try {
-    console.log("Received webinar request:", req.body);
-    console.log("Received file:", req.file);
-
-    const file = req.file;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     let webinarImage = "";
+    let webinarDocument = "";
 
-    if (file) {
+    // Handle image upload to Cloudinary
+    if (files["webinarImage"]) {
       try {
-        const result = await cloudinary.uploader.upload(file.path);
+        const b64 = Buffer.from(files["webinarImage"][0].buffer).toString(
+          "base64"
+        );
+        const dataURI =
+          "data:" + files["webinarImage"][0].mimetype + ";base64," + b64;
+        const result = await cloudinary.uploader.upload(dataURI);
         webinarImage = result.secure_url;
         console.log("Image uploaded to Cloudinary:", webinarImage);
       } catch (uploadError) {
         console.error("Error uploading to Cloudinary:", uploadError);
         return res.status(500).json({ error: "Failed to upload image" });
+      }
+    }
+
+    // Handle document upload to S3
+    if (files["webinarDocument"]) {
+      try {
+        webinarDocument = await uploadDocumentToS3(files["webinarDocument"][0]);
+        console.log("Document uploaded to S3:", webinarDocument);
+      } catch (uploadError) {
+        console.error("Error uploading to S3:", uploadError);
+        return res.status(500).json({ error: "Failed to upload document" });
       }
     }
 
@@ -64,20 +118,6 @@ export const requestWebinar = async (req: Request, res: Response) => {
       meetingLink,
     } = req.body;
 
-    // Check if there's already a pending webinar request for this professor
-    const existingWebinar = await prisma.webinar.findFirst({
-      where: {
-        professorId,
-        status: WebinarStatus.PENDING,
-      },
-    });
-
-    // if (existingWebinar) {
-    //   return res.status(400).json({
-    //     error: "A webinar request with 'PENDING' status already exists.",
-    //   });
-    // }
-
     // Create a new webinar request
     const newWebinar = await prisma.webinar.create({
       data: {
@@ -92,11 +132,11 @@ export const requestWebinar = async (req: Request, res: Response) => {
         status: WebinarStatus.PENDING,
         professorId,
         webinarImage,
+        webinarDocument, // Add the document URL
       },
     });
 
     console.log("New webinar created:", newWebinar);
-
     res.status(201).json(newWebinar);
   } catch (error) {
     console.error("Error in requestWebinar:", error);
@@ -109,8 +149,9 @@ export const requestWebinar = async (req: Request, res: Response) => {
 // SuperAdmin updates webinar status (APPROVED / REJECTED)
 export const updateWebinarStatus = async (req: Request, res: Response) => {
   const { webinarId } = req.params;
-  const { status } = req.body; // Status should be either APPROVED or REJECTED
+  const { status } = req.body;
 
+  // Status should be either APPROVED or REJECTED
   if (![WebinarStatus.APPROVED, WebinarStatus.REJECTED].includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }

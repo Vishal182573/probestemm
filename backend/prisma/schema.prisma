@@ -14,13 +14,13 @@ model Student {
   fullName          String
   email             String              @unique
   password          String
-  phoneNumber       String
-  location          String
+  phoneNumber       String?
+  location          String?
   imageUrl          String?
-  university        String
-  course            String
+  university        String?
+  course            String?
   researchHighlights ResearchHighlight[]
-  experience        String
+  experience        String?
   education         Education[]
   achievements      Achievement[]
   
@@ -68,31 +68,53 @@ model Professor {
   fullName          String
   email             String    @unique
   password          String
-  phoneNumber       String
-  location          String
+  phoneNumber       String?
+  location          String?
   photoUrl          String?
-  title             String
-  university        String
-  website           String?
-  degree            String
-  department        String
-  position          String
-  researchInterests String
+  title             String?
+  university        String?
+  website           String
+  degree            String?
+  department        String?
+  position          String?
+  isApproved        Boolean   @default(false)  
+  researchInterests ResearchInterest[] 
+  tags              ProfessorTag[]      
   positions         Position[]
   achievements      Achievement[]
-  
   answers           Answer[]
   blogs             Blog[]
   comments          Comment[]
   projects          Project[]
   webinars          Webinar[]
   notifications     Notification[]
+  patents           Patent[]
   
   superAdmin        SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId      String?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+}
+
+model ResearchInterest {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+}
+
+model ProfessorTag {
+  id           String    @id @default(cuid())
+  category     String
+  subcategory  String
+  professor    Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId  String
+  notifications     Notification[]
+
+  @@unique([professorId, category, subcategory])
 }
 
 model Position {
@@ -111,10 +133,10 @@ model Business {
   companyName String
   email       String @unique
   password    String
-  phoneNumber String
-  location    String
-  industry    String
-  description String
+  phoneNumber String?
+  location    String?
+  industry    String?
+  description String?
   website     String?
   profileImageUrl String?
   
@@ -252,6 +274,8 @@ model Project {
   difficulty  Difficulty
   timeline    DateTime
   tags        String[]
+  category    String?    
+  subcategory String?  
   status      Status
   type        ProjectType
   
@@ -301,7 +325,8 @@ model Webinar {
   isOnline    Boolean   @default(true)
   meetingLink String?
   webinarImage String?
-   notifications     Notification[]
+  webinarDocument String? 
+  notifications     Notification[]
   
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
@@ -408,6 +433,10 @@ enum NotificationType {
   DISCUSSION_ANSWER
   DISCUSSION_VOTE
   PROJECT_APPLICATION
+  PATENT_APPLICATION
+  PROFESSOR_TAG
+  DISCUSSION_TAG
+  PROFESSOR_APPROVAL
 }
 
 model Notification {
@@ -434,6 +463,13 @@ model Notification {
   discussionId String?
   project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
+  patent    Patent?  @relation(fields: [patentId], references: [id])
+
+  patentId  String?
+
+  professorTag ProfessorTag? @relation(fields: [professorTagId], references: [id])
+  professorTagId String?
+
 }
 
 
@@ -445,4 +481,17 @@ model FAQ {
   updatedAt DateTime @updatedAt
 
   @@map("faqs")
+}
+
+model Patent {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String[]
+  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId String
+  notifications     Notification[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
 }
