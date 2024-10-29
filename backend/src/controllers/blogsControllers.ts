@@ -26,6 +26,7 @@ interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     role: "student" | "professor" | "business" | "admin";
+    isapproved?: boolean;
   };
 }
 
@@ -152,6 +153,8 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
     const userRole = req.user?.role;
     const file = req.file;
 
+    const isapproved = req.user?.isapproved;
+
     let blogImage = "";
     if (file) {
       const result = await cloudinary.uploader.upload(file.path);
@@ -166,6 +169,12 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
       return res
         .status(403)
         .json({ error: "User not authorized to create blogs" });
+    }
+
+    if (userRole === "professor" && isapproved === false) {
+      return res
+        .status(403)
+        .json({ error: "Professor not approved to create blogs" });
     }
 
     const blogData: any = {
@@ -311,6 +320,7 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
     const validatedData = CommentSchema.parse(req.body);
     const userId = req.user?.id;
     const userRole = req.user?.role;
+    const isapproved = req.user?.isapproved;
 
     if (!userId || !userRole) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -329,6 +339,12 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
     } else if (userRole === "business") {
       commentData.businessId = userId;
       commentData.userType = UserType.PROFESSOR; // Use PROFESSOR for business as well
+    }
+
+    if (userRole === "professor" && isapproved === false) {
+      return res
+        .status(403)
+        .json({ error: "Professor not approved to create comments" });
     }
 
     const blog = await prisma.blog.findUnique({
@@ -540,9 +556,16 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
     const { id } = req.params;
     const userId = req.user?.id;
     const userRole = req.user?.role;
+    const isapproved = req.user?.isapproved;
 
     if (!userId || !userRole) {
       return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (userRole === "professor" && isapproved === false) {
+      return res
+        .status(403)
+        .json({ error: "Professor not approved to like/dislike blogs" });
     }
 
     const existingLike = await prisma.blogLike.findUnique({
@@ -669,7 +692,7 @@ const getRelatedBlogs = async (req: Request, res: Response) => {
       },
       take: 5,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
     return res.status(200).json(relatedBlogs);
@@ -691,5 +714,5 @@ export default {
   deleteComment,
   userInteraction,
   toggleBlogLike,
-  getRelatedBlogs
+  getRelatedBlogs,
 };

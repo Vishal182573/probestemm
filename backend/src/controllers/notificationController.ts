@@ -10,8 +10,8 @@ export const createNotification = async (
   content: string,
   recipientId: string,
   recipientType: "student" | "professor" | "business",
-  relatedEntityId: string,
-  relatedEntityType:
+  relatedEntityId?: string,
+  relatedEntityType?:
     | "blog"
     | "webinar"
     | "discussion"
@@ -23,11 +23,19 @@ export const createNotification = async (
   const notificationData: any = {
     type,
     content,
-    [`${recipientType}Id`]: recipientId,
-    [`${relatedEntityType}Id`]: relatedEntityId,
   };
 
-  await prisma.notification.create({ data: notificationData });
+  // Add recipient
+  notificationData[`${recipientType}Id`] = recipientId;
+
+  // Add related entity if provided
+  if (relatedEntityId && relatedEntityType) {
+    notificationData[`${relatedEntityType}Id`] = relatedEntityId;
+  }
+
+  await prisma.notification.create({
+    data: notificationData,
+  });
 };
 
 export const getNotifications = async (req: Request, res: Response) => {
