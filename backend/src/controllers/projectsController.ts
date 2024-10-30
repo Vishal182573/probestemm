@@ -75,6 +75,27 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     const { topic, content, difficulty, timeline, tags, professorId } =
       req.body;
 
+    const professor = await prisma.professor.findUnique({
+      where: {
+        id: professorId,
+      },
+      select: {
+        isApproved: true,
+      },
+    });
+    console.log("Professor data:", professor);
+    if (!professor) {
+      return res.status(404).json({
+        error: "Professor not found",
+      });
+    }
+
+    if (!professor.isApproved) {
+      return res.status(403).json({
+        error: "You are not approved to create webinars yet",
+      });
+    }
+
     const project = await prisma.project.create({
       data: {
         topic,

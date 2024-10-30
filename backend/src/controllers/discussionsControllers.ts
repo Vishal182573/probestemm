@@ -53,6 +53,20 @@ export const createDiscussion = async (req: Request, res: Response) => {
 export const answerDiscussion = async (req: Request, res: Response) => {
   try {
     const { content, discussionId, userType, userId } = req.body;
+    const professor = await prisma.professor.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        isApproved: true,
+      },
+    });
+
+    if (!professor?.isApproved) {
+      return res.status(403).json({
+        error: "You are not approved to create webinars yet",
+      });
+    }
 
     if (userType === UserType.STUDENT) {
       return res.status(400).json({ error: "Students cannot answer" });

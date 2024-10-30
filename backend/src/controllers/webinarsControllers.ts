@@ -16,7 +16,7 @@ export const getAllWebinars = async (req: Request, res: Response) => {
     const webinars = await prisma.webinar.findMany({
       where: {
         status: {
-          in: ["APPROVED", "COMPLETED"],
+          in: ["APPROVED", "COMPLETED", "PENDING"],
         },
       },
     });
@@ -74,6 +74,38 @@ const uploadDocumentToS3 = async (
 
 export const requestWebinar = async (req: Request, res: Response) => {
   try {
+    const {
+      professorId,
+      title,
+      topic,
+      place,
+      date,
+      maxAttendees,
+      duration,
+      isOnline,
+      meetingLink,
+    } = req.body;
+
+    const professor = await prisma.professor.findUnique({
+      where: {
+        id: professorId,
+      },
+      select: {
+        isApproved: true,
+      },
+    });
+    console.log("Professor data:", professor);
+    if (!professor) {
+      return res.status(404).json({
+        error: "Professor not found",
+      });
+    }
+
+    if (!professor.isApproved) {
+      return res.status(403).json({
+        error: "You are not approved to create webinars yet",
+      });
+    }
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     let webinarImage = "";
     let webinarDocument = "";
@@ -105,18 +137,6 @@ export const requestWebinar = async (req: Request, res: Response) => {
         return res.status(500).json({ error: "Failed to upload document" });
       }
     }
-
-    const {
-      professorId,
-      title,
-      topic,
-      place,
-      date,
-      maxAttendees,
-      duration,
-      isOnline,
-      meetingLink,
-    } = req.body;
 
     // Create a new webinar request
     const newWebinar = await prisma.webinar.create({

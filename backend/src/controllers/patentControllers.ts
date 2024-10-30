@@ -18,6 +18,26 @@ const prisma = new PrismaClient();
 export const createPatent = async (req: FileRequest, res: Response) => {
   try {
     const { title, description, professorId } = req.body;
+    const professor = await prisma.professor.findUnique({
+      where: {
+        id: professorId,
+      },
+      select: {
+        isApproved: true,
+      },
+    });
+    console.log("Professor data:", professor);
+    if (!professor) {
+      return res.status(404).json({
+        error: "Professor not found",
+      });
+    }
+
+    if (!professor.isApproved) {
+      return res.status(403).json({
+        error: "You are not approved to create webinars yet",
+      });
+    }
     const files = req.files as unknown as Express.Multer.File[];
 
     console.log("Processing files:", files);

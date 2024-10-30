@@ -44,19 +44,6 @@ const categories = {
   ],
 } as const;
 
-interface ResearchInterest {
-  title: string;
-  description: string;
-  image?: File;
-  imagePreview?: string;
-  imageUrl?: string;
-}
-
-interface Tag {
-  category: string;
-  subcategory: string;
-}
-
 interface Position {
   title: string;
   institution: string;
@@ -81,6 +68,14 @@ interface ResearchHighlight {
   status: "ONGOING" | "COMPLETED";
 }
 
+interface ResearchInterest {
+  title: string;
+  description: string;
+  imageUrl?: string;
+  image?: File;
+  imagePreview?: string;
+}
+
 interface EditProfileFormProps {
   role: "student" | "professor" | "business";
   userId: string;
@@ -93,8 +88,10 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
   const [profileData, setProfileData] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [newResearchInterest, setNewResearchInterest] =
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+  const [editingResearchInterest, setEditingResearchInterest] =
     useState<ResearchInterest>({
       title: "",
       description: "",
@@ -113,10 +110,15 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
         },
       });
       const data = await response.json();
-      setProfileData(data);
+      setProfileData({
+        ...data,
+        researchInterests: data.researchInterests || [],
+        tags: data.tags || [],
+      });
+      console.log(data);
       setImagePreview(data.photoUrl || data.profileImageUrl);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to fetch profile data",
@@ -124,44 +126,37 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
       });
     }
   };
-
-  // Research Interest handlers
-  const addResearchInterest = () => {
-    if (newResearchInterest.title && newResearchInterest.description) {
-      setProfileData({
-        ...profileData,
-        researchInterests: [
-          ...(profileData.researchInterests || []),
-          newResearchInterest,
-        ],
-      });
-      setNewResearchInterest({ title: "", description: "" });
-    }
-  };
-
-  const removeResearchInterest = (index: number) => {
-    const newInterests = [...profileData.researchInterests];
-    newInterests.splice(index, 1);
+  const updateResearchInterest = (
+    index: number,
+    field: keyof ResearchInterest,
+    value: string
+  ) => {
+    const updatedInterests = [...(profileData?.researchInterests || [])];
+    updatedInterests[index] = {
+      ...updatedInterests[index],
+      [field]: value,
+    };
     setProfileData({
       ...profileData,
-      researchInterests: newInterests,
+      researchInterests: updatedInterests,
     });
   };
 
-  // Tag handlers
-  const addTag = (category: string, subcategory: string) => {
-    if (category && subcategory) {
-      setProfileData({
-        ...profileData,
-        tags: [...(profileData.tags || []), { category, subcategory }],
-      });
-    }
+  const removeResearchInterest = (index: number) => {
+    const updatedInterests = [...(profileData?.researchInterests || [])];
+    updatedInterests.splice(index, 1);
+    setProfileData({
+      ...profileData,
+      researchInterests: updatedInterests,
+    });
   };
-
   const removeTag = (index: number) => {
-    const newTags = [...profileData.tags];
-    newTags.splice(index, 1);
-    setProfileData({ ...profileData, tags: newTags });
+    const updatedTags = [...(profileData?.tags || [])];
+    updatedTags.splice(index, 1);
+    setProfileData({
+      ...profileData,
+      tags: updatedTags,
+    });
   };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -292,6 +287,49 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
     setProfileData({ ...profileData, researchHighlights: newHighlights });
   };
 
+  const addResearchInterest = () => {
+    if (editingResearchInterest.title && editingResearchInterest.description) {
+      const newResearchInterest = {
+        title: editingResearchInterest.title,
+        description: editingResearchInterest.description,
+        imageUrl: editingResearchInterest.imagePreview,
+        professorId: userId,
+      };
+
+      setProfileData({
+        ...profileData,
+        researchInterests: [
+          ...profileData.researchInterests,
+          newResearchInterest,
+        ],
+      });
+
+      setEditingResearchInterest({
+        title: "",
+        description: "",
+      });
+    }
+  };
+
+  // Update the tags section to match your API response structure
+  const addTag = () => {
+    if (selectedCategory && selectedSubcategory) {
+      const newTag = {
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
+        professorId: userId,
+      };
+
+      setProfileData({
+        ...profileData,
+        tags: [...profileData.tags, newTag],
+      });
+
+      setSelectedCategory("");
+      setSelectedSubcategory("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -305,51 +343,14 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
 
       const formData = new FormData();
 
-      // Add basic fields to formData
+      // Add all profile data to formData
       Object.entries(profileData).forEach(([key, value]) => {
-        if (
-          key !== "researchInterests" &&
-          key !== "tags" &&
-          value !== null &&
-          value !== undefined
-        ) {
-          if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, value.toString());
-          }
+        if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
         }
       });
-
-      // Handle research interests and their images
-      if (profileData.researchInterests) {
-        const interestsWithoutImages = profileData.researchInterests.map(
-          (interest: ResearchInterest, index: number) => ({
-            title: interest.title,
-            description: interest.description,
-            imageIndex: interest.image ? index : undefined,
-          })
-        );
-
-        formData.append(
-          "researchInterests",
-          JSON.stringify(interestsWithoutImages)
-        );
-
-        // Append images
-        profileData.researchInterests.forEach(
-          (interest: ResearchInterest, index: number) => {
-            if (interest.image) {
-              formData.append(`researchInterestImage_${index}`, interest.image);
-            }
-          }
-        );
-      }
-
-      // Add tags
-      if (profileData.tags) {
-        formData.append("tags", JSON.stringify(profileData.tags));
-      }
 
       // Add profile image if changed
       if (profileImage) {
@@ -629,292 +630,322 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
                   disabled={!isEditing}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="researchInterests">Research Interests</Label>
+              <div className="space-y-4">
+                <Label>Research Interests</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {profileData?.researchInterests?.map(
+                    (interest: any, index: number) => (
+                      <div
+                        key={index}
+                        className="bg-secondary/20 p-4 rounded-lg space-y-2"
+                      >
+                        {isEditing ? (
+                          <>
+                            <Input
+                              value={interest.title}
+                              onChange={(e) =>
+                                updateResearchInterest(
+                                  index,
+                                  "title",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Interest Title"
+                              className="mb-2"
+                            />
+                            <Textarea
+                              value={interest.description}
+                              onChange={(e) =>
+                                updateResearchInterest(
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Description"
+                              className="mb-2"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <h4 className="font-medium">{interest.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {interest.description}
+                            </p>
+                          </>
+                        )}
 
-                <Input
-                  placeholder="Interest Title"
-                  value={newResearchInterest.title}
-                  onChange={(e) =>
-                    setNewResearchInterest({
-                      ...newResearchInterest,
-                      title: e.target.value,
-                    })
-                  }
-                />
-                <Textarea
-                  placeholder="Description"
-                  value={newResearchInterest.description}
-                  onChange={(e) =>
-                    setNewResearchInterest({
-                      ...newResearchInterest,
-                      description: e.target.value,
-                    })
-                  }
-                />
+                        {interest.imageUrl && (
+                          <div className="relative w-full h-48">
+                            <Image
+                              src={interest.imageUrl}
+                              alt={interest.title}
+                              layout="fill"
+                              objectFit="cover"
+                              className="rounded-md"
+                            />
+                          </div>
+                        )}
 
-                <Label htmlFor="image">Image</Label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const previewUrl = URL.createObjectURL(file);
-                      setNewResearchInterest({
-                        ...newResearchInterest,
-                        image: file,
-                        imagePreview: previewUrl,
-                      });
+                        {isEditing && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeResearchInterest(index)}
+                            className="mt-2"
+                          >
+                            <X className="h-4 w-4 mr-2" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Add New Research Interest Form */}
+              {isEditing && (
+                <div className="bg-secondary/10 p-4 rounded-lg space-y-2">
+                  <Input
+                    placeholder="New Interest Title"
+                    value={editingResearchInterest.title}
+                    onChange={(e) =>
+                      setEditingResearchInterest({
+                        ...editingResearchInterest,
+                        title: e.target.value,
+                      })
                     }
-                  }}
-                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                />
-                {newResearchInterest.imagePreview && (
-                  <div className="relative w-40 h-40 mt-2">
-                    <Image
-                      src={newResearchInterest.imagePreview}
-                      alt="Preview"
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-md"
-                    />
+                  />
+                  <Textarea
+                    placeholder="New Interest Description"
+                    value={editingResearchInterest.description}
+                    onChange={(e) =>
+                      setEditingResearchInterest({
+                        ...editingResearchInterest,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        setEditingResearchInterest({
+                          ...editingResearchInterest,
+                          image: file,
+                          imagePreview: previewUrl,
+                        });
+                      }
+                    }}
+                    className="mt-2"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addResearchInterest}
+                    disabled={
+                      !editingResearchInterest.title ||
+                      !editingResearchInterest.description
+                    }
+                    className="mt-2"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" /> Add Research
+                    Interest
+                  </Button>
+                </div>
+              )}
+
+              {/* Tags Section */}
+              <div className="space-y-4">
+                <Label>Research Tags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {profileData?.tags?.map((tag: any, index: number) => (
+                    <div
+                      key={index}
+                      className="bg-primary/10 px-3 py-1.5 rounded-full flex items-center gap-2"
+                    >
+                      <span className="text-sm">
+                        {tag.category} - {tag.subcategory}
+                      </span>
+                      {isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => removeTag(index)}
+                          className="text-destructive hover:text-destructive/80"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {isEditing && (
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Select
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.keys(categories).map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex-1">
+                      <Select
+                        value={selectedSubcategory}
+                        onValueChange={setSelectedSubcategory}
+                        disabled={!selectedCategory}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedCategory &&
+                            categories[
+                              selectedCategory as keyof typeof categories
+                            ].map((subcategory) => (
+                              <SelectItem key={subcategory} value={subcategory}>
+                                {subcategory}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <Button
                       type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        if (newResearchInterest.imagePreview) {
-                          URL.revokeObjectURL(newResearchInterest.imagePreview);
-                        }
-                        setNewResearchInterest({
-                          ...newResearchInterest,
-                          image: undefined,
-                          imagePreview: undefined,
-                        });
-                      }}
+                      variant="outline"
+                      onClick={addTag}
+                      disabled={!selectedCategory || !selectedSubcategory}
                     >
-                      <X className="h-4 w-4" />
+                      <PlusCircle className="h-4 w-4 mr-2" /> Add Tag
                     </Button>
                   </div>
                 )}
               </div>
-              <Button type="button" onClick={addResearchInterest}>
-                Add Research Interest
-              </Button>
             </div>
           )}
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {profileData?.researchInterests?.map(
-              (interest: ResearchInterest, index: number) => (
-                <div
-                  key={index}
-                  className="bg-primary/10 p-4 rounded-md flex flex-col space-y-2"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{interest.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {interest.description}
-                      </p>
-                    </div>
-                    {isEditing && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeResearchInterest(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  {(interest.imageUrl || interest.imagePreview) && (
-                    <div className="relative w-full h-48">
-                      <Image
-                        src={interest.imagePreview || interest.imageUrl || ""}
-                        alt={interest.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-md"
-                      />
-                    </div>
-                  )}
-                </div>
-              )
-            )}
 
-            {/* Tags Section */}
-            {isEditing && (
-              <div className="space-y-2">
-                <Label>Tags</Label>
-                <div className="flex space-x-2">
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(categories).map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    onValueChange={(subcategory) =>
-                      addTag(selectedCategory, subcategory)
+          <div>
+            <Label htmlFor="department">Department</Label>
+            <Input
+              id="department"
+              name="department"
+              value={profileData?.department || ""}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="university">University</Label>
+            <Input
+              id="university"
+              name="university"
+              value={profileData?.university || ""}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
+          </div>
+
+          {/* Positions Section */}
+          <div className="space-y-2">
+            <Label>Academic Positions</Label>
+            {profileData?.positions?.map((pos: Position, index: number) => (
+              <div
+                key={index}
+                className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+              >
+                <Input
+                  placeholder="Title"
+                  value={pos.title}
+                  onChange={(e) =>
+                    updatePosition(index, "title", e.target.value)
+                  }
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Institution"
+                  value={pos.institution}
+                  onChange={(e) =>
+                    updatePosition(index, "institution", e.target.value)
+                  }
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Start Year"
+                  value={pos.startYear}
+                  onChange={(e) =>
+                    updatePosition(index, "startYear", e.target.value)
+                  }
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="End Year"
+                  value={pos.endYear}
+                  onChange={(e) =>
+                    updatePosition(index, "endYear", e.target.value)
+                  }
+                  disabled={!isEditing || pos.current}
+                  className="flex-1"
+                />
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={pos.current}
+                    onCheckedChange={(checked) =>
+                      updatePosition(index, "current", checked as boolean)
                     }
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedCategory &&
-                        categories[
-                          selectedCategory as keyof typeof categories
-                        ].map((subcategory) => (
-                          <SelectItem key={subcategory} value={subcategory}>
-                            {subcategory}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                    disabled={!isEditing}
+                  />
+                  <Label>Current</Label>
                 </div>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => removePosition(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
+            ))}
+            {isEditing && (
+              <Button type="button" variant="outline" onClick={addPosition}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Position
+              </Button>
             )}
+          </div>
 
-            <div className="flex flex-wrap gap-2 mt-2">
-              {profileData?.tags?.map((tag: Tag, index: number) => (
-                <div
-                  key={index}
-                  className="bg-primary/10 px-2 py-1 rounded-md flex items-center gap-2"
-                >
-                  {tag.category} - {tag.subcategory}
-                  {isEditing && (
-                    <button
-                      type="button"
-                      onClick={() => removeTag(index)}
-                      className="text-red-500"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <Input
-                id="department"
-                name="department"
-                value={profileData?.department || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="university">University</Label>
-              <Input
-                id="university"
-                name="university"
-                value={profileData?.university || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-
-            {/* Positions Section */}
-            <div className="space-y-2">
-              <Label>Academic Positions</Label>
-              {profileData?.positions?.map((pos: Position, index: number) => (
-                <div
-                  key={index}
-                  className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
-                >
-                  <Input
-                    placeholder="Title"
-                    value={pos.title}
-                    onChange={(e) =>
-                      updatePosition(index, "title", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Institution"
-                    value={pos.institution}
-                    onChange={(e) =>
-                      updatePosition(index, "institution", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="Start Year"
-                    value={pos.startYear}
-                    onChange={(e) =>
-                      updatePosition(index, "startYear", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="flex-1"
-                  />
-                  <Input
-                    placeholder="End Year"
-                    value={pos.endYear}
-                    onChange={(e) =>
-                      updatePosition(index, "endYear", e.target.value)
-                    }
-                    disabled={!isEditing || pos.current}
-                    className="flex-1"
-                  />
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={pos.current}
-                      onCheckedChange={(checked) =>
-                        updatePosition(index, "current", checked as boolean)
-                      }
-                      disabled={!isEditing}
-                    />
-                    <Label>Current</Label>
-                  </div>
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => removePosition(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <Button type="button" variant="outline" onClick={addPosition}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Position
-                </Button>
-              )}
-            </div>
-
-            {/* Website Field */}
-            <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                name="website"
-                type="url"
-                value={profileData?.website || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
+          {/* Website Field */}
+          <div>
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              name="website"
+              type="url"
+              value={profileData?.website || ""}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+            />
           </div>
 
           {role === "business" && (

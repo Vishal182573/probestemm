@@ -35,6 +35,7 @@ export const getProfessors = async (req: Request, res: Response) => {
         title: true,
         university: true,
         department: true,
+        isApproved: true,
         researchInterests: {
           select: {
             title: true,
@@ -137,27 +138,46 @@ export const updateProfessorApprovalStatus = async (
   req: Request,
   res: Response
 ) => {
-  const { professorId } = req.params;
-
   try {
+    const { professorId } = req.params;
+
+    if (!professorId) {
+      return res.status(400).json({ error: "Professor ID is required" });
+    }
+
+    const professor = await prisma.professor.findUnique({
+      where: { id: professorId },
+    });
+
+    if (!professor) {
+      return res.status(404).json({ error: "Professor not found" });
+    }
+
+    // Update professor approval status
     const updatedProfessor = await prisma.professor.update({
       where: { id: professorId },
       data: { isApproved: true },
     });
 
-    // Create notification for professor
     await createNotification(
       NotificationType.PROFESSOR_APPROVAL,
-      `Your professor account has been approved.`,
+      "Your professor account has been approved. You can now access all platform features.",
       professorId,
       "professor",
-      professorId,
       "professor-approval"
     );
 
-    res.status(200).json(updatedProfessor);
+    return res.status(200).json({
+      success: true,
+      data: updatedProfessor,
+    });
   } catch (error) {
-    res.status(500).json({ error: "Failed to update professor status" });
+    console.error("Professor approval error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to update professor status",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 export default {
