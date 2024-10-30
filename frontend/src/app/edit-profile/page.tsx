@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,46 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
+
+const categories = {
+  Science: [
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Earth Sciences",
+    "Space Science",
+  ],
+  Technology: ["Computer Science", "Engineering"],
+  Engineering: [
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+  ],
+  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
+  "Engineering Technology": [
+    "Data Engineering",
+    "Robotics",
+    "Biotechnology",
+    "Environmental Technology",
+    "Space Technology",
+    "Pharmaceutical Engineering",
+  ],
+} as const;
+
+// Add interfaces for research interests and tags
+interface ResearchInterest {
+  title: string;
+  description: string;
+  image?: File;
+  imagePreview?: string;
+  imageUrl?: string;
+}
+
+interface Tag {
+  category: string;
+  subcategory: string;
+}
 
 interface Position {
   title: string;
@@ -45,7 +85,6 @@ interface ResearchHighlight {
   status: "ONGOING" | "COMPLETED";
 }
 
-
 const EditProfileForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,11 +94,17 @@ const EditProfileForm = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [newResearchInterest, setNewResearchInterest] =
+    useState<ResearchInterest>({
+      title: "",
+      description: "",
+    });
 
   // Move localStorage access to useEffect
   useEffect(() => {
     // Only access localStorage on the client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("userId");
       const storedRole = localStorage.getItem("role");
       setUserId(storedUserId);
@@ -196,6 +241,41 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, researchHighlights: newHighlights });
   };
 
+  const addResearchInterest = () => {
+    if (newResearchInterest.title && newResearchInterest.description) {
+      setProfileData((prev: any) => ({
+        ...prev,
+        researchInterests: [
+          ...(prev.researchInterests || []),
+          newResearchInterest,
+        ],
+      }));
+      setNewResearchInterest({ title: "", description: "" });
+    }
+  };
+
+  const removeResearchInterest = (index: number) => {
+    const newInterests = [...profileData.researchInterests];
+    newInterests.splice(index, 1);
+    setProfileData({ ...profileData, researchInterests: newInterests });
+  };
+
+  // Add tag handlers
+  const addTag = (category: string, subcategory: string) => {
+    if (category && subcategory) {
+      setProfileData((prev: any) => ({
+        ...prev,
+        tags: [...(prev.tags || []), { category, subcategory }],
+      }));
+    }
+  };
+
+  const removeTag = (index: number) => {
+    const newTags = [...profileData.tags];
+    newTags.splice(index, 1);
+    setProfileData({ ...profileData, tags: newTags });
+  };
+
   // Modify fetchProfileData to depend on userId and role being set
   useEffect(() => {
     if (userId && role) {
@@ -205,8 +285,8 @@ const EditProfileForm = () => {
 
   const fetchProfileData = async () => {
     try {
-      if (typeof window === 'undefined') return; // Guard against server-side execution
-      
+      if (typeof window === "undefined") return; // Guard against server-side execution
+
       const token = localStorage.getItem("token");
       if (!token || !userId || !role) return;
 
@@ -218,7 +298,7 @@ const EditProfileForm = () => {
       const data = await response.json();
       setProfileData(data);
       setImagePreview(data.photoUrl || data.profileImageUrl);
-    } catch (error :any) {
+    } catch (error: any) {
       toast({
         title: error,
         description: "Failed to fetch profile data",
@@ -233,8 +313,8 @@ const EditProfileForm = () => {
     setError(null);
 
     try {
-      if (typeof window === 'undefined') return; // Guard against server-side execution
-      
+      if (typeof window === "undefined") return; // Guard against server-side execution
+
       const token = localStorage.getItem("token");
       if (!token || !userId || !role) {
         throw new Error("No authentication token found");
@@ -287,487 +367,708 @@ const EditProfileForm = () => {
 
   return (
     <>
-    {(userId && role) ? (
+      {userId && role ? (
         <>
-    <NavbarWithBg/>
-    <Card className="w-full max-w-2xl mx-auto min-h-screen my-12">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">Profile Settings</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditing(!isEditing)}
-          disabled={loading}
-        >
-          {isEditing ? (
-            "Cancel"
-          ) : (
-            <>
-              <PencilIcon className="mr-2 h-4 w-4" /> Edit Profile
-            </>
-          )}
-        </Button>
-      </CardHeader>
-
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Profile Image */}
-          <div className="space-y-2">
-            {imagePreview && (
-              <div className="relative w-24 h-24">
-                <Image
-                  src={imagePreview}
-                  alt="Profile"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-full"
-                />
-              </div>
-            )}
-            {isEditing && (
-              <div>
-                <Label htmlFor="profileImage">Profile Image</Label>
-                <Input
-                  id="profileImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mt-1"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Common Fields */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                value={profileData?.fullName || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phoneNumber">Phone Number</Label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                value={profileData?.phoneNumber || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                name="location"
-                value={profileData?.location || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
-
-          {/* Role-specific Fields */}
-          {role === "student" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="university">University</Label>
-                <Input
-                  id="university"
-                  name="university"
-                  value={profileData?.university || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="course">Course</Label>
-                <Input
-                  id="course"
-                  name="course"
-                  value={profileData?.course || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              {/* Education Section */}
-              <div className="space-y-2">
-                <Label>Education History</Label>
-                {profileData?.education?.map(
-                  (edu: Education, index: number) => (
-                    <div
-                      key={index}
-                      className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
-                    >
-                      <Input
-                        placeholder="Degree"
-                        value={edu.degree}
-                        onChange={(e) =>
-                          updateEducation(index, "degree", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="flex-1"
-                      />
-                      <Input
-                        placeholder="Institution"
-                        value={edu.institution}
-                        onChange={(e) =>
-                          updateEducation(index, "institution", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="flex-1"
-                      />
-                      <Input
-                        placeholder="Year"
-                        value={edu.passingYear}
-                        onChange={(e) =>
-                          updateEducation(index, "passingYear", e.target.value)
-                        }
-                        disabled={!isEditing}
-                        className="flex-1"
-                      />
-                      {isEditing && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => removeEducation(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )
-                )}
-                {isEditing && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addEducation}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Education
-                  </Button>
-                )}
-              </div>
-
-              {/* Research Highlights */}
-              <div className="space-y-2">
-                <Label>Research Highlights</Label>
-                {profileData?.researchHighlights?.map(
-                  (highlight: ResearchHighlight, index: number) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        placeholder="Research Title"
-                        value={highlight.title}
-                        onChange={(e) =>
-                          updateResearchHighlight(
-                            index,
-                            "title",
-                            e.target.value
-                          )
-                        }
-                        disabled={!isEditing}
-                        className="flex-1"
-                      />
-                      <Select
-                        value={highlight.status}
-                        onValueChange={(value) =>
-                          updateResearchHighlight(index, "status", value)
-                        }
-                        disabled={!isEditing}
-                      >
-                        <SelectTrigger className="w-[200px]">
-                          <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ONGOING">Ongoing</SelectItem>
-                          <SelectItem value="COMPLETED">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {isEditing && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => removeResearchHighlight(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  )
-                )}
-                {isEditing && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addResearchHighlight}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Research
-                    Highlight
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {role === "professor" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Academic Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={profileData?.title || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="researchInterests">Research Interests</Label>
-                <Textarea
-                  id="researchInterests"
-                  name="researchInterests"
-                  value={profileData?.researchInterests || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-              <div>
-                <Label htmlFor="department">Department</Label>
-                <Input
-                  id="department"
-                  name="department"
-                  value={profileData?.department || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="university">University</Label>
-                <Input
-                  id="university"
-                  name="university"
-                  value={profileData?.university || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              {/* Positions Section */}
-              <div className="space-y-2">
-                <Label>Academic Positions</Label>
-                {profileData?.positions?.map((pos: Position, index: number) => (
-                  <div
-                    key={index}
-                    className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
-                  >
-                    <Input
-                      placeholder="Title"
-                      value={pos.title}
-                      onChange={(e) =>
-                        updatePosition(index, "title", e.target.value)
-                      }
-                      disabled={!isEditing}
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="Institution"
-                      value={pos.institution}
-                      onChange={(e) =>
-                        updatePosition(index, "institution", e.target.value)
-                      }
-                      disabled={!isEditing}
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="Start Year"
-                      value={pos.startYear}
-                      onChange={(e) =>
-                        updatePosition(index, "startYear", e.target.value)
-                      }
-                      disabled={!isEditing}
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="End Year"
-                      value={pos.endYear}
-                      onChange={(e) =>
-                        updatePosition(index, "endYear", e.target.value)
-                      }
-                      disabled={!isEditing || pos.current}
-                      className="flex-1"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={pos.current}
-                        onCheckedChange={(checked) =>
-                          updatePosition(index, "current", checked as boolean)
-                        }
-                        disabled={!isEditing}
-                      />
-                      <Label>Current</Label>
-                    </div>
-                    {isEditing && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => removePosition(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                {isEditing && (
-                  <Button type="button" variant="outline" onClick={addPosition}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Position
-                  </Button>
-                )}
-              </div>
-
-              {/* Website Field */}
-              <div>
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  name="website"
-                  type="url"
-                  value={profileData?.website || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-          )}
-
-          {role === "business" && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  name="companyName"
-                  value={profileData?.companyName || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="industry">Industry</Label>
-                <Input
-                  id="industry"
-                  name="industry"
-                  value={profileData?.industry || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Company Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={profileData?.description || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="website">Company Website</Label>
-                <Input
-                  id="website"
-                  name="website"
-                  type="url"
-                  value={profileData?.website || ""}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Achievements Section - Common for all roles */}
-          <div className="space-y-2">
-            <Label>Achievements</Label>
-            {profileData?.achievements?.map(
-              (achievement: Achievement, index: number) => (
-                <div
-                  key={index}
-                  className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
-                >
-                  <Input
-                    placeholder="Year"
-                    value={achievement.year}
-                    onChange={(e) =>
-                      updateAchievement(index, "year", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="w-32"
-                  />
-                  <Input
-                    placeholder="Description"
-                    value={achievement.description}
-                    onChange={(e) =>
-                      updateAchievement(index, "description", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className="flex-1"
-                  />
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => removeAchievement(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              )
-            )}
-            {isEditing && (
-              <Button type="button" variant="outline" onClick={addAchievement}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
-              </Button>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          {isEditing && (
-            <div className="pt-6">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  "Saving..."
+          <NavbarWithBg />
+          <Card className="w-full max-w-2xl mx-auto min-h-screen my-12">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">
+                Profile Settings
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+                disabled={loading}
+              >
+                {isEditing ? (
+                  "Cancel"
                 ) : (
                   <>
-                    <SaveIcon className="mr-2 h-4 w-4" /> Save Changes
+                    <PencilIcon className="mr-2 h-4 w-4" /> Edit Profile
                   </>
                 )}
               </Button>
-            </div>
-          )}
+            </CardHeader>
 
-          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-        </form>
-      </CardContent>
-    </Card>
-    <Footer/>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Profile Image */}
+                <div className="space-y-2">
+                  {imagePreview && (
+                    <div className="relative w-24 h-24">
+                      <Image
+                        src={imagePreview}
+                        alt="Profile"
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-full"
+                      />
+                    </div>
+                  )}
+                  {isEditing && (
+                    <div>
+                      <Label htmlFor="profileImage">Profile Image</Label>
+                      <Input
+                        id="profileImage"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Common Fields */}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      value={profileData?.fullName || ""}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={profileData?.phoneNumber || ""}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={profileData?.location || ""}
+                      onChange={handleInputChange}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+
+                {/* Role-specific Fields */}
+                {role === "student" && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="university">University</Label>
+                      <Input
+                        id="university"
+                        name="university"
+                        value={profileData?.university || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="course">Course</Label>
+                      <Input
+                        id="course"
+                        name="course"
+                        value={profileData?.course || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    {/* Education Section */}
+                    <div className="space-y-2">
+                      <Label>Education History</Label>
+                      {profileData?.education?.map(
+                        (edu: Education, index: number) => (
+                          <div
+                            key={index}
+                            className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                          >
+                            <Input
+                              placeholder="Degree"
+                              value={edu.degree}
+                              onChange={(e) =>
+                                updateEducation(index, "degree", e.target.value)
+                              }
+                              disabled={!isEditing}
+                              className="flex-1"
+                            />
+                            <Input
+                              placeholder="Institution"
+                              value={edu.institution}
+                              onChange={(e) =>
+                                updateEducation(
+                                  index,
+                                  "institution",
+                                  e.target.value
+                                )
+                              }
+                              disabled={!isEditing}
+                              className="flex-1"
+                            />
+                            <Input
+                              placeholder="Year"
+                              value={edu.passingYear}
+                              onChange={(e) =>
+                                updateEducation(
+                                  index,
+                                  "passingYear",
+                                  e.target.value
+                                )
+                              }
+                              disabled={!isEditing}
+                              className="flex-1"
+                            />
+                            {isEditing && (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => removeEducation(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )
+                      )}
+                      {isEditing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addEducation}
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Education
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Research Highlights */}
+                    <div className="space-y-2">
+                      <Label>Research Highlights</Label>
+                      {profileData?.researchHighlights?.map(
+                        (highlight: ResearchHighlight, index: number) => (
+                          <div key={index} className="flex gap-2">
+                            <Input
+                              placeholder="Research Title"
+                              value={highlight.title}
+                              onChange={(e) =>
+                                updateResearchHighlight(
+                                  index,
+                                  "title",
+                                  e.target.value
+                                )
+                              }
+                              disabled={!isEditing}
+                              className="flex-1"
+                            />
+                            <Select
+                              value={highlight.status}
+                              onValueChange={(value) =>
+                                updateResearchHighlight(index, "status", value)
+                              }
+                              disabled={!isEditing}
+                            >
+                              <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ONGOING">Ongoing</SelectItem>
+                                <SelectItem value="COMPLETED">
+                                  Completed
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {isEditing && (
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => removeResearchHighlight(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )
+                      )}
+                      {isEditing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addResearchHighlight}
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Research
+                          Highlight
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {role === "professor" && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Academic Title</Label>
+                      <Input
+                        id="title"
+                        name="title"
+                        value={profileData?.title || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    {/* Research Interests Section */}
+                    <div className="space-y-2">
+                      <Label>Research Interests</Label>
+                      <div className="flex flex-col space-y-2">
+                        <Input
+                          placeholder="Interest Title"
+                          value={newResearchInterest.title}
+                          onChange={(e) =>
+                            setNewResearchInterest({
+                              ...newResearchInterest,
+                              title: e.target.value,
+                            })
+                          }
+                          disabled={!isEditing}
+                        />
+                        <Textarea
+                          placeholder="Description"
+                          value={newResearchInterest.description}
+                          onChange={(e) =>
+                            setNewResearchInterest({
+                              ...newResearchInterest,
+                              description: e.target.value,
+                            })
+                          }
+                          disabled={!isEditing}
+                        />
+                        {isEditing && (
+                          <div className="flex flex-col space-y-2">
+                            <Label>Upload Image</Label>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const previewUrl = URL.createObjectURL(file);
+                                  setNewResearchInterest({
+                                    ...newResearchInterest,
+                                    image: file,
+                                    imagePreview: previewUrl,
+                                  });
+                                }
+                              }}
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                            />
+                          </div>
+                        )}
+                        {newResearchInterest.imagePreview && (
+                          <div className="relative w-40 h-40">
+                            <Image
+                              src={newResearchInterest.imagePreview}
+                              alt="Preview"
+                              width={160}
+                              height={160}
+                              className="rounded-md object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                if (newResearchInterest.imagePreview) {
+                                  URL.revokeObjectURL(
+                                    newResearchInterest.imagePreview
+                                  );
+                                }
+                                setNewResearchInterest({
+                                  ...newResearchInterest,
+                                  image: undefined,
+                                  imagePreview: undefined,
+                                });
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        {isEditing && (
+                          <Button type="button" onClick={addResearchInterest}>
+                            Add Research Interest
+                          </Button>
+                        )}
+                      </div>
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {profileData?.researchInterests?.map(
+                          (interest: ResearchInterest, index: number) => (
+                            <div
+                              key={index}
+                              className="bg-primary/10 p-4 rounded-md flex flex-col space-y-2"
+                            >
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="font-medium">
+                                    {interest.title}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {interest.description}
+                                  </p>
+                                </div>
+                                {isEditing && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() =>
+                                      removeResearchInterest(index)
+                                    }
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              {(interest.imageUrl || interest.imagePreview) && (
+                                <div className="relative w-full h-48">
+                                  <Image
+                                    src={
+                                      interest.imageUrl ||
+                                      interest.imagePreview ||
+                                      ""
+                                    }
+                                    alt={interest.title}
+                                    layout="fill"
+                                    objectFit="cover"
+                                    className="rounded-md"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tags Section */}
+                    <div className="space-y-2">
+                      <Label>Tags</Label>
+                      {isEditing && (
+                        <div className="flex space-x-2">
+                          <Select
+                            value={selectedCategory}
+                            onValueChange={setSelectedCategory}
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.keys(categories).map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            onValueChange={(subcategory) =>
+                              addTag(selectedCategory, subcategory)
+                            }
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Subcategory" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {selectedCategory &&
+                                categories[
+                                  selectedCategory as keyof typeof categories
+                                ].map((subcategory) => (
+                                  <SelectItem
+                                    key={subcategory}
+                                    value={subcategory}
+                                  >
+                                    {subcategory}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {profileData?.tags?.map((tag: Tag, index: number) => (
+                          <div
+                            key={index}
+                            className="bg-primary/10 px-2 py-1 rounded-md flex items-center gap-2"
+                          >
+                            {tag.category} - {tag.subcategory}
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => removeTag(index)}
+                                className="text-red-500"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="department">Department</Label>
+                  <Input
+                    id="department"
+                    name="department"
+                    value={profileData?.department || ""}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="university">University</Label>
+                  <Input
+                    id="university"
+                    name="university"
+                    value={profileData?.university || ""}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                {/* Positions Section */}
+                <div className="space-y-2">
+                  <Label>Academic Positions</Label>
+                  {profileData?.positions?.map(
+                    (pos: Position, index: number) => (
+                      <div
+                        key={index}
+                        className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                      >
+                        <Input
+                          placeholder="Title"
+                          value={pos.title}
+                          onChange={(e) =>
+                            updatePosition(index, "title", e.target.value)
+                          }
+                          disabled={!isEditing}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="Institution"
+                          value={pos.institution}
+                          onChange={(e) =>
+                            updatePosition(index, "institution", e.target.value)
+                          }
+                          disabled={!isEditing}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="Start Year"
+                          value={pos.startYear}
+                          onChange={(e) =>
+                            updatePosition(index, "startYear", e.target.value)
+                          }
+                          disabled={!isEditing}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="End Year"
+                          value={pos.endYear}
+                          onChange={(e) =>
+                            updatePosition(index, "endYear", e.target.value)
+                          }
+                          disabled={!isEditing || pos.current}
+                          className="flex-1"
+                        />
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={pos.current}
+                            onCheckedChange={(checked) =>
+                              updatePosition(
+                                index,
+                                "current",
+                                checked as boolean
+                              )
+                            }
+                            disabled={!isEditing}
+                          />
+                          <Label>Current</Label>
+                        </div>
+                        {isEditing && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removePosition(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addPosition}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Position
+                    </Button>
+                  )}
+                </div>
+
+                {/* Website Field */}
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    name="website"
+                    type="url"
+                    value={profileData?.website || ""}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                {role === "business" && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        value={profileData?.companyName || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="industry">Industry</Label>
+                      <Input
+                        id="industry"
+                        name="industry"
+                        value={profileData?.industry || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Company Description</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        value={profileData?.description || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="website">Company Website</Label>
+                      <Input
+                        id="website"
+                        name="website"
+                        type="url"
+                        value={profileData?.website || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Achievements Section - Common for all roles */}
+                <div className="space-y-2">
+                  <Label>Achievements</Label>
+                  {profileData?.achievements?.map(
+                    (achievement: Achievement, index: number) => (
+                      <div
+                        key={index}
+                        className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                      >
+                        <Input
+                          placeholder="Year"
+                          value={achievement.year}
+                          onChange={(e) =>
+                            updateAchievement(index, "year", e.target.value)
+                          }
+                          disabled={!isEditing}
+                          className="w-32"
+                        />
+                        <Input
+                          placeholder="Description"
+                          value={achievement.description}
+                          onChange={(e) =>
+                            updateAchievement(
+                              index,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                          disabled={!isEditing}
+                          className="flex-1"
+                        />
+                        {isEditing && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeAchievement(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  )}
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addAchievement}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
+                    </Button>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                {isEditing && (
+                  <div className="pt-6">
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? (
+                        "Saving..."
+                      ) : (
+                        <>
+                          <SaveIcon className="mr-2 h-4 w-4" /> Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {error && (
+                  <p className="text-red-500 mt-4 text-center">{error}</p>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+          <Footer />
         </>
       ) : (
         <div className="flex items-center justify-center min-h-screen">
