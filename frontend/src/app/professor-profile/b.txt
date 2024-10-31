@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
 import PatentsTab from "@/components/shared/patentstab";
@@ -104,11 +103,11 @@ interface SelectedImage {
   title: string;
 }
 
-// interface ImageModalProps {
-//   isOpen: boolean;
-//   onClose: () => void;
-//   selectedImage: SelectedImage | null;
-// }
+interface ImageModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedImage: SelectedImage | null;
+}
 
 interface Webinar {
   id: string;
@@ -199,13 +198,11 @@ const ProfessorProfilePage: React.FC = () => {
   const [patents, setPatents] = useState<Patent[]>([]);
   const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
   const [isCreatingPatent, setIsCreatingPatent] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage({ url: imageUrl, title });
   };
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
-    null
-  );
 
   const closeModal = () => {
     setSelectedImage(null);
@@ -253,7 +250,7 @@ const ProfessorProfilePage: React.FC = () => {
 
           try {
             const businessProjectsResponse = await axios.get(
-              `${API_URL}/project/professor/${id}/projects/professors`,
+              `${API_URL}/project/professor/${id}/projectss`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             setBusinessProjects(businessProjectsResponse.data);
@@ -548,16 +545,6 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
-  const renderPatentsTab = () => (
-    <TabsContent value="patents">
-      <PatentsTab
-        isLoggedInUser={isLoggedInUser}
-        patents={patents}
-        API_URL={API_URL}
-      />
-    </TabsContent>
-  );
-
   const renderBusinessProjectsTab = () => (
     <TabsContent value="business-projects">
       <motion.div
@@ -620,6 +607,15 @@ const ProfessorProfilePage: React.FC = () => {
           </CardContent>
         </Card>
       </motion.div>
+    </TabsContent>
+  );
+  const renderPatentsTab = () => (
+    <TabsContent value="patents">
+      <PatentsTab
+        isLoggedInUser={isLoggedInUser}
+        patents={patents}
+        API_URL={API_URL}
+      />
     </TabsContent>
   );
 
@@ -1135,7 +1131,6 @@ const ProfessorProfilePage: React.FC = () => {
                   </Card>
 
                   {/* Modal */}
-
                   {selectedImage && (
                     <div
                       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
@@ -1143,7 +1138,7 @@ const ProfessorProfilePage: React.FC = () => {
                     >
                       <div
                         className="relative max-w-4xl w-full bg-white rounded-lg p-2"
-                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <button
                           onClick={closeModal}
@@ -1157,7 +1152,7 @@ const ProfessorProfilePage: React.FC = () => {
                           </h3>
                         </div>
                         <div className="flex justify-center">
-                          <Image
+                          <img
                             src={selectedImage.url}
                             alt={selectedImage.title}
                             className="max-h-[80vh] w-auto object-contain"
@@ -1588,6 +1583,7 @@ const ProfessorProfilePage: React.FC = () => {
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
                   {renderPatentsTab()}
+
                   {renderBusinessProjectsTab()}
                 </>
               )}

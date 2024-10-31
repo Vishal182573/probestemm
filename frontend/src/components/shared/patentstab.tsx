@@ -111,9 +111,9 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
       formData.append("description", descriptionInput.value);
       formData.append("professorId", localStorage.getItem("userId") || "");
 
-      // Clear any existing image fields
+      // Append each file with the same field name
       selectedFiles.forEach((file) => {
-        formData.append(`patentImages`, file); // Keep the field name consistent
+        formData.append("patentImages", file);
       });
 
       const token = localStorage.getItem("token");

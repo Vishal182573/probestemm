@@ -13,6 +13,7 @@ import {
   getAppliedProfessors,
   getAppliedStudents,
   getStudentEnrolledProjectbyStudentId,
+  getProfessorEnrolledProjectbyProfessorId,
 } from "../controllers/projectsController";
 import {
   businessAuthMiddleware,
@@ -165,9 +166,9 @@ router.get("/student/:studentId/projects", async (req, res) => {
   }
 });
 
-router.get("/professor/:professorId/projects", async (req, res) => {
+router.get("/professor/:professorId/projects/professors", async (req, res) => {
   try {
-    await getProjectsByProfessorId(req, res);
+    await getProfessorEnrolledProjectbyProfessorId(req, res);
   } catch (error) {
     console.error("Error in getting professor projects:", error);
     res.status(500).json({ error: "Internal server error" });

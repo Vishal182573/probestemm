@@ -416,14 +416,21 @@ export const getProfessorEnrolledProjectbyProfessorId = async (
 ) => {
   try {
     const { professorId } = req.params;
-
-    const projects = await prisma.appliedProfessor.findMany({
+    const projects = await prisma.project.findMany({
       where: {
-        professorId,
+        AND: [
+          { type: "BUSINESS" }, // Must be a business project
+          { businessId: { not: null } }, // Must have a business creator
+          { professorId }, // Must have the professor enrolled
+          { status: "ONGOING" }, // Must be ongoing
+        ],
       },
-      include: { project: true },
+      include: {
+        professor: true,
+        student: true,
+        business: true,
+      },
     });
-
     res.status(200).json(projects);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch projects" });

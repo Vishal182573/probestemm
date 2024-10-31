@@ -1,46 +1,58 @@
 import type { Request, Response } from "express";
-
 import cloudinary from "../config/cloudinary";
-
 import { NotificationType, PrismaClient } from "@prisma/client";
 import { createNotification } from "./notificationController";
+import { Readable } from "stream";
+import { FRONTEND_URL } from "../constants";
 
 interface FileRequest extends Request {
-  files?: {
-    [fieldname: string]: Express.Multer.File[];
-  };
+  files?: Express.Multer.File[];
 }
 
 const prisma = new PrismaClient();
 
-// createPatent
+// Helper function to handle file upload to Cloudinary
+const uploadToCloudinary = async (
+  file: Express.Multer.File
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "patent_images",
+        transformation: [{ width: 1000, height: 1000, crop: "limit" }],
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result!.secure_url);
+      }
+    );
+
+    // Create a readable stream from the file buffer
+    const stream = Readable.from(file.buffer);
+    stream.pipe(uploadStream);
+  });
+};
 
 export const createPatent = async (req: FileRequest, res: Response) => {
   try {
     const { title, description, professorId } = req.body;
+    const baseUrl = FRONTEND_URL || "http://localhost:3000";
+
+    // Check if professor exists and is approved
     const professor = await prisma.professor.findUnique({
-      where: {
-        id: professorId,
-      },
-      select: {
-        isApproved: true,
-      },
+      where: { id: professorId },
+      select: { isApproved: true },
     });
-    console.log("Professor data:", professor);
+
     if (!professor) {
-      return res.status(404).json({
-        error: "Professor not found",
-      });
+      return res.status(404).json({ error: "Professor not found" });
     }
 
     if (!professor.isApproved) {
       return res.status(403).json({
-        error: "You are not approved to create webinars yet",
+        error: "You are not approved to create patents yet",
       });
     }
-    const files = req.files as unknown as Express.Multer.File[];
-
-    console.log("Processing files:", files);
 
     // Basic validation
     if (!title || !description || !professorId) {
@@ -49,47 +61,35 @@ export const createPatent = async (req: FileRequest, res: Response) => {
       });
     }
 
-    if (!files || !Array.isArray(files) || files.length === 0) {
+    // Validate files
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({
         error: "At least one image is required",
       });
     }
 
-    // Upload files to Cloudinary
-    const uploadPromises = files.map(async (file) => {
-      const buffer = file.buffer;
+    if (req.files.length > 4) {
+      return res.status(400).json({
+        error: "Maximum 4 images allowed",
+      });
+    }
 
-      if (!buffer) {
-        throw new Error("File buffer is missing.");
-      }
+    // Upload images to Cloudinary concurrently
+    const uploadPromises = req.files.map((file) => uploadToCloudinary(file));
 
-      const b64 = buffer.toString("base64");
-      const dataURI = `data:${file.mimetype};base64,${b64}`;
-
-      try {
-        const result = await cloudinary.uploader.upload(dataURI, {
-          folder: "patent_images",
-          transformation: [{ width: 1000, height: 1000, crop: "limit" }],
-        });
-        return result.secure_url;
-      } catch (error) {
-        console.error("Cloudinary upload error:", error);
-        throw new Error("Failed to upload image");
-      }
-    });
-
+    // Wait for all uploads to complete
     const imageUrls = await Promise.all(uploadPromises);
 
-    // Create patent
+    console.log("Uploaded image URLs:", imageUrls); // Debug log
+
+    // Create patent with all image URLs
     const patent = await prisma.patent.create({
       data: {
         title,
         description,
-        imageUrl: imageUrls,
+        imageUrl: imageUrls, // This will now be an array of URLs
         professor: {
-          connect: {
-            id: professorId,
-          },
+          connect: { id: professorId },
         },
       },
       include: {
@@ -99,11 +99,12 @@ export const createPatent = async (req: FileRequest, res: Response) => {
 
     // Send notifications to businesses
     const businesses = await prisma.business.findMany();
+    const profileUrl = `${baseUrl}/professor-profile/${professorId}`;
     await Promise.all(
       businesses.map((business) =>
         createNotification(
           NotificationType.PATENT_APPLICATION,
-          `Professor ${patent.professor.fullName} has created a new patent titled "${patent.title}"`,
+          `Professor <a href="${profileUrl}">${patent.professor.fullName}</a> has created a new patent titled "${patent.title}"`,
           business.id,
           "business",
           patent.id,

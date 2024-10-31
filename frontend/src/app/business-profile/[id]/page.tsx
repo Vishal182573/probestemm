@@ -360,9 +360,12 @@ const BusinessProfilePage: React.FC = () => {
                             : "font-semibold"
                         }`}
                       >
-                        <p className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2">
-                          {notification.content}
-                        </p>
+                        <p
+                          dangerouslySetInnerHTML={{
+                            __html: notification.content,
+                          }}
+                          className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2"
+                        />
                       </p>
                       <p className="text-sm text-gray-500">
                         {new Date(notification.createdAt).toLocaleDateString()}
