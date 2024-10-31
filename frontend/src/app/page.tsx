@@ -113,7 +113,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
         >
-          Connecting global thinkers to inspire impactful collaborations.
+          Connecting global thinkers to inspire impactful collaborations
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
@@ -187,39 +187,38 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: <UserCircle className="h-16 w-16 text-[#472014]" />,
-      title: "Student Profile",
+      title: "Students",
       description:
-        "Showcase your academic journey by highlighting your research, connect with professors and industry experts.",
+        "Connect with academia and industry experts for",
       benefits: [
-        "Engage in insightful discussions",
-        "Webinars to enhance your skills",
-        "Collaborate on research projects",
+        "Research positions",
+        "Industry internships",
+        "Research projects",
       ],
       link: "/students",
       bgImage: STUDENT
     },
     {
       icon: <GraduationCap className="h-16 w-16 text-[#472014]" />,
-      title: "Professor Profile",
+      title: "Academia",
       description:
-        " Curate your academic portfolio, showcase research projects, and build connections with industry partners .",
+        "Build connections with students and industry for",
       benefits: [
-        "Webinar hosting platform",
-        "Commercialise your products",
-        "Transform research into solutions"
+        "Hiring students for internships/Phd positions and porjects",
+        "Technology transfer, consultancy and research projects",
       ],
       link: "/professors",
       bgImage: PROFESSOR
     },
     {
       icon: <Briefcase className="h-16 w-16 text-[#472014]" />,
-      title: "Industry Profile",
+      title: "Industry",
       description:
-        "Discover top talent, collaborate on cutting-edge research, and stay at the forefront of innovation in your industry.",
+        "Connect with students and academia for",
       benefits: [
-        "Conduct engaging webinars",
-        "Connect with researchers",
-        "Inovative problem solving",
+        "Grand challenges",
+        "Research projects",
+        "Technology solutions",
       ],
       link: "/businesses",
       bgImage: INDUSTRY
@@ -255,7 +254,7 @@ const FeaturesSection = () => {
                 priority={index === 0}
               />
             </div>
-            <div className="p-8 flex flex-col items-center text-center flex-grow text-[#c1502e]">
+            <div className="p-8 flex flex-col items-center text-center flex-grow text-[#c1502e] ">
               {feature.icon}
               <h3 className="text-3xl font-bold mt-6 mb-4 text-[#472014] font-caveat">
                 {feature.title}
