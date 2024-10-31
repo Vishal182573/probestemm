@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { LOGO, LOGOLEFT, LOGORIGHT } from "../../../public";
+import { LOGOLEFT, LOGORIGHT } from "../../../public";
 
 export const NavbarWithBg: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

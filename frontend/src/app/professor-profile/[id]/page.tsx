@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
 import PatentsTab from "@/components/shared/patentstab";
@@ -103,11 +104,11 @@ interface SelectedImage {
   title: string;
 }
 
-interface ImageModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedImage: SelectedImage | null;
-}
+// interface ImageModalProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   selectedImage: SelectedImage | null;
+// }
 
 interface Webinar {
   id: string;
@@ -198,11 +199,11 @@ const ProfessorProfilePage: React.FC = () => {
   const [patents, setPatents] = useState<Patent[]>([]);
   const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
   const [isCreatingPatent, setIsCreatingPatent] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
 
   const openModal = (imageUrl:string, title:string) => {
     setSelectedImage({ url: imageUrl, title });
   };
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null)
 
   const closeModal = () => {
     setSelectedImage(null);
@@ -545,194 +546,194 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
-  const renderPatentsTab = () => (
-    <TabsContent value="patents">
-      <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
-        <CardHeader className="border-b border-[#c1502e]/10">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <BookOpen className="mr-3 h-6 w-6 text-[#c1502e]" />
-              Patents
-            </CardTitle>
-            {isLoggedInUser && (
-              <Dialog
-                open={isPatentDialogOpen}
-                onOpenChange={setIsPatentDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button className="bg-[#c1502e] text-white hover:bg-[#472014]">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Patent
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Patent</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const formData = new FormData();
+  // const renderPatentsTab = () => (
+  //   <TabsContent value="patents">
+  //     <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
+  //       <CardHeader className="border-b border-[#c1502e]/10">
+  //         <div className="flex items-center justify-between">
+  //           <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+  //             <BookOpen className="mr-3 h-6 w-6 text-[#c1502e]" />
+  //             Patents
+  //           </CardTitle>
+  //           {isLoggedInUser && (
+  //             <Dialog
+  //               open={isPatentDialogOpen}
+  //               onOpenChange={setIsPatentDialogOpen}
+  //             >
+  //               <DialogTrigger asChild>
+  //                 <Button className="bg-[#c1502e] text-white hover:bg-[#472014]">
+  //                   <Plus className="mr-2 h-4 w-4" />
+  //                   Create Patent
+  //                 </Button>
+  //               </DialogTrigger>
+  //               <DialogContent className="sm:max-w-[425px]">
+  //                 <DialogHeader>
+  //                   <DialogTitle>Create New Patent</DialogTitle>
+  //                 </DialogHeader>
+  //                 <form
+  //                   onSubmit={(e) => {
+  //                     e.preventDefault();
+  //                     const formData = new FormData();
 
-                      // Get form values
-                      const titleInput = e.currentTarget.querySelector(
-                        "#title"
-                      ) as HTMLInputElement;
-                      const descriptionInput = e.currentTarget.querySelector(
-                        "#description"
-                      ) as HTMLTextAreaElement;
+  //                     // Get form values
+  //                     const titleInput = e.currentTarget.querySelector(
+  //                       "#title"
+  //                     ) as HTMLInputElement;
+  //                     const descriptionInput = e.currentTarget.querySelector(
+  //                       "#description"
+  //                     ) as HTMLTextAreaElement;
 
-                      const fileInput = e.currentTarget.querySelector(
-                        "#patentImages"
-                      ) as HTMLInputElement;
+  //                     const fileInput = e.currentTarget.querySelector(
+  //                       "#patentImages"
+  //                     ) as HTMLInputElement;
 
-                      formData.append("title", titleInput.value);
-                      formData.append("description", descriptionInput.value);
-                      formData.append(
-                        "professorId",
-                        localStorage.getItem("userId") || ""
-                      );
+  //                     formData.append("title", titleInput.value);
+  //                     formData.append("description", descriptionInput.value);
+  //                     formData.append(
+  //                       "professorId",
+  //                       localStorage.getItem("userId") || ""
+  //                     );
 
-                      // Append multiple files
-                      if (fileInput.files) {
-                        Array.from(fileInput.files).forEach((file) => {
-                          formData.append("patentImages", file);
-                        });
-                      }
-                      handleCreatePatent(formData);
-                    }}
-                  >
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" name="title" required />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="description">
-                          Description (max 200 words)
-                        </Label>
-                        <Textarea
-                          id="description"
-                          name="description"
-                          required
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="patentImages">
-                          Images (1-4 images required)
-                        </Label>
-                        <Input
-                          id="patentImages"
-                          name="patentImages"
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          required
-                          onChange={(e) => {
-                            const files = e.target.files;
-                            if (files && files.length > 4) {
-                              e.target.value = "";
-                              alert("Please select up to 4 images only");
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsPatentDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="bg-[#c1502e] text-white hover:bg-[#472014]"
-                        disabled={isCreatingPatent}
-                      >
-                        {isCreatingPatent ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating...
-                          </>
-                        ) : (
-                          "Create Patent"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          {patents.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {patents.map((patent) => (
-                <Card key={patent.id} className="overflow-hidden">
-                  <div
-                    className={`grid gap-2 ${
-                      Array.isArray(patent.imageUrl) &&
-                      patent.imageUrl.length === 1
-                        ? "grid-cols-1"
-                        : Array.isArray(patent.imageUrl) &&
-                          patent.imageUrl.length === 2
-                        ? "grid-cols-2"
-                        : Array.isArray(patent.imageUrl) &&
-                          patent.imageUrl.length === 3
-                        ? "grid-cols-2"
-                        : "grid-cols-2"
-                    }`}
-                  >
-                    {Array.isArray(patent.imageUrl) &&
-                      patent.imageUrl.map((url: string, index: number) => (
-                        <div
-                          key={index}
-                          className={`relative ${
-                            patent.imageUrl.length === 1
-                              ? "aspect-video w-full"
-                              : patent.imageUrl.length === 2
-                              ? "aspect-square"
-                              : patent.imageUrl.length === 3 && index === 0
-                              ? "aspect-video col-span-2"
-                              : "aspect-square"
-                          }`}
-                        >
-                          <Image
-                            src={url}
-                            alt={`${patent.title} - Image ${index + 1}`}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold text-[#472014]">
-                      {patent.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">
-                      {patent.description}
-                    </p>
-                    <p className="mt-2 text-xs text-gray-500">
-                      Created on{" "}
-                      {new Date(patent.createdAt).toLocaleDateString()}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center py-8 text-gray-500">
-              No patents available.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    </TabsContent>
-  );
+  //                     // Append multiple files
+  //                     if (fileInput.files) {
+  //                       Array.from(fileInput.files).forEach((file) => {
+  //                         formData.append("patentImages", file);
+  //                       });
+  //                     }
+  //                     handleCreatePatent(formData);
+  //                   }}
+  //                 >
+  //                   <div className="grid gap-4 py-4">
+  //                     <div className="grid gap-2">
+  //                       <Label htmlFor="title">Title</Label>
+  //                       <Input id="title" name="title" required />
+  //                     </div>
+  //                     <div className="grid gap-2">
+  //                       <Label htmlFor="description">
+  //                         Description (max 200 words)
+  //                       </Label>
+  //                       <Textarea
+  //                         id="description"
+  //                         name="description"
+  //                         required
+  //                       />
+  //                     </div>
+  //                     <div className="grid gap-2">
+  //                       <Label htmlFor="patentImages">
+  //                         Images (1-4 images required)
+  //                       </Label>
+  //                       <Input
+  //                         id="patentImages"
+  //                         name="patentImages"
+  //                         type="file"
+  //                         multiple
+  //                         accept="image/*"
+  //                         required
+  //                         onChange={(e) => {
+  //                           const files = e.target.files;
+  //                           if (files && files.length > 4) {
+  //                             e.target.value = "";
+  //                             alert("Please select up to 4 images only");
+  //                           }
+  //                         }}
+  //                       />
+  //                     </div>
+  //                   </div>
+  //                   <div className="flex justify-end gap-4">
+  //                     <Button
+  //                       type="button"
+  //                       variant="outline"
+  //                       onClick={() => setIsPatentDialogOpen(false)}
+  //                     >
+  //                       Cancel
+  //                     </Button>
+  //                     <Button
+  //                       type="submit"
+  //                       className="bg-[#c1502e] text-white hover:bg-[#472014]"
+  //                       disabled={isCreatingPatent}
+  //                     >
+  //                       {isCreatingPatent ? (
+  //                         <>
+  //                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //                           Creating...
+  //                         </>
+  //                       ) : (
+  //                         "Create Patent"
+  //                       )}
+  //                     </Button>
+  //                   </div>
+  //                 </form>
+  //               </DialogContent>
+  //             </Dialog>
+  //           )}
+  //         </div>
+  //       </CardHeader>
+  //       <CardContent className="p-6">
+  //         {patents.length > 0 ? (
+  //           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+  //             {patents.map((patent) => (
+  //               <Card key={patent.id} className="overflow-hidden">
+  //                 <div
+  //                   className={`grid gap-2 ${
+  //                     Array.isArray(patent.imageUrl) &&
+  //                     patent.imageUrl.length === 1
+  //                       ? "grid-cols-1"
+  //                       : Array.isArray(patent.imageUrl) &&
+  //                         patent.imageUrl.length === 2
+  //                       ? "grid-cols-2"
+  //                       : Array.isArray(patent.imageUrl) &&
+  //                         patent.imageUrl.length === 3
+  //                       ? "grid-cols-2"
+  //                       : "grid-cols-2"
+  //                   }`}
+  //                 >
+  //                   {Array.isArray(patent.imageUrl) &&
+  //                     patent.imageUrl.map((url: string, index: number) => (
+  //                       <div
+  //                         key={index}
+  //                         className={`relative ${
+  //                           patent.imageUrl.length === 1
+  //                             ? "aspect-video w-full"
+  //                             : patent.imageUrl.length === 2
+  //                             ? "aspect-square"
+  //                             : patent.imageUrl.length === 3 && index === 0
+  //                             ? "aspect-video col-span-2"
+  //                             : "aspect-square"
+  //                         }`}
+  //                       >
+  //                         <Image
+  //                           src={url}
+  //                           alt={`${patent.title} - Image ${index + 1}`}
+  //                           fill
+  //                           className="object-cover"
+  //                         />
+  //                       </div>
+  //                     ))}
+  //                 </div>
+  //                 <CardContent className="p-4">
+  //                   <h3 className="text-lg font-semibold text-[#472014]">
+  //                     {patent.title}
+  //                   </h3>
+  //                   <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+  //                     {patent.description}
+  //                   </p>
+  //                   <p className="mt-2 text-xs text-gray-500">
+  //                     Created on{" "}
+  //                     {new Date(patent.createdAt).toLocaleDateString()}
+  //                   </p>
+  //                 </CardContent>
+  //               </Card>
+  //             ))}
+  //           </div>
+  //         ) : (
+  //           <p className="text-center py-8 text-gray-500">
+  //             No patents available.
+  //           </p>
+  //         )}
+  //       </CardContent>
+  //     </Card>
+  //   </TabsContent>
+  // );
 
   const renderBusinessProjectsTab = () => (
     <TabsContent value="business-projects">
@@ -1305,34 +1306,35 @@ const ProfessorProfilePage: React.FC = () => {
       </Card>
 
       {/* Modal */}
-      {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={closeModal}
-        >
-          <div 
-            className="relative max-w-4xl w-full bg-white rounded-lg p-2"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <div className="mt-8 mb-4 text-center">
-              <h3 className="text-lg font-semibold text-[#472014]">{selectedImage.title}</h3>
-            </div>
-            <div className="flex justify-center">
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.title}
-                className="max-h-[80vh] w-auto object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      
+{selectedImage && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+    onClick={closeModal}
+  >
+    <div
+      className="relative max-w-4xl w-full bg-white rounded-lg p-2"
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+    >
+      <button
+        onClick={closeModal}
+        className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      <div className="mt-8 mb-4 text-center">
+        <h3 className="text-lg font-semibold text-[#472014]">{selectedImage.title}</h3>
+      </div>
+      <div className="flex justify-center">
+        <Image
+          src={selectedImage.url}
+          alt={selectedImage.title}
+          className="max-h-[80vh] w-auto object-contain"
+        />
+      </div>
+    </div>
+  </div>
+)}
                 </motion.div>
               </TabsContent>
               {isLoggedInUser && (
