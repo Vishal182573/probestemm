@@ -19,6 +19,8 @@ import DISCUSSIONHOME from "./discussion-home.png"
 import FAQPAGE from "./faq-page.png"
 import ABOUT from "./about.png"
 import ABOUTPAGE from "./about-page.png"
+import LOGOLEFT from "./logo-left.png"
+import LOGORIGHT from "./logo-right.png"
 
 export {
     LOGIN,
@@ -41,5 +43,7 @@ export {
     DISCUSSIONHOME,
     FAQPAGE,
     ABOUT,
-    ABOUTPAGE
+    ABOUTPAGE,
+    LOGOLEFT,
+    LOGORIGHT
 }

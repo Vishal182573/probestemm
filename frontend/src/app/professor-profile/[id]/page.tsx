@@ -29,6 +29,7 @@ import {
   Eye,
   BookX,
   Calendar,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -95,6 +96,17 @@ interface Professor {
     category: string;
     subcategory: string;
   }>;
+}
+
+interface SelectedImage {
+  url: string;
+  title: string;
+}
+
+interface ImageModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedImage: SelectedImage | null;
 }
 
 interface Webinar {
@@ -186,6 +198,15 @@ const ProfessorProfilePage: React.FC = () => {
   const [patents, setPatents] = useState<Patent[]>([]);
   const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
   const [isCreatingPatent, setIsCreatingPatent] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openModal = (imageUrl:string, title:string) => {
+    setSelectedImage({ url: imageUrl, title });
+  };
+
+  const closeModal = () => {
+    setSelectedImage(null);
+  };
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -1168,20 +1189,6 @@ const ProfessorProfilePage: React.FC = () => {
                           <strong>Position:</strong> {professor.position}
                         </li>
                         <li>
-                          <strong>Research Interests :</strong>{" "}
-                          {professor.researchInterests.map(
-                            (interest, index) => (
-                              <span key={index}>
-                                {interest.title}
-
-                                {index < professor.researchInterests.length - 1
-                                  ? ", "
-                                  : ""}
-                              </span>
-                            )
-                          )}
-                        </li>
-                        <li>
                           <strong>Professor tags: </strong>
                           {professor.tags.map((tag, index) => (
                             <Badge
@@ -1257,6 +1264,75 @@ const ProfessorProfilePage: React.FC = () => {
                       )}
                     </CardContent>
                   </Card>
+
+                  <Card className="bg-white text-[#472014]">
+        <CardHeader>
+          <CardTitle className="flex items-center text-2xl font-bold">
+            <BookOpen className="mr-2" />
+            Research Interests
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {professor.researchInterests && professor.researchInterests.length > 0 ? (
+            <ul className="space-y-4">
+              {professor.researchInterests.map((research) => (
+                <li key={research.title} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-black">
+                      {research.title}
+                    </Badge>
+                    {research.imageUrl && (
+                      <img
+                        src={research.imageUrl}
+                        alt={research.title}
+                        className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => openModal(research.imageUrl, research.title)}
+                      />
+                    )}
+                  </div>
+                  {research.description && (
+                    <p className="text-sm text-gray-600 ml-2">
+                      {research.description}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No research interests listed yet.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={closeModal}
+        >
+          <div 
+            className="relative max-w-4xl w-full bg-white rounded-lg p-2"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="mt-8 mb-4 text-center">
+              <h3 className="text-lg font-semibold text-[#472014]">{selectedImage.title}</h3>
+            </div>
+            <div className="flex justify-center">
+              <img
+                src={selectedImage.url}
+                alt={selectedImage.title}
+                className="max-h-[80vh] w-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
                 </motion.div>
               </TabsContent>
               {isLoggedInUser && (

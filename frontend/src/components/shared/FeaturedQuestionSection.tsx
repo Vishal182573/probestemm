@@ -84,7 +84,7 @@ const FeaturedQuestionsSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-5xl font-bold text-center mb-16 text-gray-800"
         >
-          Featured <span className="text-[#f0d80f]">Discussions</span>
+          Featured <span className="text-[#eb5e17]">Discussions</span>
         </motion.h2>
 
         <div className="flex flex-col lg:flex-row items-start gap-12 relative z-10">
@@ -138,7 +138,7 @@ const FeaturedQuestionsSection: React.FC = () => {
             <motion.div variants={itemVariants} className="mt-8 sm:mt-10 md:mt-12 text-center">
               <Link href="/discussions">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button className="w-full sm:w-auto bg-[#c1502e] hover:bg-[#472014] text-white text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-colors duration-300">
+                  <Button className="w-full sm:w-auto bg-[#5e17eb] hover:bg-[#472014] text-white text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-colors duration-300">
                     View All Discussions
                   </Button>
                 </motion.div>
@@ -158,7 +158,7 @@ const FeaturedQuestionsSection: React.FC = () => {
                 src={DISCUSSIONHOME}
                 alt="Discussion Illustration"
                 fill
-                className="object-contain rounded-2xl shadow-xl"
+                className="object-cover rounded-2xl shadow-xl"
                 priority
               />
             </div>

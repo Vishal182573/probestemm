@@ -275,12 +275,43 @@ export const SignupForm: React.FC = () => {
     }
   };
 
+  const MAX_TAGS = 3;
+
   const addTag = (category: string, subcategory: string) => {
     if (category && subcategory) {
+      const currentTags = roleSpecificData.tags || [];
+      
+      // Check if we've reached the maximum tags limit
+      if (currentTags.length >= MAX_TAGS) {
+        toast({
+          title: "Tag limit reached",
+          description: `You can only select up to ${MAX_TAGS} tags.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check if the tag already exists
+      const tagExists = currentTags.some(
+        tag => tag.category === category && tag.subcategory === subcategory
+      );
+      
+      if (tagExists) {
+        toast({
+          title: "Tag already exists",
+          description: "You have already selected this tag.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setRoleSpecificData({
         ...roleSpecificData,
-        tags: [...(roleSpecificData.tags || []), { category, subcategory }],
+        tags: [...currentTags, { category, subcategory }],
       });
+
+      // Clear the selected category after adding a tag
+      setSelectedCategory("");
     }
   };
 
@@ -365,7 +396,7 @@ export const SignupForm: React.FC = () => {
   const renderProfessorForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="position">Position</Label>
+        <Label htmlFor="position">Current Position</Label>
         <Input
           id="position"
           type="text"
@@ -511,7 +542,7 @@ export const SignupForm: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        <Label>Tags</Label>
+        <Label>Tags (Optional: Select up to {MAX_TAGS})</Label>
         <div className="flex space-x-2">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-[180px]">
@@ -526,9 +557,9 @@ export const SignupForm: React.FC = () => {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(subcategory) =>
-              addTag(selectedCategory, subcategory)
-            }
+            value=""
+            onValueChange={(subcategory) => addTag(selectedCategory, subcategory)}
+            disabled={!selectedCategory}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Subcategory" />
@@ -551,17 +582,24 @@ export const SignupForm: React.FC = () => {
               key={index}
               className="bg-primary/10 px-2 py-1 rounded-md flex items-center gap-2"
             >
-              {tag.category} - {tag.subcategory}
+              <span className="text-sm">
+                {tag.category} - {tag.subcategory}
+              </span>
               <button
                 type="button"
                 onClick={() => removeTag(index)}
-                className="text-red-500"
+                className="text-red-500 hover:bg-red-100 rounded-full p-1"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           ))}
         </div>
+        {roleSpecificData.tags && roleSpecificData.tags.length > 0 && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {roleSpecificData.tags.length} of {MAX_TAGS} tags selected
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -576,6 +614,7 @@ export const SignupForm: React.FC = () => {
               website: e.target.value,
             })
           }
+          placeholder="(optional)"
         />
       </div>
 
@@ -668,7 +707,7 @@ export const SignupForm: React.FC = () => {
               experience: e.target.value,
             })
           }
-          required
+          placeholder="(optional)"
         />
       </div>
       <Button type="submit" className="w-full">

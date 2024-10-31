@@ -115,7 +115,7 @@ const QuestionDetailPage: React.FC = () => {
       <div className="flex items-center justify-center h-screen bg-white">
         <p className="text-[#472014] font-caveat text-2xl">
           <Image src={LOGO} alt="logo" className="w-36" />
-          <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
+          <Rocket className="h-8 w-8 r-2 mr-2 text-[#eb5e17]" />
           Loading discussion...
         </p>
       </div>
@@ -157,13 +157,13 @@ const QuestionDetailPage: React.FC = () => {
           {discussion.title}
         </motion.h1>
 
-        <Card className="mb-8 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#c1502e]">
+        <Card className="mb-8 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#eb5e17]">
           <CardContent className="p-6">
             <div className="flex items-start space-x-4">
               <div className="flex flex-col items-center">
                 <Button
                   variant="outline"
-                  className="px-2 py-1 mb-2 text-[#c1502e] hover:text-[#472014] border-[#c1502e]"
+                  className="px-2 py-1 mb-2 text-[#eb5e17] hover:text-[#472014] border-[#eb5e17]"
                   onClick={() => handleVote("UPVOTE")}
                 >
                   <FaArrowUp />
@@ -173,7 +173,7 @@ const QuestionDetailPage: React.FC = () => {
                 </span>
                 <Button
                   variant="outline"
-                  className="px-2 py-1 mt-2 text-[#c1502e] hover:text-[#472014] border-[#c1502e]"
+                  className="px-2 py-1 mt-2 text-[#eb5e17] hover:text-[#472014] border-[#eb5e17]"
                   onClick={() => handleVote("DOWNVOTE")}
                 >
                   <FaArrowDown />
@@ -190,7 +190,7 @@ const QuestionDetailPage: React.FC = () => {
                   <FaClock className="mr-1" />
                   <span>{new Date(discussion.createdAt).toLocaleString()}</span>
                   <span className="mx-2">•</span>
-                  <span className="bg-[#c1502e] text-white text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+                  <span className="bg-[#eb5e17] text-white text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
                     {discussion.category}
                   </span>
                   <span className="bg-[#472014] text-white text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
@@ -218,7 +218,7 @@ const QuestionDetailPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
           >
-            <Card className="mb-4 bg-white shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#c1502e]">
+            <Card className="mb-4 bg-white shadow-md hover:shadow-lg transition-shadow duration-300 border border-[#eb5e17]">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
                   <div className="flex-grow">
@@ -248,7 +248,7 @@ const QuestionDetailPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-white bg-[#c1502e] hover: rounded-full transition-all duration-300 shadow-lg hover:shadow-xl space-x-3"
+                            className="text-white bg-[#eb5e17] hover: rounded-full transition-all duration-300 shadow-lg hover:shadow-xl space-x-3"
                           >
                             <LucideUserCheck size={18} />
                             {answer.professor?.fullName ||
@@ -278,12 +278,12 @@ const QuestionDetailPage: React.FC = () => {
               placeholder="Write your answer here..."
               value={newAnswer}
               onChange={(e) => setNewAnswer(e.target.value)}
-              className="w-full mb-4 bg-white text-[#472014] border-[#c1502e] focus:border-[#472014] focus:ring focus:ring-[#c1502e] focus:ring-opacity-50"
+              className="w-full mb-4 bg-white text-[#472014] border-[#eb5e17] focus:border-[#472014] focus:ring focus:ring-[#eb5e17] focus:ring-opacity-50"
               rows={6}
             />
             <Button
               onClick={handleAddAnswer}
-              className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl flex items-center"
+              className="bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl flex items-center"
             >
               <FaComment className="mr-2" /> Post Answer
             </Button>

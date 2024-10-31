@@ -102,7 +102,7 @@ export const LoginForm: React.FC = () => {
           <Link href="/signup">
             <Button
               variant="link"
-              className="text-[#c1502e] hover:text-[#472014] text-sm p-0 font-semibold"
+              className="text-[#eb5e17] hover:text-[#472014] text-sm p-0 font-semibold"
             >
               Sign Up
             </Button>
@@ -116,7 +116,7 @@ export const LoginForm: React.FC = () => {
               value={email}
               type="email"
               placeholder="Email Address"
-              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014] placeholder:text-[#686256]/60"
+              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#eb5e17] h-12 text-[#472014] placeholder:text-[#686256]/60"
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
@@ -125,32 +125,31 @@ export const LoginForm: React.FC = () => {
               value={password}
               type="password"
               placeholder="Password"
-              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014] placeholder:text-[#686256]/60"
+              className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#eb5e17] h-12 text-[#472014] placeholder:text-[#686256]/60"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <Select value={role} onValueChange={setRole}>
-            <SelectTrigger className="w-full bg-white/50 border-2 border-[#686256]/20 focus:border-[#c1502e] h-12 text-[#472014]">
+            <SelectTrigger className="w-full bg-white/50 border-2 border-[#686256]/20 focus:border-[#eb5e17] h-12 text-[#472014]">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent className="bg-white text-[#472014]">
               <SelectItem value="student">Student</SelectItem>
               <SelectItem value="professor">Professor</SelectItem>
               <SelectItem value="business">Business</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex justify-between items-center">
             <Link
               href="/forgot-password"
-              className="text-sm text-[#c1502e] hover:text-[#472014] font-semibold"
+              className="text-sm text-[#eb5e17] hover:text-[#472014] font-semibold"
             >
               Forgot Password?
             </Link>
           </div>
           <Button
             type="submit"
-            className="w-full h-12 bg-[#f0d80f] text-black font-semibold transition-colors duration-300"
+            className="w-full h-12 bg-[#5e17eb] text-white font-semibold transition-colors duration-300"
             disabled={isLoading}
           >
             {isLoading ? (

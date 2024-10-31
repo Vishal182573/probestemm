@@ -18,9 +18,7 @@ const ContactForm: React.FC = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(
-    null
-  );
+  const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -49,48 +47,46 @@ const ContactForm: React.FC = () => {
 
   return (
     <section className="py-12 bg-white">
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white shadow-xl rounded-lg overflow-hidden border border-[#c1502e]"
+          className="relative bg-white rounded-xl overflow-hidden shadow-lg"
         >
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/2 bg-[#f0d80f] p-8 text-white flex flex-col justify-between relative">
-              <div>
-                <h2 className="text-3xl font-bold mb-4 text-white font-caveat">
-                  Contact Us
+          <div className="flex flex-col lg:flex-row">
+            {/* Left side - Image with transparent border effect */}
+            <div className="lg:w-1/2 relative p-4">
+              <div className="relative h-full rounded-xl overflow-hidden">
+                {/* Transparent border overlay */}
+                <div className="absolute inset-0 border-[120px] border-[#eb5e17] opacity-50 z-10" />
+                <Image
+                  src={CONTACT}
+                  alt="Students walking up stairs"
+                  className="w-46 h-full object-cover rounded-xl"
+                  style={{ objectPosition: 'center center' }}
+                />
+                <div className="absolute bottom-8 left-8 z-20">
+                  <div className="space-y-4">
+                    <div className="w-48 h-1 bg-white" />
+                    <p className="text-xl text-white font-medium">
+                    Your opinion matters
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Form */}
+            <div className="lg:w-1/2 p-8">
+              <div className="mb-12">
+                <h2 className="text-5xl font-bold mb-4 text-black">
+                  CONTACT US
                 </h2>
-                <h3 className="text-4xl font-extrabold mb-6 text-white">
-                  Want to give feedback/
-                  <br />
-                  Suggestions?
-                </h3>
-                <p className="text-lg mb-8 text-white">
-                  Send a mail directly to Us!
+                <p className="text-xl text-gray-700 mb-8">
+                  Want to give Feedback Suggestions ?
                 </p>
               </div>
-              <motion.div
-                className="relative h-72 mt-4 overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  duration: 0.6,
-                }}
-              >
-                <Image 
-                  src={CONTACT}
-                  alt="Contact illustration"
-                  className="object-cover w-full h-full rounded-lg"
-                  style={{ objectPosition: 'center 30%' }}
-                />
-              </motion.div>
-            </div>
-            <div className="md:w-1/2 p-8 bg-white">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <Input
@@ -99,7 +95,7 @@ const ContactForm: React.FC = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Your Email Address"
-                    className="w-full bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                    className="w-full bg-white border-black text-black placeholder-gray-500 focus:border-maroon-600 focus:ring-maroon-600"
                     required
                   />
                 </div>
@@ -110,7 +106,7 @@ const ContactForm: React.FC = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Full Name"
-                    className="w-full bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                    className="w-full bg-white border-black text-black placeholder-gray-500 focus:border-maroon-600 focus:ring-maroon-600"
                     required
                   />
                 </div>
@@ -121,7 +117,7 @@ const ContactForm: React.FC = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="Subject"
-                    className="w-full bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                    className="w-full bg-white border-black text-black placeholder-gray-500 focus:border-maroon-600 focus:ring-maroon-600"
                     required
                   />
                 </div>
@@ -132,7 +128,7 @@ const ContactForm: React.FC = () => {
                     value={formData.phoneNumber}
                     onChange={handleChange}
                     placeholder="Phone Number"
-                    className="w-full bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                    className="w-full bg-white border-black text-black placeholder-gray-500 focus:border-maroon-600 focus:ring-maroon-600"
                   />
                 </div>
                 <div>
@@ -141,13 +137,13 @@ const ContactForm: React.FC = () => {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Your Message Here"
-                    className="w-full h-32 bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                    className="w-full h-32 bg-white border-black text-black placeholder-gray-500 focus:border-maroon-600 focus:ring-maroon-600"
                     required
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-3 rounded-lg transition duration-300"
+                  className="w-full bg-[#5e17eb] hover:bg-[#733edb] text-white font-bold py-3 rounded-lg transition duration-300"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Submit"}

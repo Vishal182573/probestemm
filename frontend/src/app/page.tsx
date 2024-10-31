@@ -96,7 +96,7 @@ const HeroSection = () => {
           style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
         />
       </AnimatePresence>
-      <div className="absolute inset-0  bg-[#f0d80f] opacity-60 z-10" />
+      <div className="absolute inset-0  bg-[#eb5e17] opacity-60 z-10" />
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -124,7 +124,7 @@ const HeroSection = () => {
           <Link href="/signup">
             <Button
               size="lg"
-              className="bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
+              className="bg-[#5e17eb] hover:bg-[#3c246b] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               Get Started
               <Rocket className="ml-2 h-6 w-6" />
@@ -243,7 +243,7 @@ const FeaturesSection = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-            className="bg-white rounded-xl shadow-xl border-4 border-[#c1502e] hover:scale-105 transition-transform duration-300 overflow-hidden flex flex-col"
+            className="bg-white rounded-xl shadow-xl border-4 border-[#eb5e17] hover:scale-105 transition-transform duration-300 overflow-hidden flex flex-col"
           >
             <div className="relative h-56 w-full">
               <Image
@@ -272,7 +272,7 @@ const FeaturesSection = () => {
                 ))}
               </ul>
               <Link href={feature.link}>
-                <Button className="bg-[#f0d80f] hover:bg-[#472014] text-black hover:text-white">
+                <Button className="bg-[#5e17eb] hover:bg-[#472014] text-white hover:text-white">
                   Explore more <ArrowRight className="ml-2" />
                 </Button>
               </Link>

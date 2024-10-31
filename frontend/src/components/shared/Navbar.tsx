@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { LOGO, LOGOWHITE } from "../../../public";
+import { LOGO, LOGOLEFT, LOGORIGHT, LOGOWHITE} from "../../../public";
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,17 +64,41 @@ export const Navbar: React.FC = () => {
   return (
     <nav className={`${bgColor} fixed top-0 z-50 w-full transition-colors duration-300`}>
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-20 relative">
+        <div className="flex justify-between items-center h-24 relative">
           <Link href="/" className="relative">
-              {isScrolled ? 
-                <Image src={LOGO} alt="logo" className="w-32 lg:w-48 lg:h-48 h-32" /> : 
-                <Image src={LOGOWHITE} alt="logo" className="w-48 lg:w-56 lg:h-56 h-48" />
-              }
+          {isScrolled ? (
+            <div className="flex items-center justify-center h-24 ">
+            <div className="relative h-full flex items-center">
+              <Image
+                src={LOGOLEFT}
+                alt="left logo part"
+                className="w-auto h-20 lg:h-24 object-contain"
+                priority
+              />
+            </div>
+            <div className="relative h-full flex items-center">
+              <Image
+                src={LOGORIGHT}
+                alt="right logo part"
+                className="w-auto h-20 lg:h-24 object-contain"
+                priority
+              />
+            </div>
+          </div>
+        
+      ) : (
+      <Image 
+        src={LOGOWHITE} 
+        alt="logo" 
+        className="w-32 lg:w-56 lg:h-56 h-32"
+      />
+        
+      )}
           </Link>
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             <NavLink to="/" className={linkTextColor}>
               HOME
             </NavLink>
@@ -177,7 +201,7 @@ const NavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`${className} hover:bg-blue-50 font-semibold text-md hover:text-[#472014]`}
+      className={`${className} hover:bg-blue-50 font-semibold text-sm hover:text-[#472014]`}
     >
       {children}
     </Button>

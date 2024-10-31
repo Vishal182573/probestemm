@@ -144,7 +144,7 @@ const ProjectsPage = () => {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         <p className="text-[#472014] font-caveat text-2xl">
-          <Rocket className="h-8 w-8 r-2 mr-2 text-[#c1502e]" />
+          <Rocket className="h-8 w-8 r-2 mr-2 text-[#eb5e17]" />
           Loading projects...
         </p>
       </div>
@@ -170,14 +170,14 @@ const ProjectsPage = () => {
           <TabsList className="mb-8">
             <TabsTrigger
               value="business"
-              className="text-[#472014] bg-[#f0d80f] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+              className="text-[#d3a79a] bg-[#5e17eb] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
             >
               <GraduationCap className="mr-2 h-5 w-5" />
               Business Projects
             </TabsTrigger>
             <TabsTrigger
               value="professor"
-              className="text-[#472014] bg-[#f0d80f] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
+              className="text-[#d3a79a] bg-[#5e17eb] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
             >
               <UserCircle className="mr-2 h-5 w-5" />
               Professor Projects
@@ -268,8 +268,8 @@ const ProjectCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card className="bg-white border-[#c1502e] overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-[#c1502e] to-[#686256] pb-2">
+      <Card className="bg-white border-[#eb5e17] overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-[#eb5e17] to-[#686256] pb-2">
           <div className="flex justify-between items-start">
             <CardTitle className="text-2xl font-bold text-white font-caveat">
               {project.title}
@@ -326,7 +326,7 @@ const ProjectCard = ({
               <Badge
                 key={i}
                 variant="secondary"
-                className="bg-[#c1502e] text-white"
+                className="bg-[#eb5e17] text-white"
               >
                 {tag}
               </Badge>
@@ -347,7 +347,7 @@ const ProjectCard = ({
             <Button
               className={`w-full rounded-full ${
                 project.status === "OPEN"
-                  ? "bg-[#c1502e] hover:bg-[#472014] text-white"
+                  ? "bg-[#eb5e17] hover:bg-[#472014] text-white"
                   : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed text-white"
               }`}
               disabled={project.status !== "OPEN"}
@@ -367,7 +367,7 @@ const ProjectCard = ({
             </Button>
           )}
 
-          <Button className=" bg-[#c1502e] hover:bg-[#472014] text-white  w-full mt-4  rounded-full flex items-center justify-center">
+          <Button className=" bg-[#eb5e17] hover:bg-[#472014] text-white  w-full mt-4  rounded-full flex items-center justify-center">
             <User2Icon className="mr-2" />
             {projectType === "BUSINESS" ? (
               <Link href={`/business-profile/${project.business?.id}`}>

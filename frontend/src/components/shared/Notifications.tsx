@@ -81,12 +81,12 @@ const NotificationsComponent: React.FC = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <Card className="max-w-7xl mx-auto bg-white shadow-lg border-[#c1502e]">
+    <Card className="max-w-7xl mx-auto bg-white shadow-lg border-[#eb5e17]">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-4xl font-bold text-[#472014] font-caveat">
           Webinars
         </CardTitle>
-        <Badge variant="secondary" className="bg-[#c1502e] text-white">
+        <Badge variant="secondary" className="bg-[#eb5e17] text-white">
           {filteredWebinars.length} Total
         </Badge>
       </CardHeader>
@@ -97,7 +97,7 @@ const NotificationsComponent: React.FC = () => {
               setFilter(value)
             }
           >
-            <SelectTrigger className="w-[180px] bg-white text-[#472014] border-[#c1502e]">
+            <SelectTrigger className="w-[180px] bg-white text-[#472014] border-[#eb5e17]">
               <SelectValue placeholder="Filter webinars" />
             </SelectTrigger>
             <SelectContent>
@@ -128,7 +128,7 @@ const NotificationsComponent: React.FC = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Card className="bg-white border-[#c1502e] overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                  <Card className="bg-white border-[#eb5e17] overflow-hidden hover:shadow-xl transition-shadow duration-300">
                     <CardContent className="p-0">
                       <div className="flex flex-col md:flex-row">
                         <div className="w-full md:w-1/3 h-48 md:h-auto relative">
@@ -141,7 +141,7 @@ const NotificationsComponent: React.FC = () => {
                             />
                           ) : (
                             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                              <Video className="h-12 w-12 text-[#c1502e]" />
+                              <Video className="h-12 w-12 text-[#eb5e17]" />
                             </div>
                           )}
                         </div>
@@ -155,7 +155,7 @@ const NotificationsComponent: React.FC = () => {
                               className={`ml-2 ${
                                 webinar.status === "APPROVED"
                                   ? "bg-green-100 text-green-800"
-                                  : "bg-[#c1502e] text-white"
+                                  : "bg-[#eb5e17] text-white"
                               }`}
                             >
                               {webinar.status === "APPROVED"
@@ -166,15 +166,15 @@ const NotificationsComponent: React.FC = () => {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
-                              <Calendar className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              <Calendar className="h-4 w-4 mr-2 text-[#eb5e17]" />
                               {webinar.date}
                             </div>
                             <div className="flex items-center text-sm text-[#686256]">
-                              <MapPin className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              <MapPin className="h-4 w-4 mr-2 text-[#eb5e17]" />
                               {webinar.place}
                             </div>
                             <div className="flex items-center text-sm text-[#686256]">
-                              <User className="h-4 w-4 mr-2 text-[#c1502e]" />
+                              <User className="h-4 w-4 mr-2 text-[#eb5e17]" />
                               Max Attendees: {webinar.maxAttendees}
                             </div>
                           </div>
@@ -197,7 +197,7 @@ const NotificationsComponent: React.FC = () => {
                                     >
                                       <Button
                                         variant="outline"
-                                        className="bg-[#f0d80f] text-black hover:bg-[#472014] group flex items-center gap-2"
+                                        className="bg-[#5e17eb] text-white group flex items-center gap-2"
                                       >
                                         View Professor
                                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -222,7 +222,7 @@ const NotificationsComponent: React.FC = () => {
                                         );
                                       }}
                                       variant="outline"
-                                      className="bg-[#c1502e] text-white hover:bg-[#472014] group flex items-center gap-2"
+                                      className="bg-[#eb5e17] text-white hover:bg-[#472014] group flex items-center gap-2"
                                     >
                                       <Download className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                                     </Button>
@@ -254,8 +254,8 @@ const NotificationsComponent: React.FC = () => {
                 variant={currentPage === i + 1 ? "default" : "outline"}
                 className={`mx-1 ${
                   currentPage === i + 1
-                    ? "bg-[#c1502e] text-white"
-                    : "text-[#c1502e] hover:bg-[#c1502e] hover:text-white"
+                    ? "bg-[#eb5e17] text-white"
+                    : "text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
                 }`}
               >
                 {i + 1}

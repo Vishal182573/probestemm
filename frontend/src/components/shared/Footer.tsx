@@ -13,24 +13,24 @@ export const Footer: React.FC = () => {
 
   return (
     <>
-      <footer className="bg-gradient-to-b from-white to-[#f8f4f1] text-[#472014] border-t-[1px] border-[#472014]">
+      <footer className="bg-white text-[#472014] border-t-[1px] border-[#472014]">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Contact Information */}
             <div className="space-y-4">
-              <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Contact Us</h3>
+              <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Contact Us</h3>
               <ul className="space-y-4">
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
-                  <MdEmail className="mr-3 text-[#c1502e]" size={20} />
-                  <a href="mailto:info@probestem.com">sarita@iitmandi.ac.in</a>
+                  <MdEmail className="mr-3 text-[#eb5e17]" size={20} />
+                  <a href="mailto:info@probestem.com">probestem@gmail.com</a>
                 </li>
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
-                  <MdPhone className="mr-3 text-[#c1502e]" size={20} />
-                  <a href="tel:+11234567890">+91 -1905-237928</a>
+                  <MdPhone className="mr-3 text-[#eb5e17]" size={20} />
+                  <a href="tel:+11234567890">+91 769 604 939 1</a>
                 </li>
                 <li className="flex items-start">
-                  <MdLocationOn className="mr-3 text-[#c1502e] mt-1" size={20} />
-                  <span>School of Mathematical and Statistical Sciences, Indian Institute of Technology - Mandi<br />Himachal Pradesh 175001, India</span>
+                  <MdLocationOn className="mr-3 text-[#eb5e17] mt-1" size={20} />
+                  <span>School of Mathematical and Statistical Sciences,<br/> Indian Institute of Technology - Mandi<br />Himachal Pradesh 175001, <br/>India</span>
                 </li>
               </ul>
             </div>
@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
               <div className="grid grid-cols-2 gap-8">
                 {/* Quick Links Column */}
                 <div>
-                  <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Quick Links</h3>
+                  <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Quick Links</h3>
                   <ul className="space-y-3">
                     <li>
                       <a href="#" className="hover:text-[#c1502e] transition-colors block">
@@ -62,7 +62,7 @@ export const Footer: React.FC = () => {
 
                 {/* Pages Column */}
                 <div>
-                  <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Pages</h3>
+                  <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Pages</h3>
                   <ul className="space-y-3">
                     <li>
                       <a href="#" className="hover:text-[#c1502e] transition-colors block">
@@ -101,7 +101,7 @@ export const Footer: React.FC = () => {
 
             {/* Connect With Us */}
             <div className="space-y-4">
-              <h3 className="font-caveat text-2xl font-bold text-[#c1502e] mb-6">Connect With Us</h3>
+              <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Connect With Us</h3>
               <div className="grid grid-cols-3 gap-4">
                 {[FaTwitter, FaInstagram, FaFacebook, FaLinkedin, FaYoutube, FaGoogle].map(
                   (Icon, index) => (
@@ -126,8 +126,8 @@ export const Footer: React.FC = () => {
                 height={70}
                 className="mb-4"
               />
-              <p className="text-lg text-[#f0d80f] text-center lg:text-left">
-                Empowering collaborative STEM research and projects.
+              <p className="text-2xl text-[#eb5e17] text-center lg:text-left">
+              Bridging academia and industry to transform research into reality
               </p>
             </div>
           </div>

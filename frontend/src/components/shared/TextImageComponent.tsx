@@ -125,25 +125,25 @@ const FeaturesDemo: React.FC<{ imagePosition: "left" | "right" }> = ({
 }) => {
   const features: FeatureItem[] = [
     {
-      icon: <Video className="w-8 h-8 text-yellow-300" />,
+      icon: <Video className="w-8 h-8 text-[#eb5e17]" />,
       title: "Personal Journeys",
       description:
         " Presenters share their experiences, motivations, and challenges, offering participants inspiration and guidance for their own careers.",
     },
     {
-      icon: <Briefcase className="w-8 h-8 text-yellow-300" />,
+      icon: <Briefcase className="w-8 h-8 text-[#eb5e17]" />,
       title: "Career Insights",
       description:
         "Learn about diverse career paths, required skills, and growth opportunities in various STEM fields, from research to industry.",
     },
     {
-      icon: <ChartArea className="w-8 h-8 text-yellow-300" />,
+      icon: <ChartArea className="w-8 h-8 text-[#eb5e17]" />,
       title: "Unique Research Areas",
       description:
         "Discover the distinct characteristics of each field, its real-world impact, and why innovation in these areas is crucial.",
     },
     {
-      icon: <Book className="w-8 h-8 text-yellow-300" />,
+      icon: <Book className="w-8 h-8 text-[#eb5e17]" />,
       title: "Our Webinars",
       description:
         "Aim to inform, inspire, and connect participants with professionals who can mentor and guide them. Join us to learn, ask questions, and explore the endless possibilities within STEM!",

@@ -110,7 +110,7 @@ const FAQSection = () => {
                   >
                     <AccordionItem
                       value={`item-${index}`}
-                      className="border border-[#c1502e] rounded-xl overflow-hidden shadow-sm bg-white hover:shadow-md transition-shadow duration-300"
+                      className="border border-[#eb5e17] rounded-xl overflow-hidden shadow-sm bg-white hover:shadow-md transition-shadow duration-300"
                     >
                       <AccordionTrigger className="text-left text-lg font-medium px-6 py-4 hover:bg-gray-50 transition-all duration-300 text-gray-700">
                         {item.question}
@@ -131,7 +131,7 @@ const FAQSection = () => {
                 >
                   <Button
                     onClick={() => router.push("/faq")}
-                    className="w-full sm:w-auto bg-[#f0d80f] hover:bg-[#472014] text-black text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-colors duration-300"
+                    className="w-full sm:w-auto bg-[#5e17eb] hover:bg-[#8c5fe7] text-white text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-colors duration-300"
                   >
                     View More FAQs
                   </Button>
@@ -145,14 +145,14 @@ const FAQSection = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="hidden lg:block flex-1 w-full lg:w-2/5 sticky top-24"
+            className="hidden lg:block flex-1 w-full lg:w-24 sticky top-24"
           >
-            <div className="relative aspect-square max-w-md mx-auto">
+            <div className="relative aspect-square h-96 w-max-md mx-auto">
               <Image
                 src={FAQ}
                 alt="FAQ Illustration"
                 fill
-                className="object-contain rounded-2xl shadow-xl"
+                className="object-cover rounded-2xl shadow-xl w-36"
                 priority
               />
             </div>

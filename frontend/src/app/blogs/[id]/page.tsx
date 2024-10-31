@@ -241,7 +241,7 @@ const BlogPostPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-[#eb5e17] to-[#686256] flex flex-col">
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <Image src={LOGO} alt="logo" className="w-24" />
           <div className="text-[#472014] text-4xl font-caveat flex items-center">
@@ -254,7 +254,7 @@ const BlogPostPage = () => {
 
   if (!blogPost) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#c1502e] to-[#686256] text-[#472014] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[#eb5e17] to-[#686256] text-[#472014] flex flex-col items-center justify-center">
         <h1 className="text-[100px] font-bold mb-4 font-caveat">
           Blog post not found
         </h1>
@@ -288,7 +288,7 @@ const BlogPostPage = () => {
                   {blogPost?.title}
                 </h1>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <p className="text-base sm:text-lg text-[#c1502e] font-semibold">
+                  <p className="text-base sm:text-lg text-[#eb5e17] font-semibold">
                     By {blogPost?.professor?.fullName || blogPost?.business?.companyName}
                   </p>
                   <p className="text-sm sm:text-base text-[#472014]/70">
@@ -322,8 +322,8 @@ const BlogPostPage = () => {
                   variant="default"
                   className={`flex items-center text-sm sm:text-base font-semibold px-4 py-2 rounded-full transition-all duration-300 ${
                     userInteraction === "like"
-                      ? "bg-[#c1502e] text-white"
-                      : "bg-white hover:bg-[#c1502e] hover:text-white"
+                      ? "bg-[#eb5e17] text-white"
+                      : "bg-white hover:bg-[#eb5e17] hover:text-white"
                   }`}
                   onClick={() => handleLikeDislike("like")}
                 >
@@ -343,7 +343,7 @@ const BlogPostPage = () => {
                   <span>{blogPost?.dislikes}</span>
                 </Button>
                 <Button
-                  className="text-[#c1502e] hover:text-white bg-white hover:bg-[#c1502e] rounded-full transition-all duration-300 text-sm sm:text-base"
+                  className="text-[#eb5e17] hover:text-white bg-white hover:bg-[#eb5e17] rounded-full transition-all duration-300 text-sm sm:text-base"
                 >
                   <Share2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Share
@@ -369,11 +369,11 @@ const BlogPostPage = () => {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-grow p-3 rounded-lg border-2 border-[#c1502e] focus:ring-[#472014] text-base bg-white text-[#472014]"
+                  className="flex-grow p-3 rounded-lg border-2 border-[#eb5e17] focus:ring-[#472014] text-base bg-white text-[#472014]"
                 />
                 <Button
                   type="submit"
-                  className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold px-4 sm:px-6 rounded-full transition-all duration-300"
+                  className="bg-[#eb5e17] hover:bg-[#472014] text-white font-bold px-4 sm:px-6 rounded-full transition-all duration-300"
                   disabled={commentLoading}
                 >
                   {commentLoading ? (
@@ -389,12 +389,12 @@ const BlogPostPage = () => {
                 {blogPost?.comments.map((comment) => (
                   <li
                     key={comment.id}
-                    className="border-b border-[#c1502e]/20 pb-6 hover:bg-[#472014]/5 p-4 rounded-lg transition-colors duration-300"
+                    className="border-b border-[#eb5e17]/20 pb-6 hover:bg-[#472014]/5 p-4 rounded-lg transition-colors duration-300"
                   >
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-[#c1502e] text-base sm:text-lg">
+                          <p className="font-semibold text-[#eb5e17] text-base sm:text-lg">
                             {comment.student?.fullName ||
                               comment.professor?.fullName ||
                               comment.business?.companyName}
@@ -421,7 +421,7 @@ const BlogPostPage = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="bg-[#c1502e]/10 hover:bg-[#c1502e] text-black hover:text-white rounded-full transition-all duration-300 text-sm"
+                              className="bg-[#eb5e17]/10 hover:bg-[#eb5e17] text-black hover:text-white rounded-full transition-all duration-300 text-sm"
                             >
                               <User2 size={16} className="mr-2" />
                               View Profile
@@ -453,7 +453,7 @@ const BlogPostPage = () => {
               <div className="grid gap-4">
                 {relatedBlogs.map((blog) => (
                   <Link href={`/blog/${blog.id}`} key={blog.id}>
-                    <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#c1502e]/10 transition-all duration-300">
+                    <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#eb5e17]/10 transition-all duration-300">
                       <div className="relative w-20 h-20 flex-shrink-0">
                         <Image
                           src={blog.blogImage || "/placeholder-image.jpg"}
@@ -470,7 +470,7 @@ const BlogPostPage = () => {
                 ))}
               </div>
               <Button
-                className="w-full mt-6 bg-[#c1502e] hover:bg-[#472014] text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
+                className="w-full mt-6 bg-[#eb5e17] hover:bg-[#472014] text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
                 onClick={() => router.push("/blogs")}
               >
                 View More Blogs

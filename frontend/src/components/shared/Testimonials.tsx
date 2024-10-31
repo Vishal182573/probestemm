@@ -66,7 +66,7 @@ const TestimonialsSection = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.1 }}
                       >
-                        <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                        <Star className="h-5 w-5 text-[#eb5e17] fill-current" />
                       </motion.div>
                     ))}
                   </div>

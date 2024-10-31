@@ -195,20 +195,20 @@ const DiscussionForum: React.FC = () => {
                 placeholder="Search discussions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-3 w-full bg-white text-[#472014] border-[#c1502e] rounded-full shadow-sm hover:shadow-md transition-shadow"
+                className="pl-12 pr-4 py-3 w-full bg-white text-[#472014] border-[#eb5e17] rounded-full shadow-sm hover:shadow-md transition-shadow"
               />
             </div>
             <div className="flex gap-3">
               <Button
                 onClick={handleSearch}
-                className="bg-[#c1502e] hover:bg-[#472014] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300"
+                className="bg-[#eb5e17] hover:bg-[#472014] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300"
               >
                 Search
               </Button>
               {userRole === "student" && (
                 <Button
                   onClick={() => router.push("/ask-question")}
-                  className="bg-[#472014] hover:bg-[#c1502e] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                  className="bg-[#472014] hover:bg-[#eb5e17] text-white rounded-full px-6 shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
                 >
                   <FaPlus /> Ask Question
                 </Button>
@@ -226,9 +226,9 @@ const DiscussionForum: React.FC = () => {
         >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#eb5e17] rounded-xl hover:border-[#472014] transition-colors">
                 <div className="flex items-center gap-2">
-                  <FaSort className="text-[#c1502e]" />
+                  <FaSort className="text-[#eb5e17]" />
                   <SelectValue placeholder="Sort by" />
                 </div>
               </SelectTrigger>
@@ -239,9 +239,9 @@ const DiscussionForum: React.FC = () => {
             </Select>
 
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#eb5e17] rounded-xl hover:border-[#472014] transition-colors">
                 <div className="flex items-center gap-2">
-                  <FaFilter className="text-[#c1502e]" />
+                  <FaFilter className="text-[#eb5e17]" />
                   <SelectValue placeholder="Status" />
                 </div>
               </SelectTrigger>
@@ -259,7 +259,7 @@ const DiscussionForum: React.FC = () => {
                 setSubcategory(undefined);
               }}
             >
-              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#eb5e17] rounded-xl hover:border-[#472014] transition-colors">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -276,7 +276,7 @@ const DiscussionForum: React.FC = () => {
               onValueChange={setSubcategory}
               disabled={!category}
             >
-              <SelectTrigger className="w-full bg-white text-gray-800 border-[#c1502e] rounded-xl hover:border-[#472014] transition-colors">
+              <SelectTrigger className="w-full bg-white text-gray-800 border-[#eb5e17] rounded-xl hover:border-[#472014] transition-colors">
                 <SelectValue placeholder="Select a subcategory" />
               </SelectTrigger>
               <SelectContent>
@@ -302,7 +302,7 @@ const DiscussionForum: React.FC = () => {
               transition={{ delay: index * 0.05 }}
             >
               <Link href={`/discussions/${discussion.id}`}>
-                <Card className="mb-4 hover:shadow-xl transition-all duration-300 bg-white border-[#c1502e] rounded-xl overflow-hidden group">
+                <Card className="mb-4 hover:shadow-xl transition-all duration-300 bg-white border-[#eb5e17] rounded-xl overflow-hidden group">
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       {/* Voting Section */}
@@ -312,7 +312,7 @@ const DiscussionForum: React.FC = () => {
                             <TooltipTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#c1502e] group-hover:border-[#c1502e] transition-colors"
+                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#eb5e17] group-hover:border-[#eb5e17] transition-colors"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   handleVote(discussion.id, "UPVOTE");
@@ -332,7 +332,7 @@ const DiscussionForum: React.FC = () => {
                             <TooltipTrigger asChild>
                               <Button
                                 variant="outline"
-                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#c1502e] group-hover:border-[#c1502e] transition-colors"
+                                className="w-12 h-12 rounded-xl bg-[#f8f0ea] hover:bg-[#eb5e17] group-hover:border-[#eb5e17] transition-colors"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   handleVote(discussion.id, "DOWNVOTE");
@@ -349,7 +349,7 @@ const DiscussionForum: React.FC = () => {
                       {/* Content Section */}
                       <div className="flex-grow">
                         <div className="flex justify-between items-start mb-4">
-                          <h3 className="text-xl font-semibold text-[#472014] group-hover:text-[#c1502e] transition-colors">
+                          <h3 className="text-xl font-semibold text-[#472014] group-hover:text-[#eb5e17] transition-colors">
                             {discussion.title}
                           </h3>
                           <Button
@@ -358,7 +358,7 @@ const DiscussionForum: React.FC = () => {
                               router.push(`/student-profile/${discussion.studentId}`);
                             }}
                             variant="ghost"
-                            className="flex items-center gap-2 text-[#472014] hover:text-[#c1502e] transition-colors"
+                            className="flex items-center gap-2 text-[#472014] hover:text-[#eb5e17] transition-colors"
                           >
                             <FaUserCircle className="text-lg" />
                             <span className="font-medium">{discussion.studentName}</span>
@@ -368,7 +368,7 @@ const DiscussionForum: React.FC = () => {
                         {/* Metadata */}
                         <div className="flex flex-wrap gap-4 text-sm text-[#686256] mb-4">
                           <div className="flex items-center gap-2">
-                            <FaClock className="text-[#c1502e]" />
+                            <FaClock className="text-[#eb5e17]" />
                             <span>{new Date(discussion.createdAt).toLocaleString()}</span>
                           </div>
                           <div className={`flex items-center gap-2 ${
@@ -381,17 +381,17 @@ const DiscussionForum: React.FC = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <FaComment className="text-[#c1502e]" />
+                            <FaComment className="text-[#eb5e17]" />
                             <span>{discussion.answerCount} answers</span>
                           </div>
                         </div>
 
                         {/* Category Tags */}
                         <div className="flex gap-2">
-                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#c1502e] hover:text-white transition-colors">
+                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#eb5e17] hover:text-white transition-colors">
                             {discussion.category}
                           </span>
-                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#c1502e] hover:text-white transition-colors">
+                          <span className="px-4 py-1.5 bg-[#f8f0ea] text-[#472014] rounded-full text-sm font-medium hover:bg-[#eb5e17] hover:text-white transition-colors">
                             {discussion.subcategory}
                           </span>
                         </div>
@@ -409,7 +409,7 @@ const DiscussionForum: React.FC = () => {
           <Button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1}
-            className="bg-[#f8f0ea] hover:bg-[#c1502e] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
+            className="bg-[#f8f0ea] hover:bg-[#eb5e17] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
           >
             <FaChevronLeft />
             Previous
@@ -422,7 +422,7 @@ const DiscussionForum: React.FC = () => {
           <Button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={pagination.currentPage === pagination.totalPages}
-            className="bg-[#f8f0ea] hover:bg-[#c1502e] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
+            className="bg-[#f8f0ea] hover:bg-[#eb5e17] text-[#472014] hover:text-white rounded-xl px-6 py-3 flex items-center gap-2 transition-colors"
           >
             Next
             <FaChevronRight />

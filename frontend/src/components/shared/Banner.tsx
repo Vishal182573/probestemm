@@ -24,7 +24,7 @@ const Banner: React.FC<BannerProps> = ({
         objectFit="cover"
         className="z-0"
       />
-      <div className="absolute inset-0 bg-[#f0d80f] bg-opacity-60 z-10" />
+      <div className="absolute inset-0 bg-[#eb5e17] bg-opacity-60 z-10" />
       <div className="absolute inset-0 flex flex-col justify-center items-center text-white z-20 p-4">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center text-black">
           {title}

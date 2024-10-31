@@ -226,7 +226,7 @@ const BlogsPage: React.FC = () => {
         <NavbarWithBg />
         <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center">
           <div className="text-black text-xl sm:text-2xl font-caveat flex items-center">
-            <Rocket className="h-6 w-6 sm:h-8 sm:w-8 mr-2 text-[#c1502e]" />
+            <Rocket className="h-6 w-6 sm:h-8 sm:w-8 mr-2 text-[#eb5e17]" />
             Loading blogs...
           </div>
         </main>
@@ -263,7 +263,7 @@ const BlogsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white p-4 sm:p-6 rounded-xl shadow-xl border-2 border-[#c1502e] flex flex-col"
+                className="bg-white p-4 sm:p-6 rounded-xl shadow-xl border-2 border-[#eb5e17] flex flex-col"
               >
                 <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4 text-[#472014] font-caveat line-clamp-2">
                   {blog.title}
@@ -297,7 +297,7 @@ const BlogsPage: React.FC = () => {
                         className={`${
                           userInteractions[blog.id]?.isLike === true
                             ? "text-blue-500"
-                            : "text-[#c1502e]"
+                            : "text-[#eb5e17]"
                         } hover:text-white text-xs sm:text-sm`}
                         onClick={() => handleLikeToggle(blog.id, true)}
                       >
@@ -310,7 +310,7 @@ const BlogsPage: React.FC = () => {
                         className={`${
                           userInteractions[blog.id]?.isLike === false
                             ? "text-red-500"
-                            : "text-[#c1502e]"
+                            : "text-[#eb5e17]"
                         } hover:text-white text-xs sm:text-sm`}
                         onClick={() => handleLikeToggle(blog.id, false)}
                       >
@@ -323,7 +323,7 @@ const BlogsPage: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-[#c1502e] bg-[#472014] text-white text-xs sm:text-sm whitespace-nowrap"
+                          className="border-[#eb5e17] bg-[#472014] text-white text-xs sm:text-sm whitespace-nowrap"
                         >
                           <MessageSquare className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           {blog.comments.length}
@@ -340,7 +340,7 @@ const BlogsPage: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full text-white bg-[#c1502e] hover:bg-[#472014] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-sm"
+                          className="w-full text-white bg-[#eb5e17] hover:bg-[#472014] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-sm"
                         >
                           <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="truncate">
@@ -361,7 +361,7 @@ const BlogsPage: React.FC = () => {
               <Button
                 variant="default"
                 size="lg"
-                className="bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 text-base sm:text-lg shadow-lg hover:shadow-xl"
+                className="bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 text-base sm:text-lg shadow-lg hover:shadow-xl"
               >
                 <Plus className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
                 Create New Blog

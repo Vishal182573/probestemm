@@ -78,7 +78,6 @@ interface Project {
   content: string;
   difficulty: "EASY" | "INTERMEDIATE" | "HARD";
   timeline: string;
-  tags: string[];
   status: "OPEN" | "ONGOING" | "CLOSED";
   business?: { id: string; companyName: string };
   professor?: { id: string; fullName: string };
@@ -550,18 +549,6 @@ const BusinessProfilePage: React.FC = () => {
                           className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
                           required
                         />
-                        <Input
-                          placeholder="Tags (comma-separated)"
-                          value={newProject.tags}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              tags: e.target.value,
-                            })
-                          }
-                          className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
-                          required
-                        />
 
                         <div className="space-y-4">
                           <div>
@@ -749,7 +736,7 @@ const BusinessProfilePage: React.FC = () => {
                         Project Tags
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    {/* <CardContent>
                       <div className="flex flex-wrap gap-3">
                         {Array.from(
                           new Set(projects.flatMap((project) => project.tags))
@@ -762,7 +749,7 @@ const BusinessProfilePage: React.FC = () => {
                           </Badge>
                         ))}
                       </div>
-                    </CardContent>
+                    </CardContent> */}
                   </Card>
                 </>
               )}

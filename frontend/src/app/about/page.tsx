@@ -41,7 +41,7 @@ const CountUpAnimation: React.FC<CountUpAnimationProps> = ({
 
   return (
     <div className="text-center">
-      <div className="text-4xl font-bold text-[#c1502e]">{count}</div>
+      <div className="text-4xl font-bold text-[#eb5e17]">{count}</div>
       <div className="text-sm text-[#472014]">{label}</div>
     </div>
   );
@@ -133,7 +133,7 @@ const AboutUsPage = () => {
             <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                  <FaIndustry className="mr-2 text-[#c1502e]" /> Industry
+                  <FaIndustry className="mr-2 text-[#eb5e17]" /> Industry
                   Collaboration
                 </CardTitle>
               </CardHeader>
@@ -157,7 +157,7 @@ const AboutUsPage = () => {
             <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                  <FaExchangeAlt className="mr-2 text-[#c1502e]" /> Knowledge
+                  <FaExchangeAlt className="mr-2 text-[#eb5e17]" /> Knowledge
                   Exchange
                 </CardTitle>
               </CardHeader>
@@ -181,7 +181,7 @@ const AboutUsPage = () => {
           <Card className="bg-white/90 backdrop-blur shadow-xl border-none mb-12">
             <CardHeader>
               <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                <FaGraduationCap className="mr-2 text-[#c1502e]" /> Company
+                <FaGraduationCap className="mr-2 text-[#eb5e17]" /> Company
                 Projects
               </CardTitle>
             </CardHeader>
@@ -198,7 +198,7 @@ const AboutUsPage = () => {
                 both the faculty and the industry partner.
               </p>
               <Link href={"/projects"}>
-                <Button className="mt-4 bg-[#f0d80f] hover:bg-[#472014] hover:text-white">
+                <Button className="mt-4 bg-[#5e17eb] text-white">
                   Apply Now
                 </Button>
               </Link>
