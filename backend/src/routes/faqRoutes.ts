@@ -6,7 +6,8 @@ import {
   getFAQById,
   createFAQ,
   updateFAQ,
-  deleteFAQ
+  deleteFAQ,
+  deleteAllFaqs
 } from '../controllers/faqController.ts';
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.get('/:id', getFAQById);
 router.post('/',  createFAQ);
 router.put('/:id',updateFAQ);
 router.delete('/:id', deleteFAQ);
+router.delete('/',deleteAllFaqs);
 
 export default router;

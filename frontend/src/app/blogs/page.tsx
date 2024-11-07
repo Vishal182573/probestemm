@@ -20,6 +20,7 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
 import { BLOG } from "../../../public";
+import { useRouter } from "next/navigation";
 // import ContactForm from "@/components/shared/Feedback";
 // import FeaturesDemo from "@/components/shared/TextImageComponent";
 
@@ -73,6 +74,7 @@ interface Blog {
 }
 
 const BlogsPage: React.FC = () => {
+  const router = useRouter();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -90,6 +92,11 @@ const BlogsPage: React.FC = () => {
 
   const fetchBlogs = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
       setLoading(true);
       const response = await axios.get(`${API_URL}/blogs`);
       setBlogs(response.data);
@@ -242,7 +249,7 @@ const BlogsPage: React.FC = () => {
         imageSrc={BLOG}
         altText="webinar-banner-img"
         title="Insights and Perspectives"
-        subtitle="Stay up-to-date with the latest trends."
+        subtitle="Stay up-to-date with the latest trends"
       />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <motion.h1
@@ -251,7 +258,7 @@ const BlogsPage: React.FC = () => {
           transition={{ duration: 0.8 }}
           className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-8 text-[#472014] font-caveat text-center sm:text-left"
         >
-          Probe STEM Blogs
+          Research showcase
         </motion.h1>
         {error && <p className="text-red-400 mb-4">{error}</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">

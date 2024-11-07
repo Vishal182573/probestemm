@@ -68,7 +68,12 @@ const ProjectsPage = () => {
 
     const fetchProjects = async () => {
       try {
+
         const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
 
         const [businessResponse, professorResponse] = await Promise.all([
           axios.get(`${API_URL}/project/business`, {
@@ -164,7 +169,7 @@ const ProjectsPage = () => {
           imageSrc={PROJECT}
           altText="project-banner-img"
           title="Cutting-edge STEM Projects"
-          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM"
         />
         <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
           <TabsList className="mb-8">

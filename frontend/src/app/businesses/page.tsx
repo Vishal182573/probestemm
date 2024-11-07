@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */ 
 "use client"
 import React from "react";
 import RoleList from "@/components/shared/RoleList";
@@ -5,7 +6,7 @@ import AnimatedContainer from "@/components/shared/AnimatedContainer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import { LOGO } from "../../../public";
+import { BUSINESSPAGE, LOGO, STUDENTPAGE } from "../../../public";
 import ContactForm from "@/components/shared/Feedback";
 import { Footer } from "@/components/shared/Footer";
 
@@ -36,10 +37,10 @@ export default async function BusinessesPage() {
       <div className="w-full bg-white">
         <NavbarWithBg />
         <Banner
-          imageSrc={LOGO}
+          imageSrc={BUSINESSPAGE}
           altText="project-banner-img"
-          title="Cutting-Edge STEM Projects"
-          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+          title="Partner Industries"
+          subtitle="Connect with leading industries that drive innovation by collaborating with students and professors. Discover opportunities for projects, internships, and partnerships that advance Science and Technology"
         />
         <AnimatedContainer>
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">

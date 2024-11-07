@@ -20,26 +20,28 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, roleType }) => {
         return (
           <>
             <p className="text-gray-600 mb-1">Name: {role.fullName}</p>
-            <p className="text-gray-600 mb-1">Email: {role.email}</p>
-            <p className="text-gray-600 mb-1">University: {role.university}</p>
+            <p className="text-gray-600 mb-1">University/Institution: {role.university}</p>
+            <p className="text-gray-600 mb-1">Course: {role.course}</p>
+            <p className="text-gray-600 mb-1">Country: {role.location}</p>
           </>
         );
       case "professor":
         return (
           <>
             <p className="text-gray-600 mb-1">Name: {role.fullName}</p>
-            <p className="text-gray-600 mb-1">Title: {role.title}</p>
-            <p className="text-gray-600 mb-1">University: {role.university}</p>
+            <p className="text-gray-600 mb-1">Designation: {role.title}</p>
             <p className="text-gray-600 mb-1">Department: {role.department}</p>
+            <p className="text-gray-600 mb-1">University: {role.university}</p>
+            <p className="text-gray-600 mb-1">Country: {role.location}</p>
           </>
         );
       case "business":
         return (
           <>
             <p className="text-gray-600 mb-1">Company: {role.companyName}</p>
-            <p className="text-gray-600 mb-1">Contact: {role.phoneNumber}</p>
-            <p className="text-gray-600 mb-1">Email: {role.email}</p>
             <p className="text-gray-600 mb-1">Industry: {role.industry}</p>
+            <p className="text-gray-600 mb-1">Country: {role.location}</p>
+            <p className="text-gray-600 mb-1">Website: {role.website}</p>
           </>
         );
       default:

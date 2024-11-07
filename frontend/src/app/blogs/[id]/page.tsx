@@ -101,6 +101,11 @@ const BlogPostPage = () => {
 
   const fetchBlogPost = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
       setLoading(true);
       const response = await axios.get(`${API_URL}/blogs/${id}`);
       setBlogPost(response.data);
@@ -270,7 +275,7 @@ const BlogPostPage = () => {
         imageSrc={BLOG}
         altText="webinar-banner-img"
         title="Thought-Provoking Perspectives"
-        subtitle="Explore diverse opinions and ideas."
+        subtitle="Explore diverse opinions and ideas"
       />
       
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

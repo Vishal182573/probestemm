@@ -21,6 +21,8 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
+import { PROFESSORPAGE } from "../../../../public";
 
 interface Student {
   id: string;
@@ -167,7 +169,7 @@ const StudentProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
-        <div className="loader text-[#c1502e] font-caveat text-2xl">
+        <div className="loader text-[#eb5e17] font-caveat text-2xl">
           Loading...
         </div>
         <div className="text-[#472014] ml-2">please wait</div>
@@ -176,7 +178,7 @@ const StudentProfilePage: React.FC = () => {
   }
 
   if (error) {
-    return <div className="text-[#c1502e] text-center p-4">{error}</div>;
+    return <div className="text-[#eb5e17] text-center p-4">{error}</div>;
   }
 
   if (!student) {
@@ -203,9 +205,9 @@ const StudentProfilePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+          <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+              <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                 <Bell className="mr-2" />
                 Notifications
               </CardTitle>
@@ -216,7 +218,7 @@ const StudentProfilePage: React.FC = () => {
                   {notifications.map((notification) => (
                     <motion.li
                       key={notification.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#c1502e]/10 pb-4"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#eb5e17]/10 pb-4"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
@@ -239,7 +241,7 @@ const StudentProfilePage: React.FC = () => {
                         <Button
                           onClick={() => handleMarkAsRead(notification.id)}
                           size="sm"
-                          className="bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300 w-full sm:w-auto"
+                          className="bg-[#eb5e17] hover:bg-[#472014] text-white transition-colors duration-300 w-full sm:w-auto"
                         >
                           Mark as Read
                         </Button>
@@ -267,9 +269,9 @@ const StudentProfilePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+          <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+              <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                 <Folder className="mr-2" />
                 My Enrolled Projects
               </CardTitle>
@@ -284,7 +286,7 @@ const StudentProfilePage: React.FC = () => {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card className="border-2 border-[#c1502e]/20 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
+                      <Card className="border-2 border-[#eb5e17]/20 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
                         <CardHeader>
                           <CardTitle className="text-xl font-bold text-[#472014]">
                             {project.topic}
@@ -310,7 +312,7 @@ const StudentProfilePage: React.FC = () => {
                             </div>
                             <div className="flex items-center text-[#472014]">
                               <span className="font-semibold w-24">Status:</span>
-                              <Badge className="bg-[#c1502e]/10 text-[#c1502e] font-semibold">
+                              <Badge className="bg-[#eb5e17]/10 text-[#eb5e17] font-semibold">
                                 {project.status}
                               </Badge>
                             </div>
@@ -340,51 +342,60 @@ const StudentProfilePage: React.FC = () => {
       <NavbarWithBg />
 
       <main className="flex-grow">
-        <motion.section
-          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center space-x-6 mb-6 md:mb-0">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Avatar className="w-32 h-32 border-4 border-white">
-                    <AvatarImage
-                      src={student.imageUrl || ""}
-                      alt={student.fullName}
-                    />
-                    <AvatarFallback className="bg-[#472014] text-white">
-                      {student.fullName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                </motion.div>
-                <div>
-                  <h1 className="text-4xl font-extrabold mb-2 font-caveat">
-                    {student.fullName}
-                  </h1>
-                  <p className="text-xl font-bold">{student.course}</p>
-                  <p className="text-lg">{student.university}</p>
-                </div>
-              </div>
+      <motion.section
+  className="relative text-white py-24"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 0.8 }}
+>
+  {/* Background Image */}
+  <div className="absolute inset-0 -z-10">
+    <Image
+      src={PROFESSORPAGE}
+      alt="Background"
+      layout="fill"
+      objectFit="cover"
+      quality={100}
+      priority
+    />
+  </div>
 
-              {isOwnProfile && (
-                <Link href={"/edit-profile"}>
-                <Button className="bg-white px-4 py-2 border-2 border-white">
-                  Edit Profile
-                </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </motion.section>
+  <div className="container mx-auto px-4 relative z-10">
+    <div className="flex flex-col md:flex-row items-center justify-between">
+      <div className="flex items-center space-x-6 mb-6 md:mb-0">
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Avatar className="w-32 h-32 border-4 border-white">
+            <AvatarImage
+              src={student.imageUrl || ""}
+              alt={student.fullName}
+            />
+            <AvatarFallback className="bg-[#472014] text-white">
+              {student.fullName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+        </motion.div>
+        <div>
+          <h1 className="text-4xl font-extrabold mb-2 font-caveat text-black">
+            {student.fullName}
+          </h1>
+          <p className="text-xl font-bold text-black">{student.course}</p>
+          <p className="text-lg text-black">{student.university}</p>
+        </div>
+      </div>
+
+      {isOwnProfile && (
+        <Link href={"/edit-profile"}>
+          <Button className="bg-white px-4 py-2 border-2 border-white">
+            Edit Profile
+          </Button>
+        </Link>
+      )}
+    </div>
+  </div>
+</motion.section>
 
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
@@ -394,9 +405,9 @@ const StudentProfilePage: React.FC = () => {
               initial="initial"
               animate="animate"
             >
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                     <Star className="mr-2" />
                     Research Highlights
                   </CardTitle>
@@ -407,7 +418,7 @@ const StudentProfilePage: React.FC = () => {
                       <li key={highlight.id} className="flex items-center">
                         <Badge
                           variant="secondary"
-                          className="mr-2 bg-[#c1502e]/10 text-[#c1502e] font-semibold"
+                          className="mr-2 bg-[#eb5e17]/10 text-[#eb5e17] font-semibold"
                         >
                           {highlight.status}
                         </Badge>
@@ -418,9 +429,9 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                     <Briefcase className="mr-2" />
                     Experience
                   </CardTitle>
@@ -430,9 +441,9 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                     <GraduationCap className="mr-2" />
                     Education
                   </CardTitle>
@@ -456,9 +467,9 @@ const StudentProfilePage: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                  <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                     <Award className="mr-2" />
                     Achievements
                   </CardTitle>
@@ -469,7 +480,7 @@ const StudentProfilePage: React.FC = () => {
                       <li key={achievement.id} className="flex items-center">
                         <Badge
                           variant="outline"
-                          className="mr-2 border-[#c1502e] text-[#c1502e] font-semibold"
+                          className="mr-2 border-[#eb5e17] text-[#eb5e17] font-semibold"
                         >
                           {achievement.year}
                         </Badge>
@@ -483,9 +494,9 @@ const StudentProfilePage: React.FC = () => {
               </Card>
 
               {isOwnProfile && (
-                <Card className="border-2 border-[#c1502e]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+                <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
                   <CardHeader>
-                    <CardTitle className="flex items-center text-2xl font-extrabold text-[#c1502e] font-caveat">
+                    <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                       <GraduationCap className="mr-2" />
                       Discussions
                     </CardTitle>

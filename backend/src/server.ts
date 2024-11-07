@@ -17,6 +17,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
+import emailRoutes from "./routes/emailRoutes"
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/patents", patentRoutes);
+app.use("/api/email",emailRoutes );
 
 app.get("/", (req, res) => {
   res.send("Server is running");

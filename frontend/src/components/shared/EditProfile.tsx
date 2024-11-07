@@ -471,6 +471,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
               />
             </div>
           </div>
+          
 
           {/* Role-specific Fields */}
           {role === "student" && (
@@ -861,6 +862,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
               disabled={!isEditing}
             />
           </div>
+          
 
           {/* Positions Section */}
           <div className="space-y-2">

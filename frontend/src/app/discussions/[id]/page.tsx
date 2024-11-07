@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,6 +48,7 @@ interface Discussion {
 }
 
 const QuestionDetailPage: React.FC = () => {
+  const router =  useRouter();
   const { id } = useParams<{ id: string }>();
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
   const [newAnswer, setNewAnswer] = useState("");
@@ -63,6 +64,11 @@ const QuestionDetailPage: React.FC = () => {
 
   const fetchDiscussion = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
       setIsLoading(true);
       const response = await axios.get(`${API_URL}/discussion/${id}`);
       setDiscussion(response.data);

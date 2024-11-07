@@ -91,3 +91,21 @@ export const deleteFAQ = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Failed to delete FAQ' });
   }
 };
+
+export const deleteAllFaqs = async (req: Request, res: Response) => {
+  try {
+      // Delete all records from the FAQ table
+      await prisma.fAQ.deleteMany();
+      
+      // Return 204 No Content status
+      return res.status(204).send();
+  } catch (error) {
+      console.error('Error deleting FAQs:', error);
+      
+      // Return 500 Internal Server Error with error message
+      return res.status(500).json({
+          error: 'Failed to delete FAQs',
+          message: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+  }
+};

@@ -39,6 +39,7 @@ export interface ProfessorData extends UserData {
   degree: string;
   department: string;
   position: string;
+  bio:string;
 
   positions: Position[];
   achievements: Achievement[];

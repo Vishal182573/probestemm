@@ -615,7 +615,7 @@ const EditProfileForm = () => {
                 {role === "professor" && (
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="title">Academic Title</Label>
+                      <Label htmlFor="title">Designation</Label>
                       <Input
                         id="title"
                         name="title"
@@ -837,7 +837,7 @@ const EditProfileForm = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="university">University</Label>
+                  <Label htmlFor="university">University/Institue</Label>
                   <Input
                     id="university"
                     name="university"

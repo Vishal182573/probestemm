@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */ 
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -114,6 +115,12 @@ const DiscussionForum: React.FC = () => {
   const fetchDiscussions = async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
       const params: any = {
         page: pagination.currentPage,
         pageSize: pagination.pageSize,
@@ -171,7 +178,7 @@ const DiscussionForum: React.FC = () => {
         imageSrc={DISCUSSION}
         altText="discussion-banner"
         title="Insightful Discussions"
-        subtitle="Connect with experts and peers."
+        subtitle="Connect with experts and peers"
       />
       
       <motion.div

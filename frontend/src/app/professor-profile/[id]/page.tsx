@@ -54,6 +54,7 @@ import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import { PROFESSORPAGE } from "../../../../public";
 
 interface Patent {
   id: string;
@@ -469,7 +470,7 @@ const ProfessorProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
-        <div className="loader text-[#c1502e] font-caveat text-2xl">
+        <div className="loader text-[#eb5e17] font-caveat text-2xl">
           Loading...
         </div>
         <div className="text-[#472014] ml-2">please wait</div>
@@ -487,10 +488,10 @@ const ProfessorProfilePage: React.FC = () => {
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
       {id == localStorage.getItem("userId") && (
-        <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
-          <CardHeader className="border-b border-[#c1502e]/10">
+        <Card className="border-2 border-[#eb5e17]/20 bg-white shadow-md">
+          <CardHeader className="border-b border-[#eb5e17]/10">
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Bell className="mr-3 h-6 w-6 text-[#c1502e]" />
+              <Bell className="mr-3 h-6 w-6 text-[#eb5e17]" />
               Notifications
             </CardTitle>
           </CardHeader>
@@ -500,7 +501,7 @@ const ProfessorProfilePage: React.FC = () => {
                 {notifications.map((notification) => (
                   <li
                     key={notification.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#c1502e]/20 hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/20 hover:bg-gray-50"
                   >
                     <div className="space-y-2">
                       <p
@@ -529,7 +530,7 @@ const ProfessorProfilePage: React.FC = () => {
                       <Button
                         onClick={() => handleMarkAsRead(notification.id)}
                         size="sm"
-                        className="ml-4 bg-[#c1502e] text-white transition-colors hover:bg-[#472014]"
+                        className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
                       >
                         Mark as Read
                       </Button>
@@ -566,17 +567,17 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border border-[#c1502e] bg-white">
+        <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Briefcase className="mr-2 text-[#c1502e]" />
+              <Briefcase className="mr-2 text-[#eb5e17]" />
               Enrolled Business Projects
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoadingBusinessProjects ? (
               <div className="flex justify-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-[#c1502e]" />
+                <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
               </div>
             ) : businessProjectsError ? (
               <div className="text-center text-red-500 p-4">
@@ -587,7 +588,7 @@ const ProfessorProfilePage: React.FC = () => {
                 {businessProjects.map((project) => (
                   <div
                     key={project.id}
-                    className="border-b border-[#c1502e] pb-4 last:border-b-0"
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-lg font-semibold text-[#472014]">
@@ -631,10 +632,10 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border border-[#c1502e] bg-white">
+        <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Briefcase className="mr-2 text-[#c1502e]" />
+              <Briefcase className="mr-2 text-[#eb5e17]" />
               My Projects
             </CardTitle>
           </CardHeader>
@@ -646,13 +647,13 @@ const ProfessorProfilePage: React.FC = () => {
                   onOpenChange={setIsProjectDialogOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                    <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
                       <Plus className="mr-2" />
                       Create Project
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-[#c1502e]">
-                    <DialogHeader className="bg-[#c1502e] text-white p-4 rounded-t-lg">
+                  <DialogContent className="border-[#eb5e17]">
+                    <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
                       <DialogTitle>Create a New Project</DialogTitle>
                     </DialogHeader>
                     <form
@@ -679,7 +680,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="topic"
                           placeholder="Enter project topic"
                           required
-                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -689,7 +690,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="content"
                           placeholder="Enter project content"
                           required
-                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -714,7 +715,7 @@ const ProfessorProfilePage: React.FC = () => {
                           name="timeline"
                           type="date"
                           required
-                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <div>
@@ -724,13 +725,13 @@ const ProfessorProfilePage: React.FC = () => {
                           name="tags"
                           placeholder="Enter tags (comma-separated)"
                           required
-                          className="bg-white border-[#c1502e] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
                         />
                       </div>
                       <Button
                         type="submit"
                         disabled={isCreatingProject}
-                        className="bg-[#c1502e] hover:bg-[#472014] text-white w-full"
+                        className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
                       >
                         {isCreatingProject ? (
                           <>
@@ -756,7 +757,7 @@ const ProfessorProfilePage: React.FC = () => {
                       .map((project) => (
                         <li
                           key={project.id}
-                          className="border-b border-[#c1502e] pb-4 last:border-b-0"
+                          className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                         >
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="text-lg font-semibold text-[#472014]">
@@ -768,7 +769,7 @@ const ProfessorProfilePage: React.FC = () => {
                               }
                               className={
                                 status === "CLOSED"
-                                  ? "border-[#c1502e] text-[#472014]"
+                                  ? "border-[#eb5e17] text-[#472014]"
                                   : "bg-[#686256] text-white"
                               }
                             >
@@ -783,7 +784,7 @@ const ProfessorProfilePage: React.FC = () => {
                               <Badge
                                 key={index}
                                 variant="outline"
-                                className="border-[#c1502e] text-[#472014]"
+                                className="border-[#eb5e17] text-[#472014]"
                               >
                                 {tag}
                               </Badge>
@@ -792,7 +793,7 @@ const ProfessorProfilePage: React.FC = () => {
                           {status === "OPEN" && (
                             <Button
                               onClick={() => fetchAppliedStudents(project.id)}
-                              className="mr-2 bg-[#c1502e] hover:bg-[#472014] text-white"
+                              className="mr-2 bg-[#eb5e17] hover:bg-[#472014] text-white"
                               disabled={isLoadingApplicants}
                             >
                               {isLoadingApplicants ? (
@@ -812,7 +813,7 @@ const ProfessorProfilePage: React.FC = () => {
                               onClick={() =>
                                 handleChangeProjectStatus(project.id, "CLOSED")
                               }
-                              className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                              className="bg-[#eb5e17] hover:bg-[#472014] text-white"
                             >
                               Close Project
                             </Button>
@@ -847,7 +848,7 @@ const ProfessorProfilePage: React.FC = () => {
                                             )
                                           }
                                           size="sm"
-                                          className="bg-[#c1502e] hover:bg-[#be8372] text-white"
+                                          className="bg-[#eb5e17] hover:bg-[#be8372] text-white"
                                         >
                                           Select
                                         </Button>
@@ -900,75 +901,81 @@ const ProfessorProfilePage: React.FC = () => {
       <NavbarWithBg />
 
       <main className="flex-grow">
-        <motion.section
-          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center space-x-6 mb-6 md:mb-0">
-                <Avatar className="w-32 h-32 border-4 border-primary">
-                  <AvatarImage
-                    src={professor.photoUrl}
-                    alt={professor.fullName}
-                  />
-                  <AvatarFallback>
-                    {professor.fullName
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-4xl font-bold mb-2">
-                    {professor.fullName}
-                  </h1>
-                  <p className="text-xl text-muted-foreground">
-                    {professor.title}
-                  </p>
-                  <p className="text-lg text-muted-foreground">
-                    {professor.university}
-                  </p>
-                  <p className="text-md text-muted-foreground">
-                    {professor.department}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col space-y-2">
-                {professor.website && (
-                  <a
-                    className="btn btn-outline flex items-center"
-                    href={professor.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="mr-2 h-4 w-4" />
-                    Website
-                  </a>
-                )}
-                {isLoggedInUser && (
-                  <Link href={"/edit-profile"}>
-                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
-                      Edit Profile
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.section>
+      <motion.section
+  className="relative text-white py-24"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 0.8 }}
+>
+  {/* Background Image */}
+  <div className="absolute inset-0 -z-10">
+    <Image
+      src={PROFESSORPAGE}
+      alt="Background"
+      layout="fill"
+      objectFit="cover"
+      quality={100}
+      priority
+    />
+  </div>
+
+  <div className="container mx-auto px-4 relative z-10">
+    <div className="flex flex-col md:flex-row items-center justify-between">
+      <div className="flex items-center space-x-6 mb-6 md:mb-0">
+        <Avatar className="w-32 h-32 border-4 border-primary">
+          <AvatarImage
+            src={professor.photoUrl}
+            alt={professor.fullName}
+          />
+          <AvatarFallback>
+            {professor.fullName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-4xl font-bold mb-2 text-black">
+            {professor.fullName}
+          </h1>
+          <p className="text-xl text-black">
+            {professor.title}
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-col space-y-2">
+        {professor.website && (
+          <a
+            className="btn btn-outline flex items-center text-black"
+            href={professor.website}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Globe className="mr-2 h-4 w-4 text-black" />
+            Google Scholar
+          </a>
+        )}
+        {isLoggedInUser && (
+          <Link href={"/edit-profile"}>
+            <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">
+              Edit Profile
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
+  </div>
+</motion.section>
 
         <section className="py-12">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">
-              <TabsList className="flex flex-wrap justify-center bg-white border-[#c1502e] border-2 text-[#472014] p-2 h-44 lg:h-auto rounded-lg">
+              <TabsList className="flex flex-wrap justify-center bg-white border-[#eb5e17] border-2 text-[#472014] p-2 h-44 lg:h-auto rounded-lg">
                 {tabItems.map((item) => (
                   <TabsTrigger
                     key={item.id}
                     value={item.id}
-                    className="flex items-center space-x-2 px-4 py-2 data-[state=active]:bg-[#c1502e] data-[state=active]:text-white"
+                    className="flex items-center space-x-2 px-4 py-2 data-[state=active]:bg-[#eb5e17] data-[state=active]:text-white"
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -998,19 +1005,19 @@ const ProfessorProfilePage: React.FC = () => {
                     <CardContent>
                       <ul className="space-y-2">
                         <li>
-                          <strong>Email:</strong> {professor.email}
-                        </li>
-                        <li>
-                          <strong>Phone:</strong> {professor.phoneNumber}
-                        </li>
-                        <li>
-                          <strong>Location:</strong> {professor.location}
-                        </li>
-                        <li>
                           <strong>Degree:</strong> {professor.degree || "N/A"}
                         </li>
                         <li>
-                          <strong>Position:</strong> {professor.position}
+                          <strong>Designation:</strong> {professor.title}
+                        </li>
+                        <li>
+                          <strong>Department:</strong> {professor.department}
+                        </li>
+                        <li>
+                          <strong>University/Institute:</strong> {professor.university}
+                        </li>
+                        <li>
+                          <strong>Country:</strong> {professor.location}
                         </li>
                         <li>
                           <strong>Professor tags: </strong>
@@ -1031,69 +1038,9 @@ const ProfessorProfilePage: React.FC = () => {
 
                   <Card className="bg-white text-[#472014]">
                     <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold ">
-                        <Award className="mr-2" />
-                        Achievements
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {professor.achievements.length > 0 ? (
-                        <ul className="space-y-2">
-                          {professor.achievements.map((achievement) => (
-                            <li
-                              key={achievement.id}
-                              className="flex items-center"
-                            >
-                              <Badge
-                                variant="outline"
-                                className="mr-2 text-black"
-                              >
-                                {achievement.year}
-                              </Badge>
-                              {achievement.description}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No achievements listed yet.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white text-[#472014]">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-2xl font-bold">
-                        <Briefcase className="mr-2" />
-                        Positions Held
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {professor.positions.length > 0 ? (
-                        <ul className="space-y-2">
-                          {professor.positions.map((position) => (
-                            <li key={position.id} className="flex items-center">
-                              <Badge
-                                variant="outline"
-                                className="mr-2 text-black"
-                              >
-                                {position.startYear} -{" "}
-                                {position.endYear || "Present"}
-                              </Badge>
-                              {position.title}, {position.institution}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No positions listed yet.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white text-[#472014]">
-                    <CardHeader>
                       <CardTitle className="flex items-center text-2xl font-bold">
                         <BookOpen className="mr-2" />
-                        Research Interests
+                        Research Highlights
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1133,6 +1080,67 @@ const ProfessorProfilePage: React.FC = () => {
                       )}
                     </CardContent>
                   </Card>
+
+                  <Card className="bg-white text-[#472014]">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-2xl font-bold">
+                        <Briefcase className="mr-2" />
+                        Positions Held
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {professor.positions.length > 0 ? (
+                        <ul className="space-y-2">
+                          {professor.positions.map((position) => (
+                            <li key={position.id} className="flex items-center">
+                              <Badge
+                                variant="outline"
+                                className="mr-2 text-black"
+                              >
+                                {position.startYear} -{" "}
+                                {position.endYear || "Present"}
+                              </Badge>
+                              {position.title}, {position.institution}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No positions listed yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white text-[#472014]">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-2xl font-bold ">
+                        <Award className="mr-2" />
+                        Achievements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {professor.achievements.length > 0 ? (
+                        <ul className="space-y-2">
+                          {professor.achievements.map((achievement) => (
+                            <li
+                              key={achievement.id}
+                              className="flex items-center"
+                            >
+                              <Badge
+                                variant="outline"
+                                className="mr-2 text-black"
+                              >
+                                {achievement.year}
+                              </Badge>
+                              {achievement.description}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No achievements listed yet.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
 
                   {/* Modal */}
 
@@ -1180,7 +1188,7 @@ const ProfessorProfilePage: React.FC = () => {
                       <Card className="bg-white text-[#472014] shadow-md">
                         <CardHeader className="border-b border-gray-100">
                           <CardTitle className="flex items-center text-2xl font-bold">
-                            <BookOpen className="mr-2 h-6 w-6 text-[#c1502e]" />
+                            <BookOpen className="mr-2 h-6 w-6 text-[#eb5e17]" />
                             My Blogs
                           </CardTitle>
                         </CardHeader>
@@ -1197,7 +1205,7 @@ const ProfessorProfilePage: React.FC = () => {
                                 >
                                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                                     <div className="flex-1 space-y-3">
-                                      <h3 className="text-lg md:text-xl font-semibold text-[#472014] line-clamp-2 hover:text-[#c1502e] transition-colors">
+                                      <h3 className="text-lg md:text-xl font-semibold text-[#472014] line-clamp-2 hover:text-[#eb5e17] transition-colors">
                                         {blog.title}
                                       </h3>
                                       <div className="flex items-center text-sm text-gray-500">
@@ -1224,7 +1232,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       <div className="flex flex-wrap gap-2">
                                         <Badge
                                           variant="secondary"
-                                          className="bg-[#c1502e]/10 text-[#c1502e] hover:bg-[#c1502e]/20"
+                                          className="bg-[#eb5e17]/10 text-[#eb5e17] hover:bg-[#eb5e17]/20"
                                         >
                                           <ThumbsUp className="h-3 w-3 mr-1" />{" "}
                                           {blog.likes}
@@ -1250,7 +1258,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       >
                                         <Button
                                           variant="outline"
-                                          className="w-full bg-[#c1502e] hover:bg-[#472014] text-white transition-colors duration-300"
+                                          className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white transition-colors duration-300"
                                         >
                                           <Eye className="h-4 w-4 mr-2" /> View
                                           Blog
@@ -1298,7 +1306,7 @@ const ProfessorProfilePage: React.FC = () => {
                                 onOpenChange={setIsWebinarDialogOpen}
                               >
                                 <DialogTrigger asChild>
-                                  <Button className="bg-[#c1502e] hover:bg-[#472014] text-white">
+                                  <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
                                     Request Webinar
                                   </Button>
                                 </DialogTrigger>
@@ -1540,7 +1548,7 @@ const ProfessorProfilePage: React.FC = () => {
                                                 ? "outline"
                                                 : "default"
                                             }
-                                            className="bg-[#c1502e] hover:bg-[#472014] text-white font-caveat"
+                                            className="bg-[#eb5e17] hover:bg-[#472014] text-white font-caveat"
                                           >
                                             {new Date(
                                               webinar.date
@@ -1556,7 +1564,7 @@ const ProfessorProfilePage: React.FC = () => {
                                                     "COMPLETED"
                                                   )
                                                 }
-                                                className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                                                className="bg-[#eb5e17] hover:bg-[#472014] text-white"
                                               >
                                                 Mark Completed
                                               </Button>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */ 
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,7 @@ export const SignupForm: React.FC = () => {
       description: "",
     });
   const router = useRouter();
+  
 
   const updateEducation = (
     index: number,
@@ -341,69 +343,137 @@ export const SignupForm: React.FC = () => {
       researchInterests: newInterests,
     });
   };
+const [verified, setVerified] = useState(false);
+const [otp, setOtp] = useState('');
+const [otpSent, setOtpSent] = useState(false);
+const [emailError, setEmailError] = useState('');
 
-  const renderInitialForm = () => (
-    <form className="space-y-4" onSubmit={handleInitialSubmit}>
-      <Input
-        type="text"
-        placeholder="Full Name"
-        value={userData.fullName}
-        onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
-        required
-      />
-      <Input
-        type="email"
-        placeholder="Email Address"
-        value={userData.email}
-        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-        required
-      />
-      <Input
-        type="password"
-        placeholder="Password"
-        value={userData.password}
-        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-        required
-      />
-      <Select
-        onValueChange={(value) =>
-          setUserData({ ...userData, role: value as UserRole })
-        }
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="I am a..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="student">Student</SelectItem>
-          <SelectItem value="professor">Professor/Teacher</SelectItem>
-          <SelectItem value="business">Business</SelectItem>
-        </SelectContent>
-      </Select>
-      <div className="flex items-center space-x-2">
-        <Checkbox id="terms" required />
-        <label htmlFor="terms" className="text-sm text-muted-foreground">
-          I agree to the Terms of Service and Privacy Policy
-        </label>
-      </div>
-      <Button type="submit" className="w-full">
-        Next
-        <User2Icon className="ml-2 h-4 w-4" />
-      </Button>
-    </form>
-  );
+const handleSendOtp = async () => {
+  if (!userData.email) {
+    setEmailError('Email is required');
+    return;
+  }
+
+  setEmailError('');
+  try {
+    const response = await axios.post(`${API_URL}/email/send-email`, { email: userData.email });
+    if (response.status === 200) {
+      setOtpSent(true);
+      alert('Verification email sent successfully');
+    }
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    alert('Failed to send verification email');
+  }
+};
+
+const handleVerifyOtp = async () => {
+  if (!otp || !userData.email) {
+    alert('Email and OTP are required');
+    return;
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}/email/validate-code`, { email: userData.email, code: otp });
+    if (response.status === 200) {
+      setVerified(true);
+      alert('Code verified successfully');
+    } else {
+      alert('Invalid code or email');
+    }
+  } catch (error) {
+    console.error('Error validating OTP:', error);
+    alert('Failed to validate OTP');
+  }
+};
+
+const renderInitialForm = () => (
+  <form className="space-y-4" onSubmit={handleInitialSubmit}>
+    <Input
+      type="text"
+      placeholder="Full Name"
+      value={userData.fullName}
+      onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
+      required
+    />
+    <Input
+      type="email"
+      placeholder="Email Address"
+      value={userData.email}
+      onChange={(e) => {
+        setUserData({ ...userData, email: e.target.value });
+        setVerified(false);
+      }}
+      required
+    />
+    {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
+    <Button type="button" onClick={handleSendOtp} className="w-full">
+      Send OTP
+    </Button>
+    {otpSent && (
+      <>
+        <Input
+          type="text"
+          placeholder="Enter OTP"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          required
+        />
+        <Button type="button" onClick={handleVerifyOtp} className="w-full">
+          Verify OTP
+        </Button>
+      </>
+    )}
+    {verified && (
+      <p className="text-green-500 text-sm">Email verified successfully!</p>
+    )}
+    <Input
+      type="password"
+      placeholder="Password"
+      value={userData.password}
+      onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+      required
+    />
+    <Select
+      onValueChange={(value) =>
+        setUserData({ ...userData, role: value as UserRole })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="I am a..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="student">Student</SelectItem>
+        <SelectItem value="professor">Professor/Teacher</SelectItem>
+        <SelectItem value="business">Business</SelectItem>
+      </SelectContent>
+    </Select>
+    <div className="flex items-center space-x-2">
+      <Checkbox id="terms" required />
+      <label htmlFor="terms" className="text-sm text-muted-foreground">
+        I agree to the Terms of Service and Privacy Policy
+      </label>
+    </div>
+    <Button type="submit" className="w-full">
+      Next
+      <User2Icon className="ml-2 h-4 w-4" />
+    </Button>
+  </form>
+);
+
 
   const renderProfessorForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="position">Current Position</Label>
+        <Label htmlFor="title">Designation</Label>
         <Input
-          id="position"
+          id="title"
           type="text"
-          value={roleSpecificData.position || ""}
+          value={roleSpecificData.title || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              position: e.target.value,
+              title: e.target.value,
             })
           }
           required
@@ -411,15 +481,15 @@ export const SignupForm: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="degree">Degree</Label>
+        <Label htmlFor="department">Department</Label>
         <Input
-          id="degree"
+          id="department"
           type="text"
-          value={roleSpecificData.degree || ""}
+          value={roleSpecificData.department || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              degree: e.target.value,
+              department: e.target.value,
             })
           }
           required
@@ -427,118 +497,37 @@ export const SignupForm: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        <Label>Research Interests</Label>
-        <div className="flex flex-col space-y-2">
-          <Input
-            placeholder="Interest Title"
-            value={newResearchInterest.title}
-            onChange={(e) =>
-              setNewResearchInterest({
-                ...newResearchInterest,
-                title: e.target.value,
-              })
-            }
-          />
-          <Textarea
-            placeholder="Description"
-            value={newResearchInterest.description}
-            onChange={(e) =>
-              setNewResearchInterest({
-                ...newResearchInterest,
-                description: e.target.value,
-              })
-            }
-          />
-          <div className="flex flex-col space-y-2">
-            <Label>Upload Image</Label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  // Create preview URL
-                  const previewUrl = URL.createObjectURL(file);
-                  setNewResearchInterest({
-                    ...newResearchInterest,
-                    image: file,
-                    imagePreview: previewUrl,
-                  });
-                }
-              }}
-              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-            />
-            {newResearchInterest.imagePreview && (
-              <div className="relative w-40 h-40 mt-2">
-                <Image
-                  src={newResearchInterest.imagePreview}
-                  width={160}
-                  height={160}
-                  alt="Preview"
-                  className="rounded-md object-cover w-full h-full"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    if (newResearchInterest.imagePreview) {
-                      URL.revokeObjectURL(newResearchInterest.imagePreview);
-                    }
-                    setNewResearchInterest({
-                      ...newResearchInterest,
-                      image: undefined,
-                      imagePreview: undefined,
-                    });
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-          <Button type="button" onClick={addResearchInterest}>
-            Add Research Interest
-          </Button>
-        </div>
-        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {roleSpecificData.researchInterests?.map((interest, index) => (
-            <div
-              key={index}
-              className="bg-primary/10 p-4 rounded-md flex flex-col space-y-2"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium">{interest.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {interest.description}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeResearchInterest(index)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              {interest.imageUrl && (
-                <div className="relative w-full h-48">
-                  <Image
-                    src={interest.imageUrl}
-                    alt={interest.title}
-                    width={192}
-                    height={96}
-                    className="rounded-md object-cover w-full h-full"
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <Label htmlFor="university">University</Label>
+        <Input
+          id="university"
+          type="text"
+          value={roleSpecificData.university || ""}
+          onChange={(e) =>
+            setRoleSpecificData({
+              ...roleSpecificData,
+              university: e.target.value,
+            })
+          }
+          required
+        />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="location">Country</Label>
+        <Input
+          id="location"
+          type="text"
+          value={roleSpecificData.location || ""}
+          onChange={(e) =>
+            setRoleSpecificData({
+              ...roleSpecificData,
+              location: e.target.value,
+            })
+          }
+          required
+        />
+      </div>
+
 
       <div className="space-y-2">
         <Label>Tags (Optional: Select up to {MAX_TAGS})</Label>
@@ -643,14 +632,24 @@ export const SignupForm: React.FC = () => {
               }
               required
             />
-            <Input
-              placeholder="Passing Year"
-              value={edu.passingYear}
-              onChange={(e) =>
-                updateEducation(index, "passingYear", e.target.value)
-              }
-              required
-            />
+            <select
+  value={edu.passingYear}
+  onChange={(e) => updateEducation(index, "passingYear", e.target.value)}
+  required
+  className="bg-secondary text-white text-center px-1 rounded-lg "
+>
+  <option value="" disabled>Select Year</option>
+  {/* Add year options dynamically */}
+  {Array.from({ length: 50 }, (_, i) => {
+    const year = new Date().getFullYear() - i;
+    return (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    );
+  })}
+</select>
+
             <Button
               type="button"
               variant="outline"
@@ -666,7 +665,7 @@ export const SignupForm: React.FC = () => {
         </Button>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="collegeName">College Name</Label>
+        <Label htmlFor="collegeName">College/Institue Name</Label>
         <Input
           id="collegeName"
           type="text"
@@ -696,17 +695,18 @@ export const SignupForm: React.FC = () => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="experience">Experience</Label>
-        <Textarea
-          id="experience"
-          value={roleSpecificData.experience || ""}
+        <Label htmlFor="location">Country</Label>
+        <Input
+          id="location"
+          type="text"
+          value={roleSpecificData.location || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              experience: e.target.value,
+              location: e.target.value,
             })
           }
-          placeholder="(optional)"
+          required
         />
       </div>
       <Button type="submit" className="w-full">
@@ -756,6 +756,21 @@ export const SignupForm: React.FC = () => {
             setRoleSpecificData({
               ...roleSpecificData,
               companyDescription: e.target.value,
+            })
+          }
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="location">Country</Label>
+        <Input
+          id="location"
+          type="text"
+          value={roleSpecificData.location || ""}
+          onChange={(e) =>
+            setRoleSpecificData({
+              ...roleSpecificData,
+              location: e.target.value,
             })
           }
           required

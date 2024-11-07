@@ -21,6 +21,10 @@ import ABOUT from "./about.png"
 import ABOUTPAGE from "./about-page.png"
 import LOGOLEFT from "./logo-left.png"
 import LOGORIGHT from "./logo-right.png"
+import ALLPROFESSORS from "./allprofessor.png"
+import PROFESSORPAGE from "./professor-page.png"
+import STUDENTPAGE from "./student-page.png"
+import BUSINESSPAGE from "./business-page.png"
 
 export {
     LOGIN,
@@ -45,5 +49,9 @@ export {
     ABOUT,
     ABOUTPAGE,
     LOGOLEFT,
-    LOGORIGHT
+    LOGORIGHT,
+    ALLPROFESSORS,
+    PROFESSORPAGE,
+    STUDENTPAGE,
+    BUSINESSPAGE
 }

@@ -23,6 +23,8 @@ import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
+import Image from "next/image";
+import { PROFESSORPAGE } from "../../../../public";
 
 const categories = {
   Science: [
@@ -310,7 +312,7 @@ const BusinessProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
-        <div className="loader text-[#c1502e] font-caveat text-2xl">
+        <div className="loader text-[#eb5e17] font-caveat text-2xl">
           Loading...
         </div>
         <div className="text-[#472014] ml-2">please wait</div>
@@ -337,10 +339,10 @@ const BusinessProfilePage: React.FC = () => {
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
       {isLoggedInUser && (
-        <Card className="border border-[#c1502e] bg-white">
+        <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Bell className="mr-2 text-[#c1502e]" />
+              <Bell className="mr-2 text-[#eb5e17]" />
               Notifications
             </CardTitle>
           </CardHeader>
@@ -375,7 +377,7 @@ const BusinessProfilePage: React.FC = () => {
                       <Button
                         onClick={() => handleMarkAsRead(notification.id)}
                         size="sm"
-                        className="bg-[#c1502e] hover:bg-[#472014] text-white"
+                        className="bg-[#eb5e17] hover:bg-[#472014] text-white"
                       >
                         Mark as Read
                       </Button>
@@ -397,11 +399,23 @@ const BusinessProfilePage: React.FC = () => {
 
       <main className="flex-grow">
         <motion.section
-          className="relative bg-gradient-to-b from-[#c1502e] to-[#686256] text-white py-24"
+          className="relative bg-gradient-to-b from-[#eb5e17] to-[#686256] text-white py-24"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
+
+  {/* Background Image */}
+  <div className="absolute inset-0 -z-10">
+    <Image
+      src={PROFESSORPAGE}
+      alt="Background"
+      layout="fill"
+      objectFit="cover"
+      quality={100}
+      priority
+    />
+  </div>
           <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">
@@ -423,17 +437,17 @@ const BusinessProfilePage: React.FC = () => {
                   </Avatar>
                 </motion.div>
                 <div>
-                  <h1 className="text-5xl font-extrabold mb-2 font-caveat text-white">
+                  <h1 className="text-5xl font-extrabold mb-2 font-caveat text-black">
                     {business.companyName}
                   </h1>
-                  <p className="text-2xl text-white/90">{business.industry}</p>
-                  <p className="text-xl text-white/80">{business.location}</p>
+                  <p className="text-2xl text-black">{business.industry}</p>
+                  <p className="text-xl text-black">{business.location}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>
-                    <Button className="bg-[#c1502e] hover:bg-[#472014] text-white flex flex-end">
+                    <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">
                       Edit Profile
                     </Button>
                   </Link>
@@ -451,25 +465,15 @@ const BusinessProfilePage: React.FC = () => {
               initial="initial"
               animate="animate"
             >
-              <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
+              <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                     <Building className="mr-2" />
-                    Business Details
+                    Industry Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-lg">
                   <ul className="space-y-4">
-                    <li className="flex items-center">
-                      <strong className="text-[#472014] min-w-[100px]">
-                        Email: {business.email}
-                      </strong>
-                    </li>
-                    <li className="flex items-center">
-                      <strong className="text-[#472014] min-w-[100px]">
-                        Phone:{business.phoneNumber}
-                      </strong>
-                    </li>
                     <li className="flex items-center">
                       <strong className="text-[#472014] min-w-[100px]">
                         Website:{business.website || "N/A"}
@@ -486,7 +490,7 @@ const BusinessProfilePage: React.FC = () => {
 
               {isLoggedInUser && (
                 <>
-                  <Card className="border-2 border-[#c1502e] shadow-xl bg-white text-[#472014]">
+                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white text-[#472014]">
                     <CardHeader>
                       <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                         <Briefcase className="mr-2" />
@@ -507,7 +511,7 @@ const BusinessProfilePage: React.FC = () => {
                               topic: e.target.value,
                             })
                           }
-                          className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
+                          className="border-2 border-[#eb5e17] rounded-lg p-3 bg-white"
                           required
                         />
                         <Textarea
@@ -519,7 +523,7 @@ const BusinessProfilePage: React.FC = () => {
                               content: e.target.value,
                             })
                           }
-                          className="border-2 border-[#c1502e] rounded-lg p-3"
+                          className="border-2 border-[#eb5e17] rounded-lg p-3"
                           required
                         />
                         <select
@@ -533,7 +537,7 @@ const BusinessProfilePage: React.FC = () => {
                                 | "HARD",
                             })
                           }
-                          className="w-full p-3 border-2 border-[#c1502e] rounded-lg bg-white"
+                          className="w-full p-3 border-2 border-[#eb5e17] rounded-lg bg-white"
                           required
                         >
                           <option value="EASY">Easy</option>
@@ -549,7 +553,7 @@ const BusinessProfilePage: React.FC = () => {
                               timeline: e.target.value,
                             })
                           }
-                          className="border-2 border-[#c1502e] rounded-lg p-3 bg-white"
+                          className="border-2 border-[#eb5e17] rounded-lg p-3 bg-white"
                           required
                         />
 
@@ -605,7 +609,7 @@ const BusinessProfilePage: React.FC = () => {
                         </div>
                         <Button
                           type="submit"
-                          className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
+                          className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
                           disabled={isLoading}
                         >
                           {isLoading ? (
@@ -621,7 +625,7 @@ const BusinessProfilePage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
+                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
                     <CardHeader>
                       <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                         <Globe className="mr-2" />
@@ -633,7 +637,7 @@ const BusinessProfilePage: React.FC = () => {
                         {projects.map((project) => (
                           <li
                             key={project.id}
-                            className="border-b-2 border-[#c1502e]/20 pb-6 last:border-b-0"
+                            className="border-b-2 border-[#eb5e17]/20 pb-6 last:border-b-0"
                           >
                             <h3 className="text-xl font-bold text-[#472014] mb-2">
                               {project.topic}
@@ -642,7 +646,7 @@ const BusinessProfilePage: React.FC = () => {
                               {project.content.substring(0, 100)}...
                             </p>
                             <div className="flex justify-between items-center mb-4">
-                              <Badge className="bg-[#c1502e] text-white px-4 py-2 rounded-full">
+                              <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
                                 {project.difficulty}
                               </Badge>
                               <Badge
@@ -662,7 +666,7 @@ const BusinessProfilePage: React.FC = () => {
                                 onClick={() =>
                                   fetchAppliedProfessors(project.id)
                                 }
-                                className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl mb-4"
+                                className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl mb-4"
                               >
                                 <User className="mr-2" /> View Applied
                                 Professors
@@ -684,13 +688,10 @@ const BusinessProfilePage: React.FC = () => {
                                       (professor) => (
                                         <li
                                           key={professor.professorId}
-                                          className="flex flex-col p-4 bg-gray-50 rounded-lg border-2 border-[#c1502e]"
+                                          className="flex flex-col p-4 bg-gray-50 rounded-lg border-2 border-[#eb5e17]"
                                         >
                                           <span className="text-lg font-bold text-[#472014]">
                                             {professor.name}
-                                          </span>
-                                          <span className="text-gray-600">
-                                            {professor.email}
                                           </span>
                                           <span className="text-gray-600 mb-3">
                                             {professor.phoneNumber}
@@ -703,7 +704,7 @@ const BusinessProfilePage: React.FC = () => {
                                                 professor.professorId
                                               )
                                             }
-                                            className="bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-2 px-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+                                            className="bg-[#eb5e17] hover:bg-[#003d82] text-white font-bold py-2 px-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
                                           >
                                             Select Professor
                                           </Button>
@@ -721,7 +722,7 @@ const BusinessProfilePage: React.FC = () => {
                                     "CLOSED"
                                   )
                                 }
-                                className="w-full bg-[#c1502e] hover:bg-[#003d82] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
+                                className="w-full bg-[#eb5e17] hover:bg-[#003d82] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
                               >
                                 Complete Project
                               </Button>
@@ -732,7 +733,7 @@ const BusinessProfilePage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-2 border-[#c1502e] shadow-xl bg-white">
+                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
                     <CardHeader>
                       <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
                         <Tag className="mr-2" />
@@ -746,7 +747,7 @@ const BusinessProfilePage: React.FC = () => {
                         ).map((tag, index) => (
                           <Badge
                             key={index}
-                            className="bg-[#c1502e]/10 text-[#472014] border-2 border-[#c1502e] px-4 py-2 rounded-full text-sm font-semibold"
+                            className="bg-[#eb5e17]/10 text-[#472014] border-2 border-[#eb5e17] px-4 py-2 rounded-full text-sm font-semibold"
                           >
                             {tag}
                           </Badge>

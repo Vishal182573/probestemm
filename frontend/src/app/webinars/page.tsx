@@ -53,7 +53,7 @@ const WebinarPage = () => {
       <NavbarWithBg/>
       <Banner imageSrc={WEBINAR} altText="webinar-banner-img" 
     title="Stay ahead of the Curve"
-    subtitle="Attend virtual seminars and discussions."/>
+    subtitle="Attend virtual seminars and discussions"/>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>

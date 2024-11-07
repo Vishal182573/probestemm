@@ -28,6 +28,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { API_URL } from "@/constants";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface Webinar {
   id: string;
@@ -43,6 +44,7 @@ interface Webinar {
 }
 
 const NotificationsComponent: React.FC = () => {
+  const router = useRouter();
   const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [filteredWebinars, setFilteredWebinars] = useState<Webinar[]>([]);
   const [filter, setFilter] = useState<"APPROVED" | "COMPLETED" | "ALL">("ALL");
@@ -52,6 +54,11 @@ const NotificationsComponent: React.FC = () => {
   useEffect(() => {
     const fetchWebinars = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
         const response = await axios.get(`${API_URL}/webinars`);
         setWebinars(response.data);
       } catch (error) {

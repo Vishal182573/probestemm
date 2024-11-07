@@ -49,9 +49,11 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     setIsLoading(true);
 
     try {
+
       const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error("No authentication token found");
+        router.push("/login");
+        return;
       }
 
       const formData = new FormData();

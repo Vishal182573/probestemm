@@ -92,7 +92,7 @@ export const NavbarWithBg: React.FC = () => {
               WEBINARS
             </NavLink>
             <NavLink to="/blogs" className={linkTextColor}>
-              BLOGS
+              Research Corner
             </NavLink>
             <NavLink to="/projects" className={linkTextColor}>
               PROJECTS
@@ -138,7 +138,7 @@ export const NavbarWithBg: React.FC = () => {
                 WEBINARS
               </MobileNavLink>
               <MobileNavLink to="/blogs" className={linkTextColor}>
-                BLOGS
+                Research Corner
               </MobileNavLink>
               <MobileNavLink to="/projects" className={linkTextColor}>
                 PROJECTS
@@ -161,7 +161,7 @@ export const NavbarWithBg: React.FC = () => {
                     variant="default"
                     className="w-full bg-[#472014] text-white hover:bg-[#8a5444]"
                   >
-                    LOGIN/SIGNUP
+                    LOGIN FOR FREE
                   </Button>
                 </Link>
               )}

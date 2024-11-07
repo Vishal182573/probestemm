@@ -65,7 +65,7 @@ const AboutUsPage = () => {
         imageSrc={ABOUT}
         altText="About Us Banner"
         title="Probe STEM"
-        subtitle="Empowering the next generation of innovators."
+        subtitle="Empowering the next generation of innovators"
       />
       <motion.div
         initial={{ opacity: 0 }}
@@ -82,8 +82,7 @@ const AboutUsPage = () => {
         >
           <h2 className="text-3xl font-bold text-[#472014] mb-4">Our Motto</h2>
           <p className="text-xl text-[#472014]">
-            Bridging academia and industry to transform research into
-            reality.
+          Bridging the gap between academia and industry to make research a reality
           </p>
         </motion.div>
 
@@ -95,7 +94,7 @@ const AboutUsPage = () => {
           transition={{ delay: 0.2 }}
           className="mb-16"
         >
-          <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Us</h2>
+          <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe Stem</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <p className="text-lg text-[#472014]">
@@ -190,12 +189,6 @@ const AboutUsPage = () => {
                 Only faculty members are eligible to apply for these projects by
                 completing the form. When a company posts a project, a
                 notification will be sent to all faculty in the relevant area.
-              </p>
-              <p className="mt-4">
-                <strong>Note:</strong> Faculty can recruit students exclusively
-                from the Probe STEM portal based on project requirements. Upon
-                project completion, students will receive a certificate from
-                both the faculty and the industry partner.
               </p>
               <Link href={"/projects"}>
                 <Button className="mt-4 bg-[#5e17eb] text-white">

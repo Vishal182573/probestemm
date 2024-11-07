@@ -10,7 +10,6 @@ const ContactPage: NextPage = () => {
     <div>
       <NavbarWithBg/>
       <div className="mx-auto bg-white">
-        <h1 className="text-5xl font-bold text-black p-4 text-center">Contact Us</h1>
         <ContactForm/>
       </div>
       <Footer/>

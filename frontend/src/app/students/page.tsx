@@ -5,7 +5,7 @@ import AnimatedContainer from "@/components/shared/AnimatedContainer";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import { LOGO } from "../../../public";
+import { STUDENTPAGE } from "../../../public";
 import { Footer } from "@/components/shared/Footer";
 import ContactForm from "@/components/shared/Feedback";
 
@@ -36,10 +36,10 @@ export default async function StudentsPage() {
       <div className="bg-white w-full">
         <NavbarWithBg />
         <Banner
-          imageSrc={LOGO}
+          imageSrc={STUDENTPAGE}
           altText="project-banner-img"
-          title="Cutting-Edge STEM Projects"
-          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM."
+          title="Our Outstanding Students"
+          subtitle="Explore the achievements, projects, and dedication of students shaping the future of Science and Technology"
         />
         <AnimatedContainer>
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">

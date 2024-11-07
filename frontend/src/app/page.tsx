@@ -204,7 +204,7 @@ const FeaturesSection = () => {
       description:
         "Build connections with students and industry for",
       benefits: [
-        "Hiring students for internships/Phd positions and porjects",
+        "Hiring students for internships/Phd positions and projects",
         "Technology transfer, consultancy and research projects",
       ],
       link: "/professors",
@@ -217,7 +217,7 @@ const FeaturesSection = () => {
         "Connect with students and academia for",
       benefits: [
         "Grand challenges",
-        "Research projects",
+        "R&D projects",
         "Technology solutions",
       ],
       link: "/businesses",
