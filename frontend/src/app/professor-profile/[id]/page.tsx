@@ -886,7 +886,7 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
-          { id: "patents", label: "Patents", icon: <BookOpen /> },
+          // { id: "patents", label: "Patents", icon: <BookOpen /> },
           {
             id: "business-projects",
             label: "Business Projects",
@@ -1595,7 +1595,7 @@ const ProfessorProfilePage: React.FC = () => {
                   </TabsContent>
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
-                  {renderPatentsTab()}
+                  {/* {renderPatentsTab()} */}
                   {renderBusinessProjectsTab()}
                 </>
               )}

@@ -7,9 +7,9 @@ import { Footer } from "@/components/shared/Footer";
 import { motion } from "framer-motion";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { LOGIN } from "../../../public";
-import LoginForm from "@/components/shared/LoginForm";
+import ForgotPasswordForm from "@/components/shared/forgotForm";
 
-const LoginPage: React.FC = () => {
+const Forgotpage: React.FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -78,7 +78,7 @@ const LoginPage: React.FC = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="flex justify-center items-center"
               >
-                <LoginForm/>
+                <ForgotPasswordForm/>
               </motion.div>
             </div>
           </div>
@@ -89,4 +89,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default Forgotpage;

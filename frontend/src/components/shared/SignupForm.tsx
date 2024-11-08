@@ -14,7 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { User2Icon, PlusCircle, X } from "lucide-react";
+import { User2Icon, PlusCircle, X, Loader2, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -174,19 +174,6 @@ export const SignupForm: React.FC = () => {
     const newEducation = [...(roleSpecificData.education || [])];
     newEducation.splice(index, 1);
     setRoleSpecificData({ ...roleSpecificData, education: newEducation });
-  };
-
-  const handleInitialSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setRoleSpecificData({
-      ...roleSpecificData,
-      fullName: userData.fullName,
-      email: userData.email,
-      password: userData.password,
-      role: userData.role,
-    });
-    setStep(2);
   };
 
   const handleRoleSpecificSubmit = async (e: React.FormEvent) => {
@@ -350,42 +337,102 @@ const [emailError, setEmailError] = useState('');
 
 const handleSendOtp = async () => {
   if (!userData.email) {
-    setEmailError('Email is required');
+    setEmailVerification(prev => ({ ...prev, error: 'Email is required' }));
     return;
   }
 
-  setEmailError('');
+  setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
+  
   try {
-    const response = await axios.post(`${API_URL}/email/send-email`, { email: userData.email });
+    const response = await axios.post(`${API_URL}/email/send-email`, { 
+      email: userData.email 
+    });
     if (response.status === 200) {
-      setOtpSent(true);
-      alert('Verification email sent successfully');
+      setEmailVerification(prev => ({
+        ...prev,
+        otpSent: true,
+        loading: false
+      }));
+      toast({
+        title: "OTP Sent",
+        description: "Please check your email for the verification code",
+      });
     }
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    alert('Failed to send verification email');
+    setEmailVerification(prev => ({
+      ...prev,
+      loading: false,
+      error: 'Failed to send verification email. Please try again.'
+    }));
   }
 };
 
 const handleVerifyOtp = async () => {
-  if (!otp || !userData.email) {
-    alert('Email and OTP are required');
+  if (!emailVerification.otp) {
+    setEmailVerification(prev => ({
+      ...prev,
+      error: 'Please enter the verification code'
+    }));
     return;
   }
 
+  setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
+
   try {
-    const response = await axios.post(`${API_URL}/email/validate-code`, { email: userData.email, code: otp });
+    const response = await axios.post(`${API_URL}/email/validate-code`, {
+      email: userData.email,
+      code: emailVerification.otp
+    });
+    
     if (response.status === 200) {
-      setVerified(true);
-      alert('Code verified successfully');
-    } else {
-      alert('Invalid code or email');
+      setEmailVerification(prev => ({
+        ...prev,
+        verified: true,
+        loading: false
+      }));
+      toast({
+        title: "Email Verified",
+        description: "Your email has been successfully verified",
+      });
     }
   } catch (error) {
-    console.error('Error validating OTP:', error);
-    alert('Failed to validate OTP');
+    setEmailVerification(prev => ({
+      ...prev,
+      loading: false,
+      error: 'Invalid verification code. Please try again.'
+    }));
   }
 };
+
+const handleInitialSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!emailVerification.verified) {
+    toast({
+      title: "Email verification required",
+      description: "Please verify your email before proceeding",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  setRoleSpecificData({
+    ...roleSpecificData,
+    fullName: userData.fullName,
+    email: userData.email,
+    password: userData.password,
+    role: userData.role,
+  });
+  setStep(2);
+};
+
+const [emailVerification, setEmailVerification] = useState({
+  otpSent: false,
+  otp: '',
+  verified: false,
+  loading: false,
+  error: ''
+});
 
 const renderInitialForm = () => (
   <form className="space-y-4" onSubmit={handleInitialSubmit}>
@@ -396,37 +443,68 @@ const renderInitialForm = () => (
       onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
       required
     />
-    <Input
-      type="email"
-      placeholder="Email Address"
-      value={userData.email}
-      onChange={(e) => {
-        setUserData({ ...userData, email: e.target.value });
-        setVerified(false);
-      }}
-      required
-    />
-    {emailError && <p className="text-red-500 text-sm">{emailError}</p>}
-    <Button type="button" onClick={handleSendOtp} className="w-full">
-      Send OTP
-    </Button>
-    {otpSent && (
-      <>
+    
+    <div className="space-y-2">
+      <div className="flex gap-2">
         <Input
-          type="text"
-          placeholder="Enter OTP"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
+          type="email"
+          placeholder="Email Address"
+          value={userData.email}
+          onChange={(e) => {
+            setUserData({ ...userData, email: e.target.value });
+            setEmailVerification(prev => ({ ...prev, verified: false, otpSent: false }));
+          }}
           required
+          disabled={emailVerification.verified}
         />
-        <Button type="button" onClick={handleVerifyOtp} className="w-full">
-          Verify OTP
-        </Button>
-      </>
-    )}
-    {verified && (
-      <p className="text-green-500 text-sm">Email verified successfully!</p>
-    )}
+        {!emailVerification.verified && (
+          <Button 
+            type="button" 
+            onClick={handleSendOtp}
+            disabled={emailVerification.loading || !userData.email}
+            className="whitespace-nowrap"
+          >
+            {emailVerification.loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : emailVerification.otpSent ? 'Resend OTP' : 'Send OTP'}
+          </Button>
+        )}
+      </div>
+
+      {emailVerification.otpSent && !emailVerification.verified && (
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Enter Verification Code"
+            value={emailVerification.otp}
+            onChange={(e) => setEmailVerification(prev => ({ ...prev, otp: e.target.value }))}
+            required
+          />
+          <Button 
+            type="button" 
+            onClick={handleVerifyOtp}
+            disabled={emailVerification.loading || !emailVerification.otp}
+            className="whitespace-nowrap"
+          >
+            {emailVerification.loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : 'Verify'}
+          </Button>
+        </div>
+      )}
+
+      {emailVerification.error && (
+        <p className="text-sm text-red-500">{emailVerification.error}</p>
+      )}
+
+      {emailVerification.verified && (
+        <div className="flex items-center gap-2 text-sm text-green-600">
+          <Check className="h-4 w-4" />
+          Email verified successfully
+        </div>
+      )}
+    </div>
+
     <Input
       type="password"
       placeholder="Password"
@@ -434,10 +512,9 @@ const renderInitialForm = () => (
       onChange={(e) => setUserData({ ...userData, password: e.target.value })}
       required
     />
+
     <Select
-      onValueChange={(value) =>
-        setUserData({ ...userData, role: value as UserRole })
-      }
+      onValueChange={(value) => setUserData({ ...userData, role: value as UserRole })}
     >
       <SelectTrigger>
         <SelectValue placeholder="I am a..." />
@@ -448,13 +525,19 @@ const renderInitialForm = () => (
         <SelectItem value="business">Business</SelectItem>
       </SelectContent>
     </Select>
+
     <div className="flex items-center space-x-2">
       <Checkbox id="terms" required />
       <label htmlFor="terms" className="text-sm text-muted-foreground">
         I agree to the Terms of Service and Privacy Policy
       </label>
     </div>
-    <Button type="submit" className="w-full">
+
+    <Button 
+      type="submit" 
+      className="w-full"
+      disabled={!emailVerification.verified}
+    >
       Next
       <User2Icon className="ml-2 h-4 w-4" />
     </Button>

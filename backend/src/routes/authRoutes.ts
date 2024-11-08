@@ -7,6 +7,7 @@ import {
   adminSignup,
   signin,
   logout,
+  resetPassword,
 } from "../controllers/authController";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
@@ -131,6 +132,15 @@ router.post("/signin", async (req, res) => {
 router.post("/logout", async (req, res) => {
   try {
     await logout(req, res);
+  } catch (error) {
+    console.error("Error in logout:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/reset-password",  async (req, res) => {
+  try {
+    await resetPassword(req, res);
   } catch (error) {
     console.error("Error in logout:", error);
     res.status(500).json({ error: "Internal server error" });

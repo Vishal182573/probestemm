@@ -20,6 +20,14 @@ const ProfessorUpdateSchema = z.object({
   isapproved: z.boolean().optional(),
 });
 
+const ProfessorFilterSchema = z.object({
+  fullName: z.string().optional(),
+  title: z.string().optional(),
+  department: z.string().optional(),
+  university: z.string().optional(),
+  location: z.string().optional(),
+}).optional();
+
 interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
@@ -28,31 +36,71 @@ interface AuthenticatedRequest extends Request {
 }
 export const getProfessors = async (req: Request, res: Response) => {
   try {
+    const filters = ProfessorFilterSchema.parse(req.query);
+    
+    const where: any = {
+      isApproved: true
+    };
+
+    if (filters?.fullName) {
+      where.fullName = {
+        contains: filters.fullName,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.title) {
+      where.title = {
+        contains: filters.title,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.department) {
+      where.department = {
+        contains: filters.department,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.university) {
+      where.university = {
+        contains: filters.university,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.location) {
+      where.location = {
+        contains: filters.location,
+        mode: 'insensitive'
+      };
+    }
+
     const professors = await prisma.professor.findMany({
+      where,
       select: {
         id: true,
         fullName: true,
         title: true,
-        university: true,
         department: true,
-        isApproved: true,
-        researchInterests: {
-          select: {
-            title: true,
-            description: true,
-            imageUrl: true,
-          },
-        },
-        tags: {
-          select: {
-            category: true,
-            subcategory: true,
-          },
-        },
-      },
+        university: true,
+        location: true,
+        photoUrl: true,
+        email: true,
+        website: true,
+        degree: true,
+        position: true,
+        createdAt: true,
+        updatedAt: true,
+      }
     });
+
     return res.status(200).json(professors);
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
     return res.status(500).json({ error: "Failed to fetch professors" });
   }
 };

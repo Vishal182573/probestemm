@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT } from "../../../public";
@@ -9,6 +9,7 @@ import { LOGOLEFT, LOGORIGHT } from "../../../public";
 export const NavbarWithBg: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const [user, setUser] = useState<{
     id?: string;
     fullName?: string;
@@ -47,6 +48,10 @@ export const NavbarWithBg: React.FC = () => {
       default:
         return "/user.png";
     }
+  };
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.reload();
   };
 
   const linkTextColor = "text-[#472014]";
@@ -101,15 +106,37 @@ export const NavbarWithBg: React.FC = () => {
               CONTACT US
             </NavLink>
             {isLoggedIn && user ? (
-              <Link href={`/${user.role}-profile/${user.id}`}>
-                <Image
-                  src={getProfileImageSrc()}
-                  alt={user.fullName || "User Profile"}
-                  width={40}
-                  height={40}
-                  className="rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-600 transition-all"
-                />
-              </Link>
+  <div 
+    className="relative" 
+    onMouseEnter={() => setShowLogout(true)}
+    onMouseLeave={() => setShowLogout(false)}
+  >
+    <Link href={`/${user.role}-profile/${user.id}`}>
+      <Image
+        src={getProfileImageSrc()}
+        alt={user.fullName || "User Profile"}
+        width={40}
+        height={40}
+        className="rounded-full bg-white border-[2px] border-gray-300 hover:border-blue-600 transition-all"
+      />
+    </Link>
+    {showLogout && (
+      <div 
+        className="absolute top-0 right-0 flex flex-col items-center mt-10" 
+        onMouseEnter={() => setShowLogout(true)}
+        onMouseLeave={() => setShowLogout(false)}
+      >
+        <Button
+          variant="default"
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 px-3 py-2 rounded-md shadow-lg"
+        >
+          <LogOut size={16} />
+          Logout
+        </Button>
+      </div>
+    )}
+  </div>
             ) : (
               <Link href="/login">
                 <Button
@@ -147,14 +174,23 @@ export const NavbarWithBg: React.FC = () => {
                 CONTACT US
               </MobileNavLink>
               {isLoggedIn && user ? (
-                <Link href={`/${user.role}-profile/${user.id}`}>
+                <>
+                  <Link href={`/${user.role}-profile/${user.id}`}>
+                    <Button
+                      variant="ghost"
+                      className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                    >
+                      <User className="mr-2" size={18} /> Profile
+                    </Button>
+                  </Link>
                   <Button
                     variant="ghost"
-                    className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                    onClick={handleLogout}
+                    className="w-full text-left text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
-                    <User className="mr-2" size={18} /> Profile
+                    <LogOut className="mr-2" size={18} /> Logout
                   </Button>
-                </Link>
+                </>
               ) : (
                 <Link href="/login">
                   <Button

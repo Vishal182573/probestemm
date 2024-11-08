@@ -416,3 +416,65 @@ export const logout = async (req: Request, res: Response) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
 };
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { userType, email, newPassword } = req.body;
+
+    let user;
+    switch (userType) {
+      case 'student':
+        user = await prisma.student.findUnique({ where: { email } });
+        break;
+      case 'professor':
+        user = await prisma.professor.findUnique({ where: { email } });
+        break;
+      case 'business':
+        user = await prisma.business.findUnique({ where: { email } });
+        break;
+      case 'admin':
+        user = await prisma.superAdmin.findUnique({ where: { email } });
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid user type' });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    switch (userType) {
+      case 'student':
+        await prisma.student.update({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+        break;
+      case 'professor':
+        await prisma.professor.update({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+        break;
+      case 'business':
+        await prisma.business.update({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+        break;
+      case 'admin':
+        await prisma.superAdmin.update({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+        break;
+    }
+
+    return res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error in resetPassword:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};

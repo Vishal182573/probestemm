@@ -1,28 +1,74 @@
 import { type Request, type Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
+
+const StudentFilterSchema = z.object({
+  fullName: z.string().optional(),
+  university: z.string().optional(),
+  course: z.string().optional(),
+  location: z.string().optional(),
+}).optional();
 
 // GET /api/students
 export const getStudents = async (req: Request, res: Response) => {
   try {
+    const filters = StudentFilterSchema.parse(req.query);
+    
+    const where: any = {};
+
+    if (filters?.fullName) {
+      where.fullName = {
+        contains: filters.fullName,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.university) {
+      where.university = {
+        contains: filters.university,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.course) {
+      where.course = {
+        contains: filters.course,
+        mode: 'insensitive'
+      };
+    }
+
+    if (filters?.location) {
+      where.location = {
+        contains: filters.location,
+        mode: 'insensitive'
+      };
+    }
+
     const students = await prisma.student.findMany({
-      include: {
-        researchHighlights: true,
-        education: true,
-        achievements: true,
-        discussions: true,
-        comments: true,
-        projects: true,
-      },
+      where,
+      select: {
+        id: true,
+        fullName: true,
+        university: true,
+        course: true,
+        location: true,
+        imageUrl: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      }
     });
-    res.status(200).json(students);
+
+    return res.status(200).json(students);
   } catch (error) {
-    console.error("Error fetching students:", error);
-    res.status(500).json({ error: "Failed to fetch students" });
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    return res.status(500).json({ error: "Failed to fetch students" });
   }
 };
-
 // GET /api/students/:id
 export const getStudentById = async (req: Request, res: Response) => {
   try {
