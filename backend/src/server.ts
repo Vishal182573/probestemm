@@ -8,7 +8,7 @@ import professorRoutes from "./routes/professorRoutes";
 import discussionRoutes from "./routes/discussionsRoutes";
 import blogsRoutes from "./routes/blogsRoutes";
 import webinarRoutes from "./routes/webinarRoutes";
-// import projectRoutes from "./routes/projectsRoutes";
+import projectRoutes from "./routes/projectsRoutes";
 import businessRoutes from "./routes/businessRoutes";
 import superAdminRoutes from "./routes/superadminRoutes";
 import imageUploadRoutes from "./routes/uploadImageRoutes";
@@ -17,7 +17,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import faqRoutes from "./routes/faqRoutes";
 import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
-import emailRoutes from "./routes/emailRoutes"
+import emailRoutes from "./routes/emailRoutes";
 
 dotenv.config();
 
@@ -42,7 +42,7 @@ app.use("/api/students", studentsRoutes);
 app.use("/api/professors", professorRoutes);
 app.use("/api/discussion", discussionRoutes);
 app.use("/api/blogs", blogsRoutes);
-// app.use("/api/project", projectRoutes);
+app.use("/api/project", projectRoutes);
 app.use("/api/webinars", webinarRoutes);
 app.use("/api/businesss", businessRoutes);
 app.use("/api/super-admin", superAdminRoutes);
@@ -52,7 +52,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/patents", patentRoutes);
-app.use("/api/email",emailRoutes );
+app.use("/api/email", emailRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");

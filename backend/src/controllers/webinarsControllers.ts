@@ -8,6 +8,9 @@ import {
   ObjectCannedACL,
 } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
+interface FileRequest extends Request {
+  files?: Express.Multer.File[];
+}
 
 const prisma = new PrismaClient();
 

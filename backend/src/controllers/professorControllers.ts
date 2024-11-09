@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { PrismaClient, NotificationType } from "@prisma/client";
+import { PrismaClient, NotificationType, ProjectType } from "@prisma/client";
 import { z } from "zod";
 import { createNotification } from "./notificationController";
 
@@ -20,13 +20,15 @@ const ProfessorUpdateSchema = z.object({
   isapproved: z.boolean().optional(),
 });
 
-const ProfessorFilterSchema = z.object({
-  fullName: z.string().optional(),
-  title: z.string().optional(),
-  department: z.string().optional(),
-  university: z.string().optional(),
-  location: z.string().optional(),
-}).optional();
+const ProfessorFilterSchema = z
+  .object({
+    fullName: z.string().optional(),
+    title: z.string().optional(),
+    department: z.string().optional(),
+    university: z.string().optional(),
+    location: z.string().optional(),
+  })
+  .optional();
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -37,43 +39,43 @@ interface AuthenticatedRequest extends Request {
 export const getProfessors = async (req: Request, res: Response) => {
   try {
     const filters = ProfessorFilterSchema.parse(req.query);
-    
+
     const where: any = {
-      isApproved: true
+      isApproved: true,
     };
 
     if (filters?.fullName) {
       where.fullName = {
         contains: filters.fullName,
-        mode: 'insensitive'
+        mode: "insensitive",
       };
     }
 
     if (filters?.title) {
       where.title = {
         contains: filters.title,
-        mode: 'insensitive'
+        mode: "insensitive",
       };
     }
 
     if (filters?.department) {
       where.department = {
         contains: filters.department,
-        mode: 'insensitive'
+        mode: "insensitive",
       };
     }
 
     if (filters?.university) {
       where.university = {
         contains: filters.university,
-        mode: 'insensitive'
+        mode: "insensitive",
       };
     }
 
     if (filters?.location) {
       where.location = {
         contains: filters.location,
-        mode: 'insensitive'
+        mode: "insensitive",
       };
     }
 
@@ -93,7 +95,7 @@ export const getProfessors = async (req: Request, res: Response) => {
         position: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
 
     return res.status(200).json(professors);
@@ -128,7 +130,7 @@ export const getProfessorById = async (req: Request, res: Response) => {
           },
         },
         projects: {
-          where: { type: "PROFESSOR" },
+          where: { type: ProjectType.PROFESSOR_PROJECT },
           select: {
             id: true,
             topic: true,
