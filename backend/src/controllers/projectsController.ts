@@ -460,3 +460,272 @@ export const getProjectApplications = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch applications" });
   }
 };
+
+// Create R&D project for professors
+export const createRDProject = async (req: Request, res: Response) => {
+  try {
+    const {
+      businessId,
+      topic,
+      content,
+      timeline,
+      tags,
+      eligibility,
+      duration,
+      isFunded,
+      fundDetails,
+      desirable,
+    } = req.body;
+
+    // Get business details for notification
+    const creatingBusiness = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        companyName: true,
+        email: true,
+        phoneNumber: true,
+        industry: true,
+      },
+    });
+
+    const project = await prisma.project.create({
+      data: {
+        topic,
+        content,
+        type: ProjectType.BUSINESS_PROJECT,
+        category: ProposalCategory.RND_PROJECT,
+        status: Status.OPEN,
+        timeline: timeline ? new Date(timeline) : null,
+        tags,
+        businessId,
+        eligibility,
+        isFunded,
+        fundDetails,
+        desirable,
+        duration: duration
+          ? {
+              create: {
+                startDate: new Date(duration.startDate),
+                endDate: new Date(duration.endDate),
+              },
+            }
+          : undefined,
+      },
+      include: {
+        duration: true,
+      },
+    });
+
+    // Notify all professors
+    const allProfessors = await prisma.professor.findMany({
+      where: { isApproved: true },
+    });
+
+    const notificationContent = `
+      New R&D Project Opportunity!
+      Project: ${topic}
+      Company: ${creatingBusiness?.companyName}
+      Industry: ${creatingBusiness?.industry}
+      Duration: ${
+        project.duration
+          ? `${new Date(
+              project.duration.startDate
+            ).toLocaleDateString()} to ${new Date(
+              project.duration.endDate
+            ).toLocaleDateString()}`
+          : "Not specified"
+      }
+      Funding: ${isFunded ? "Yes" : "No"}
+      Contact: ${creatingBusiness?.email} ${
+      creatingBusiness?.phoneNumber ? `/ ${creatingBusiness.phoneNumber}` : ""
+    }
+    `.trim();
+
+    for (const professor of allProfessors) {
+      await createNotification(
+        "PROJECT_APPLICATION",
+        notificationContent,
+        professor.id,
+        "professor",
+        project.id,
+        "project"
+      );
+    }
+
+    res.status(201).json(project);
+  } catch (error) {
+    console.error("Error creating R&D project:", error);
+    res.status(500).json({ error: "Failed to create R&D project" });
+  }
+};
+
+// Create internship opportunity for students
+export const createInternshipProject = async (req: Request, res: Response) => {
+  try {
+    const {
+      businessId,
+      topic,
+      content,
+      timeline,
+      tags,
+      eligibility,
+      duration,
+      isFunded,
+      fundDetails,
+      desirable,
+    } = req.body;
+
+    const creatingBusiness = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        companyName: true,
+        email: true,
+        phoneNumber: true,
+        industry: true,
+      },
+    });
+
+    const project = await prisma.project.create({
+      data: {
+        topic,
+        content,
+        type: ProjectType.BUSINESS_PROJECT,
+        category: ProposalCategory.INTERNSHIP,
+        status: Status.OPEN,
+        timeline: timeline ? new Date(timeline) : null,
+        tags,
+        businessId,
+        eligibility,
+        isFunded,
+        fundDetails,
+        desirable,
+        duration: duration
+          ? {
+              create: {
+                startDate: new Date(duration.startDate),
+                endDate: new Date(duration.endDate),
+              },
+            }
+          : undefined,
+      },
+      include: {
+        duration: true,
+      },
+    });
+
+    // Notify all students
+    const allStudents = await prisma.student.findMany();
+
+    const notificationContent = `
+      New Internship Opportunity!
+      Project: ${topic}
+      Company: ${creatingBusiness?.companyName}
+      Industry: ${creatingBusiness?.industry}
+      Duration: ${
+        project.duration
+          ? `${new Date(
+              project.duration.startDate
+            ).toLocaleDateString()} to ${new Date(
+              project.duration.endDate
+            ).toLocaleDateString()}`
+          : "Not specified"
+      }
+      Funding: ${isFunded ? "Yes" : "No"}
+      Contact: ${creatingBusiness?.email} ${
+      creatingBusiness?.phoneNumber ? `/ ${creatingBusiness.phoneNumber}` : ""
+    }
+    `.trim();
+
+    for (const student of allStudents) {
+      await createNotification(
+        "PROJECT_APPLICATION",
+        notificationContent,
+        student.id,
+        "student",
+        project.id,
+        "project"
+      );
+    }
+
+    res.status(201).json(project);
+  } catch (error) {
+    console.error("Error creating internship project:", error);
+    res.status(500).json({ error: "Failed to create internship project" });
+  }
+};
+
+// Create student proposal
+export const createStudentProposal = async (req: Request, res: Response) => {
+  try {
+    const { studentId, topic, content } = req.body;
+
+    const creatingStudent = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        university: true,
+        course: true,
+      },
+    });
+
+    const project = await prisma.project.create({
+      data: {
+        topic,
+        content,
+        type: ProjectType.STUDENT_PROPOSAL,
+
+        status: Status.OPEN,
+
+        studentId,
+      },
+    });
+
+    // Notify professors and businesses based on proposal category
+    const notificationContent = `
+      New Student Proposal!
+     
+      Topic: ${topic}
+      Student: ${creatingStudent?.fullName}
+      University: ${creatingStudent?.university}
+      Course: ${creatingStudent?.course}
+      Contact: ${creatingStudent?.email} ${
+      creatingStudent?.phoneNumber ? `/ ${creatingStudent.phoneNumber}` : ""
+    }
+    `.trim();
+
+    const [professors, businesses] = await Promise.all([
+      prisma.professor.findMany({ where: { isApproved: true } }),
+      prisma.business.findMany(),
+    ]);
+
+    // Notify both professors and businesses
+    for (const professor of professors) {
+      await createNotification(
+        "PROJECT_APPLICATION",
+        notificationContent,
+        professor.id,
+        "professor",
+        project.id,
+        "project"
+      );
+    }
+
+    for (const business of businesses) {
+      await createNotification(
+        "PROJECT_APPLICATION",
+        notificationContent,
+        business.id,
+        "business",
+        project.id,
+        "project"
+      );
+    }
+
+    res.status(201).json(project);
+  } catch (error) {
+    console.error("Error creating student proposal:", error);
+    res.status(500).json({ error: "Failed to create student proposal" });
+  }
+};

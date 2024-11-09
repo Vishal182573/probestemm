@@ -41,6 +41,11 @@ router.get(
   projectController.getProjectApplications
 );
 
+router.post("/rd-project", projectController.createRDProject);
+router.post("/internship", projectController.createInternshipProject);
+
+// Student proposal route
+router.post("/student-proposal", projectController.createStudentProposal);
 // Apply for project route
 router.post(
   "/:projectId/apply",
