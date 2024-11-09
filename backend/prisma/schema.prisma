@@ -78,6 +78,7 @@ model Professor {
   department        String?
   position          String?
   bio               String?
+  googleScholar     String?
   isApproved        Boolean   @default(false)  
   researchInterests ResearchInterest[] 
   tags              ProfessorTag[]      
@@ -102,7 +103,7 @@ model ResearchInterest {
   id          String    @id @default(cuid())
   title       String
   description String?
-  imageUrl    String?
+  imageUrl    String[]
   professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
   professorId String
 }
@@ -268,18 +269,47 @@ model BlogLike {
   @@unique([blogId, userId])
 }
 
+enum ProjectType {
+  BUSINESS_PROJECT
+  PROFESSOR_PROJECT
+  STUDENT_PROPOSAL
+}
+
+enum ProposalCategory {
+  PROJECT
+  INTERNSHIP
+  PHD_POSITION
+  PROFESSOR_COLLABORATION
+  STUDENT_OPPORTUNITY
+  INDUSTRY_COLLABORATION
+  TECHNOLOGY_SOLUTION
+  RND_PROJECT
+}
+
 model Project {
   id          String    @id @default(cuid())
   topic       String 
-  content     String
-  difficulty  Difficulty
-  timeline    DateTime
-  tags        String[]
-  category    String?    
-  subcategory String?  
-  status      Status
+  content     String    // Main description field
   type        ProjectType
+  category    ProposalCategory @default(PROJECT)
+  status      Status
   
+  // Common fields
+  timeline    DateTime?
+  tags        String[]
+  
+  // Fields for academic opportunities
+  eligibility String?
+  duration    Duration?
+  isFunded    Boolean?
+  fundDetails String?
+  desirable   String?
+  
+  // Fields for technology/industry projects
+  techDescription String?
+  requirements    String?
+  
+  // Relations to users
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
   business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
@@ -287,22 +317,78 @@ model Project {
   student     Student?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
   studentId   String?
 
-  appliedProfessors AppliedProfessor[] // for business
-  appliedStudents   AppliedStudent[]  // for professor
-   notifications     Notification[]
+  // Applications
+  professorApplications ProfessorApplication[]
+  studentApplications   StudentApplication[]
+  businessApplications  BusinessApplication[]
+  
+  notifications     Notification[]
 
   superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-} 
+}
 
+model Duration {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String   @unique
+}
 
+// Updated application models to include descriptions and images
+model ProfessorApplication {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  professorId String
+  name        String
+  email       String?
+  phoneNumber String?
+  description String   // Added field for response description
+  images      String[] // Added field for attached images
+  createdAt   DateTime @default(now())
 
-enum ProjectType {
-  BUSINESS
-  PROFESSOR
+  @@unique([projectId, professorId])
+}
+
+model StudentApplication {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  studentId   String
+  name        String
+  email       String?
+  phoneNumber String?
+  description String   // Added field for response description
+  images      String[] // Added field for attached images
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, studentId])
+}
+
+model BusinessApplication {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  businessId  String
+  name        String
+  email       String?
+  phoneNumber String?
+  description String   // Added field for response description
+  images      String[] // Added field for attached images
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, businessId])
+}
+
+enum Status {
+  OPEN
+  ONGOING
+  CLOSED
 }
 
 enum BlogAuthorType {
@@ -364,18 +450,6 @@ enum UserType {
   STUDENT
 }
 
-enum Difficulty {
-  EASY
-  INTERMEDIATE
-  HARD
-}
-
-enum Status {
-  OPEN
-  ONGOING
-  CLOSED
-}
-
 enum WebinarStatus {
   PENDING
   APPROVED
@@ -392,35 +466,6 @@ model Contact {
   phoneNumber String?
   message   String
   createdAt DateTime @default(now())
-}
-
-
-model AppliedProfessor {
-  id          String   @id @default(cuid())
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String
-  professorId String
-  name        String
-  email       String
-  phoneNumber String
-
-  createdAt   DateTime @default(now())
-
-  @@unique([projectId, professorId])
-}
-
-model AppliedStudent {
-  id          String   @id @default(cuid())
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String
-  studentId   String
-  name        String
-  email       String
-  phoneNumber String
-
-  createdAt   DateTime @default(now())
-
-  @@unique([projectId, studentId])
 }
 
 
