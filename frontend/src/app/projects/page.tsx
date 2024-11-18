@@ -14,82 +14,112 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Rocket,
-  Mail,
-  User,
-  Clock,
-  XCircle,
-  UserCircle,
   GraduationCap,
+  UserCircle,
   User2Icon,
+  XCircle,
 } from "lucide-react";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
-import Link from "next/link";
 import Banner from "@/components/shared/Banner";
 import { PROJECT } from "../../../public";
-// import ContactForm from "@/components/shared/Feedback";
-// import FeaturesDemo from "@/components/shared/TextImageComponent";
 import { useRouter } from "next/navigation";
 
+// Enum types
+enum ProjectType {
+  BUSINESS_PROJECT = "BUSINESS_PROJECT",
+  PROFESSOR_PROJECT = "PROFESSOR_PROJECT", 
+  STUDENT_PROPOSAL = "STUDENT_PROPOSAL"
+}
+
+enum ProposalCategory {
+  PROJECT = "PROJECT",
+  INTERNSHIP = "INTERNSHIP",
+  PHD_POSITION = "PHD_POSITION",
+  PROFESSOR_COLLABORATION = "PROFESSOR_COLLABORATION",
+  STUDENT_OPPORTUNITY = "STUDENT_OPPORTUNITY", 
+  INDUSTRY_COLLABORATION = "INDUSTRY_COLLABORATION",
+  TECHNOLOGY_SOLUTION = "TECHNOLOGY_SOLUTION",
+  RND_PROJECT = "RND_PROJECT"
+}
+
 interface Project {
-  title: string;
   id: string;
   topic: string;
   content: string;
-  description: string;
-  timeline: string;
-  status: "OPEN" | "ONGOING" | "CLOSED" | "APPLIED";
-  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+  type: ProjectType;
+  category: ProposalCategory;
+  status: "OPEN" | "ONGOING" | "CLOSED";
   tags: string[];
-  category: string;
-  subcategory: string;
-  type: "BUSINESS" | "PROFESSOR";
-  business?: { id: string; companyName: string };
-  professor?: { id: string; fullName: string; email: string };
+  eligibility?: string;
+  timeline?: string;
+  duration?: {
+    startDate: string;
+    endDate: string;
+  };
+  isFunded?: boolean;
+  fundDetails?: string;
+  desirable?: string;
+  techDescription?: string;
+  requirements?: string;
+  professor?: { 
+    id: string; 
+    fullName: string; 
+    email: string;
+    department?: string;
+  };
+  business?: { 
+    id: string; 
+    companyName: string 
+  };
+  student?: {
+    id: string;
+    fullName: string;
+    major?: string;
+  };
+  postedBy?: {
+    role: 'PROFESSOR' | 'STUDENT' | 'BUSINESS';
+    name: string;
+  }
 }
 
 const ProjectsPage = () => {
-  const [businessProjects, setBusinessProjects] = useState<Project[]>([]);
-  const [professorProjects, setProfessorProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Filtering states
+  const [activeTab, setActiveTab] = useState<string>("students");
+  const [projectsFor, setProjectsFor] = useState<string | null>(null);
+  const [projectSubCategory, setProjectSubCategory] = useState<string | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
-    const role = localStorage.getItem("role");
-    const id = localStorage.getItem("userId");
-    setUserRole(role);
-    setUserId(id);
-
     const fetchProjects = async () => {
       try {
-
         const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+        const response = await axios.get(`${API_URL}/projects`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-        const [businessResponse, professorResponse] = await Promise.all([
-          axios.get(`${API_URL}/project/business`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/project/professor`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setBusinessProjects(businessResponse.data);
-        setProfessorProjects(professorResponse.data);
+        setProjects(response.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching projects:", error);
-        setError("Failed to load projects. Please try again.");
+        setError("Failed to load projects");
         setLoading(false);
       }
     };
@@ -97,54 +127,93 @@ const ProjectsPage = () => {
     fetchProjects();
   }, []);
 
-  const applyToProject = async (
-    projectId: string,
-    projectType: "BUSINESS" | "PROFESSOR"
-  ) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token || !userId || !userRole) {
-        setError("User information is missing. Please log in again.");
-        return;
-      }
+  // Advanced filtering logic
+  useEffect(() => {
+    let result = projects;
 
-      const endpoint =
-        projectType === "BUSINESS" ? "business/apply" : "professor/apply";
-
-      const response = await axios.post(
-        `${API_URL}/project/${endpoint}`,
-        {
-          projectId,
-          [userRole === "professor" ? "professorId" : "studentId"]: userId,
-          [userRole === "professor" ? "professorName" : "studentName"]:
-            localStorage.getItem("fullName"),
-          [userRole === "professor" ? "professorEmail" : "studentEmail"]:
-            localStorage.getItem("email"),
-          [userRole === "professor"
-            ? "professorPhoneNumber"
-            : "studentPhoneNumber"]: localStorage.getItem("phoneNumber"),
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.status === 200) {
-        // Update the project status in the UI
-        const updateProjects = (projects: Project[]): Project[] =>
-          projects.map((p) =>
-            p.id === projectId ? { ...p, status: "APPLIED" } : p
-          );
-
-        if (projectType === "BUSINESS") {
-          setBusinessProjects((prevProjects) => updateProjects(prevProjects));
-        } else {
-          setProfessorProjects((prevProjects) => updateProjects(prevProjects));
-        }
-      }
-    } catch (error) {
-      console.error("Error applying to project:", error);
-      setError("Failed to apply to the project. Please try again.");
+    // Tab-based filtering
+    switch(activeTab) {
+      case "students":
+        result = result.filter(p => 
+          p.type === ProjectType.PROFESSOR_PROJECT || 
+          p.type === ProjectType.BUSINESS_PROJECT ||
+          p.type === ProjectType.STUDENT_PROPOSAL
+        );
+        break;
+      case "professors":
+        result = result.filter(p => 
+          p.type === ProjectType.PROFESSOR_PROJECT ||
+          p.type === ProjectType.STUDENT_PROPOSAL
+        );
+        break;
+      case "industry":
+        result = result.filter(p => 
+          p.type === ProjectType.BUSINESS_PROJECT ||
+          p.type === ProjectType.STUDENT_PROPOSAL
+        );
+        break;
     }
+
+    // Projects For filtering
+    if (projectsFor) {
+      switch(projectsFor) {
+        case "students":
+          result = result.filter(p => 
+            [ProposalCategory.INTERNSHIP, ProposalCategory.PHD_POSITION, 
+             ProposalCategory.STUDENT_OPPORTUNITY].includes(p.category)
+          );
+          break;
+        case "professors":
+          result = result.filter(p => 
+            [ProposalCategory.PROFESSOR_COLLABORATION, 
+             ProposalCategory.RND_PROJECT].includes(p.category)
+          );
+          break;
+        case "industry":
+          result = result.filter(p => 
+            [ProposalCategory.TECHNOLOGY_SOLUTION, 
+             ProposalCategory.INDUSTRY_COLLABORATION].includes(p.category)
+          );
+          break;
+      }
+    }
+
+    // Subcategory filtering
+    if (projectSubCategory) {
+      result = result.filter(p => p.category === projectSubCategory);
+    }
+
+    setFilteredProjects(result);
+  }, [activeTab, projectsFor, projectSubCategory, projects]);
+
+  // Dynamic dropdowns render logic (similar to previous implementation)
+  const renderProjectsForDropdown = () => {
+    if (activeTab === "professors") {
+      return (
+        <Select 
+          onValueChange={(value) => setProjectsFor(value)}
+          value={projectsFor || undefined}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Projects for..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="students">Students</SelectItem>
+            <SelectItem value="industry">Industry</SelectItem>
+            <SelectItem value="professors">Professors</SelectItem>
+          </SelectContent>
+        </Select>
+      );
+    }
+    // Similar dropdown logic for other tabs
+    return null;
   };
+
+  const renderSubCategoryDropdown = () => {
+    // Dropdown logic based on tab and projects for selection
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -156,11 +225,6 @@ const ProjectsPage = () => {
     );
   }
 
-  if (error) {
-    router.push("/login");
-    return;
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
@@ -169,42 +233,44 @@ const ProjectsPage = () => {
           imageSrc={PROJECT}
           altText="project-banner-img"
           title="Cutting-edge STEM Projects"
-          subtitle="Explore groundbreaking projects and collaborate with leading experts in the field. Push the boundaries of science and technology with Probe STEM"
+          subtitle="Explore groundbreaking projects and collaborate with leading experts"
         />
-        <Tabs defaultValue="business" className="max-w-6xl mx-auto px-4 pt-4">
-          <TabsList className="mb-8">
-            <TabsTrigger
-              value="business"
-              className="text-[#d3a79a] bg-[#5e17eb] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
-            >
-              <GraduationCap className="mr-2 h-5 w-5" />
-              Business Projects
-            </TabsTrigger>
-            <TabsTrigger
-              value="professor"
-              className="text-[#d3a79a] bg-[#5e17eb] data-[state=active]:bg-[#472014] data-[state=active]:text-white"
-            >
-              <UserCircle className="mr-2 h-5 w-5" />
-              Professor Projects
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="business">
-            <ProjectsList
-              projects={businessProjects}
-              userRole={userRole}
-              onApply={(id) => applyToProject(id, "BUSINESS")}
-              projectType="BUSINESS"
+        
+        <div className="max-w-6xl mx-auto px-4 pt-4">
+          <Tabs 
+            defaultValue="students" 
+            onValueChange={(value) => {
+              setActiveTab(value);
+              setProjectsFor(null);
+              setProjectSubCategory(null);
+            }}
+          >
+            <TabsList className="mb-8">
+              <TabsTrigger value="students">
+                <GraduationCap className="mr-2 h-5 w-5" />
+                Students Projects
+              </TabsTrigger>
+              <TabsTrigger value="professors">
+                <UserCircle className="mr-2 h-5 w-5" />
+                Professors Projects
+              </TabsTrigger>
+              <TabsTrigger value="industry">
+                <UserCircle className="mr-2 h-5 w-5" />
+                Industry Projects
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex space-x-4 mb-8">
+              {renderProjectsForDropdown()}
+              {renderSubCategoryDropdown()}
+            </div>
+
+            <ProjectsList 
+              projects={filteredProjects} 
+              activeTab={activeTab}
             />
-          </TabsContent>
-          <TabsContent value="professor">
-            <ProjectsList
-              projects={professorProjects}
-              userRole={userRole}
-              onApply={(id) => applyToProject(id, "PROFESSOR")}
-              projectType="PROFESSOR"
-            />
-          </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </main>
       <Footer />
     </div>
@@ -213,30 +279,20 @@ const ProjectsPage = () => {
 
 const ProjectsList = ({
   projects,
-  userRole,
-  onApply,
-  projectType,
+  activeTab,
 }: {
   projects: Project[];
-  userRole: string | null;
-  onApply: (id: string) => void;
-  projectType: "BUSINESS" | "PROFESSOR";
+  activeTab: string;
 }) => {
-  const filteredProjects = projects.filter(
-    (project) => project.type === projectType
-  );
-
   return (
     <section className="py-20">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredProjects.map((project, index) => (
+        {projects.map((project, index) => (
           <ProjectCard
             key={project.id}
             project={project}
             index={index}
-            userRole={userRole}
-            onApply={onApply}
-            projectType={projectType}
+            activeTab={activeTab}
           />
         ))}
       </div>
@@ -247,25 +303,107 @@ const ProjectsList = ({
 const ProjectCard = ({
   project,
   index,
-  userRole,
-  onApply,
-  projectType,
+  activeTab,
 }: {
   project: Project;
   index: number;
-  userRole: string | null;
-  onApply: (id: string) => void;
-  projectType: "BUSINESS" | "PROFESSOR";
+  activeTab: string;
 }) => {
-  const difficultyColor = {
-    EASY: "bg-green-500",
-    INTERMEDIATE: "bg-yellow-500",
-    HARD: "bg-red-500",
+  const router = useRouter();
+
+  const renderProjectDetails = () => {
+    switch (project.category) {
+      case ProposalCategory.INTERNSHIP:
+        return (
+          <>
+            <div>
+              <h4 className="font-semibold">Eligibility:</h4>
+              <p>{project.eligibility || 'Not specified'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold">Duration:</h4>
+              <p>{project.duration ? `${project.duration.startDate} to ${project.duration.endDate}` : 'Not specified'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{project.isFunded ? `Yes: ${project.fundDetails}` : 'Unpaid'}</p>
+            </div>
+          </>
+        );
+      case ProposalCategory.PHD_POSITION:
+        return (
+          <>
+            <div>
+              <h4 className="font-semibold">Research Description:</h4>
+              <p>{project.techDescription || 'No description'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold">Requirements:</h4>
+              <p>{project.requirements || 'No specific requirements'}</p>
+            </div>
+          </>
+        );
+      case ProposalCategory.RND_PROJECT:
+        return (
+          <>
+            <div>
+              <h4 className="font-semibold">Technology Description:</h4>
+              <p>{project.techDescription || 'No description'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold">Collaboration Objectives:</h4>
+              <p>{project.requirements || 'Not specified'}</p>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
-  const canApply =
-    (projectType === "BUSINESS" && userRole === "professor") ||
-    (projectType === "PROFESSOR" && userRole === "student");
+  const renderContactInfo = () => {
+    if (project.professor) {
+      return (
+        <div>
+          <p>{project.professor.fullName}</p>
+          <p>{project.professor.department}</p>
+        </div>
+      );
+    }
+    if (project.business) {
+      return (
+        <div>
+          <p>{project.business.companyName}</p>
+        </div>
+      );
+    }
+    if (project.student) {
+      return (
+        <div>
+          <p>{project.student.fullName}</p>
+          <p>{project.student.major}</p>
+        </div>
+      );
+    }
+    return <p>No contact information</p>;
+  };
+
+  const renderPostedByTag = () => {
+    if (project.postedBy) {
+      return (
+        <Badge 
+          className={`
+            ${project.postedBy.role === 'PROFESSOR' ? 'bg-blue-500' : 
+              project.postedBy.role === 'STUDENT' ? 'bg-green-500' : 
+              'bg-purple-500'} text-white
+          `}
+        >
+          Posted by {project.postedBy.role}
+        </Badge>
+      );
+    }
+    return null;
+  };
 
   return (
     <motion.div
@@ -273,117 +411,28 @@ const ProjectCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card className="bg-white border-[#eb5e17] overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-[#eb5e17] to-[#686256] pb-2">
+      <Card>
+        <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl font-bold text-white font-caveat">
-              {project.title}
-            </CardTitle>
-            <Badge
-              className={`${difficultyColor[project.difficulty]} text-white`}
-            >
-              {project.difficulty}
-            </Badge>
+            <CardTitle>{project.topic}</CardTitle>
+            {renderPostedByTag()}
           </div>
-          <CardDescription className="text-white mt-2">
-            {project.description}
-          </CardDescription>
+          <CardDescription>{project.content}</CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
-          <div className="space-y-2">
-            <div className="flex items-center text-[#472014]">
-              <User className="mr-2 h-4 w-4" />
-              <span>
-                {project.status === "ONGOING" || project.status === "CLOSED"
-                  ? `Professor: ${project.professor?.fullName}`
-                  : "Professor not assigned"}
-              </span>
-            </div>
-            {(project.status === "ONGOING" || project.status === "CLOSED") &&
-              project.professor && (
-                <div className="flex items-center text-[#472014]">
-                  <Mail className="mr-2 h-4 w-4" />
-                  <span>Email: {project.professor.email}</span>
-                </div>
-              )}
-
-            <div className="flex items-center">
-              <Clock className="mr-2 h-4 w-4" />
-              <span
-                className={
-                  project.status === "OPEN" ? "text-green-600" : "text-red-600"
-                }
-              >
-                Status: {project.status}
-              </span>
-            </div>
-          </div>
+        <CardContent>
+          {renderProjectDetails()}
           <div className="mt-4">
-            <h4 className="font-semibold text-[#472014]">Topic:</h4>
-            <p className="text-[#686256]">{project.topic}</p>
-          </div>
-          <div className="mt-4">
-            <h4 className="font-semibold text-[#472014]">Content:</h4>
-            <p className="text-[#686256]">{project.content}</p>
+            <h4 className="font-semibold">Contact:</h4>
+            {renderContactInfo()}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tags.map((tag, i) => (
-              <Badge
-                key={i}
-                variant="secondary"
-                className="bg-[#eb5e17] text-white"
-              >
-                {tag}
-              </Badge>
+              <Badge key={i} variant="secondary">{tag}</Badge>
             ))}
-          </div>
-          <div className="mt-4">
-            <h4 className="font-semibold text-[#472014]">
-              Category: {project.category ? project.category : "No Category"}
-            </h4>
-            <h4 className="font-semibold text-[#472014]">
-              Subcategory:{" "}
-              {project.subcategory ? project.subcategory : "No Subcategory"}
-            </h4>
           </div>
         </CardContent>
         <CardFooter>
-          {canApply && (
-            <Button
-              className={`w-full rounded-full ${
-                project.status === "OPEN"
-                  ? "bg-[#eb5e17] hover:bg-[#472014] text-white"
-                  : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed text-white"
-              }`}
-              disabled={project.status !== "OPEN"}
-              onClick={() => onApply(project.id)}
-            >
-              {project.status === "OPEN" ? (
-                <>
-                  Apply Now
-                  <Rocket className="ml-2 h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  {project.status}
-                  <XCircle className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          )}
-
-          <Button className=" bg-[#eb5e17] hover:bg-[#472014] text-white  w-full mt-4  rounded-full flex items-center justify-center">
-            <User2Icon className="mr-2" />
-            {projectType === "BUSINESS" ? (
-              <Link href={`/business-profile/${project.business?.id}`}>
-                {project.business?.companyName}
-              </Link>
-            ) : (
-              <Link href={`/professor-profile/${project.professor?.id}`}>
-                {project.professor?.fullName}
-              </Link>
-            )}
-          </Button>
+          <Button variant="default">View Details</Button>
         </CardFooter>
       </Card>
     </motion.div>

@@ -521,8 +521,8 @@ const renderInitialForm = () => (
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="student">Student</SelectItem>
-        <SelectItem value="professor">Professor/Teacher</SelectItem>
-        <SelectItem value="business">Business</SelectItem>
+        <SelectItem value="professor">Professor/Researcher</SelectItem>
+        <SelectItem value="business">Industry</SelectItem>
       </SelectContent>
     </Select>
 
@@ -685,7 +685,7 @@ const renderInitialForm = () => (
               website: e.target.value,
             })
           }
-          placeholder="(optional)"
+          required={true}
         />
       </div>
 
@@ -697,7 +697,7 @@ const renderInitialForm = () => (
 
   const renderStudentForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label>Education</Label>
         {roleSpecificData.education?.map((edu, index) => (
           <div key={index} className="flex space-x-2">
@@ -722,7 +722,6 @@ const renderInitialForm = () => (
   className="bg-secondary text-white text-center px-1 rounded-lg "
 >
   <option value="" disabled>Select Year</option>
-  {/* Add year options dynamically */}
   {Array.from({ length: 50 }, (_, i) => {
     const year = new Date().getFullYear() - i;
     return (
@@ -746,7 +745,7 @@ const renderInitialForm = () => (
         <Button type="button" variant="outline" onClick={addEducation}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Education
         </Button>
-      </div>
+      </div> */}
       <div className="space-y-2">
         <Label htmlFor="collegeName">College/Institue Name</Label>
         <Input

@@ -105,12 +105,12 @@ export default function BusinessesPage() {
         imageSrc={BUSINESSPAGE}
         altText="project-banner-img"
         title="Partner Industries"
-        subtitle="Connect with leading industries that drive innovation by collaborating with students and professors. Discover opportunities for projects, internships, and partnerships that advance Science and Technology"
+        subtitle="Engage with top industries at the forefront of innovation. Explore opportunities for projects, internships, and partnerships that drive advancements in Science and Technology"
       />
       <AnimatedContainer>
         <div className="space-y-6 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
-            Businesses
+            Industries
           </h1>
 
           {/* Filter Section */}
@@ -157,7 +157,7 @@ export default function BusinessesPage() {
           {loading && (
             <div className="flex justify-center items-center py-8">
               <ReloadIcon className="h-6 w-6 animate-spin text-blue-500" />
-              <span className="ml-2 text-gray-600">Loading businesses...</span>
+              <span className="ml-2 text-gray-600">Loading Industries...</span>
             </div>
           )}
 
@@ -174,7 +174,7 @@ export default function BusinessesPage() {
               <RoleList roles={businesses} roleType="business" />
               {businesses.length === 0 && (
                 <p className="text-gray-500 text-center py-8">
-                  No businesses found matching your search criteria.
+                  No Industires found matching your search criteria.
                 </p>
               )}
             </div>

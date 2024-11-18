@@ -94,7 +94,7 @@ const AboutUsPage = () => {
           transition={{ delay: 0.2 }}
           className="mb-16"
         >
-          <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe Stem</h2>
+          <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe STEM</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <p className="text-lg text-[#472014]">
@@ -138,11 +138,7 @@ const AboutUsPage = () => {
               </CardHeader>
               <CardContent className="text-[#472014] text-lg">
                 <p>
-                  In today&apos;s era of innovation, academics and industry
-                  often work in isolation. Bridging the gap between them could
-                  spark a revolution, allowing researchers to make more
-                  meaningful contributions by aligning their work with
-                  real-world applications.
+                In today's era of rapid innovation, academia and industry often operate in isolation. Bridging the gap between them could ignite a revolution, empowering researchers to make meaningful contributions by aligning their work with real-world applications. This forum aims to expand faculty and researchers' access to industry, supporting the journey from research to marketable products. Additionally, we hope it will enable industry partners to connect with expert consultants in academia, fostering collaborations that both parties seek yet often struggle to find.
                 </p>
               </CardContent>
             </Card>
@@ -162,10 +158,7 @@ const AboutUsPage = () => {
               </CardHeader>
               <CardContent className="text-[#472014] text-lg">
                 <p>
-                  In academics, students often face critical questions, and
-                  reliable discussions can sometimes be the key to saving a
-                  career. This feature facilitates insightful discussions and
-                  Q&A sessions on a broad spectrum of topics.
+                In academia, students often encounter critical questions, and reliable discussions can be the key to navigating challenges and advancing their careers. Through our discussion forum, we aim to foster insightful conversations and Q&A sessions on a wide range of topics. From the administrative side, we will ensure that all discussions are accurate and trustworthy.
                 </p>
               </CardContent>
             </Card>
@@ -186,15 +179,27 @@ const AboutUsPage = () => {
             </CardHeader>
             <CardContent className="text-[#472014] text-lg">
               <p>
-                Only faculty members are eligible to apply for these projects by
-                completing the form. When a company posts a project, a
-                notification will be sent to all faculty in the relevant area.
+              Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D collaborations, consultancy projects, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.
               </p>
               <Link href={"/projects"}>
                 <Button className="mt-4 bg-[#5e17eb] text-white">
                   Apply Now
                 </Button>
               </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur shadow-xl border-none mb-12">
+            {/* <CardHeader>
+              <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
+                <FaGraduationCap className="mr-2 text-[#eb5e17]" /> Company
+                Projects
+              </CardTitle>
+            </CardHeader> */}
+            <CardContent className="text-[#472014] text-lg">
+              <p>
+              Research Corner will empower professors/researchers to present their unique findings as spotlights, offering them a platform to showcase breakthroughs and impactful discoveries. This section will also serve as a space for researchers to share announcements related to their work, including calls for a specific collaboration, upcoming events, or specialized opportunities, enhancing professional networking and community engagement.
+              </p>
             </CardContent>
           </Card>
         </motion.div>

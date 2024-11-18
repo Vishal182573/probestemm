@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
               <ul className="space-y-4">
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
                   <MdEmail className="mr-3 text-[#eb5e17]" size={20} />
-                  <a href="mailto:info@probestem.com">probestem@gmail.com</a>
+                  <a href="mailto:info@probestem.com">stemprobe@gmail.com</a>
                 </li>
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
                   <MdPhone className="mr-3 text-[#eb5e17]" size={20} />
@@ -30,7 +30,7 @@ export const Footer: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <MdLocationOn className="mr-3 text-[#eb5e17] mt-1" size={20} />
-                  <span>School of Mathematical and Statistical Sciences,<br/> Indian Institute of Technology - Mandi<br />Himachal Pradesh 175001, <br/>India</span>
+                  <span>Indian Institute of Technology (IIT) Mandi<br/>Himachal Pradesh 175001,<br/>India</span>
                 </li>
               </ul>
             </div>
@@ -43,17 +43,17 @@ export const Footer: React.FC = () => {
                   <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Quick Links</h3>
                   <ul className="space-y-3">
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="students" className="hover:text-[#c1502e] transition-colors block">
                         Student Profiles
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="professors" className="hover:text-[#c1502e] transition-colors block">
                         Industry Profiles
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="professors" className="hover:text-[#c1502e] transition-colors block">
                         Professor Profiles
                       </a>
                     </li>
@@ -65,32 +65,32 @@ export const Footer: React.FC = () => {
                   <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">Pages</h3>
                   <ul className="space-y-3">
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="about" className="hover:text-[#c1502e] transition-colors block">
                         About Us
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="discussions" className="hover:text-[#c1502e] transition-colors block">
                         Discussion Forum
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="webinars" className="hover:text-[#c1502e] transition-colors block">
                         Webinars
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
-                        Blogs
+                      <a href="blogs" className="hover:text-[#c1502e] transition-colors block">
+                      RESEARCH CORNER
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="projects" className="hover:text-[#c1502e] transition-colors block">
                         Projects
                       </a>
                     </li>
                     <li>
-                      <a href="#" className="hover:text-[#c1502e] transition-colors block">
+                      <a href="contact" className="hover:text-[#c1502e] transition-colors block">
                         Contact Us
                       </a>
                     </li>
@@ -248,3 +248,6 @@ These guidelines are aligned with the mission of Probe STEM, emphasizing collabo
     </>
   );
 };
+
+// Pl change Ali Omar in what our communitysays to this 
+// Dr. Ali H Omar, Senior Scientist and Fellow of the American Meteorological Society.

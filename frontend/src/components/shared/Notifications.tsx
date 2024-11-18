@@ -55,10 +55,10 @@ const NotificationsComponent: React.FC = () => {
     const fetchWebinars = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
+        // if (!token) {
+        //   router.push("/login");
+        //   return;
+        // }
         const response = await axios.get(`${API_URL}/webinars`);
         setWebinars(response.data);
       } catch (error) {

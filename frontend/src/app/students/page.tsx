@@ -111,7 +111,7 @@ export default function StudentsPage() {
         imageSrc={STUDENTPAGE}
         altText="project-banner-img"
         title="Our Outstanding Students"
-        subtitle="Explore the achievements, projects, and dedication of students shaping the future of Science and Technology"
+        subtitle="Discover the achievements and dedication of students driving the future of Science and Technology"
       />
       <AnimatedContainer>
         <div className="space-y-6">

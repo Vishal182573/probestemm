@@ -204,7 +204,7 @@ const FeaturesSection = () => {
       description:
         "Build connections with students and industry for",
       benefits: [
-        "Hiring students for internships/Phd positions and projects",
+        "Hiring students for internships/PhD positions and projects",
         "Technology transfer, consultancy and research projects",
       ],
       link: "/professors",

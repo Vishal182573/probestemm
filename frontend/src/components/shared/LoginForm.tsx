@@ -135,8 +135,8 @@ export const LoginForm: React.FC = () => {
             </SelectTrigger>
             <SelectContent className="bg-white text-[#472014]">
               <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="professor">Professor</SelectItem>
-              <SelectItem value="business">Business</SelectItem>
+              <SelectItem value="professor">Professor/Researcher</SelectItem>
+              <SelectItem value="business">Industry</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex justify-between items-center">

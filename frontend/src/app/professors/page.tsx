@@ -112,7 +112,7 @@ export default function ProfessorsPage() {
       <AnimatedContainer>
         <div className="space-y-6 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
-            Professors
+            Professors/Researchers
           </h1>
 
           {/* Filter Section */}

@@ -103,7 +103,7 @@ const FAQSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Accordion type="single" collapsible className="w-full space-y-4">
-                {faqs.slice(0, 4).map((item, index) => (
+                {faqs.length>0 && faqs.slice(0, 4).map((item, index) => (
                   <motion.div
                     key={index}
                     variants={itemVariants}

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,FormEvent } from "react";
 import PatentsTab from "@/components/shared/patentstab";
 
 import axios from "axios";
@@ -190,6 +190,9 @@ const ProfessorProfilePage: React.FC = () => {
   const [businessProjects, setBusinessProjects] = useState<BusinessProject[]>(
     []
   );
+
+  const [collaborationType, setCollaborationType] = useState('');
+  const [studentOpportunityType, setStudentOpportunityType] = useState('');
   const [isLoadingBusinessProjects, setIsLoadingBusinessProjects] =
     useState(true);
 
@@ -228,14 +231,14 @@ const ProfessorProfilePage: React.FC = () => {
             webinarsResponse,
             projectsResponse,
             notificationsResponse,
-            patentsResponse,
+            // patentsResponse,
           ] = await Promise.all([
             axios.get(`${API_URL}/webinars/professor/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            axios.get(`${API_URL}/project/professor/${id}/projects`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
+            // axios.get(`${API_URL}/project/professor/${id}/projects`, {
+            //   headers: { Authorization: `Bearer ${token}` },
+            // }),
             axios.get(`${API_URL}/notifications/professor/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
@@ -247,7 +250,7 @@ const ProfessorProfilePage: React.FC = () => {
           setWebinars(webinarsResponse.data);
           setProjects(projectsResponse.data);
           setNotifications(notificationsResponse.data);
-          setPatents(patentsResponse.data);
+          // setPatents(patentsResponse.data);
           setUnreadCount(
             notificationsResponse.data.filter((n: any) => !n.isRead).length
           );
@@ -505,11 +508,10 @@ const ProfessorProfilePage: React.FC = () => {
                   >
                     <div className="space-y-2">
                       <p
-                        className={`${
-                          notification.isRead
+                        className={`${notification.isRead
                             ? "text-gray-600"
                             : "font-semibold"
-                        }`}
+                          }`}
                       >
                         <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
                           {notification.content}
@@ -624,6 +626,43 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const projectData = {
+      ...Object.fromEntries(formData),
+      tags: formData.get("tags")?.toString().split(",").map((tag) => tag.trim()),
+      type: getProjectType(),
+      category: getProposalCategory(),
+    };
+    handleCreateProject(projectData);
+  };
+
+  const getProjectType = () => {
+    switch (collaborationType) {
+      case 'professors': return 'PROFESSOR_PROJECT';
+      case 'students': return 'STUDENT_PROPOSAL';
+      case 'industries': return 'BUSINESS_PROJECT';
+      default: return null;
+    }
+  };
+
+  const getProposalCategory = () => {
+    switch (collaborationType) {
+      case 'professors': return 'PROFESSOR_COLLABORATION';
+      case 'students':
+        switch (studentOpportunityType) {
+          case 'internship': return 'INTERNSHIP';
+          case 'phd': return 'PHD_POSITION';
+          case 'research': return 'RND_PROJECT';
+          default: return 'STUDENT_OPPORTUNITY';
+        }
+      case 'industries': return 'TECHNOLOGY_SOLUTION';
+      default: return 'PROJECT';
+    }
+  };
+
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       <motion.div
@@ -656,93 +695,140 @@ const ProfessorProfilePage: React.FC = () => {
                     <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
                       <DialogTitle>Create a New Project</DialogTitle>
                     </DialogHeader>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        const projectData = {
-                          ...Object.fromEntries(formData),
-                          tags: formData
-                            .get("tags")
-                            ?.toString()
-                            .split(",")
-                            .map((tag) => tag.trim()),
-                          type: "PROFESSOR",
-                        };
-                        handleCreateProject(projectData);
-                      }}
-                      className="space-y-4 p-4"
-                    >
-                      <div>
-                        <Label htmlFor="project-topic">Project Topic</Label>
-                        <Input
-                          id="project-topic"
-                          name="topic"
-                          placeholder="Enter project topic"
-                          required
-                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="project-content">Project Content</Label>
-                        <Textarea
-                          id="project-content"
-                          name="content"
-                          placeholder="Enter project content"
-                          required
-                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="project-difficulty">Difficulty</Label>
-                        <Select name="difficulty" required>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select difficulty" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="EASY">Easy</SelectItem>
-                            <SelectItem value="INTERMEDIATE">
-                              Intermediate
-                            </SelectItem>
-                            <SelectItem value="HARD">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="project-timeline">Timeline</Label>
-                        <Input
-                          id="project-timeline"
-                          name="timeline"
-                          type="date"
-                          required
-                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="project-tags">Tags</Label>
-                        <Input
-                          id="project-tags"
-                          name="tags"
-                          placeholder="Enter tags (comma-separated)"
-                          required
-                          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        disabled={isCreatingProject}
-                        className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
-                      >
-                        {isCreatingProject ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating...
-                          </>
-                        ) : (
-                          "Create Project"
-                        )}
-                      </Button>
-                    </form>
+                    <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
+  <form
+    onSubmit={handleSubmit}
+    className="space-y-4"
+  >
+    <div>
+      <Label>Collaboration Type</Label>
+      <Select
+        name="collaborationType"
+        value={collaborationType}
+        onValueChange={setCollaborationType}
+        required
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select Collaboration Type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="students">Students</SelectItem>
+          <SelectItem value="professors">Professors</SelectItem>
+          <SelectItem value="industries">Industries</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    {collaborationType === 'students' && (
+      <div>
+        <Label>Student Opportunity Type</Label>
+        <Select
+          name="studentOpportunityType"
+          value={studentOpportunityType}
+          onValueChange={setStudentOpportunityType}
+          required
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Opportunity" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="internship">Internship</SelectItem>
+            <SelectItem value="phd">PhD Position</SelectItem>
+            <SelectItem value="research">Research Project</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+
+    <div>
+      <Label htmlFor="project-content">Description</Label>
+      <Textarea
+        id="project-content"
+        name="content"
+        placeholder="Enter project description"
+        required
+        className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+      />
+    </div>
+
+    {collaborationType === 'students' && (
+      <>
+        <div>
+          <Label htmlFor="project-eligibility">Eligibility</Label>
+          <Input
+            id="project-eligibility"
+            name="eligibility"
+            placeholder="Enter eligibility criteria"
+            className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+          />
+        </div>
+
+        <div>
+          <Label>Is Project Funded?</Label>
+          <Select name="isFunded">
+            <SelectTrigger>
+              <SelectValue placeholder="Select Funding Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Funded</SelectItem>
+              <SelectItem value="false">Non-Funded</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {studentOpportunityType === 'internship' && (
+          <div>
+            <Label htmlFor="project-duration">Duration (In Months)</Label>
+            <Input
+              id="project-duration"
+              name="duration"
+              type="text"
+              placeholder="Enter internship duration"
+            />
+          </div>
+        )}
+
+        <div>
+          <Label htmlFor="project-desirable">Desirable Skills</Label>
+          <Input
+            id="project-desirable"
+            name="desirable"
+            placeholder="Enter desirable skills"
+            className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+          />
+        </div>
+      </>
+    )}
+
+    {collaborationType === 'industries' && (
+      <div>
+        <Label htmlFor="project-requirements">What are you looking for?</Label>
+        <Textarea
+          id="project-requirements"
+          name="requirements"
+          placeholder="Describe your technology solution requirements"
+          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
+        />
+      </div>
+    )}
+
+    <Button
+      type="submit"
+      disabled={isCreatingProject}
+      className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
+    >
+      {isCreatingProject ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Creating...
+        </>
+      ) : (
+        "Create Project"
+      )}
+    </Button>
+  </form>
+</div>
+
                   </DialogContent>
                 </Dialog>
               </div>
@@ -882,17 +968,17 @@ const ProfessorProfilePage: React.FC = () => {
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     ...(isLoggedInUser
       ? [
-          { id: "projects", label: "My Projects", icon: <Briefcase /> },
-          { id: "webinars", label: "My Webinars", icon: <Video /> },
-          { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
-          { id: "notifications", label: "Notifications", icon: <Bell /> },
-          // { id: "patents", label: "Patents", icon: <BookOpen /> },
-          {
-            id: "business-projects",
-            label: "Business Projects",
-            icon: <Building />,
-          },
-        ]
+        { id: "projects", label: "My Projects", icon: <Briefcase /> },
+        { id: "webinars", label: "My Webinars", icon: <Video /> },
+        { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
+        { id: "notifications", label: "Notifications", icon: <Bell /> },
+        // { id: "patents", label: "Patents", icon: <BookOpen /> },
+        {
+          id: "business-projects",
+          label: "Business Projects",
+          icon: <Building />,
+        },
+      ]
       : []),
   ];
 
@@ -901,71 +987,71 @@ const ProfessorProfilePage: React.FC = () => {
       <NavbarWithBg />
 
       <main className="flex-grow">
-      <motion.section
-  className="relative text-white py-24"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.8 }}
->
-  {/* Background Image */}
-  <div className="absolute inset-0 -z-10">
-    <Image
-      src={PROFESSORPAGE}
-      alt="Background"
-      layout="fill"
-      objectFit="cover"
-      quality={100}
-      priority
-    />
-  </div>
+        <motion.section
+          className="relative text-white py-24"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Background Image */}
+          <div className="absolute inset-0 -z-10">
+            <Image
+              src={PROFESSORPAGE}
+              alt="Background"
+              layout="fill"
+              objectFit="cover"
+              quality={100}
+              priority
+            />
+          </div>
 
-  <div className="container mx-auto px-4 relative z-10">
-    <div className="flex flex-col md:flex-row items-center justify-between">
-      <div className="flex items-center space-x-6 mb-6 md:mb-0">
-        <Avatar className="w-32 h-32 border-4 border-primary">
-          <AvatarImage
-            src={professor.photoUrl}
-            alt={professor.fullName}
-          />
-          <AvatarFallback>
-            {professor.fullName
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-4xl font-bold mb-2 text-black">
-            {professor.fullName}
-          </h1>
-          <p className="text-xl text-black">
-            {professor.title}
-          </p>
-        </div>
-      </div>
-      <div className="flex flex-col space-y-2">
-        {professor.website && (
-          <a
-            className="btn btn-outline flex items-center text-black"
-            href={professor.website}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Globe className="mr-2 h-4 w-4 text-black" />
-            Google Scholar
-          </a>
-        )}
-        {isLoggedInUser && (
-          <Link href={"/edit-profile"}>
-            <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">
-              Edit Profile
-            </Button>
-          </Link>
-        )}
-      </div>
-    </div>
-  </div>
-</motion.section>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="flex items-center space-x-6 mb-6 md:mb-0">
+                <Avatar className="w-32 h-32 border-4 border-primary">
+                  <AvatarImage
+                    src={professor.photoUrl}
+                    alt={professor.fullName}
+                  />
+                  <AvatarFallback>
+                    {professor.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-4xl font-bold mb-2 text-black">
+                    {professor.fullName}
+                  </h1>
+                  <p className="text-xl text-black">
+                    {professor.title}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2">
+                {professor.website && (
+                  <a
+                    className="btn btn-outline flex items-center text-black"
+                    href={professor.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Globe className="mr-2 h-4 w-4 text-black" />
+                    Google Scholar
+                  </a>
+                )}
+                {isLoggedInUser && (
+                  <Link href={"/edit-profile"}>
+                    <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">
+                      Edit Profile
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.section>
 
         <section className="py-12">
           <div className="container mx-auto px-4">
@@ -1045,7 +1131,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                       {professor.researchInterests &&
-                      professor.researchInterests.length > 0 ? (
+                        professor.researchInterests.length > 0 ? (
                         <ul className="space-y-4">
                           {professor.researchInterests.map((research) => (
                             <li key={research.title} className="space-y-2">
@@ -1221,9 +1307,9 @@ const ProfessorProfilePage: React.FC = () => {
                                       <p className="text-gray-600 line-clamp-3">
                                         {blog.content.length > 150
                                           ? `${blog.content.substring(
-                                              0,
-                                              150
-                                            )}...`
+                                            0,
+                                            150
+                                          )}...`
                                           : blog.content}
                                       </p>
                                     </div>
@@ -1486,10 +1572,9 @@ const ProfessorProfilePage: React.FC = () => {
                                 <h3 className="text-xl font-semibold mb-2">
                                   {status === "PENDING"
                                     ? "Pending Approval"
-                                    : `${
-                                        status.charAt(0) +
-                                        status.slice(1).toLowerCase()
-                                      } Webinars`}
+                                    : `${status.charAt(0) +
+                                    status.slice(1).toLowerCase()
+                                    } Webinars`}
                                 </h3>
                                 <ul className="space-y-4">
                                   {webinars
@@ -1545,8 +1630,8 @@ const ProfessorProfilePage: React.FC = () => {
                                               status === "COMPLETED"
                                                 ? "secondary"
                                                 : status === "PENDING"
-                                                ? "outline"
-                                                : "default"
+                                                  ? "outline"
+                                                  : "default"
                                             }
                                             className="bg-[#eb5e17] hover:bg-[#472014] text-white font-caveat"
                                           >
