@@ -6,6 +6,7 @@ import {
   ProjectType,
   ProposalCategory,
   Status,
+  NotificationType,
 } from "@prisma/client";
 import { createNotification } from "./notificationController";
 
@@ -283,6 +284,32 @@ export const getProjectsByType = async (req: Request, res: Response) => {
   }
 };
 
+import { v2 as cloudinary } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
+import streamifier from "streamifier";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Helper function to upload to Cloudinary
+function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "project-applications" },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result) return reject(new Error("Upload failed"));
+        return resolve(result);
+      }
+    );
+    streamifier.createReadStream(fileBuffer).pipe(uploadStream);
+  });
+}
+
 // Apply for a project
 export const applyForProject = async (req: Request, res: Response) => {
   try {
@@ -295,22 +322,24 @@ export const applyForProject = async (req: Request, res: Response) => {
       phoneNumber,
       description,
     } = req.body;
-    const images = req.files
-      ? (req.files as Express.Multer.File[]).map((file) => file.path)
-      : [];
+
+    // Handle images upload
+    const images: string[] = [];
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as Express.Multer.File[]) {
+        try {
+          const result = await uploadToCloudinary(file.buffer);
+          images.push(result.secure_url);
+        } catch (error) {
+          console.error("Cloudinary upload error:", error);
+          return res.status(500).json({ error: "Failed to upload images" });
+        }
+      }
+    }
 
     // Get project details
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      include: {
-        professor: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-          },
-        },
-      },
     });
 
     if (!project) {
@@ -320,6 +349,7 @@ export const applyForProject = async (req: Request, res: Response) => {
     let application;
     let applicantDetails;
 
+    // Get applicant details and create application
     switch (applicantType) {
       case "professor":
         applicantDetails = await prisma.professor.findUnique({
@@ -383,42 +413,50 @@ export const applyForProject = async (req: Request, res: Response) => {
           },
         });
         break;
+      default:
+        return res.status(400).json({ error: "Invalid applicant type" });
     }
 
-    // NOTIFICATIONS
-    const notificationContent = `
-      New Application Received!
-      Project: ${project.topic}
-      Applicant: ${
-        applicantType === "business"
-          ? (
-              applicantDetails as {
-                companyName: string;
-                industry: string | null;
-              }
-            )?.companyName
-          : (applicantDetails as { fullName: string })?.fullName
-      }
-      ${
-        applicantType === "professor"
-          ? `University: ${applicantDetails?.university}
-      Department: ${applicantDetails?.department}`
-          : applicantType === "student"
-          ? `University: ${applicantDetails?.university}
-      Course: ${applicantDetails?.course}`
-          : `Industry: ${applicantDetails?.industry}`
-      }
-      Contact: ${email} ${phoneNumber ? `/ ${phoneNumber}` : ""}
-      Message: ${description}
-    `.trim();
-
+    // Determine project creator and their type
+    let creatorId: string | undefined;
+    let creatorType: "professor" | "student" | "business" | undefined;
     if (project.professorId) {
+      creatorId = project.professorId;
+      creatorType = "professor";
+    } else if (project.studentId) {
+      creatorId = project.studentId;
+      creatorType = "student";
+    } else if (project.businessId) {
+      creatorId = project.businessId;
+      creatorType = "business";
+    }
+
+    if (creatorId && creatorType) {
+      // Prepare notification content
+      let applicantInfo = "";
+      if (!applicantDetails) {
+        applicantInfo = "Unknown applicant";
+      } else if ("department" in applicantDetails) {
+        applicantInfo = `Professor ${applicantDetails.fullName} from ${applicantDetails.university}, ${applicantDetails.department}`;
+      } else if ("course" in applicantDetails) {
+        applicantInfo = `Student ${applicantDetails.fullName} from ${applicantDetails.university}, ${applicantDetails.course}`;
+      } else {
+        applicantInfo = `Business ${applicantDetails.companyName} in ${applicantDetails.industry} industry`;
+      }
+
+      const notificationContent = `
+        New application received for your project "${project.topic}".
+        Applicant: ${applicantInfo}
+        Description: ${description}
+      `.trim();
+
+      // Send notification to project creator
       await createNotification(
-        "PROJECT_APPLICATION",
+        NotificationType.PROJECT_APPLICATION,
         notificationContent,
-        project.professorId,
-        "professor",
-        projectId,
+        creatorId,
+        creatorType,
+        project.id,
         "project"
       );
     }
@@ -429,7 +467,6 @@ export const applyForProject = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to submit application" });
   }
 };
-
 // GET ROUTE FOR PROJECT APPLICATIONS DEPENDING ON TYPE
 export const getProjectApplications = async (req: Request, res: Response) => {
   try {

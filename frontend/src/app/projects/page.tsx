@@ -1,3 +1,6 @@
+// page.tsx
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,43 +17,38 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Rocket,
   GraduationCap,
   UserCircle,
-  User2Icon,
-  XCircle,
+  Building,
+  Book,
+  Calendar,
+  Briefcase,
 } from "lucide-react";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
 import { PROJECT } from "../../../public";
-import { useRouter } from "next/navigation";
+import Modal from "@/components/ui/modal";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
 
-// Enum types
 enum ProjectType {
   BUSINESS_PROJECT = "BUSINESS_PROJECT",
-  PROFESSOR_PROJECT = "PROFESSOR_PROJECT", 
-  STUDENT_PROPOSAL = "STUDENT_PROPOSAL"
+  PROFESSOR_PROJECT = "PROFESSOR_PROJECT",
+  STUDENT_PROPOSAL = "STUDENT_PROPOSAL",
 }
 
 enum ProposalCategory {
-  PROJECT = "PROJECT",
   INTERNSHIP = "INTERNSHIP",
   PHD_POSITION = "PHD_POSITION",
   PROFESSOR_COLLABORATION = "PROFESSOR_COLLABORATION",
-  STUDENT_OPPORTUNITY = "STUDENT_OPPORTUNITY", 
+  STUDENT_OPPORTUNITY = "STUDENT_OPPORTUNITY",
   INDUSTRY_COLLABORATION = "INDUSTRY_COLLABORATION",
-  TECHNOLOGY_SOLUTION = "TECHNOLOGY_SOLUTION",
-  RND_PROJECT = "RND_PROJECT"
+  RND_PROJECT = "RND_PROJECT",
 }
 
 interface Project {
@@ -66,56 +64,57 @@ interface Project {
   duration?: {
     startDate: string;
     endDate: string;
-  };
+  } | null;
   isFunded?: boolean;
   fundDetails?: string;
   desirable?: string;
   techDescription?: string;
   requirements?: string;
-  professor?: { 
-    id: string; 
-    fullName: string; 
+  professor?: {
+    id: string;
+    fullName: string;
     email: string;
     department?: string;
   };
-  business?: { 
-    id: string; 
-    companyName: string 
+  business?: {
+    id: string;
+    companyName: string;
   };
   student?: {
     id: string;
     fullName: string;
     major?: string;
   };
-  postedBy?: {
-    role: 'PROFESSOR' | 'STUDENT' | 'BUSINESS';
-    name: string;
-  }
 }
 
-const ProjectsPage = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
+const ProjectsPage: React.FC = () => {
+  const [, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  
-  // Filtering states
-  const [activeTab, setActiveTab] = useState<string>("students");
-  const [projectsFor, setProjectsFor] = useState<string | null>(null);
-  const [projectSubCategory, setProjectSubCategory] = useState<string | null>(null);
-
-  const router = useRouter();
+  const [, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("professors");
+  const [activeCategory, setActiveCategory] = useState<ProposalCategory | null>(
+    null
+  );
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${API_URL}/projects`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await axios.get(`${API_URL}/project`, {
+          params: {
+            type:
+              activeTab === "professors"
+                ? ProjectType.PROFESSOR_PROJECT
+                : activeTab === "industry"
+                ? ProjectType.BUSINESS_PROJECT
+                : ProjectType.STUDENT_PROPOSAL,
+            category: activeCategory || undefined,
+          },
         });
-
         setProjects(response.data);
+        setFilteredProjects(response.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -125,100 +124,150 @@ const ProjectsPage = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [activeTab, activeCategory]);
 
-  // Advanced filtering logic
-  useEffect(() => {
-    let result = projects;
-
-    // Tab-based filtering
-    switch(activeTab) {
-      case "students":
-        result = result.filter(p => 
-          p.type === ProjectType.PROFESSOR_PROJECT || 
-          p.type === ProjectType.BUSINESS_PROJECT ||
-          p.type === ProjectType.STUDENT_PROPOSAL
-        );
-        break;
+  const getCategoryFilters = () => {
+    switch (activeTab) {
       case "professors":
-        result = result.filter(p => 
-          p.type === ProjectType.PROFESSOR_PROJECT ||
-          p.type === ProjectType.STUDENT_PROPOSAL
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant={
+                activeCategory === ProposalCategory.PROFESSOR_COLLABORATION
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() =>
+                setActiveCategory(ProposalCategory.PROFESSOR_COLLABORATION)
+              }
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Briefcase className="mr-2 h-4 w-4" />
+              Professor Collaboration
+            </Button>
+            <Button
+              variant={
+                activeCategory === ProposalCategory.STUDENT_OPPORTUNITY
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() =>
+                setActiveCategory(ProposalCategory.STUDENT_OPPORTUNITY)
+              }
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Student Opportunities
+            </Button>
+            <Button
+              variant={
+                activeCategory === ProposalCategory.INDUSTRY_COLLABORATION
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() =>
+                setActiveCategory(ProposalCategory.INDUSTRY_COLLABORATION)
+              }
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Building className="mr-2 h-4 w-4" />
+              Industry Collaboration
+            </Button>
+          </div>
         );
-        break;
+
       case "industry":
-        result = result.filter(p => 
-          p.type === ProjectType.BUSINESS_PROJECT ||
-          p.type === ProjectType.STUDENT_PROPOSAL
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant={
+                activeCategory === ProposalCategory.RND_PROJECT
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Book className="mr-2 h-4 w-4" />
+              R&D Projects
+            </Button>
+            <Button
+              variant={
+                activeCategory === ProposalCategory.INTERNSHIP
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Internships
+            </Button>
+          </div>
         );
-        break;
-    }
 
-    // Projects For filtering
-    if (projectsFor) {
-      switch(projectsFor) {
-        case "students":
-          result = result.filter(p => 
-            [ProposalCategory.INTERNSHIP, ProposalCategory.PHD_POSITION, 
-             ProposalCategory.STUDENT_OPPORTUNITY].includes(p.category)
-          );
-          break;
-        case "professors":
-          result = result.filter(p => 
-            [ProposalCategory.PROFESSOR_COLLABORATION, 
-             ProposalCategory.RND_PROJECT].includes(p.category)
-          );
-          break;
-        case "industry":
-          result = result.filter(p => 
-            [ProposalCategory.TECHNOLOGY_SOLUTION, 
-             ProposalCategory.INDUSTRY_COLLABORATION].includes(p.category)
-          );
-          break;
-      }
-    }
+      case "students":
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant={
+                activeCategory === ProposalCategory.RND_PROJECT
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Book className="mr-2 h-4 w-4" />
+              R&D Proposals
+            </Button>
+            <Button
+              variant={
+                activeCategory === ProposalCategory.PHD_POSITION
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => setActiveCategory(ProposalCategory.PHD_POSITION)}
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <GraduationCap className="mr-2 h-4 w-4" />
+              Research Proposals
+            </Button>
+            <Button
+              variant={
+                activeCategory === ProposalCategory.INTERNSHIP
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
+              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Internship Proposals
+            </Button>
+          </div>
+        );
 
-    // Subcategory filtering
-    if (projectSubCategory) {
-      result = result.filter(p => p.category === projectSubCategory);
+      default:
+        return null;
     }
-
-    setFilteredProjects(result);
-  }, [activeTab, projectsFor, projectSubCategory, projects]);
-
-  // Dynamic dropdowns render logic (similar to previous implementation)
-  const renderProjectsForDropdown = () => {
-    if (activeTab === "professors") {
-      return (
-        <Select 
-          onValueChange={(value) => setProjectsFor(value)}
-          value={projectsFor || undefined}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Projects for..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="students">Students</SelectItem>
-            <SelectItem value="industry">Industry</SelectItem>
-            <SelectItem value="professors">Professors</SelectItem>
-          </SelectContent>
-        </Select>
-      );
-    }
-    // Similar dropdown logic for other tabs
-    return null;
   };
 
-  const renderSubCategoryDropdown = () => {
-    // Dropdown logic based on tab and projects for selection
-    return null;
+  const openApplyModal = (project: Project) => {
+    setSelectedProject(project);
+    setShowModal(true);
+  };
+
+  const closeApplyModal = () => {
+    setShowModal(false);
+    setSelectedProject(null);
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         <p className="text-[#472014] font-caveat text-2xl">
-          <Rocket className="h-8 w-8 r-2 mr-2 text-[#eb5e17]" />
+          <Rocket className="h-8 w-8 mr-2 text-[#eb5e17]" />
           Loading projects...
         </p>
       </div>
@@ -235,174 +284,134 @@ const ProjectsPage = () => {
           title="Cutting-edge STEM Projects"
           subtitle="Explore groundbreaking projects and collaborate with leading experts"
         />
-        
+
         <div className="max-w-6xl mx-auto px-4 pt-4">
-          <Tabs 
-            defaultValue="students" 
+          <Tabs
+            defaultValue="professors"
             onValueChange={(value) => {
               setActiveTab(value);
-              setProjectsFor(null);
-              setProjectSubCategory(null);
+              setActiveCategory(null);
             }}
           >
             <TabsList className="mb-8">
-              <TabsTrigger value="students">
-                <GraduationCap className="mr-2 h-5 w-5" />
-                Students Projects
-              </TabsTrigger>
               <TabsTrigger value="professors">
                 <UserCircle className="mr-2 h-5 w-5" />
-                Professors Projects
+                Professor Projects
               </TabsTrigger>
               <TabsTrigger value="industry">
-                <UserCircle className="mr-2 h-5 w-5" />
+                <Building className="mr-2 h-5 w-5" />
                 Industry Projects
+              </TabsTrigger>
+              <TabsTrigger value="students">
+                <GraduationCap className="mr-2 h-5 w-5" />
+                Student Proposals
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex space-x-4 mb-8">
-              {renderProjectsForDropdown()}
-              {renderSubCategoryDropdown()}
-            </div>
+            <div className="mb-8">{getCategoryFilters()}</div>
 
-            <ProjectsList 
-              projects={filteredProjects} 
-              activeTab={activeTab}
+            <ProjectsList
+              projects={filteredProjects}
+              onApply={openApplyModal}
             />
           </Tabs>
         </div>
       </main>
       <Footer />
+
+      {selectedProject && (
+        <ApplyModal
+          show={showModal}
+          onClose={closeApplyModal}
+          project={selectedProject}
+        />
+      )}
     </div>
   );
 };
 
-const ProjectsList = ({
-  projects,
-  activeTab,
-}: {
+interface ProjectsListProps {
   projects: Project[];
-  activeTab: string;
-}) => {
+  onApply: (project: Project) => void;
+}
+
+const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply }) => {
   return (
     <section className="py-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project, index) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            index={index}
-            activeTab={activeTab}
-          />
-        ))}
-      </div>
+      {projects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((project, index) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              index={index}
+              onApply={onApply}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-xl">No projects available.</p>
+      )}
     </section>
   );
 };
 
-const ProjectCard = ({
-  project,
-  index,
-  activeTab,
-}: {
+interface ProjectCardProps {
   project: Project;
   index: number;
-  activeTab: string;
-}) => {
-  const router = useRouter();
+  onApply: (project: Project) => void;
+}
 
-  const renderProjectDetails = () => {
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  index,
+  onApply,
+}) => {
+  const renderDetails = () => {
     switch (project.category) {
-      case ProposalCategory.INTERNSHIP:
+      case ProposalCategory.PROFESSOR_COLLABORATION:
+      case ProposalCategory.INDUSTRY_COLLABORATION:
         return (
           <>
-            <div>
-              <h4 className="font-semibold">Eligibility:</h4>
-              <p>{project.eligibility || 'Not specified'}</p>
+            <div className="mb-2">
+              <h4 className="font-semibold">Requirements:</h4>
+              <p>{project.requirements}</p>
             </div>
-            <div>
-              <h4 className="font-semibold">Duration:</h4>
-              <p>{project.duration ? `${project.duration.startDate} to ${project.duration.endDate}` : 'Not specified'}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold">Funding:</h4>
-              <p>{project.isFunded ? `Yes: ${project.fundDetails}` : 'Unpaid'}</p>
+            <div className="mb-2">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription}</p>
             </div>
           </>
         );
+
+      case ProposalCategory.STUDENT_OPPORTUNITY:
+      case ProposalCategory.INTERNSHIP:
       case ProposalCategory.PHD_POSITION:
         return (
           <>
-            <div>
-              <h4 className="font-semibold">Research Description:</h4>
-              <p>{project.techDescription || 'No description'}</p>
+            <div className="mb-2">
+              <h4 className="font-semibold">Eligibility:</h4>
+              <p>{project.eligibility}</p>
             </div>
-            <div>
-              <h4 className="font-semibold">Requirements:</h4>
-              <p>{project.requirements || 'No specific requirements'}</p>
-            </div>
-          </>
-        );
-      case ProposalCategory.RND_PROJECT:
-        return (
-          <>
-            <div>
-              <h4 className="font-semibold">Technology Description:</h4>
-              <p>{project.techDescription || 'No description'}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold">Collaboration Objectives:</h4>
-              <p>{project.requirements || 'Not specified'}</p>
+            {project.duration && (
+              <div className="mb-2">
+                <h4 className="font-semibold">Duration:</h4>
+                <p>
+                  {new Date(project.duration.startDate).toLocaleDateString()} -{" "}
+                  {new Date(project.duration.endDate).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+            <div className="mb-2">
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{project.isFunded ? `Yes - ${project.fundDetails}` : "No"}</p>
             </div>
           </>
         );
+
       default:
         return null;
     }
-  };
-
-  const renderContactInfo = () => {
-    if (project.professor) {
-      return (
-        <div>
-          <p>{project.professor.fullName}</p>
-          <p>{project.professor.department}</p>
-        </div>
-      );
-    }
-    if (project.business) {
-      return (
-        <div>
-          <p>{project.business.companyName}</p>
-        </div>
-      );
-    }
-    if (project.student) {
-      return (
-        <div>
-          <p>{project.student.fullName}</p>
-          <p>{project.student.major}</p>
-        </div>
-      );
-    }
-    return <p>No contact information</p>;
-  };
-
-  const renderPostedByTag = () => {
-    if (project.postedBy) {
-      return (
-        <Badge 
-          className={`
-            ${project.postedBy.role === 'PROFESSOR' ? 'bg-blue-500' : 
-              project.postedBy.role === 'STUDENT' ? 'bg-green-500' : 
-              'bg-purple-500'} text-white
-          `}
-        >
-          Posted by {project.postedBy.role}
-        </Badge>
-      );
-    }
-    return null;
   };
 
   return (
@@ -411,31 +420,161 @@ const ProjectCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle>{project.topic}</CardTitle>
-            {renderPostedByTag()}
+            <CardTitle className="text-lg font-bold">{project.topic}</CardTitle>
+            <Badge className="bg-[#eb5e17] text-white">
+              {project.category.replace(/_/g, " ")}
+            </Badge>
           </div>
-          <CardDescription>{project.content}</CardDescription>
+          <CardDescription className="mt-2">{project.content}</CardDescription>
         </CardHeader>
-        <CardContent>
-          {renderProjectDetails()}
-          <div className="mt-4">
-            <h4 className="font-semibold">Contact:</h4>
-            {renderContactInfo()}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <CardContent className="flex-grow">
+          {renderDetails()}
+          <div className="flex flex-wrap gap-2 mt-4">
             {project.tags.map((tag, i) => (
-              <Badge key={i} variant="secondary">{tag}</Badge>
+              <Badge
+                key={i}
+                variant="outline"
+                className="text-[#472014] border-[#eb5e17]"
+              >
+                {tag}
+              </Badge>
             ))}
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="default">View Details</Button>
+          <Button
+            onClick={() => onApply(project)}
+            className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
+          >
+            Apply Now
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>
+  );
+};
+
+interface ApplyModalProps {
+  show: boolean;
+  onClose: () => void;
+  project: Project;
+}
+
+const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
+  const { register, handleSubmit, reset } = useForm();
+  const [submitting, setSubmitting] = useState(false);
+
+  const onSubmit = async (data: any) => {
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("applicantId", localStorage.getItem("userId") || "");
+      formData.append("applicantType", localStorage.getItem("role") || "");
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("phoneNumber", data.phoneNumber || "");
+      formData.append("description", data.description);
+
+      if (data.images && data.images.length > 0) {
+        Array.from(data.images).forEach((file) => {
+          formData.append("images", file as File);
+        });
+      }
+
+      await axios.post(`${API_URL}/project/${project.id}/apply`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      reset();
+      onClose();
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      alert("Failed to submit application");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal show={show} onClose={onClose} title={`Apply for ${project.topic}`}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-4">
+          <div>
+            <Input
+              placeholder="Your Name"
+              {...register("name", { required: true })}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <Input
+              type="email"
+              placeholder="Your Email"
+              {...register("email", { required: true })}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <Input
+              placeholder="Phone Number"
+              {...register("phoneNumber")}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <Textarea
+              placeholder="Why are you interested in this project? Describe your relevant experience..."
+              {...register("description", { required: true })}
+              className="w-full min-h-[150px]"
+            />
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500 mb-2">
+              Upload supporting documents (Optional)
+            </p>
+            <Input
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx"
+              {...register("images")}
+              className="w-full"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-2 mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="bg-gray-100 hover:bg-gray-200"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+          >
+            {submitting ? (
+              <div className="flex items-center">
+                <Rocket className="animate-spin mr-2 h-4 w-4" />
+                Submitting...
+              </div>
+            ) : (
+              "Submit Application"
+            )}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 

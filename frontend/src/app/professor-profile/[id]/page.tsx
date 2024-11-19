@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState, useEffect,FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import PatentsTab from "@/components/shared/patentstab";
 
 import axios from "axios";
@@ -55,6 +55,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { PROFESSORPAGE } from "../../../../public";
+
+interface AppliedApplicant {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  image: string;
+}
+
+interface ApplicationsResponse {
+  professorApplications: AppliedApplicant[];
+  studentApplications: AppliedApplicant[];
+  businessApplications: AppliedApplicant[];
+}
 
 interface Patent {
   id: string;
@@ -130,11 +144,28 @@ interface Project {
   id: string;
   topic: string;
   content: string;
-  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
-  timeline: string;
+  difficulty?: "EASY" | "INTERMEDIATE" | "HARD";
+  timeline?: string;
   tags: string[];
   status: "OPEN" | "ONGOING" | "CLOSED";
-  type: "PROFESSOR";
+  type: "PROFESSOR_PROJECT" | "STUDENT_PROPOSAL" | "BUSINESS_PROJECT";
+  category:
+    | "PROFESSOR_COLLABORATION"
+    | "INDUSTRY_COLLABORATION"
+    | "INTERNSHIP"
+    | "PHD_POSITION"
+    | "RND_PROJECT";
+  professor?: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    university: string;
+    department: string;
+  };
+  duration?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
 interface AppliedStudent {
@@ -183,7 +214,7 @@ const ProfessorProfilePage: React.FC = () => {
     [projectId: string]: AppliedStudent[];
   }>({});
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [isLoadingApplicants, setIsLoadingApplicants] = useState(false);
+
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -191,8 +222,8 @@ const ProfessorProfilePage: React.FC = () => {
     []
   );
 
-  const [collaborationType, setCollaborationType] = useState('');
-  const [studentOpportunityType, setStudentOpportunityType] = useState('');
+  const [collaborationType, setCollaborationType] = useState("");
+  const [studentOpportunityType, setStudentOpportunityType] = useState("");
   const [isLoadingBusinessProjects, setIsLoadingBusinessProjects] =
     useState(true);
 
@@ -204,12 +235,33 @@ const ProfessorProfilePage: React.FC = () => {
   const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
   const [isCreatingPatent, setIsCreatingPatent] = useState(false);
 
+  const [fellowProfessorProjects, setFellowProfessorProjects] = useState<
+    Project[]
+  >([]);
+  const [industryProjects, setIndustryProjects] = useState<Project[]>([]);
+  const [studentProjects, setStudentProjects] = useState<{
+    rnd: Project[];
+    phd: Project[];
+    internship: Project[];
+  }>({
+    rnd: [],
+    phd: [],
+    internship: [],
+  });
+
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage({ url: imageUrl, title });
   };
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
     null
   );
+  const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
+    [projectId: string]: AppliedApplicant[];
+  }>({});
+
+  const [isLoadingApplicants, setIsLoadingApplicants] = useState<{
+    [projectId: string]: boolean;
+  }>({});
 
   const closeModal = () => {
     setSelectedImage(null);
@@ -281,6 +333,100 @@ const ProfessorProfilePage: React.FC = () => {
 
     fetchProfessorData();
   }, [id, isLoggedInUser]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        // Fetch projects for fellow professors
+        const fellowProfessorResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "PROFESSOR_PROJECT",
+            category: "PROFESSOR_COLLABORATION",
+          },
+        });
+        setFellowProfessorProjects(fellowProfessorResponse.data);
+
+        // Fetch projects for industry
+        const industryResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "PROFESSOR_PROJECT",
+            category: "INDUSTRY_COLLABORATION",
+          },
+        });
+        setIndustryProjects(industryResponse.data);
+
+        // Fetch projects for students (R&D, PhD, Internship)
+        const rndResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "PROFESSOR_PROJECT",
+            category: "RND_PROJECT",
+          },
+        });
+        const phdResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "PROFESSOR_PROJECT",
+            category: "PHD_POSITION",
+          },
+        });
+        const internshipResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "PROFESSOR_PROJECT",
+            category: "INTERNSHIP",
+          },
+        });
+
+        setStudentProjects({
+          rnd: rndResponse.data,
+          phd: phdResponse.data,
+          internship: internshipResponse.data,
+        });
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const fetchAppliedApplicants = async (projectId: string) => {
+    setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: true }));
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get<ApplicationsResponse>(
+        `${API_URL}/project/${projectId}/applications`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const allApplications: AppliedApplicant[] = [
+        ...response.data.professorApplications,
+        ...response.data.studentApplications,
+        ...response.data.businessApplications,
+      ];
+
+      setAppliedApplicantsMap((prevMap) => ({
+        ...prevMap,
+        [projectId]: allApplications,
+      }));
+    } catch (error) {
+      console.error("Error fetching applied applicants:", error);
+      setError("Failed to fetch applied applicants. Please try again.");
+    } finally {
+      setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: false }));
+    }
+  };
+  const toggleApplicants = (projectId: string) => {
+    if (appliedApplicantsMap[projectId]) {
+      setAppliedApplicantsMap((prevMap) => {
+        const newMap = { ...prevMap };
+        delete newMap[projectId];
+        return newMap;
+      });
+    } else {
+      fetchAppliedApplicants(projectId);
+    }
+  };
 
   const handleCreateWebinar = async (
     webinarData: any,
@@ -359,13 +505,36 @@ const ProfessorProfilePage: React.FC = () => {
     setIsCreatingProject(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${API_URL}/project/professor`,
-        { ...projectData, type: "PROFESSOR", professorId: id },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      let endpoint = `${API_URL}/project`;
+      let data = {};
+
+      if (collaborationType === "professors") {
+        endpoint += "/professor-collaboration";
+        data = {
+          ...projectData,
+          professorId: id,
+        };
+      } else if (collaborationType === "students") {
+        endpoint += "/student-opportunity";
+        data = {
+          ...projectData,
+          professorId: id,
+          category: studentOpportunityType.toUpperCase(),
+        };
+      } else if (collaborationType === "industries") {
+        endpoint += "/industry-collaboration";
+        data = {
+          ...projectData,
+          professorId: id,
+        };
+      } else {
+        throw new Error("Invalid collaboration type selected.");
+      }
+
+      const response = await axios.post(endpoint, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       setProjects([...projects, response.data]);
       setIsProjectDialogOpen(false);
     } catch (error) {
@@ -376,57 +545,57 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
-  const fetchAppliedStudents = async (projectId: string) => {
-    setIsLoadingApplicants(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${API_URL}/project/professor/${projectId}/applicants`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  // const fetchAppliedStudents = async (projectId: string) => {
+  //   setIsLoadingApplicants(true);
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const response = await axios.get(
+  //       `${API_URL}/project/professor/${projectId}/applicants`,
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
 
-      setAppliedStudentsMap((prevMap) => ({
-        ...prevMap,
-        [projectId]: response.data,
-      }));
-    } catch (error) {
-      console.error("Error fetching applied students:", error);
-      setError("Failed to fetch applied students. Please try again.");
-    } finally {
-      setIsLoadingApplicants(false);
-    }
-  };
-  const handleChangeProjectStatus = async (
-    projectId: string,
-    status: "OPEN" | "ONGOING" | "CLOSED",
-    selectedStudentId?: string
-  ) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.patch(
-        `${API_URL}/project/professor/${projectId}/status`,
-        { status, selectedStudentId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  //     setAppliedStudentsMap((prevMap) => ({
+  //       ...prevMap,
+  //       [projectId]: response.data,
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error fetching applied students:", error);
+  //     setError("Failed to fetch applied students. Please try again.");
+  //   } finally {
+  //     setIsLoadingApplicants(false);
+  //   }
+  // };
+  // const handleChangeProjectStatus = async (
+  //   projectId: string,
+  //   status: "OPEN" | "ONGOING" | "CLOSED",
+  //   selectedStudentId?: string
+  // ) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     await axios.patch(
+  //       `${API_URL}/project/professor/${projectId}/status`,
+  //       { status, selectedStudentId },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
 
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.id === projectId ? { ...project, status } : project
-        )
-      );
+  //     setProjects((prevProjects) =>
+  //       prevProjects.map((project) =>
+  //         project.id === projectId ? { ...project, status } : project
+  //       )
+  //     );
 
-      if (status === "ONGOING" || status === "CLOSED") {
-        setAppliedStudentsMap((prevMap) => {
-          const newMap = { ...prevMap };
-          delete newMap[projectId];
-          return newMap;
-        });
-      }
-    } catch (error) {
-      console.error("Error changing project status:", error);
-      setError("Failed to change project status. Please try again.");
-    }
-  };
+  //     if (status === "ONGOING" || status === "CLOSED") {
+  //       setAppliedStudentsMap((prevMap) => {
+  //         const newMap = { ...prevMap };
+  //         delete newMap[projectId];
+  //         return newMap;
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error changing project status:", error);
+  //     setError("Failed to change project status. Please try again.");
+  //   }
+  // };
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -470,6 +639,37 @@ const ProfessorProfilePage: React.FC = () => {
       setIsCreatingPatent(false);
     }
   };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const projectData: any = {
+      topic: formData.get("topic"),
+      content: formData.get("content"),
+      timeline: formData.get("timeline"),
+      tags: formData
+        .get("tags")
+        ?.toString()
+        .split(",")
+        .map((tag) => tag.trim()),
+      durationStartDate: formData.get("durationStartDate") as string,
+      durationEndDate: formData.get("durationEndDate") as string,
+    };
+
+    // Add additional fields based on collaboration type
+    if (collaborationType === "students") {
+      projectData.eligibility = formData.get("eligibility");
+      projectData.duration = formData.get("duration");
+      projectData.isFunded = formData.get("isFunded") === "true";
+      projectData.fundDetails = formData.get("fundDetails");
+      projectData.desirable = formData.get("desirable");
+    } else if (collaborationType === "industries") {
+      projectData.techDescription = formData.get("techDescription");
+      projectData.requirements = formData.get("requirements");
+    }
+
+    handleCreateProject(projectData);
+  };
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -508,10 +708,11 @@ const ProfessorProfilePage: React.FC = () => {
                   >
                     <div className="space-y-2">
                       <p
-                        className={`${notification.isRead
+                        className={`${
+                          notification.isRead
                             ? "text-gray-600"
                             : "font-semibold"
-                          }`}
+                        }`}
                       >
                         <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
                           {notification.content}
@@ -626,40 +827,38 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const projectData = {
-      ...Object.fromEntries(formData),
-      tags: formData.get("tags")?.toString().split(",").map((tag) => tag.trim()),
-      type: getProjectType(),
-      category: getProposalCategory(),
-    };
-    handleCreateProject(projectData);
-  };
-
   const getProjectType = () => {
     switch (collaborationType) {
-      case 'professors': return 'PROFESSOR_PROJECT';
-      case 'students': return 'STUDENT_PROPOSAL';
-      case 'industries': return 'BUSINESS_PROJECT';
-      default: return null;
+      case "professors":
+        return "PROFESSOR_PROJECT";
+      case "students":
+        return "STUDENT_PROPOSAL";
+      case "industries":
+        return "BUSINESS_PROJECT";
+      default:
+        return null;
     }
   };
 
   const getProposalCategory = () => {
     switch (collaborationType) {
-      case 'professors': return 'PROFESSOR_COLLABORATION';
-      case 'students':
+      case "professors":
+        return "PROFESSOR_COLLABORATION";
+      case "students":
         switch (studentOpportunityType) {
-          case 'internship': return 'INTERNSHIP';
-          case 'phd': return 'PHD_POSITION';
-          case 'research': return 'RND_PROJECT';
-          default: return 'STUDENT_OPPORTUNITY';
+          case "internship":
+            return "INTERNSHIP";
+          case "phd":
+            return "PHD_POSITION";
+          case "research":
+            return "RND_PROJECT";
+          default:
+            return "STUDENT_OPPORTUNITY";
         }
-      case 'industries': return 'TECHNOLOGY_SOLUTION';
-      default: return 'PROJECT';
+      case "industries":
+        return "TECHNOLOGY_SOLUTION";
+      default:
+        return "PROJECT";
     }
   };
 
@@ -671,6 +870,230 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Fellow Professors Projects */}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Briefcase className="mr-2 text-[#eb5e17]" />
+              Projects for Fellow Professors
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {fellowProfessorProjects.length > 0 ? (
+              <ul className="space-y-4">
+                {fellowProfessorProjects.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No projects available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Industry Projects */}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Building className="mr-2 text-[#eb5e17]" />
+              Projects for Industry Collaboration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {industryProjects.length > 0 ? (
+              <ul className="space-y-4">
+                {industryProjects.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No projects available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Student Projects */}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <GraduationCap className="mr-2 text-[#eb5e17]" />
+              Projects for Students
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* R&D Projects */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              R&D Projects
+            </h3>
+            {studentProjects.rnd.length > 0 ? (
+              <ul className="space-y-4 mb-6">
+                {studentProjects.rnd.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No R&D projects available.
+              </p>
+            )}
+
+            {/* PhD Projects */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              PhD Positions
+            </h3>
+            {studentProjects.phd.length > 0 ? (
+              <ul className="space-y-4 mb-6">
+                {studentProjects.phd.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No PhD positions available.
+              </p>
+            )}
+
+            {/* Internship Projects */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              Internship Opportunities
+            </h3>
+            {studentProjects.internship.length > 0 ? (
+              <ul className="space-y-4">
+                {studentProjects.internship.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No internship opportunities available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
         <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
@@ -679,285 +1102,87 @@ const ProfessorProfilePage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <div className="flex justify-end">
-                <Dialog
-                  open={isProjectDialogOpen}
-                  onOpenChange={setIsProjectDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
-                      <Plus className="mr-2" />
-                      Create Project
+            {projects.length > 0 ? (
+              <ul className="space-y-4">
+                {projects.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
+                      <div className="flex items-center">
+                        <User className="mr-1 h-4 w-4" />
+                        <span>{project.professor?.fullName}</span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => toggleApplicants(project.id)}
+                    >
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="border-[#eb5e17]">
-                    <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
-                      <DialogTitle>Create a New Project</DialogTitle>
-                    </DialogHeader>
-                    <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
-  <form
-    onSubmit={handleSubmit}
-    className="space-y-4"
-  >
-    <div>
-      <Label>Collaboration Type</Label>
-      <Select
-        name="collaborationType"
-        value={collaborationType}
-        onValueChange={setCollaborationType}
-        required
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select Collaboration Type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="students">Students</SelectItem>
-          <SelectItem value="professors">Professors</SelectItem>
-          <SelectItem value="industries">Industries</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-
-    {collaborationType === 'students' && (
-      <div>
-        <Label>Student Opportunity Type</Label>
-        <Select
-          name="studentOpportunityType"
-          value={studentOpportunityType}
-          onValueChange={setStudentOpportunityType}
-          required
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Opportunity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="internship">Internship</SelectItem>
-            <SelectItem value="phd">PhD Position</SelectItem>
-            <SelectItem value="research">Research Project</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    )}
-
-    <div>
-      <Label htmlFor="project-content">Description</Label>
-      <Textarea
-        id="project-content"
-        name="content"
-        placeholder="Enter project description"
-        required
-        className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-      />
-    </div>
-
-    {collaborationType === 'students' && (
-      <>
-        <div>
-          <Label htmlFor="project-eligibility">Eligibility</Label>
-          <Input
-            id="project-eligibility"
-            name="eligibility"
-            placeholder="Enter eligibility criteria"
-            className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-          />
-        </div>
-
-        <div>
-          <Label>Is Project Funded?</Label>
-          <Select name="isFunded">
-            <SelectTrigger>
-              <SelectValue placeholder="Select Funding Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">Funded</SelectItem>
-              <SelectItem value="false">Non-Funded</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {studentOpportunityType === 'internship' && (
-          <div>
-            <Label htmlFor="project-duration">Duration (In Months)</Label>
-            <Input
-              id="project-duration"
-              name="duration"
-              type="text"
-              placeholder="Enter internship duration"
-            />
-          </div>
-        )}
-
-        <div>
-          <Label htmlFor="project-desirable">Desirable Skills</Label>
-          <Input
-            id="project-desirable"
-            name="desirable"
-            placeholder="Enter desirable skills"
-            className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-          />
-        </div>
-      </>
-    )}
-
-    {collaborationType === 'industries' && (
-      <div>
-        <Label htmlFor="project-requirements">What are you looking for?</Label>
-        <Textarea
-          id="project-requirements"
-          name="requirements"
-          placeholder="Describe your technology solution requirements"
-          className="bg-white border-[#eb5e17] text-[#472014] placeholder-[#686256] focus:border-[#472014] focus:ring-[#472014]"
-        />
-      </div>
-    )}
-
-    <Button
-      type="submit"
-      disabled={isCreatingProject}
-      className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
-    >
-      {isCreatingProject ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Creating...
-        </>
-      ) : (
-        "Create Project"
-      )}
-    </Button>
-  </form>
-</div>
-
-                  </DialogContent>
-                </Dialog>
-              </div>
-              {["OPEN", "ONGOING", "CLOSED"].map((status) => (
-                <div key={status}>
-                  <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-                    {status.charAt(0) + status.slice(1).toLowerCase()} Projects
-                  </h3>
-                  <ul className="space-y-4">
-                    {projects
-                      .filter((project) => project.status === status)
-                      .map((project) => (
-                        <li
-                          key={project.id}
-                          className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-semibold text-[#472014]">
-                              {project.topic}
-                            </h4>
-                            <Badge
-                              variant={
-                                status === "CLOSED" ? "outline" : "secondary"
-                              }
-                              className={
-                                status === "CLOSED"
-                                  ? "border-[#eb5e17] text-[#472014]"
-                                  : "bg-[#686256] text-white"
-                              }
-                            >
-                              {status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-[#686256] mb-2">
-                            {project.content.substring(0, 100)}...
-                          </p>
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {project.tags.map((tag, index) => (
-                              <Badge
-                                key={index}
-                                variant="outline"
-                                className="border-[#eb5e17] text-[#472014]"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                          {status === "OPEN" && (
-                            <Button
-                              onClick={() => fetchAppliedStudents(project.id)}
-                              className="mr-2 bg-[#eb5e17] hover:bg-[#472014] text-white"
-                              disabled={isLoadingApplicants}
-                            >
-                              {isLoadingApplicants ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Loading...
-                                </>
-                              ) : (
-                                <>
-                                  <User className="mr-2" /> View Applicants
-                                </>
-                              )}
-                            </Button>
-                          )}
-                          {status === "ONGOING" && (
-                            <Button
-                              onClick={() =>
-                                handleChangeProjectStatus(project.id, "CLOSED")
-                              }
-                              className="bg-[#eb5e17] hover:bg-[#472014] text-white"
-                            >
-                              Close Project
-                            </Button>
-                          )}
-                          {appliedStudentsMap[project.id]?.length > 0 && (
-                            <div className="mt-4">
-                              <h5 className="font-semibold mb-2 text-black">
-                                Applied Students:
-                              </h5>
-                              <ul className="space-y-2">
-                                {appliedStudentsMap[project.id].map(
-                                  (student) => (
-                                    <li
-                                      key={student.studentId}
-                                      className="flex items-center justify-between p-2 rounded bg-[#472014] text-white"
-                                    >
-                                      <div>
-                                        <span className="font-medium">
-                                          {student.name}
-                                        </span>
-                                        <span className="text-sm text-muted-foreground ml-2">
-                                          {student.email}
-                                        </span>
-                                      </div>
-                                      {status === "OPEN" && (
-                                        <Button
-                                          onClick={() =>
-                                            handleChangeProjectStatus(
-                                              project.id,
-                                              "ONGOING",
-                                              student.studentId
-                                            )
-                                          }
-                                          size="sm"
-                                          className="bg-[#eb5e17] hover:bg-[#be8372] text-white"
-                                        >
-                                          Select
-                                        </Button>
-                                      )}
-                                    </li>
-                                  )
-                                )}
-                              </ul>
-                            </div>
-                          )}
-                          {status === "OPEN" &&
-                            (!appliedStudentsMap[project.id] ||
-                              appliedStudentsMap[project.id].length === 0) && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                No students have applied yet.
-                              </p>
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.phoneNumber}
+                                    </p>
+                                    {/* Include other relevant details */}
+                                  </div>
+                                  {/* You can add buttons to accept/reject the application */}
+                                </li>
+                              )
                             )}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+                          </ul>
+                        ) : (
+                          <p>No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No projects available.
+              </p>
+            )}
           </CardContent>
         </Card>
       </motion.div>
@@ -968,17 +1193,17 @@ const ProfessorProfilePage: React.FC = () => {
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     ...(isLoggedInUser
       ? [
-        { id: "projects", label: "My Projects", icon: <Briefcase /> },
-        { id: "webinars", label: "My Webinars", icon: <Video /> },
-        { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
-        { id: "notifications", label: "Notifications", icon: <Bell /> },
-        // { id: "patents", label: "Patents", icon: <BookOpen /> },
-        {
-          id: "business-projects",
-          label: "Business Projects",
-          icon: <Building />,
-        },
-      ]
+          { id: "projects", label: "My Projects", icon: <Briefcase /> },
+          { id: "webinars", label: "My Webinars", icon: <Video /> },
+          { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
+          { id: "notifications", label: "Notifications", icon: <Bell /> },
+          // { id: "patents", label: "Patents", icon: <BookOpen /> },
+          {
+            id: "business-projects",
+            label: "Business Projects",
+            icon: <Building />,
+          },
+        ]
       : []),
   ];
 
@@ -1024,9 +1249,7 @@ const ProfessorProfilePage: React.FC = () => {
                   <h1 className="text-4xl font-bold mb-2 text-black">
                     {professor.fullName}
                   </h1>
-                  <p className="text-xl text-black">
-                    {professor.title}
-                  </p>
+                  <p className="text-xl text-black">{professor.title}</p>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
@@ -1100,7 +1323,8 @@ const ProfessorProfilePage: React.FC = () => {
                           <strong>Department:</strong> {professor.department}
                         </li>
                         <li>
-                          <strong>University/Institute:</strong> {professor.university}
+                          <strong>University/Institute:</strong>{" "}
+                          {professor.university}
                         </li>
                         <li>
                           <strong>Country:</strong> {professor.location}
@@ -1131,7 +1355,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                       {professor.researchInterests &&
-                        professor.researchInterests.length > 0 ? (
+                      professor.researchInterests.length > 0 ? (
                         <ul className="space-y-4">
                           {professor.researchInterests.map((research) => (
                             <li key={research.title} className="space-y-2">
@@ -1140,9 +1364,11 @@ const ProfessorProfilePage: React.FC = () => {
                                   {research.title}
                                 </Badge>
                                 {research.imageUrl && (
-                                  <img
+                                  <Image
                                     src={research.imageUrl}
                                     alt={research.title}
+                                    height={100}
+                                    width={100}
                                     className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                                     onClick={() =>
                                       openModal(
@@ -1227,7 +1453,6 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-
                   {/* Modal */}
 
                   {selectedImage && (
@@ -1307,9 +1532,9 @@ const ProfessorProfilePage: React.FC = () => {
                                       <p className="text-gray-600 line-clamp-3">
                                         {blog.content.length > 150
                                           ? `${blog.content.substring(
-                                            0,
-                                            150
-                                          )}...`
+                                              0,
+                                              150
+                                            )}...`
                                           : blog.content}
                                       </p>
                                     </div>
@@ -1572,9 +1797,10 @@ const ProfessorProfilePage: React.FC = () => {
                                 <h3 className="text-xl font-semibold mb-2">
                                   {status === "PENDING"
                                     ? "Pending Approval"
-                                    : `${status.charAt(0) +
-                                    status.slice(1).toLowerCase()
-                                    } Webinars`}
+                                    : `${
+                                        status.charAt(0) +
+                                        status.slice(1).toLowerCase()
+                                      } Webinars`}
                                 </h3>
                                 <ul className="space-y-4">
                                   {webinars
@@ -1630,8 +1856,8 @@ const ProfessorProfilePage: React.FC = () => {
                                               status === "COMPLETED"
                                                 ? "secondary"
                                                 : status === "PENDING"
-                                                  ? "outline"
-                                                  : "default"
+                                                ? "outline"
+                                                : "default"
                                             }
                                             className="bg-[#eb5e17] hover:bg-[#472014] text-white font-caveat"
                                           >

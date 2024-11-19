@@ -64,7 +64,10 @@ const upload = multer({
 // Updated route handlers with better error handling
 router.post(
   "/student/signup",
-  upload.single("profileImage"),
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "idCard", maxCount: 1 },
+  ]),
   async (req, res) => {
     try {
       await studentSignup(req, res);
@@ -79,6 +82,8 @@ router.post(
   "/professor/signup",
   upload.fields([
     { name: "profileImage", maxCount: 1 },
+    { name: "idCard", maxCount: 1 },
+
     // Use indexed field names for research interest images
     ...Array.from({ length: 10 }, (_, i) => ({
       name: `researchInterestImage_${i}`,
@@ -100,7 +105,10 @@ router.post(
 
 router.post(
   "/business/signup",
-  upload.single("profileImage"),
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "idCard", maxCount: 1 },
+  ]),
   async (req, res) => {
     try {
       await businessSignup(req, res);
@@ -138,7 +146,7 @@ router.post("/logout", async (req, res) => {
   }
 });
 
-router.post("/reset-password",  async (req, res) => {
+router.post("/reset-password", async (req, res) => {
   try {
     await resetPassword(req, res);
   } catch (error) {

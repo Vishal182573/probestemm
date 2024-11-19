@@ -24,6 +24,7 @@ export interface StudentData extends UserData {
   location: string;
   university: string;
   course: string;
+  idCard?: string;
   researchHighlights: ResearchHighlight[];
   experience: string;
   education: Education[];
@@ -34,12 +35,15 @@ export interface ProfessorData extends UserData {
   phoneNumber: string;
   location: string;
   title: string;
+  idCard?: string;
+  googleScholar?: string;
+
   university: string;
   website?: string;
   degree: string;
   department: string;
   position: string;
-  bio:string;
+  bio: string;
 
   positions: Position[];
   achievements: Achievement[];
@@ -54,6 +58,7 @@ export interface BusinessData extends UserData {
   industry: string;
   description: string;
   website?: string;
+  idCard?: string;
 }
 
 export interface AdminData extends UserData {}

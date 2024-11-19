@@ -76,6 +76,12 @@ export const studentSignup = async (req: Request, res: Response) => {
       imageUrl = result.secure_url;
     }
 
+    let idCard = "";
+    if (userData.idCard) {
+      const result = await cloudinary.uploader.upload(userData.idCard);
+      idCard = result.secure_url;
+    }
+
     // Safely parse JSON strings or use arrays directly
     const education = userData.education
       ? Array.isArray(userData.education)
@@ -97,6 +103,7 @@ export const studentSignup = async (req: Request, res: Response) => {
         phoneNumber: userData.phoneNumber,
         location: userData.location,
         imageUrl,
+        idCard,
         university: userData.university,
         course: userData.course,
         experience: userData.experience,
@@ -204,13 +211,23 @@ export const professorSignup = async (req: FileRequest, res: Response) => {
       })
     );
 
+    let idCard = "";
+
+    if (userData.idCard) {
+      const result = await cloudinary.uploader.upload(userData.idCard);
+      idCard = result.secure_url;
+    }
+
     // Create professor in database
     const user = await prisma.professor.create({
       data: {
         fullName: userData.fullName,
         email: userData.email,
         password: hashedPassword,
+        bio: userData.bio || "",
+        googleScholar: userData.googleScholar || "",
         phoneNumber: userData.phoneNumber || "",
+        idCard,
         location: userData.location || "",
         title: userData.title || "",
         university: userData.university || "",
@@ -314,10 +331,17 @@ export const businessSignup = async (req: Request, res: Response) => {
       profileImageUrl = result.secure_url;
     }
 
+    let idCard = "";
+    if (userData.idCard) {
+      const result = await cloudinary.uploader.upload(userData.idCard);
+      idCard = result.secure_url;
+    }
+
     const user = await prisma.business.create({
       data: {
         companyName: userData.companyName,
         email: userData.email,
+        idCard,
         password: hashedPassword,
         phoneNumber: userData.phoneNumber,
         location: userData.location,
@@ -423,48 +447,48 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     let user;
     switch (userType) {
-      case 'student':
+      case "student":
         user = await prisma.student.findUnique({ where: { email } });
         break;
-      case 'professor':
+      case "professor":
         user = await prisma.professor.findUnique({ where: { email } });
         break;
-      case 'business':
+      case "business":
         user = await prisma.business.findUnique({ where: { email } });
         break;
-      case 'admin':
+      case "admin":
         user = await prisma.superAdmin.findUnique({ where: { email } });
         break;
       default:
-        return res.status(400).json({ error: 'Invalid user type' });
+        return res.status(400).json({ error: "Invalid user type" });
     }
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     switch (userType) {
-      case 'student':
+      case "student":
         await prisma.student.update({
           where: { email },
           data: { password: hashedPassword },
         });
         break;
-      case 'professor':
+      case "professor":
         await prisma.professor.update({
           where: { email },
           data: { password: hashedPassword },
         });
         break;
-      case 'business':
+      case "business":
         await prisma.business.update({
           where: { email },
           data: { password: hashedPassword },
         });
         break;
-      case 'admin':
+      case "admin":
         await prisma.superAdmin.update({
           where: { email },
           data: { password: hashedPassword },
@@ -472,9 +496,9 @@ export const resetPassword = async (req: Request, res: Response) => {
         break;
     }
 
-    return res.status(200).json({ message: 'Password updated successfully' });
+    return res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-    console.error('Error in resetPassword:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error in resetPassword:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };

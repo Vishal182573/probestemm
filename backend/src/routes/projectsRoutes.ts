@@ -6,33 +6,24 @@ import * as projectController from "../controllers/projectsController";
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/project-applications");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname +
-        "-" +
-        uniqueSuffix +
-        "." +
-        file.originalname.split(".").pop()
-    );
-  },
-});
-
+// Configure multer to use memory storage
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Project creation routes
+// Professor project creation routes
 router.post(
   "/professor-collaboration",
   projectController.createProfessorProject
 );
 router.post("/student-opportunity", projectController.createStudentProject);
 router.post("/industry-collaboration", projectController.createIndustryProject);
+
+// Business project creation routes
+router.post("/rd-project", projectController.createRDProject);
+router.post("/internship", projectController.createInternshipProject);
+
+// Student proposal route
+router.post("/student-proposal", projectController.createStudentProposal);
 
 // Get projects routes
 router.get("/", projectController.getProjectsByType);
@@ -41,11 +32,6 @@ router.get(
   projectController.getProjectApplications
 );
 
-router.post("/rd-project", projectController.createRDProject);
-router.post("/internship", projectController.createInternshipProject);
-
-// Student proposal route
-router.post("/student-proposal", projectController.createStudentProposal);
 // Apply for project route
 router.post(
   "/:projectId/apply",

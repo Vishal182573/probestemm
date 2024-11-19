@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") 
+  // directUrl = env("DIRECT_URL") 
 }
 
 model Student {
@@ -22,6 +22,7 @@ model Student {
   course            String?
   researchHighlights ResearchHighlight[]
   experience        String?
+  idCard            String?
   education         Education[]
   achievements      Achievement[]
   
@@ -81,6 +82,7 @@ model Professor {
   bio               String?
   googleScholar     String?
   isApproved        Boolean   @default(false)  
+  idCard            String?
   researchInterests ResearchInterest[] 
   tags              ProfessorTag[]      
   positions         Position[]
@@ -142,6 +144,7 @@ model Business {
   description String?
   website     String?
   profileImageUrl String?
+  idCard    String?
   
   projects    Project[]
   answers     Answer[]
