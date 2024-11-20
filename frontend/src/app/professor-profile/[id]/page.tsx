@@ -61,7 +61,7 @@ interface AppliedApplicant {
   name: string;
   email: string;
   phoneNumber: string;
-  image: string;
+  images: string[];
 }
 
 interface ApplicationsResponse {
@@ -870,6 +870,208 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        <Dialog
+          open={isProjectDialogOpen}
+          onOpenChange={setIsProjectDialogOpen}
+        >
+          <DialogTrigger asChild>
+            <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
+              <Plus className="mr-2" />
+              Create Project
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="border-[#eb5e17]">
+            <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
+              <DialogTitle>Create a New Project</DialogTitle>
+            </DialogHeader>
+            <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>Collaboration Type</Label>
+                  <Select
+                    name="collaborationType"
+                    value={collaborationType}
+                    onValueChange={(value) => {
+                      setCollaborationType(value);
+                      setStudentOpportunityType("");
+                    }}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Collaboration Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="students">Students</SelectItem>
+                      <SelectItem value="professors">Professors</SelectItem>
+                      <SelectItem value="industries">Industries</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {collaborationType === "students" && (
+                  <div>
+                    <Label>Student Opportunity Type</Label>
+                    <Select
+                      name="studentOpportunityType"
+                      value={studentOpportunityType}
+                      onValueChange={setStudentOpportunityType}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Opportunity Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                        <SelectItem value="PHD_POSITION">
+                          PhD Position
+                        </SelectItem>
+                        <SelectItem value="RND_PROJECT">
+                          Research Project
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="project-topic">Topic</Label>
+                  <Input
+                    id="project-topic"
+                    name="topic"
+                    placeholder="Enter project topic"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="project-content">Content</Label>
+                  <Textarea
+                    id="project-content"
+                    name="content"
+                    placeholder="Enter project content"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="project-timeline">Timeline</Label>
+                  <Input id="project-timeline" name="timeline" type="date" />
+                </div>
+
+                <div>
+                  <Label htmlFor="project-tags">Tags (comma separated)</Label>
+                  <Input
+                    id="project-tags"
+                    name="tags"
+                    placeholder="e.g., AI, Machine Learning, Data Science"
+                  />
+                </div>
+
+                {collaborationType === "students" && (
+                  <>
+                    <div>
+                      <Label htmlFor="project-eligibility">Eligibility</Label>
+                      <Input
+                        id="project-eligibility"
+                        name="eligibility"
+                        placeholder="Enter eligibility criteria"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="durationStartDate">Start Date</Label>
+                      <Input
+                        id="durationStartDate"
+                        name="durationStartDate"
+                        type="date"
+                        required
+                        className="..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="durationEndDate">End Date</Label>
+                      <Input
+                        id="durationEndDate"
+                        name="durationEndDate"
+                        type="date"
+                        required
+                        className="..."
+                      />
+                    </div>
+                    <div>
+                      <Label>Is Funded</Label>
+                      <Select name="isFunded" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select funding status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="project-fund-details">Fund Details</Label>
+                      <Input
+                        id="project-fund-details"
+                        name="fundDetails"
+                        placeholder="Enter fund details"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="project-desirable">
+                        Desirable Skills
+                      </Label>
+                      <Input
+                        id="project-desirable"
+                        name="desirable"
+                        placeholder="Enter desirable skills"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {collaborationType === "industries" && (
+                  <>
+                    <div>
+                      <Label htmlFor="project-tech-description">
+                        Technology Description
+                      </Label>
+                      <Input
+                        id="project-tech-description"
+                        name="techDescription"
+                        placeholder="Enter technology description"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="project-requirements">Requirements</Label>
+                      <Textarea
+                        id="project-requirements"
+                        name="requirements"
+                        placeholder="Enter project requirements"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isCreatingProject}
+                  className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
+                >
+                  {isCreatingProject ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Project"
+                  )}
+                </Button>
+              </form>
+            </div>
+          </DialogContent>
+        </Dialog>
         {/* Fellow Professors Projects */}
         <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
@@ -1154,7 +1356,7 @@ const ProfessorProfilePage: React.FC = () => {
                                   className="flex items-center space-x-4"
                                 >
                                   <div>
-                                    <p className="font-semibold">
+                                    <p className="font-semibold  text-gray-600">
                                       {applicant.name}
                                     </p>
                                     <p className="text-sm text-gray-600">
@@ -1163,6 +1365,13 @@ const ProfessorProfilePage: React.FC = () => {
                                     <p className="text-sm text-gray-600">
                                       {applicant.phoneNumber}
                                     </p>
+                                    <Image
+                                      src={applicant.images[0]}
+                                      alt="Resume"
+                                      width={100}
+                                      height={100}
+                                    />
+
                                     {/* Include other relevant details */}
                                   </div>
                                   {/* You can add buttons to accept/reject the application */}
