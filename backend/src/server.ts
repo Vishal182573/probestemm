@@ -436,7 +436,7 @@ const setupAdminPanel = async () => {
         },
       },
     } as BrandingOptions,
-    rootPath: "/admin",
+    rootPath: "/api/admin",
   };
 
   const admin = new AdminJS(adminOptions);

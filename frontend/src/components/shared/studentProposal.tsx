@@ -30,7 +30,9 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
 
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
 
       await axios.post(
         `${API_URL}/project/student-proposal`,
@@ -55,7 +57,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
   };
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -79,7 +81,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
               htmlFor="content"
               className="block text-[#472014] font-semibold mb-2"
             >
-              What are you looking for ?
+              What are you looking for?
             </label>
             <select
               id="content"

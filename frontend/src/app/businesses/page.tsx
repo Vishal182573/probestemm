@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable  @typescript-eslint/no-unsafe-function-type */
 "use client"
 import React, { useState, useEffect } from "react";
 import RoleList from "@/components/shared/RoleList";

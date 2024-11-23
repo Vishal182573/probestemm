@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -110,7 +111,7 @@ const StudentProfilePage: React.FC = () => {
           return;
         }
 
-        const [studentResponse, notificationsResponse, projectsResponse] =
+        const [studentResponse, notificationsResponse] =
           await Promise.all([
             axios.get(`${API_URL}/students/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
