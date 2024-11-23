@@ -1,70 +1,75 @@
-"use client"
-import React, { useState } from 'react';
-import { Loader2, CheckCircle } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+"use client";
+import React, { useState } from "react";
+import { Loader2, CheckCircle } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { API_URL } from '@/constants';
+} from "@/components/ui/select";
+import { API_URL } from "@/constants";
 
-type CollaborationType = 'students' | 'professors' | '';
+type CollaborationType = "students" | "professors" | "";
 
 const CreateProjectForm = ({ businessId }: { businessId: string }) => {
-  const [collaborationType, setCollaborationType] = useState<CollaborationType>('');
+  const [collaborationType, setCollaborationType] =
+    useState<CollaborationType>("");
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsCreatingProject(true);
-    setError('');
+    setError("");
 
     const formData = new FormData(e.currentTarget);
-    const fundValue = formData.get('fundDetails');
-    
+    const fundValue = formData.get("fundDetails");
+
     const data = {
       businessId,
-      content: formData.get('content'),
-      eligibility: formData.get('eligibility'),
+      content: formData.get("content"),
+      topic: formData.get("topic"),
+      eligibility: formData.get("eligibility"),
       duration: {
-        startDate: formData.get('startDate'),
-        endDate: formData.get('endDate'),
+        startDate: formData.get("startDate"),
+        endDate: formData.get("endDate"),
       },
-      fundDetails: fundValue ? String(fundValue) : '',
-      desirable: formData.get('desirable'),
-      tags: (formData.get('tags') as string).split(',').map(tag => tag.trim()),
+      fundDetails: fundValue ? String(fundValue) : "",
+      desirable: formData.get("desirable"),
+      tags: (formData.get("tags") as string)
+        .split(",")
+        .map((tag) => tag.trim()),
     };
 
     try {
-      const endpoint = collaborationType === 'students' 
-        ? `${API_URL}/project/internship` 
-        : `${API_URL}/project/rd-project`;
-        
+      const endpoint =
+        collaborationType === "students"
+          ? `${API_URL}/project/internship`
+          : `${API_URL}/project/rd-project`;
+
       const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
-    //   if (!response.ok) throw new Error('Failed to create project');
+      //   if (!response.ok) throw new Error('Failed to create project');
 
       setIsSuccess(true);
       // Reset form
       e.currentTarget.reset();
-      setCollaborationType('');
+      setCollaborationType("");
     } catch (error) {
-      console.error('Error creating project:', error);
-      setError('Failed to create project. Please try again.');
+      console.error("Error creating project:", error);
+      setError("Failed to create project. Please try again.");
     } finally {
       setIsCreatingProject(false);
     }
@@ -77,8 +82,12 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <CheckCircle className="w-12 h-12 text-green-500" />
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold">Project Created Successfully!</h3>
-              <p className="text-gray-600">Your project has been submitted and is now ready for review.</p>
+              <h3 className="text-xl font-semibold">
+                Project Created Successfully!
+              </h3>
+              <p className="text-gray-600">
+                Your project has been submitted and is now ready for review.
+              </p>
             </div>
             <Button
               onClick={() => setIsSuccess(false)}
@@ -109,7 +118,9 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
             <Select
               name="collaborationType"
               value={collaborationType}
-              onValueChange={(value: CollaborationType) => setCollaborationType(value)}
+              onValueChange={(value: CollaborationType) =>
+                setCollaborationType(value)
+              }
               required
             >
               <SelectTrigger className="bg-white">
@@ -129,6 +140,16 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 <Textarea
                   name="content"
                   placeholder="Enter project description"
+                  required
+                  className="bg-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Topic</Label>
+                <Input
+                  name="topic"
+                  placeholder="Enter project topic"
                   required
                   className="bg-white"
                 />
@@ -205,7 +226,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 Creating Project...
               </>
             ) : (
-              'Create Project'
+              "Create Project"
             )}
           </Button>
         </form>

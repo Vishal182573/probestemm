@@ -280,7 +280,7 @@ model BlogLike {
 }
 
 enum ProjectType {
-  BUSINESS_PROJECT
+BUSINESS_PROJECT  
   PROFESSOR_PROJECT
   STUDENT_PROPOSAL
 }
