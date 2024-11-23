@@ -944,15 +944,15 @@ const ProfessorProfilePage: React.FC = () => {
                   />
                 </div> )} */}
                 {collaborationType !== "industries" && (
-                <div>
-                  <Label htmlFor="project-content">Description</Label>
-                  <Textarea
-                    id="project-content"
-                    name="content"
-                    placeholder="Enter project content"
-                    required
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="project-content">Description</Label>
+                    <Textarea
+                      id="project-content"
+                      name="content"
+                      placeholder="Enter project content"
+                      required
+                    />
+                  </div>
                 )}
 
                 <div>
@@ -1033,7 +1033,9 @@ const ProfessorProfilePage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="project-requirements">What i looking for ?</Label>
+                      <Label htmlFor="project-requirements">
+                        What i looking for ?
+                      </Label>
                       <Textarea
                         id="project-requirements"
                         name="requirements"

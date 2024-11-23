@@ -12,12 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building,
-  Briefcase,
   Globe,
   Tag,
-  Plus,
   User,
   Bell,
+  FileText,
+  Calendar,
+  MapPin,
 } from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
@@ -75,6 +76,21 @@ interface Business {
   profileImageUrl?: string;
 }
 
+interface ApplicationDetails {
+  id: string;
+  description: string;
+  imageUrls: string[];
+  applicantDetails: {
+    id: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    institution?: string;
+    department?: string;
+  };
+  createdAt: string;
+}
+
 interface Project {
   id: string;
   topic: string;
@@ -82,8 +98,11 @@ interface Project {
   difficulty: "EASY" | "INTERMEDIATE" | "HARD";
   timeline: string;
   status: "OPEN" | "ONGOING" | "CLOSED";
+  type: "RD_PROJECT" | "INTERNSHIP";
+  category: string;
   business?: { id: string; companyName: string };
   professor?: { id: string; fullName: string };
+  applications?: ApplicationDetails[];
 }
 
 interface AppliedProfessor {
@@ -109,6 +128,10 @@ const BusinessProfilePage: React.FC = () => {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [applicationDetails, setApplicationDetails] = useState<{
+    [projectId: string]: ApplicationDetails[];
+  }>({});
 
   const [newProject, setNewProject] = useState<{
     topic: string;
@@ -139,15 +162,32 @@ const BusinessProfilePage: React.FC = () => {
         setBusiness(businessResponse.data);
 
         if (isLoggedInUser && token) {
-          // const projectsResponse = await axios.get(
-          //   `${API_URL}/project/business/${id}/projects`,
-          //   {
-          //     headers: { Authorization: `Bearer ${token}` },
-          //   }
-          // );
-          // setProjects(projectsResponse.data);
-        }
-        if (token && isLoggedInUser) {
+          // Fetch both RD projects and internships
+          const rdProjectsResponse = await axios.get(`${API_URL}/project`, {
+            params: {
+              type: "BUSINESS_PROJECT",
+              category: "RND_PROJECT",
+              businessId: id,
+            },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const internshipsResponse = await axios.get(`${API_URL}/project`, {
+            params: {
+              type: "BUSINESS_PROJECT",
+              category: "INTERNSHIP",
+              businessId: id,
+            },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const allProjects = [
+            ...rdProjectsResponse.data,
+            ...internshipsResponse.data,
+          ];
+          setProjects(allProjects);
+
+          // Fetch notifications
           const notificationsResponse = await axios.get(
             `${API_URL}/notifications/business/${id}`,
             {
@@ -155,7 +195,6 @@ const BusinessProfilePage: React.FC = () => {
             }
           );
           setNotifications(notificationsResponse.data);
-
           setUnreadCount(
             notificationsResponse.data.filter((n: Notification) => !n.isRead)
               .length
@@ -172,6 +211,38 @@ const BusinessProfilePage: React.FC = () => {
 
     fetchBusinessData();
   }, [id, isLoggedInUser]);
+
+  const fetchApplicationDetails = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await axios.get(
+        `${API_URL}/project/${projectId}/applications`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Combine all types of applications
+      const allApplications = [
+        ...response.data.professorApplications,
+        ...response.data.studentApplications,
+        ...response.data.businessApplications,
+      ];
+
+      setApplicationDetails((prev) => ({
+        ...prev,
+        [projectId]: allApplications,
+      }));
+    } catch (error) {
+      console.error("Error fetching application details:", error);
+      setError("Failed to fetch application details. Please try again.");
+    }
+  };
   const handleCategoryChange = (category: string) => {
     setNewProject((prev) => ({
       ...prev,
@@ -292,6 +363,159 @@ const BusinessProfilePage: React.FC = () => {
     },
   };
 
+  const renderProjectApplications = (project: Project) => {
+    const applications = applicationDetails[project.id] || [];
+
+    return (
+      <div className="space-y-4">
+        <h4 className="text-lg font-bold text-[#472014] mb-3">
+          Applications ({applications.length})
+        </h4>
+        {applications.map((application) => (
+          <Card key={application.id} className="p-4 border-2 border-[#eb5e17]">
+            <div className="flex items-start justify-between">
+              <div>
+                <h5 className="font-bold text-[#472014]">
+                  {application.applicantDetails.name}
+                </h5>
+                <p className="text-gray-600">
+                  {application.applicantDetails.email}
+                </p>
+                {application.applicantDetails.institution && (
+                  <p className="text-gray-600">
+                    <MapPin className="inline-block mr-1" size={16} />
+                    {application.applicantDetails.institution}
+                  </p>
+                )}
+                <p className="text-gray-600">
+                  <Calendar className="inline-block mr-1" size={16} />
+                  {new Date(application.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-gray-700">{application.description}</p>
+            </div>
+
+            {application.imageUrls && application.imageUrls.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {application.imageUrls.map((url, index) => (
+                  <div key={index} className="relative h-32">
+                    <Image
+                      src={url}
+                      alt={`Application attachment ${index + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {project.status === "OPEN" && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={() =>
+                    handleChangeProjectStatus(
+                      project.id,
+                      "ONGOING",
+                      application.applicantDetails.id
+                    )
+                  }
+                  className="bg-[#eb5e17] hover:bg-[#472014] text-white"
+                >
+                  Accept Application
+                </Button>
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  const renderProjectsList = () => (
+    <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
+      <CardHeader>
+        <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
+          <Globe className="mr-2" />
+          Projects
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-6">
+          {projects.map((project) => (
+            <li
+              key={project.id}
+              className="border-b-2 border-[#eb5e17]/20 pb-6 last:border-b-0"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-[#472014]">
+                  {project.topic}
+                </h3>
+                <Badge
+                  className={`px-4 py-2 rounded-full ${
+                    project.type === "RD_PROJECT"
+                      ? "bg-purple-500"
+                      : "bg-blue-500"
+                  } text-white`}
+                >
+                  {project.type === "RD_PROJECT" ? "R&D" : "Internship"}
+                </Badge>
+              </div>
+
+              <p className="text-gray-700 mb-4">
+                {project.content.substring(0, 100)}...
+              </p>
+
+              <div className="flex justify-between items-center mb-4">
+                <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
+                  {project.difficulty}
+                </Badge>
+                <Badge
+                  className={`px-4 py-2 rounded-full ${
+                    project.status === "OPEN"
+                      ? "bg-green-500"
+                      : project.status === "ONGOING"
+                      ? "bg-[#003d82]"
+                      : "bg-red-500"
+                  } text-white`}
+                >
+                  {project.status}
+                </Badge>
+              </div>
+
+              {project.status === "OPEN" && (
+                <Button
+                  onClick={() => fetchApplicationDetails(project.id)}
+                  className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
+                >
+                  <FileText className="mr-2" /> View Applications
+                </Button>
+              )}
+
+              {applicationDetails[project.id] &&
+                renderProjectApplications(project)}
+
+              {project.status === "ONGOING" && (
+                <Button
+                  onClick={() =>
+                    handleChangeProjectStatus(project.id, "CLOSED")
+                  }
+                  className="w-full mt-4 bg-[#eb5e17] hover:bg-[#003d82] text-white"
+                >
+                  Complete Project
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
       {isLoggedInUser && (
@@ -360,18 +584,17 @@ const BusinessProfilePage: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-
-  {/* Background Image */}
-  <div className="absolute inset-0 -z-10">
-    <Image
-      src={PROFESSORPAGE}
-      alt="Background"
-      layout="fill"
-      objectFit="cover"
-      quality={100}
-      priority
-    />
-  </div>
+          {/* Background Image */}
+          <div className="absolute inset-0 -z-10">
+            <Image
+              src={PROFESSORPAGE}
+              alt="Background"
+              layout="fill"
+              objectFit="cover"
+              quality={100}
+              priority
+            />
+          </div>
           <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">
@@ -446,7 +669,8 @@ const BusinessProfilePage: React.FC = () => {
 
               {isLoggedInUser && (
                 <>
-                  <CreateProjectForm businessId={business.id}/>
+                  <CreateProjectForm businessId={business.id} />
+                  {renderProjectsList()}
 
                   <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
                     <CardHeader>
