@@ -32,6 +32,9 @@ importers:
       '@types/multer':
         specifier: ^1.4.12
         version: 1.4.12
+      '@types/streamifier':
+        specifier: ^0.1.2
+        version: 0.1.2
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -65,6 +68,9 @@ importers:
       prisma:
         specifier: ^5.20.0
         version: 5.22.0
+      streamifier:
+        specifier: ^0.1.1
+        version: 0.1.1
       typescript:
         specifier: ^5.0.0
         version: 5.6.3
@@ -546,6 +552,9 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
+
+  '@types/streamifier@0.1.2':
+    resolution: {integrity: sha512-W53GwxY5Tunz3JUoP1YWDidrAadenSZKOBKMRl6RO3yThOFd03w7yx3HypI8ABGuUCGDHCHUml/5e45FWRt1TQ==}
 
   '@types/uuid@10.0.0':
     resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
@@ -1259,6 +1268,10 @@ packages:
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
+
+  streamifier@0.1.1:
+    resolution: {integrity: sha512-zDgl+muIlWzXNsXeyUfOk9dChMjlpkq0DRsxujtYPgyJ676yQ8jEm6zzaaWHFDg5BNcLuif0eD2MTyJdZqXpdg==}
+    engines: {node: '>=0.10'}
 
   streamsearch@1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
@@ -2355,6 +2368,10 @@ snapshots:
       '@types/node': 22.9.0
       '@types/send': 0.17.4
 
+  '@types/streamifier@0.1.2':
+    dependencies:
+      '@types/node': 22.9.0
+
   '@types/uuid@10.0.0': {}
 
   '@types/ws@8.5.13':
@@ -3086,6 +3103,8 @@ snapshots:
   split2@4.2.0: {}
 
   statuses@2.0.1: {}
+
+  streamifier@0.1.1: {}
 
   streamsearch@1.1.0: {}
 

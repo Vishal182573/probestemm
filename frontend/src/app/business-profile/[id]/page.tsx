@@ -25,6 +25,7 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Link from "next/link";
 import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
+import CreateProjectForm from "@/components/shared/professorprojectCreationForm";
 
 const categories = {
   Science: [
@@ -138,13 +139,13 @@ const BusinessProfilePage: React.FC = () => {
         setBusiness(businessResponse.data);
 
         if (isLoggedInUser && token) {
-          const projectsResponse = await axios.get(
-            `${API_URL}/project/business/${id}/projects`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          setProjects(projectsResponse.data);
+          // const projectsResponse = await axios.get(
+          //   `${API_URL}/project/business/${id}/projects`,
+          //   {
+          //     headers: { Authorization: `Bearer ${token}` },
+          //   }
+          // );
+          // setProjects(projectsResponse.data);
         }
         if (token && isLoggedInUser) {
           const notificationsResponse = await axios.get(
@@ -177,51 +178,6 @@ const BusinessProfilePage: React.FC = () => {
       category: category as Category,
       subcategory: "", // Reset subcategory when category changes
     }));
-  };
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await axios.post(
-        `${API_URL}/project/business`,
-        {
-          ...newProject,
-          tags: newProject.tags.split(",").map((tag) => tag.trim()),
-          businessId: id,
-          category: newProject.category,
-          subcategory: newProject.subcategory,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setProjects((prevProjects) => [...prevProjects, response.data]);
-      setNewProject({
-        topic: "",
-        content: "",
-        difficulty: "EASY",
-        timeline: new Date().toISOString().split("T")[0],
-        tags: "",
-        category: "",
-        subcategory: "",
-      });
-      setError(null);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      setError("Failed to create project. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleMarkAsRead = async (notificationId: string) => {
@@ -490,140 +446,7 @@ const BusinessProfilePage: React.FC = () => {
 
               {isLoggedInUser && (
                 <>
-                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white text-[#472014]">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
-                        <Briefcase className="mr-2" />
-                        Create Project
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <form
-                        className="space-y-4"
-                        onSubmit={handleCreateProject}
-                      >
-                        <Input
-                          placeholder="Project Topic"
-                          value={newProject.topic}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              topic: e.target.value,
-                            })
-                          }
-                          className="border-2 border-[#eb5e17] rounded-lg p-3 bg-white"
-                          required
-                        />
-                        <Textarea
-                          placeholder="Project Content"
-                          value={newProject.content}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              content: e.target.value,
-                            })
-                          }
-                          className="border-2 border-[#eb5e17] rounded-lg p-3"
-                          required
-                        />
-                        <select
-                          value={newProject.difficulty}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              difficulty: e.target.value as
-                                | "EASY"
-                                | "INTERMEDIATE"
-                                | "HARD",
-                            })
-                          }
-                          className="w-full p-3 border-2 border-[#eb5e17] rounded-lg bg-white"
-                          required
-                        >
-                          <option value="EASY">Easy</option>
-                          <option value="INTERMEDIATE">Intermediate</option>
-                          <option value="HARD">Hard</option>
-                        </select>
-                        <Input
-                          type="date"
-                          value={newProject.timeline}
-                          onChange={(e) =>
-                            setNewProject({
-                              ...newProject,
-                              timeline: e.target.value,
-                            })
-                          }
-                          className="border-2 border-[#eb5e17] rounded-lg p-3 bg-white"
-                          required
-                        />
-
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Category
-                            </label>
-                            <select
-                              value={newProject.category}
-                              onChange={(e) =>
-                                handleCategoryChange(e.target.value)
-                              }
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                              required
-                            >
-                              <option value="">Select a category</option>
-                              {Object.keys(categories).map((category) => (
-                                <option key={category} value={category}>
-                                  {category}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {newProject.category && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700">
-                                Subcategory
-                              </label>
-                              <select
-                                value={newProject.subcategory}
-                                onChange={(e) =>
-                                  setNewProject((prev) => ({
-                                    ...prev,
-                                    subcategory: e.target.value,
-                                  }))
-                                }
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                              >
-                                <option value="">Select a subcategory</option>
-                                {categories[
-                                  newProject.category as Category
-                                ].map((subcategory) => (
-                                  <option key={subcategory} value={subcategory}>
-                                    {subcategory}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          type="submit"
-                          className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? (
-                            "Creating..."
-                          ) : (
-                            <>
-                              <Plus className="mr-2" /> Create Project
-                            </>
-                          )}
-                        </Button>
-                      </form>
-                      {error && <p className="text-red-500 mt-2">{error}</p>}
-                    </CardContent>
-                  </Card>
+                  <CreateProjectForm businessId={business.id}/>
 
                   <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
                     <CardHeader>

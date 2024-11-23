@@ -1,14 +1,14 @@
 import express from "express";
 import {
-  getAllBusinesses,
   getBusinessById,
+  searchBusinesses,
   updateBusiness,
 } from "../controllers/businessControllers.ts";
 
 const router = express.Router();
 
 // Get all businesses
-router.get("/", getAllBusinesses);
+router.get("/search", searchBusinesses);
 
 // Get a specific business by ID
 router.get("/:id", getBusinessById);

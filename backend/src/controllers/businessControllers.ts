@@ -16,76 +16,87 @@ const BusinessSchema = z.object({
   profileImageUrl: z.string().url().optional(),
 });
 
-const BusinessFilterSchema = z.object({
-  companyName: z.string().optional(),
-  industry: z.string().optional(),
-  location: z.string().optional(),
-  website: z.string().optional(),
-}).optional();
+const BusinessSearchQuerySchema = z.object({
+  query: z.string().optional(),
+  field: z.enum(['companyName', 'industry', 'location']).optional(),
+}).transform(data => ({
+  query: data.query?.trim() || undefined,
+  field: data.field
+}));
 
-export const getAllBusinesses = async (req: Request, res: Response) => {
+export const searchBusinesses = async (req: Request, res: Response) => {
   try {
-    const filters = BusinessFilterSchema.parse(req.query);
-    
-    const where: any = {};
+    // Parse and validate the query parameters
+    const { query, field } = BusinessSearchQuerySchema.parse(req.query);
 
-    if (filters?.companyName) {
-      where.companyName = {
-        contains: filters.companyName,
-        mode: 'insensitive'
-      };
-    }
+    // Define the select object for consistent field selection
+    const selectFields = {
+      id: true,
+      companyName: true,
+      email: true,
+      phoneNumber: true,
+      location: true,
+      industry: true,
+      description: true,
+      website: true,
+      profileImageUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    };
 
-    if (filters?.industry) {
-      where.industry = {
-        contains: filters.industry,
-        mode: 'insensitive'
-      };
-    }
+    // Base where clause
+    let whereClause: any = {};
 
-    if (filters?.location) {
-      where.location = {
-        contains: filters.location,
-        mode: 'insensitive'
-      };
-    }
-
-    if (filters?.website) {
-      where.website = {
-        contains: filters.website,
-        mode: 'insensitive'
-      };
-    }
-
-    const businesses = await prisma.business.findMany({
-      where,
-      select: {
-        id: true,
-        companyName: true,
-        industry: true,
-        location: true,
-        website: true,
-        profileImageUrl: true,
-        email: true,
-        description: true,
-        createdAt: true,
-        updatedAt: true,
-        projects: {
-          select: {
-            id: true,
-            topic: true,
-            status: true,
-          }
-        }
+    // If a query is provided, add search conditions
+    if (query) {
+      if (field) {
+        // Search in specific field
+        whereClause[field] = {
+          contains: query,
+          mode: 'insensitive',
+        };
+      } else {
+        // Search across all relevant fields
+        whereClause.OR = [
+          { companyName: { contains: query, mode: 'insensitive' } },
+          { industry: { contains: query, mode: 'insensitive' } },
+          { location: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+        ];
       }
+    }
+
+    // Execute the query with logging for debugging
+    console.log('Business Search Query:', JSON.stringify(whereClause, null, 2));
+    
+    const businesses = await prisma.business.findMany({
+      where: whereClause,
+      select: selectFields,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      // Add pagination to handle large result sets
+      take: 50,
     });
 
-    return res.status(200).json(businesses);
+    console.log(`Found ${businesses.length} businesses`);
+
+    // Return results with metadata
+    return res.status(200).json({
+      count: businesses.length,
+      data: businesses,
+    });
+
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
+      return res.status(400).json({ 
+        error: "Invalid search parameters", 
+        details: error.errors 
+      });
     }
-    return res.status(500).json({ error: "Failed to fetch businesses" });
+
+    console.error("Error searching businesses:", error);
+    return res.status(500).json({ error: "Failed to search businesses" });
   }
 };
 

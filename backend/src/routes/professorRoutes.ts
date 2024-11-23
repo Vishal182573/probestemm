@@ -5,9 +5,9 @@ import professorController from "../controllers/professorControllers";
 const router = express.Router();
 
 // Public routes
-router.get("/", async (req, res) => {
+router.get("/search", async (req, res) => {
   try {
-    await professorController.getProfessors(req, res);
+    await professorController.searchProfessors(req, res);
   } catch (error) {
     console.error("Error in getting professors:", error);
     res.status(500).json({ error: "Internal server error" });

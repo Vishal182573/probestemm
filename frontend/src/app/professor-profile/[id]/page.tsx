@@ -933,6 +933,7 @@ const ProfessorProfilePage: React.FC = () => {
                   </div>
                 )}
 
+                {/* {collaborationType === "students"  && (
                 <div>
                   <Label htmlFor="project-topic">Topic</Label>
                   <Input
@@ -941,10 +942,10 @@ const ProfessorProfilePage: React.FC = () => {
                     placeholder="Enter project topic"
                     required
                   />
-                </div>
-
+                </div> )} */}
+                {collaborationType !== "industries" && (
                 <div>
-                  <Label htmlFor="project-content">Content</Label>
+                  <Label htmlFor="project-content">Description</Label>
                   <Textarea
                     id="project-content"
                     name="content"
@@ -952,11 +953,7 @@ const ProfessorProfilePage: React.FC = () => {
                     required
                   />
                 </div>
-
-                <div>
-                  <Label htmlFor="project-timeline">Timeline</Label>
-                  <Input id="project-timeline" name="timeline" type="date" />
-                </div>
+                )}
 
                 <div>
                   <Label htmlFor="project-tags">Tags (comma separated)</Label>
@@ -1011,14 +1008,6 @@ const ProfessorProfilePage: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="project-fund-details">Fund Details</Label>
-                      <Input
-                        id="project-fund-details"
-                        name="fundDetails"
-                        placeholder="Enter fund details"
-                      />
-                    </div>
-                    <div>
                       <Label htmlFor="project-desirable">
                         Desirable Skills
                       </Label>
@@ -1044,7 +1033,7 @@ const ProfessorProfilePage: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="project-requirements">Requirements</Label>
+                      <Label htmlFor="project-requirements">What i looking for ?</Label>
                       <Textarea
                         id="project-requirements"
                         name="requirements"
@@ -1147,7 +1136,7 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {/* {project.content.substring(0, 100)}... */}
                     </p>
                     <div className="flex items-center space-x-4 text-sm text-[#472014]">
                       <div className="flex items-center">
@@ -1323,7 +1312,7 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {/* {project.content.substring(0, 100)}... */}
                     </p>
                     <div className="flex items-center space-x-4 text-sm text-[#472014]">
                       <div className="flex items-center">

@@ -20,67 +20,99 @@ const ProfessorUpdateSchema = z.object({
   isapproved: z.boolean().optional(),
 });
 
-const ProfessorFilterSchema = z
-  .object({
-    fullName: z.string().optional(),
-    title: z.string().optional(),
-    department: z.string().optional(),
-    university: z.string().optional(),
-    location: z.string().optional(),
-  })
-  .optional();
-
 interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
     role: "student" | "professor" | "business" | "admin";
   };
 }
-export const getProfessors = async (req: Request, res: Response) => {
-  try {
-    const filters = ProfessorFilterSchema.parse(req.query);
 
-    const where: any = {
-      isApproved: true,
+const SearchQuerySchema = z.object({
+  query: z.string().optional(),
+  field: z.enum(['fullName', 'title', 'department', 'university', 'location']).optional(),
+});
+
+export const searchProfessors = async (req: Request, res: Response) => {
+  try {
+    const { query, field } = SearchQuerySchema.parse(req.query);
+    
+    let whereClause: any = {
+      isApproved: true // Only return approved professors
     };
 
-    if (filters?.fullName) {
-      where.fullName = {
-        contains: filters.fullName,
-        mode: "insensitive",
-      };
+    // If no query is provided, return all approved professors
+    if (!query) {
+      const allProfessors = await prisma.professor.findMany({
+        where: { isApproved: true },
+        select: {
+          id: true,
+          fullName: true,
+          title: true,
+          department: true,
+          university: true,
+          location: true,
+          photoUrl: true,
+          email: true,
+          website: true,
+          degree: true,
+          position: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      });
+      return res.status(200).json(allProfessors);
     }
 
-    if (filters?.title) {
-      where.title = {
-        contains: filters.title,
-        mode: "insensitive",
+    // If a specific field is provided, search only that field
+    if (field) {
+      whereClause = {
+        isApproved: true,
+        [field]: {
+          contains: query,
+          mode: 'insensitive'
+        }
       };
-    }
-
-    if (filters?.department) {
-      where.department = {
-        contains: filters.department,
-        mode: "insensitive",
-      };
-    }
-
-    if (filters?.university) {
-      where.university = {
-        contains: filters.university,
-        mode: "insensitive",
-      };
-    }
-
-    if (filters?.location) {
-      where.location = {
-        contains: filters.location,
-        mode: "insensitive",
+    } else {
+      // If no specific field is provided, search across all specified fields
+      whereClause = {
+        isApproved: true,
+        OR: [
+          {
+            fullName: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            title: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            department: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            university: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            location: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          }
+        ]
       };
     }
 
     const professors = await prisma.professor.findMany({
-      where,
+      where: whereClause,
       select: {
         id: true,
         fullName: true,
@@ -95,17 +127,20 @@ export const getProfessors = async (req: Request, res: Response) => {
         position: true,
         createdAt: true,
         updatedAt: true,
-      },
+      }
     });
 
     return res.status(200).json(professors);
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: "Failed to fetch professors" });
+    console.error("Error searching professors:", error);
+    return res.status(500).json({ error: "Failed to search professors" });
   }
 };
+
 
 export const getProfessorById = async (req: Request, res: Response) => {
   try {
@@ -231,7 +266,7 @@ export const updateProfessorApprovalStatus = async (
   }
 };
 export default {
-  getProfessors,
+  searchProfessors,
   getProfessorById,
   updateProfessor,
   updateProfessorApprovalStatus,

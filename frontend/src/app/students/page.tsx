@@ -11,15 +11,8 @@ import { STUDENTPAGE } from "../../../public";
 import { Footer } from "@/components/shared/Footer";
 import ContactForm from "@/components/shared/Feedback";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ReloadIcon } from "@radix-ui/react-icons";
-
-interface StudentFilters {
-  fullName?: string;
-  university?: string;
-  course?: string;
-  location?: string;
-}
+import { Search } from "lucide-react";
 
 interface Student {
   id: string;
@@ -28,19 +21,20 @@ interface Student {
   course?: string;
   location?: string;
   imageUrl?: string;
-  // add other student properties as needed
+  email?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-async function getStudents(filters: StudentFilters = {}) {
+async function searchStudents(query?: string) {
   try {
-    // Convert filters object to URL search params
     const searchParams = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) searchParams.append(key, value);
-    });
+    if (query) {
+      searchParams.append('query', query);
+    }
 
     const res = await fetch(
-      `${API_URL}/students/?${searchParams.toString()}`,
+      `${API_URL}/students/search?${searchParams.toString()}`,
       {
         cache: "no-store",
         headers: {
@@ -54,16 +48,16 @@ async function getStudents(filters: StudentFilters = {}) {
     }
     return await res.json();
   } catch (error) {
-    console.error("Error fetching students:", error);
+    console.error("Error searching students:", error);
     throw new Error(
-      "Failed to fetch students. Please check the server connection and try again."
+      "Failed to search students. Please check the server connection and try again."
     );
   }
 }
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [filters, setFilters] = useState<StudentFilters>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,11 +70,11 @@ export default function StudentsPage() {
     };
   };
 
-  // Fetch students with current filters
-  const fetchStudents = async (currentFilters: StudentFilters) => {
+  // Fetch students with search query
+  const fetchStudents = async (query: string) => {
     try {
       setLoading(true);
-      const data = await getStudents(currentFilters);
+      const data = await searchStudents(query);
       setStudents(data);
       setError(null);
     } catch (err) {
@@ -94,15 +88,8 @@ export default function StudentsPage() {
   const debouncedFetch = debounce(fetchStudents, 500);
 
   useEffect(() => {
-    debouncedFetch(filters);
-  }, [filters]);
-
-  const handleFilterChange = (key: keyof StudentFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value || undefined // Only include the filter if it has a value
-    }));
-  };
+    debouncedFetch(searchQuery);
+  }, [searchQuery]);
 
   return (
     <div className="bg-white w-full">
@@ -119,40 +106,15 @@ export default function StudentsPage() {
             Students
           </h1>
 
-          {/* Filter Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="Search by name..."
-                onChange={(e) => handleFilterChange("fullName", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="university">University</Label>
-              <Input
-                id="university"
-                placeholder="Search by university..."
-                onChange={(e) => handleFilterChange("university", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="course">Course</Label>
-              <Input
-                id="course"
-                placeholder="Search by course..."
-                onChange={(e) => handleFilterChange("course", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                placeholder="Search by location..."
-                onChange={(e) => handleFilterChange("location", e.target.value)}
-              />
-            </div>
+          {/* Search Bar */}
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Input
+              className="pl-10 pr-4 py-2 bg-white"
+              placeholder="Search students by name, university, course, or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
           {/* Loading State */}

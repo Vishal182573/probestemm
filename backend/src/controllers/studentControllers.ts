@@ -4,50 +4,78 @@ import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-const StudentFilterSchema = z.object({
-  fullName: z.string().optional(),
-  university: z.string().optional(),
-  course: z.string().optional(),
-  location: z.string().optional(),
-}).optional();
+const SearchQuerySchema = z.object({
+  query: z.string().optional(),
+  field: z.enum(['fullName', 'university', 'course', 'location']).optional(),
+});
 
-// GET /api/students
-export const getStudents = async (req: Request, res: Response) => {
+
+export const searchStudents = async (req: Request, res: Response) => {
   try {
-    const filters = StudentFilterSchema.parse(req.query);
+    const { query, field } = SearchQuerySchema.parse(req.query);
     
-    const where: any = {};
+    let whereClause: any = {};
 
-    if (filters?.fullName) {
-      where.fullName = {
-        contains: filters.fullName,
-        mode: 'insensitive'
-      };
+    // If no query is provided, return all students
+    if (!query) {
+      const allStudents = await prisma.student.findMany({
+        select: {
+          id: true,
+          fullName: true,
+          university: true,
+          course: true,
+          location: true,
+          imageUrl: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      });
+      return res.status(200).json(allStudents);
     }
 
-    if (filters?.university) {
-      where.university = {
-        contains: filters.university,
-        mode: 'insensitive'
+    // If a specific field is provided, search only that field
+    if (field) {
+      whereClause = {
+        [field]: {
+          contains: query,
+          mode: 'insensitive'
+        }
       };
-    }
-
-    if (filters?.course) {
-      where.course = {
-        contains: filters.course,
-        mode: 'insensitive'
-      };
-    }
-
-    if (filters?.location) {
-      where.location = {
-        contains: filters.location,
-        mode: 'insensitive'
+    } else {
+      // If no specific field is provided, search across all specified fields
+      whereClause = {
+        OR: [
+          {
+            fullName: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            university: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            course: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            location: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          }
+        ]
       };
     }
 
     const students = await prisma.student.findMany({
-      where,
+      where: whereClause,
       select: {
         id: true,
         fullName: true,
@@ -62,11 +90,13 @@ export const getStudents = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json(students);
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    return res.status(500).json({ error: "Failed to fetch students" });
+    console.error("Error searching students:", error);
+    return res.status(500).json({ error: "Failed to search students" });
   }
 };
 // GET /api/students/:id

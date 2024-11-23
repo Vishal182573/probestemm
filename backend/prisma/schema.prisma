@@ -292,8 +292,8 @@ enum ProposalCategory {
 
 model Project {
   id          String    @id @default(cuid())
-  topic       String 
-  content     String    // Main description field
+  topic       String? 
+  content     String?    // Main description field
   type        ProjectType
   category    ProposalCategory @default(PROJECT)
   status      Status

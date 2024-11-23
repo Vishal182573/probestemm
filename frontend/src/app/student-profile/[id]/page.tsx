@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
+import StudentProposalForm from "@/components/shared/studentProposal";
 
 interface Student {
   id: string;
@@ -117,14 +118,14 @@ const StudentProfilePage: React.FC = () => {
             axios.get(`${API_URL}/notifications/student/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            axios.get(`${API_URL}/project/student/${id}/projects`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
+            // axios.get(`${API_URL}/project/student/${id}/projects`, {
+            //   headers: { Authorization: `Bearer ${token}` },
+            // }),
           ]);
 
         setStudent(studentResponse.data);
         setNotifications(notificationsResponse.data);
-        setEnrolledProjects(projectsResponse.data);
+        // setEnrolledProjects(projectsResponse.data);
         setUnreadCount(
           notificationsResponse.data.filter((n: Notification) => !n.isRead)
             .length
@@ -260,7 +261,20 @@ const StudentProfilePage: React.FC = () => {
       )}
     </TabsContent>
   );
-  
+  const renderProposalTab = () => (
+    <TabsContent value="proposal">
+      {isOwnProfile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <StudentProposalForm studentId={student.id} />
+        </motion.div>
+      )}
+    </TabsContent>
+  );
+
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       {isOwnProfile && (
@@ -529,20 +543,22 @@ const StudentProfilePage: React.FC = () => {
 
         <section className="py-8">
           <div className="container mx-auto px-4">
-            <Tabs defaultValue="notifications">
-              <TabsList>
-                {isOwnProfile && (
-                  <>
-                    <TabsTrigger value="notifications">
-                      Notifications {unreadCount > 0 && `(${unreadCount})`}
-                    </TabsTrigger>
-                    <TabsTrigger value="projects">My Projects</TabsTrigger>
-                  </>
-                )}
-              </TabsList>
-              {renderNotificationsTab()}
-              {renderProjectsTab()}
-            </Tabs>
+          <Tabs defaultValue="notifications">
+  <TabsList>
+    {isOwnProfile && (
+      <>
+        <TabsTrigger value="notifications">
+          Notifications {unreadCount > 0 && `(${unreadCount})`}
+        </TabsTrigger>
+        <TabsTrigger value="projects">My Projects</TabsTrigger>
+        <TabsTrigger value="proposal">Submit Proposal</TabsTrigger>
+      </>
+    )}
+  </TabsList>
+  {renderNotificationsTab()}
+  {renderProjectsTab()}
+  {renderProposalTab()}
+</Tabs>
           </div>
         </section>
       </main>

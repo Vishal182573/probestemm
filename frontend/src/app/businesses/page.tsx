@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useState, useEffect } from "react";
 import RoleList from "@/components/shared/RoleList";
@@ -13,13 +11,7 @@ import { Footer } from "@/components/shared/Footer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReloadIcon } from "@radix-ui/react-icons";
-
-interface BusinessFilters {
-  companyName?: string;
-  industry?: string;
-  location?: string;
-  website?: string;
-}
+import { Search } from "lucide-react";
 
 interface Business {
   id: string;
@@ -30,15 +22,15 @@ interface Business {
   profileImageUrl?: string;
 }
 
-async function getBusinesses(filters: BusinessFilters = {}) {
+async function searchBusinesses(query?: string) {
   try {
     const searchParams = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) searchParams.append(key, value);
-    });
+    if (query) {
+      searchParams.append('query', query);
+    }
 
     const res = await fetch(
-      `${API_URL}/businesss/?${searchParams.toString()}`,
+      `${API_URL}/businesss/search?${searchParams.toString()}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -49,18 +41,19 @@ async function getBusinesses(filters: BusinessFilters = {}) {
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    return await res.json();
+    const data = await res.json();
+    return data.data; // Access the data array from the response
   } catch (error) {
-    console.error("Error fetching businesses:", error);
+    console.error("Error searching businesses:", error);
     throw new Error(
-      "Failed to fetch businesses. Please check the server connection and try again."
+      "Failed to search businesses. Please check the server connection and try again."
     );
   }
 }
 
 export default function BusinessesPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [filters, setFilters] = useState<BusinessFilters>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,10 +65,10 @@ export default function BusinessesPage() {
     };
   };
 
-  const fetchBusinesses = async (currentFilters: BusinessFilters) => {
+  const fetchBusinesses = async (query: string) => {
     try {
       setLoading(true);
-      const data = await getBusinesses(currentFilters);
+      const data = await searchBusinesses(query);
       setBusinesses(data);
       setError(null);
     } catch (err) {
@@ -88,15 +81,8 @@ export default function BusinessesPage() {
   const debouncedFetch = debounce(fetchBusinesses, 500);
 
   useEffect(() => {
-    debouncedFetch(filters);
-  }, [filters]);
-
-  const handleFilterChange = (key: keyof BusinessFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value || undefined
-    }));
-  };
+    debouncedFetch(searchQuery);
+  }, [searchQuery]);
 
   return (
     <div className="bg-white w-full">
@@ -113,42 +99,15 @@ export default function BusinessesPage() {
             Industries
           </h1>
 
-          {/* Filter Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-gray-50 rounded-xl shadow-sm">
-            <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-gray-700">Company Name</Label>
+          {/* Search Bar */}
+          <div className="relative max-w-2xl mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
-                id="companyName"
-                className="border-gray-200 focus:border-blue-300"
-                placeholder="Search by company name..."
-                onChange={(e) => handleFilterChange("companyName", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="industry" className="text-gray-700">Industry</Label>
-              <Input
-                id="industry"
-                className="border-gray-200 focus:border-blue-300"
-                placeholder="Search by industry..."
-                onChange={(e) => handleFilterChange("industry", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location" className="text-gray-700">Location</Label>
-              <Input
-                id="location"
-                className="border-gray-200 focus:border-blue-300"
-                placeholder="Search by location..."
-                onChange={(e) => handleFilterChange("location", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="website" className="text-gray-700">Website</Label>
-              <Input
-                id="website"
-                className="border-gray-200 focus:border-blue-300"
-                placeholder="Search by website..."
-                onChange={(e) => handleFilterChange("website", e.target.value)}
+                className="pl-10 pr-4 py-2 w-full border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white text-black"
+                placeholder="Search industries by name, location, or industry type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
@@ -170,11 +129,11 @@ export default function BusinessesPage() {
 
           {/* Results */}
           {!loading && !error && (
-            <div className="relative">
+            <div className="relative mt-8">
               <RoleList roles={businesses} roleType="business" />
               {businesses.length === 0 && (
                 <p className="text-gray-500 text-center py-8">
-                  No Industires found matching your search criteria.
+                  No Industries found matching your search criteria.
                 </p>
               )}
             </div>
