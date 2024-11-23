@@ -7,14 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Building,
   Globe,
-  Tag,
-  User,
   Bell,
   FileText,
   Calendar,
@@ -27,32 +23,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
 import CreateProjectForm from "@/components/shared/professorprojectCreationForm";
-
-const categories = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
-  ],
-  Technology: ["Computer Science", "Engineering"],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
-  ],
-} as const;
 
 type Notification = {
   id: string;
@@ -80,6 +50,7 @@ interface ApplicationDetails {
   id: string;
   description: string;
   imageUrls: string[];
+  applicationType: "professor" | "student" | "business";
   applicantDetails: {
     id: string;
     name: string;
@@ -112,8 +83,6 @@ interface AppliedProfessor {
   phoneNumber: string;
 }
 
-type Category = keyof typeof categories;
-
 const BusinessProfilePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -128,28 +97,9 @@ const BusinessProfilePage: React.FC = () => {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [applicationDetails, setApplicationDetails] = useState<{
     [projectId: string]: ApplicationDetails[];
   }>({});
-
-  const [newProject, setNewProject] = useState<{
-    topic: string;
-    content: string;
-    difficulty: "EASY" | "INTERMEDIATE" | "HARD";
-    timeline: string;
-    tags: string;
-    category: Category | "";
-    subcategory: string;
-  }>({
-    topic: "",
-    content: "",
-    difficulty: "EASY",
-    timeline: new Date().toISOString().split("T")[0],
-    tags: "",
-    category: "",
-    subcategory: "",
-  });
 
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -161,32 +111,18 @@ const BusinessProfilePage: React.FC = () => {
         const businessResponse = await axios.get(`${API_URL}/businesss/${id}`);
         setBusiness(businessResponse.data);
 
+        // Fetch projects regardless of whether the user is logged in
+        const projectsResponse = await axios.get(`${API_URL}/project`, {
+          params: {
+            type: "BUSINESS_PROJECT",
+            businessId: id,
+          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        setProjects(projectsResponse.data);
+
         if (isLoggedInUser && token) {
-          // Fetch both RD projects and internships
-          const rdProjectsResponse = await axios.get(`${API_URL}/project`, {
-            params: {
-              type: "BUSINESS_PROJECT",
-              category: "RND_PROJECT",
-              businessId: id,
-            },
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          const internshipsResponse = await axios.get(`${API_URL}/project`, {
-            params: {
-              type: "BUSINESS_PROJECT",
-              category: "INTERNSHIP",
-              businessId: id,
-            },
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          const allProjects = [
-            ...rdProjectsResponse.data,
-            ...internshipsResponse.data,
-          ];
-          setProjects(allProjects);
-
           // Fetch notifications
           const notificationsResponse = await axios.get(
             `${API_URL}/notifications/business/${id}`,
@@ -227,12 +163,35 @@ const BusinessProfilePage: React.FC = () => {
         }
       );
 
-      // Combine all types of applications
+      // Combine all types of applications with applicationType
       const allApplications = [
-        ...response.data.professorApplications,
-        ...response.data.studentApplications,
-        ...response.data.businessApplications,
-      ];
+        ...response.data.professorApplications.map((app: any) => ({
+          ...app,
+          applicationType: "professor",
+        })),
+        ...response.data.studentApplications.map((app: any) => ({
+          ...app,
+          applicationType: "student",
+        })),
+        ...response.data.businessApplications.map((app: any) => ({
+          ...app,
+          applicationType: "business",
+        })),
+      ].map((app: any) => ({
+        id: app.id,
+        description: app.description,
+        imageUrls: app.images || [],
+        applicationType: app.applicationType,
+        applicantDetails: {
+          id: app.professorId || app.studentId || app.businessId || "",
+          name: app.name,
+          email: app.email,
+          phoneNumber: app.phoneNumber,
+          institution: app.university || app.companyName || "",
+          department: app.department || app.industry || "",
+        },
+        createdAt: app.createdAt,
+      }));
 
       setApplicationDetails((prev) => ({
         ...prev,
@@ -242,13 +201,6 @@ const BusinessProfilePage: React.FC = () => {
       console.error("Error fetching application details:", error);
       setError("Failed to fetch application details. Please try again.");
     }
-  };
-  const handleCategoryChange = (category: string) => {
-    setNewProject((prev) => ({
-      ...prev,
-      category: category as Category,
-      subcategory: "", // Reset subcategory when category changes
-    }));
   };
 
   const handleMarkAsRead = async (notificationId: string) => {
@@ -273,35 +225,12 @@ const BusinessProfilePage: React.FC = () => {
       setError("Failed to mark notification as read. Please try again.");
     }
   };
-  const fetchAppliedProfessors = async (projectId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await axios.get(
-        `${API_URL}/project/business/${projectId}/applicants`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setAppliedProfessorsMap((prevMap) => ({
-        ...prevMap,
-        [projectId]: response.data,
-      }));
-    } catch (error) {
-      console.error("Error fetching applied professors:", error);
-      setError("Failed to fetch applied professors. Please try again.");
-    }
-  };
 
   const handleChangeProjectStatus = async (
     projectId: string,
     status: "OPEN" | "ONGOING" | "CLOSED",
-    selectedProfessorId?: string
+    applicationId?: string,
+    applicationType?: "professor" | "student" | "business"
   ) => {
     try {
       const token = localStorage.getItem("token");
@@ -310,13 +239,30 @@ const BusinessProfilePage: React.FC = () => {
         return;
       }
 
-      await axios.patch(
-        `${API_URL}/project/business/${projectId}/status`,
-        { status, selectedProfessorId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      if (status === "ONGOING") {
+        // Call assignParticipant route
+        await axios.post(
+          `${API_URL}/project/${projectId}/assign`,
+          {
+            applicationId,
+            applicationType,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      } else if (status === "CLOSED") {
+        // Call completeProject route
+        await axios.post(
+          `${API_URL}/project/${projectId}/complete`,
+          {
+            // Optionally, any completionNotes
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
 
       setProjects((prevProjects) =>
         prevProjects.map((project) =>
@@ -324,11 +270,11 @@ const BusinessProfilePage: React.FC = () => {
         )
       );
 
-      // Clear applied professors for this project after changing status
-      setAppliedProfessorsMap((prevMap) => {
-        const newMap = { ...prevMap };
-        delete newMap[projectId];
-        return newMap;
+      // Clear application details for this project after changing status
+      setApplicationDetails((prev) => {
+        const newAppDetails = { ...prev };
+        delete newAppDetails[projectId];
+        return newAppDetails;
       });
     } catch (error) {
       console.error("Error changing project status:", error);
@@ -371,6 +317,9 @@ const BusinessProfilePage: React.FC = () => {
         <h4 className="text-lg font-bold text-[#472014] mb-3">
           Applications ({applications.length})
         </h4>
+        {applications.length === 0 && (
+          <p className="text-gray-500 italic">No applications yet</p>
+        )}
         {applications.map((application) => (
           <Card key={application.id} className="p-4 border-2 border-[#eb5e17]">
             <div className="flex items-start justify-between">
@@ -421,7 +370,8 @@ const BusinessProfilePage: React.FC = () => {
                     handleChangeProjectStatus(
                       project.id,
                       "ONGOING",
-                      application.applicantDetails.id
+                      application.id,
+                      application.applicationType
                     )
                   }
                   className="bg-[#eb5e17] hover:bg-[#472014] text-white"
@@ -457,12 +407,12 @@ const BusinessProfilePage: React.FC = () => {
                 </h3>
                 <Badge
                   className={`px-4 py-2 rounded-full ${
-                    project.type === "RD_PROJECT"
+                    project.category === "RND_PROJECT"
                       ? "bg-purple-500"
                       : "bg-blue-500"
                   } text-white`}
                 >
-                  {project.type === "RD_PROJECT" ? "R&D" : "Internship"}
+                  {project.category === "RND_PROJECT" ? "R&D" : "Internship"}
                 </Badge>
               </div>
 
@@ -542,7 +492,7 @@ const BusinessProfilePage: React.FC = () => {
                             : "font-semibold"
                         }`}
                       >
-                        <p
+                        <span
                           dangerouslySetInnerHTML={{
                             __html: notification.content,
                           }}
@@ -573,6 +523,7 @@ const BusinessProfilePage: React.FC = () => {
       )}
     </TabsContent>
   );
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
@@ -655,7 +606,7 @@ const BusinessProfilePage: React.FC = () => {
                   <ul className="space-y-4">
                     <li className="flex items-center">
                       <strong className="text-[#472014] min-w-[100px]">
-                        Website:{business.website || "N/A"}
+                        Website: {business.website || "N/A"}
                       </strong>
                     </li>
                     <li>
@@ -670,143 +621,14 @@ const BusinessProfilePage: React.FC = () => {
               {isLoggedInUser && (
                 <>
                   <CreateProjectForm businessId={business.id} />
-                  {renderProjectsList()}
-
-                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
-                        <Globe className="mr-2" />
-                        Projects
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-6">
-                        {projects.map((project) => (
-                          <li
-                            key={project.id}
-                            className="border-b-2 border-[#eb5e17]/20 pb-6 last:border-b-0"
-                          >
-                            <h3 className="text-xl font-bold text-[#472014] mb-2">
-                              {project.topic}
-                            </h3>
-                            <p className="text-gray-700 mb-4">
-                              {project.content.substring(0, 100)}...
-                            </p>
-                            <div className="flex justify-between items-center mb-4">
-                              <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
-                                {project.difficulty}
-                              </Badge>
-                              <Badge
-                                className={`px-4 py-2 rounded-full ${
-                                  project.status === "OPEN"
-                                    ? "bg-green-500"
-                                    : project.status === "ONGOING"
-                                    ? "bg-[#003d82]"
-                                    : "bg-red-500"
-                                } text-white`}
-                              >
-                                {project.status}
-                              </Badge>
-                            </div>
-                            {project.status === "OPEN" && (
-                              <Button
-                                onClick={() =>
-                                  fetchAppliedProfessors(project.id)
-                                }
-                                className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl mb-4"
-                              >
-                                <User className="mr-2" /> View Applied
-                                Professors
-                              </Button>
-                            )}
-                            {appliedProfessorsMap[project.id]?.length === 0 && (
-                              <p className="text-gray-500 italic">
-                                No professors applied yet
-                              </p>
-                            )}
-                            {appliedProfessorsMap[project.id]?.length > 0 &&
-                              project.status === "OPEN" && (
-                                <div className="mb-4">
-                                  <h4 className="text-lg font-bold text-[#472014] mb-3">
-                                    Applied Professors:
-                                  </h4>
-                                  <ul className="space-y-4">
-                                    {appliedProfessorsMap[project.id].map(
-                                      (professor) => (
-                                        <li
-                                          key={professor.professorId}
-                                          className="flex flex-col p-4 bg-gray-50 rounded-lg border-2 border-[#eb5e17]"
-                                        >
-                                          <span className="text-lg font-bold text-[#472014]">
-                                            {professor.name}
-                                          </span>
-                                          <span className="text-gray-600 mb-3">
-                                            {professor.phoneNumber}
-                                          </span>
-                                          <Button
-                                            onClick={() =>
-                                              handleChangeProjectStatus(
-                                                project.id,
-                                                "ONGOING",
-                                                professor.professorId
-                                              )
-                                            }
-                                            className="bg-[#eb5e17] hover:bg-[#003d82] text-white font-bold py-2 px-4 rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
-                                          >
-                                            Select Professor
-                                          </Button>
-                                        </li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                            {project.status === "ONGOING" && (
-                              <Button
-                                onClick={() =>
-                                  handleChangeProjectStatus(
-                                    project.id,
-                                    "CLOSED"
-                                  )
-                                }
-                                className="w-full bg-[#eb5e17] hover:bg-[#003d82] text-white font-bold py-3 px-6 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
-                              >
-                                Complete Project
-                              </Button>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-4xl font-caveat text-[#472014]">
-                        <Tag className="mr-2" />
-                        Project Tags
-                      </CardTitle>
-                    </CardHeader>
-                    {/* <CardContent>
-                      <div className="flex flex-wrap gap-3">
-                        {Array.from(
-                          new Set(projects.flatMap((project) => project.tags))
-                        ).map((tag, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-[#eb5e17]/10 text-[#472014] border-2 border-[#eb5e17] px-4 py-2 rounded-full text-sm font-semibold"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent> */}
-                  </Card>
                 </>
               )}
             </motion.div>
+
+            <div className="mt-8">{renderProjectsList()}</div>
           </div>
         </section>
+
         <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="notifications">

@@ -89,8 +89,8 @@ interface Professor {
   title: string;
   university: string;
   website: string;
-  googleScholar:string;
-  bio:string;
+  googleScholar: string;
+  bio: string;
   degree: string;
   department: string;
   position: string;
@@ -547,58 +547,6 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
-  // const fetchAppliedStudents = async (projectId: string) => {
-  //   setIsLoadingApplicants(true);
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await axios.get(
-  //       `${API_URL}/project/professor/${projectId}/applicants`,
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     setAppliedStudentsMap((prevMap) => ({
-  //       ...prevMap,
-  //       [projectId]: response.data,
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error fetching applied students:", error);
-  //     setError("Failed to fetch applied students. Please try again.");
-  //   } finally {
-  //     setIsLoadingApplicants(false);
-  //   }
-  // };
-  // const handleChangeProjectStatus = async (
-  //   projectId: string,
-  //   status: "OPEN" | "ONGOING" | "CLOSED",
-  //   selectedStudentId?: string
-  // ) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     await axios.patch(
-  //       `${API_URL}/project/professor/${projectId}/status`,
-  //       { status, selectedStudentId },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     setProjects((prevProjects) =>
-  //       prevProjects.map((project) =>
-  //         project.id === projectId ? { ...project, status } : project
-  //       )
-  //     );
-
-  //     if (status === "ONGOING" || status === "CLOSED") {
-  //       setAppliedStudentsMap((prevMap) => {
-  //         const newMap = { ...prevMap };
-  //         delete newMap[projectId];
-  //         return newMap;
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error changing project status:", error);
-  //     setError("Failed to change project status. Please try again.");
-  //   }
-  // };
-
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -619,26 +567,6 @@ const ProfessorProfilePage: React.FC = () => {
     } catch (error) {
       console.error("Error marking notification as read:", error);
       setError("Failed to mark notification as read. Please try again.");
-    }
-  };
-
-  const handleCreatePatent = async (formData: FormData) => {
-    setIsCreatingPatent(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/patents`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setPatents([...patents, response.data]);
-      setIsPatentDialogOpen(false);
-    } catch (error) {
-      console.error("Error creating patent:", error);
-      setError("Failed to create patent. Please try again.");
-    } finally {
-      setIsCreatingPatent(false);
     }
   };
 
@@ -1467,15 +1395,15 @@ const ProfessorProfilePage: React.FC = () => {
                     Website
                   </a>
                 )}
-                  <a
-                    className="btn btn-outline flex items-center text-black"
-                    href={professor.googleScholar}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Globe className="mr-2 h-4 w-4 text-black" />
-                    Google Scholar
-                  </a>
+                <a
+                  className="btn btn-outline flex items-center text-black"
+                  href={professor.googleScholar}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Globe className="mr-2 h-4 w-4 text-black" />
+                  Google Scholar
+                </a>
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>
                     <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">

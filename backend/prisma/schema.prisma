@@ -314,7 +314,7 @@ model Project {
   isFunded    Boolean?
   fundDetails String?
   desirable   String?
-  
+  selectedApplicationId String?
   // Fields for technology/industry projects
   techDescription String?
   requirements    String?

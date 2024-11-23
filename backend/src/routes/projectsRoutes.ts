@@ -38,5 +38,9 @@ router.post(
   upload.array("images", 5),
   projectController.applyForProject
 );
+//status route
+
+router.post("/:projectId/assign", projectController.assignParticipant);
+router.post("/:projectId/complete", projectController.completeProject);
 
 export default router;

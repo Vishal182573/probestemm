@@ -26,7 +26,6 @@ import {
   Book,
   Calendar,
   Briefcase,
-  ExternalLink,
 } from "lucide-react";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
@@ -153,7 +152,7 @@ const ProjectsPage: React.FC = () => {
                   : "outline"
               }
               onClick={() =>
-                setActiveCategory(ProposalCategory.PHD_POSITION)
+                setActiveCategory(ProposalCategory.STUDENT_OPPORTUNITY)
               }
               className="bg-[#eb5e17] text-white hover:bg-[#472014]"
             >
@@ -368,157 +367,52 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   index,
   onApply,
 }) => {
-  const userRole = localStorage.getItem("role");
-  
-  const renderProfessorCollaborationCard = () => (
-    <>
-      <CardContent className="flex-grow">
-        <div className="mb-4">
-          <p>{project.content}</p>
-        </div>
-        <div className="mb-4">
-          <Badge variant="outline" className="mr-2">
-            Status: {project.status}
-          </Badge>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {project.tags.map((tag, i) => (
-            <Badge
-              key={i}
-              variant="outline"
-              className="text-[#472014] border-[#eb5e17]"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => {
-            // Add navigation to profile
-            console.log("Navigate to profile:", project.professor?.id);
-          }}
-        >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          View Profile
-        </Button>
-        {userRole === "professor" && (
-          <Button
-            onClick={() => onApply(project)}
-            className="flex-1 bg-[#eb5e17] hover:bg-[#472014] text-white"
-          >
-            Apply Now
-          </Button>
-        )}
-      </CardFooter>
-    </>
-  );
+  const renderDetails = () => {
+    switch (project.category) {
+      case ProposalCategory.PROFESSOR_COLLABORATION:
+      case ProposalCategory.INDUSTRY_COLLABORATION:
+        return (
+          <>
+            <div className="mb-2">
+              <h4 className="font-semibold">Requirements:</h4>
+              <p>{project.requirements}</p>
+            </div>
+            <div className="mb-2">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription}</p>
+            </div>
+          </>
+        );
 
-  const renderStudentCard = () => (
-    <>
-      <CardContent className="flex-grow">
-        <div className="mb-2">
-          <h4 className="font-semibold">Description:</h4>
-          <p>{project.content}</p>
-        </div>
-        <div className="mb-2">
-          <h4 className="font-semibold">Eligibility:</h4>
-          <p>{project.eligibility}</p>
-        </div>
-        {project.duration && (
-          <div className="mb-2">
-            <h4 className="font-semibold">Duration:</h4>
-            <p>
-              {new Date(project.duration.startDate).toLocaleDateString()} -{" "}
-              {new Date(project.duration.endDate).toLocaleDateString()}
-            </p>
-          </div>
-        )}
-        <div className="mb-2">
-          <h4 className="font-semibold">Funding:</h4>
-          <p>{project.isFunded ? `Yes - ${project.fundDetails}` : "No"}</p>
-        </div>
-        <div className="mb-2">
-          <h4 className="font-semibold">Desirable:</h4>
-          <p>{project.desirable}</p>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {project.tags.map((tag, i) => (
-            <Badge
-              key={i}
-              variant="outline"
-              className="text-[#472014] border-[#eb5e17]"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => {
-            // Add navigation to profile
-            console.log("Navigate to profile:", project.student?.id);
-          }}
-        >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          View Profile
-        </Button>
-      </CardFooter>
-    </>
-  );
+      case ProposalCategory.STUDENT_OPPORTUNITY:
+      case ProposalCategory.INTERNSHIP:
+      case ProposalCategory.PHD_POSITION:
+        return (
+          <>
+            <div className="mb-2">
+              <h4 className="font-semibold">Eligibility:</h4>
+              <p>{project.eligibility}</p>
+            </div>
+            {project.duration && (
+              <div className="mb-2">
+                <h4 className="font-semibold">Duration:</h4>
+                <p>
+                  {new Date(project.duration.startDate).toLocaleDateString()} -{" "}
+                  {new Date(project.duration.endDate).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+            <div className="mb-2">
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{project.isFunded ? `Yes - ${project.fundDetails}` : "No"}</p>
+            </div>
+          </>
+        );
 
-  const renderIndustryCard = () => (
-    <>
-      <CardContent className="flex-grow">
-        <div className="mb-2">
-          <p>{project.content}</p>
-        </div>
-        <div className="mb-4">
-          <Badge variant="outline" className="mr-2">
-            Status: {project.status}
-          </Badge>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {project.tags.map((tag, i) => (
-            <Badge
-              key={i}
-              variant="outline"
-              className="text-[#472014] border-[#eb5e17]"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={() => {
-            // Add navigation to profile
-            console.log("Navigate to profile:", project.business?.id);
-          }}
-        >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          View Profile
-        </Button>
-        {userRole === "business" && (
-          <Button
-            onClick={() => onApply(project)}
-            className="flex-1 bg-[#eb5e17] hover:bg-[#472014] text-white"
-          >
-            Apply Now
-          </Button>
-        )}
-      </CardFooter>
-    </>
-  );
+      default:
+        return null;
+    }
+  };
 
   return (
     <motion.div
@@ -534,16 +428,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               {project.category.replace(/_/g, " ")}
             </Badge>
           </div>
-          <CardDescription className="mt-2">
-            {project.type === ProjectType.PROFESSOR_PROJECT && project.professor?.department}
-            {project.type === ProjectType.STUDENT_PROPOSAL && project.student?.major}
-            {project.type === ProjectType.BUSINESS_PROJECT && project.business?.companyName}
-          </CardDescription>
+          <CardDescription className="mt-2">{project.content}</CardDescription>
         </CardHeader>
-
-        {project.type === ProjectType.PROFESSOR_PROJECT && renderProfessorCollaborationCard()}
-        {project.type === ProjectType.STUDENT_PROPOSAL && renderStudentCard()}
-        {project.type === ProjectType.BUSINESS_PROJECT && renderIndustryCard()}
+        <CardContent className="flex-grow">
+          {renderDetails()}
+          <div className="flex flex-wrap gap-2 mt-4">
+            {project.tags.map((tag, i) => (
+              <Badge
+                key={i}
+                variant="outline"
+                className="text-[#472014] border-[#eb5e17]"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            onClick={() => onApply(project)}
+            className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
+          >
+            Apply Now
+          </Button>
+        </CardFooter>
       </Card>
     </motion.div>
   );
@@ -565,9 +473,9 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
       const formData = new FormData();
       formData.append("applicantId", localStorage.getItem("userId") || "");
       formData.append("applicantType", localStorage.getItem("role") || "");
-      formData.append("name", localStorage.getItem("fullName") || "");
-      formData.append("email", localStorage.getItem("email") || "");
-      formData.append("phoneNumber", localStorage.getItem("phoneNumber") || "");
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("phoneNumber", data.phoneNumber || "");
       formData.append("description", data.description);
 
       if (data.images && data.images.length > 0) {
@@ -594,6 +502,31 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
     <Modal show={show} onClose={onClose} title={`Apply for ${project.topic}`}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-4">
+          <div>
+            <Input
+              placeholder="Your Name"
+              {...register("name", { required: true })}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <Input
+              type="email"
+              placeholder="Your Email"
+              {...register("email", { required: true })}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <Input
+              placeholder="Phone Number"
+              {...register("phoneNumber")}
+              className="w-full"
+            />
+          </div>
+
           <div>
             <Textarea
               placeholder="Why are you interested in this project? Describe your relevant experience..."

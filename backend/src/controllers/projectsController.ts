@@ -766,3 +766,297 @@ export const createStudentProposal = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to create student proposal" });
   }
 };
+
+// Assign participant and change status to ongoing
+export const assignParticipant = async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+    const { applicationId, applicationType } = req.body;
+
+    // Verify project exists and creator has permission
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Get application details based on type
+    let application;
+    let applicantId;
+    let applicantType: "professor" | "student" | "business";
+    let applicantDetails;
+
+    switch (applicationType) {
+      case "professor":
+        application = await prisma.professorApplication.findUnique({
+          where: { id: applicationId },
+          include: { project: true },
+        });
+        applicantId = application?.professorId;
+        applicantType = "professor";
+        applicantDetails = await prisma.professor.findUnique({
+          where: { id: applicantId },
+          select: {
+            fullName: true,
+            email: true,
+            university: true,
+            department: true,
+          },
+        });
+        break;
+      case "student":
+        application = await prisma.studentApplication.findUnique({
+          where: { id: applicationId },
+          include: { project: true },
+        });
+        applicantId = application?.studentId;
+        applicantType = "student";
+        applicantDetails = await prisma.student.findUnique({
+          where: { id: applicantId },
+          select: {
+            fullName: true,
+            email: true,
+            university: true,
+            course: true,
+          },
+        });
+        break;
+      case "business":
+        application = await prisma.businessApplication.findUnique({
+          where: { id: applicationId },
+          include: { project: true },
+        });
+        applicantId = application?.businessId;
+        applicantType = "business";
+        applicantDetails = await prisma.business.findUnique({
+          where: { id: applicantId },
+          select: {
+            companyName: true,
+            email: true,
+            industry: true,
+          },
+        });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid application type" });
+    }
+
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    // Update project status to ongoing
+    const updatedProject = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: Status.ONGOING,
+      },
+    });
+
+    // Create notification for the selected participant
+    const notificationContent = `
+      Congratulations! You have been selected for the project "${project.topic}".
+      Please proceed with the next steps as discussed.
+      Project status has been updated to ONGOING.
+    `.trim();
+
+    if (applicantId) {
+      await createNotification(
+        NotificationType.PROJECT_APPLICATION,
+        notificationContent,
+        applicantId,
+        applicantType,
+        projectId,
+        "project"
+      );
+    }
+
+    // Notify other applicants they weren't selected
+    const notifyOtherApplicants = async () => {
+      const rejectionContent = `
+        Update regarding project "${project.topic}":
+        Another participant has been selected for this project.
+        Thank you for your interest.
+      `.trim();
+
+      // Get all applications and notify non-selected applicants
+      const [professorApps, studentApps, businessApps] = await Promise.all([
+        prisma.professorApplication.findMany({ where: { projectId } }),
+        prisma.studentApplication.findMany({ where: { projectId } }),
+        prisma.businessApplication.findMany({ where: { projectId } }),
+      ]);
+
+      for (const app of professorApps) {
+        if (app.id !== applicationId) {
+          await createNotification(
+            NotificationType.PROJECT_APPLICATION,
+            rejectionContent,
+            app.professorId,
+            "professor",
+            projectId,
+            "project"
+          );
+        }
+      }
+
+      for (const app of studentApps) {
+        if (app.id !== applicationId) {
+          await createNotification(
+            NotificationType.PROJECT_APPLICATION,
+            rejectionContent,
+            app.studentId,
+            "student",
+            projectId,
+            "project"
+          );
+        }
+      }
+
+      for (const app of businessApps) {
+        if (app.id !== applicationId) {
+          await createNotification(
+            NotificationType.PROJECT_APPLICATION,
+            rejectionContent,
+            app.businessId,
+            "business",
+            projectId,
+            "project"
+          );
+        }
+      }
+    };
+
+    await notifyOtherApplicants();
+
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error("Error assigning participant:", error);
+    res.status(500).json({ error: "Failed to assign participant" });
+  }
+};
+
+// Mark project as completed
+export const completeProject = async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+    const { completionNotes } = req.body;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+        professorApplications: true,
+        studentApplications: true,
+        businessApplications: true,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Verify project is in ONGOING status
+    if (project.status !== Status.ONGOING) {
+      return res.status(400).json({
+        error: "Only ONGOING projects can be marked as completed",
+      });
+    }
+
+    // Update project status to closed
+    const updatedProject = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: Status.CLOSED,
+      },
+    });
+
+    // Create completion notification content
+    const completionContent = `
+      Project "${project.topic}" has been marked as completed.
+      ${completionNotes ? `\nCompletion Notes: ${completionNotes}` : ""}
+    `.trim();
+
+    // Notify all involved parties
+    const notifyParties = async () => {
+      // Notify project creator
+      if (project.professorId) {
+        await createNotification(
+          NotificationType.PROJECT_APPLICATION,
+          completionContent,
+          project.professorId,
+          "professor",
+          projectId,
+          "project"
+        );
+      } else if (project.businessId) {
+        await createNotification(
+          NotificationType.PROJECT_APPLICATION,
+          completionContent,
+          project.businessId,
+          "business",
+          projectId,
+          "project"
+        );
+      } else if (project.studentId) {
+        await createNotification(
+          NotificationType.PROJECT_APPLICATION,
+          completionContent,
+          project.studentId,
+          "student",
+          projectId,
+          "project"
+        );
+      }
+
+      // Notify selected participant
+      const selectedApp = [
+        ...project.professorApplications,
+        ...project.studentApplications,
+        ...project.businessApplications,
+      ].find((app) => app.id === project.selectedApplicationId);
+
+      if (selectedApp) {
+        let recipientId: string | undefined;
+        let recipientType: "professor" | "business" | "student" | undefined;
+
+        if ("professorId" in selectedApp) {
+          recipientId = selectedApp.professorId;
+          recipientType = "professor";
+        } else if ("studentId" in selectedApp) {
+          recipientId = selectedApp.studentId;
+          recipientType = "student";
+        } else if ("businessId" in selectedApp) {
+          recipientId = selectedApp.businessId;
+          recipientType = "business";
+        }
+
+        if (recipientId && recipientType) {
+          await createNotification(
+            NotificationType.PROJECT_APPLICATION,
+            completionContent,
+            recipientId,
+            recipientType,
+            projectId,
+            "project"
+          );
+        }
+      }
+    };
+
+    await notifyParties();
+
+    res.status(200).json(updatedProject);
+  } catch (error) {
+    console.error("Error completing project:", error);
+    res.status(500).json({ error: "Failed to complete project" });
+  }
+};
