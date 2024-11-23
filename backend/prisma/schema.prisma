@@ -10,6 +10,12 @@ datasource db {
   // directUrl = env("DIRECT_URL") 
 }
 
+model Publisher {
+  id      Int      @id @default(autoincrement())
+  email   String   @unique
+  name    String?
+}
+
 model Student {
   id                String              @id @default(cuid())
   fullName          String

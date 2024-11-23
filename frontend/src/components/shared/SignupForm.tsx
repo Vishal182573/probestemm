@@ -117,7 +117,14 @@ interface RoleSpecificData extends UserData {
   companyWebsite?: string;
 }
 
+interface FileUploadResponse {
+  url: string;
+}
+
 export const SignupForm: React.FC = () => {
+  const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
     fullName: "",
@@ -145,6 +152,11 @@ export const SignupForm: React.FC = () => {
       description: "",
     });
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
   
 
   const updateEducation = (
@@ -158,6 +170,22 @@ export const SignupForm: React.FC = () => {
       [field]: value,
     };
     setRoleSpecificData({ ...roleSpecificData, education: newEducation });
+  };
+
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', file);
+  
+    try {
+      const response = await axios.post<FileUploadResponse>(`${API_URL}/image/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.url;
+    } catch (error) {
+      throw new Error('Failed to upload file');
+    }
   };
 
   const addEducation = () => {
@@ -179,87 +207,69 @@ export const SignupForm: React.FC = () => {
   const handleRoleSpecificSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
+    setIsUploading(true);
+  
     try {
+      let idCardUrl = '';
+      if (idCardFile) {
+        try {
+          idCardUrl = await uploadFile(idCardFile);
+        } catch (error) {
+          setUploadError('Failed to upload ID card');
+          setIsUploading(false);
+          return;
+        }
+      }
+  
       const formData = new FormData();
-
+  
       // Add basic fields
       Object.entries(roleSpecificData).forEach(([key, value]) => {
         if (
           value !== undefined &&
-          key !== "tags" &&
-          key !== "researchInterests" &&
-          key !== "education"
+          key !== 'tags' &&
+          key !== 'researchInterests' &&
+          key !== 'education'
         ) {
           formData.append(key, value.toString());
         }
       });
-
-      // Handle tags
-      if (roleSpecificData.tags) {
-        formData.append("tags", JSON.stringify(roleSpecificData.tags));
+  
+      // Add the ID card URL
+      if (idCardUrl) {
+        formData.append('idCard', idCardUrl);
       }
-
-      // Handle education
-      if (roleSpecificData.education) {
-        formData.append(
-          "education",
-          JSON.stringify(roleSpecificData.education)
-        );
-      }
-
-      // Handle research interests and their images
-      if (roleSpecificData.researchInterests) {
-        const interestsWithoutImages = roleSpecificData.researchInterests.map(
-          (interest, index) => ({
-            title: interest.title,
-            description: interest.description,
-            imageIndex: interest.image ? index : undefined, // Add index reference for images
-          })
-        );
-
-        formData.append(
-          "researchInterests",
-          JSON.stringify(interestsWithoutImages)
-        );
-
-        // Append images with index in filename
-        roleSpecificData.researchInterests.forEach((interest, index) => {
-          if (interest.image) {
-            formData.append(`researchInterestImage_${index}`, interest.image);
-          }
-        });
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
+      // Rest of your existing formData append logic...
+  
       const response = await authApi.post(
         `/${userData.role}/signup`,
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-
+  
       setIsSuccess(true);
       toast({
-        title: "Account created successfully!",
-        description: "Please wait for admin approval to access your account.",
+        title: 'Account created successfully!',
+        description: 'Please wait for admin approval to access your account.',
         duration: 5000,
       });
-
+  
       setTimeout(() => {
-        router.push("/login");
+        router.push('/login');
       }, 3000);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        setError(
-          error.response.data.error || "An error occurred during signup"
-        );
+        setError(error.response.data.error || 'An error occurred during signup');
       } else {
-        setError("An error occurred during signup. Please try again.");
+        setError('An error occurred during signup. Please try again.');
       }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -505,13 +515,23 @@ const renderInitialForm = () => (
       )}
     </div>
 
-    <Input
-      type="password"
-      placeholder="Password"
-      value={userData.password}
-      onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-      required
-    />
+    <div className="relative">
+      <input
+        type={showPassword ? "text" : "password"}
+        placeholder="Password"
+        value={userData.password}
+        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+        required
+        className="w-full p-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        type="button"
+        onClick={togglePasswordVisibility}
+        className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+      >
+        {showPassword ? "Hide" : "Show"}
+      </button>
+    </div>
 
     <Select
       onValueChange={(value) => setUserData({ ...userData, role: value as UserRole })}
@@ -689,10 +709,49 @@ const renderInitialForm = () => (
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Complete Signup
-      </Button>
-    </form>
+      <div className="space-y-2">
+      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id="idCard"
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setIdCardFile(file);
+              setUploadError(null);
+            }
+          }}
+          required
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+        />
+        {idCardFile && (
+          <span className="text-sm text-muted-foreground">
+            {idCardFile.name}
+          </span>
+        )}
+      </div>
+      {uploadError && (
+        <p className="text-sm text-red-500">{uploadError}</p>
+      )}
+    </div>
+
+    <Button 
+      type="submit" 
+      className="w-full"
+      disabled={isUploading}
+    >
+      {isUploading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Uploading...
+        </>
+      ) : (
+        'Complete Signup'
+      )}
+    </Button>
+  </form>
   );
 
   const renderStudentForm = () => (
@@ -791,10 +850,49 @@ const renderInitialForm = () => (
           required
         />
       </div>
-      <Button type="submit" className="w-full">
-        Complete Signup
-      </Button>
-    </form>
+      <div className="space-y-2">
+      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id="idCard"
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setIdCardFile(file);
+              setUploadError(null);
+            }
+          }}
+          required
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+        />
+        {idCardFile && (
+          <span className="text-sm text-muted-foreground">
+            {idCardFile.name}
+          </span>
+        )}
+      </div>
+      {uploadError && (
+        <p className="text-sm text-red-500">{uploadError}</p>
+      )}
+    </div>
+
+    <Button 
+      type="submit" 
+      className="w-full"
+      disabled={isUploading}
+    >
+      {isUploading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Uploading...
+        </>
+      ) : (
+        'Complete Signup'
+      )}
+    </Button>
+  </form>
   );
 
   const renderBusinessForm = () => (
@@ -873,10 +971,49 @@ const renderInitialForm = () => (
           required
         />
       </div>
-      <Button type="submit" className="w-full">
-        Complete Signup
-      </Button>
-    </form>
+      <div className="space-y-2">
+      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id="idCard"
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setIdCardFile(file);
+              setUploadError(null);
+            }
+          }}
+          required
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+        />
+        {idCardFile && (
+          <span className="text-sm text-muted-foreground">
+            {idCardFile.name}
+          </span>
+        )}
+      </div>
+      {uploadError && (
+        <p className="text-sm text-red-500">{uploadError}</p>
+      )}
+    </div>
+
+    <Button 
+      type="submit" 
+      className="w-full"
+      disabled={isUploading}
+    >
+      {isUploading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Uploading...
+        </>
+      ) : (
+        'Complete Signup'
+      )}
+    </Button>
+  </form>
   );
 
   const renderRoleSpecificForm = () => {

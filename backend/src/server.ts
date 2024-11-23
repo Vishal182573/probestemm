@@ -19,6 +19,13 @@ import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
 import emailRoutes from "./routes/emailRoutes";
 
+import { Database, Resource, getModelByName } from '@adminjs/prisma'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+// AdminJS.registerAdapter({ Database, Resource })
+
 dotenv.config();
 
 const app = express();

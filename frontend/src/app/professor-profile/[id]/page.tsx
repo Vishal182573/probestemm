@@ -89,6 +89,8 @@ interface Professor {
   title: string;
   university: string;
   website: string;
+  googleScholar:string;
+  bio:string;
   degree: string;
   department: string;
   position: string;
@@ -1448,6 +1450,7 @@ const ProfessorProfilePage: React.FC = () => {
                     {professor.fullName}
                   </h1>
                   <p className="text-xl text-black">{professor.title}</p>
+                  <p className="text-xl text-black">{professor.bio}</p>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
@@ -1459,9 +1462,18 @@ const ProfessorProfilePage: React.FC = () => {
                     rel="noopener noreferrer"
                   >
                     <Globe className="mr-2 h-4 w-4 text-black" />
-                    Google Scholar
+                    Website
                   </a>
                 )}
+                  <a
+                    className="btn btn-outline flex items-center text-black"
+                    href={professor.googleScholar}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Globe className="mr-2 h-4 w-4 text-black" />
+                    Google Scholar
+                  </a>
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>
                     <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">
