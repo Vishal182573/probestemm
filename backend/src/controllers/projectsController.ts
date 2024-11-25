@@ -9,8 +9,32 @@ import {
   NotificationType,
 } from "@prisma/client";
 import { createNotification } from "./notificationController";
+import { v2 as cloudinary } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
+import streamifier from "streamifier";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const prisma = new PrismaClient();
+
+function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "project-applications" },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result) return reject(new Error("Upload failed"));
+        return resolve(result);
+      }
+    );
+    streamifier.createReadStream(fileBuffer).pipe(uploadStream);
+  });
+}
 
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
@@ -284,31 +308,43 @@ export const getProjectsByType = async (req: Request, res: Response) => {
   }
 };
 
-import { v2 as cloudinary } from "cloudinary";
-import type { UploadApiResponse } from "cloudinary";
-import streamifier from "streamifier";
+// Get projects by user ID and type
+export const getProjectsByUserId = async (req: Request, res: Response) => {
+  try {
+    const { userId, userType } = req.params;
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+    if (!["professor", "student", "business"].includes(userType)) {
+      return res.status(400).json({ error: "Invalid user type" });
+    }
 
-// Helper function to upload to Cloudinary
-function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: "project-applications" },
-      (error, result) => {
-        if (error) return reject(error);
-        if (!result) return reject(new Error("Upload failed"));
-        return resolve(result);
-      }
-    );
-    streamifier.createReadStream(fileBuffer).pipe(uploadStream);
-  });
-}
+    let projects: any[];
+
+    switch (userType) {
+      case "professor":
+        projects = await prisma.project.findMany({
+          where: { professorId: userId },
+        });
+        break;
+      case "student":
+        projects = await prisma.project.findMany({
+          where: { studentId: userId },
+        });
+        break;
+      case "business":
+        projects = await prisma.project.findMany({
+          where: { businessId: userId },
+        });
+        break;
+      default:
+        projects = [];
+    }
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error("Error fetching projects by user ID:", error);
+    res.status(500).json({ error: "Failed to fetch projects" });
+  }
+};
 
 // Apply for a project
 export const applyForProject = async (req: Request, res: Response) => {
@@ -694,7 +730,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
 // Create student proposal
 export const createStudentProposal = async (req: Request, res: Response) => {
   try {
-    const { studentId, topic, content } = req.body;
+    const { studentId, topic, content, techDescription } = req.body;
 
     const creatingStudent = await prisma.student.findUnique({
       where: { id: studentId },
@@ -712,9 +748,8 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         topic,
         content,
         type: ProjectType.STUDENT_PROPOSAL,
-
+        techDescription,
         status: Status.OPEN,
-
         studentId,
       },
     });

@@ -42,5 +42,9 @@ router.post(
 
 router.post("/:projectId/assign", projectController.assignParticipant);
 router.post("/:projectId/complete", projectController.completeProject);
+router.get(
+  "/user/:userType/:userId/projects",
+  projectController.getProjectsByUserId
+);
 
 export default router;

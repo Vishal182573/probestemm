@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -30,13 +31,13 @@ interface Student {
   id: string;
   fullName: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber: string | null;
   location: string;
   imageUrl: string | null;
-  university: string;
-  course: string;
+  university: string | null;
+  course: string | null;
   researchHighlights: Array<{ id: string; title: string; status: string }>;
-  experience: string;
+  experience: string | null;
   education: Array<{
     id: string;
     degree: string;
@@ -56,23 +57,11 @@ interface Student {
   projects: Array<{
     id: string;
     topic: string;
-    difficulty: string;
-    timeline: string;
+    content: string;
     status: string;
+    techDescription: string | null;
+    [key: string]: any;
   }>;
-}
-
-interface EnrolledProject {
-  id: string;
-  topic: string;
-  content: string;
-  difficulty: string;
-  timeline: string;
-  status: string;
-  professor: {
-    fullName: string;
-    email: string;
-  };
 }
 
 type Notification = {
@@ -94,9 +83,6 @@ const StudentProfilePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   const [student, setStudent] = useState<Student | null>(null);
-  const [enrolledProjects, setEnrolledProjects] = useState<EnrolledProject[]>(
-    []
-  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -111,22 +97,17 @@ const StudentProfilePage: React.FC = () => {
           return;
         }
 
-        const [studentResponse, notificationsResponse] =
-          await Promise.all([
-            axios.get(`${API_URL}/students/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/notifications/student/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            // axios.get(`${API_URL}/project/student/${id}/projects`, {
-            //   headers: { Authorization: `Bearer ${token}` },
-            // }),
-          ]);
+        const [studentResponse, notificationsResponse] = await Promise.all([
+          axios.get(`${API_URL}/students/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${API_URL}/notifications/student/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
         setStudent(studentResponse.data);
         setNotifications(notificationsResponse.data);
-        // setEnrolledProjects(projectsResponse.data);
         setUnreadCount(
           notificationsResponse.data.filter((n: Notification) => !n.isRead)
             .length
@@ -236,7 +217,9 @@ const StudentProfilePage: React.FC = () => {
                           {notification.content}
                         </p>
                         <p className="text-sm text-[#686256] mt-1 font-medium">
-                          {new Date(notification.createdAt).toLocaleDateString()}
+                          {new Date(
+                            notification.createdAt
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                       {!notification.isRead && (
@@ -262,6 +245,7 @@ const StudentProfilePage: React.FC = () => {
       )}
     </TabsContent>
   );
+
   const renderProposalTab = () => (
     <TabsContent value="proposal">
       {isOwnProfile && (
@@ -288,13 +272,13 @@ const StudentProfilePage: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                 <Folder className="mr-2" />
-                My Enrolled Projects
+                My Projects
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {enrolledProjects.length > 0 ? (
+              {student.projects && student.projects.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {enrolledProjects.map((project) => (
+                  {student.projects.map((project) => (
                     <motion.div
                       key={project.id}
                       initial={{ opacity: 0 }}
@@ -304,36 +288,37 @@ const StudentProfilePage: React.FC = () => {
                       <Card className="border-2 border-[#eb5e17]/20 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
                         <CardHeader>
                           <CardTitle className="text-xl font-bold text-[#472014]">
-                            {project.topic}
+                            {project.topic || "Untitled Project"}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
                             <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-24">Professor:</span>
+                              <span className="font-semibold w-32">
+                                Content:
+                              </span>
                               <span className="font-medium">
-                                {project.professor.fullName}
+                                {project.content}
                               </span>
                             </div>
+                            {project.techDescription && (
+                              <div className="flex items-center text-[#472014]">
+                                <span className="font-semibold w-32">
+                                  Tech Description:
+                                </span>
+                                <span className="font-medium">
+                                  {project.techDescription}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-24">Difficulty:</span>
-                              <span className="font-medium">{project.difficulty}</span>
-                            </div>
-                            <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-24">Timeline:</span>
-                              <span className="font-medium">
-                                {new Date(project.timeline).toLocaleDateString()}
+                              <span className="font-semibold w-32">
+                                Status:
                               </span>
-                            </div>
-                            <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-24">Status:</span>
                               <Badge className="bg-[#eb5e17]/10 text-[#eb5e17] font-semibold">
                                 {project.status}
                               </Badge>
                             </div>
-                            <p className="text-[#686256] font-medium mt-4 line-clamp-3">
-                              {project.content}
-                            </p>
                           </div>
                         </CardContent>
                       </Card>
@@ -342,7 +327,7 @@ const StudentProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-[#686256] text-center py-8 font-medium">
-                  No enrolled projects yet.
+                  No projects found.
                 </p>
               )}
             </CardContent>
@@ -357,60 +342,65 @@ const StudentProfilePage: React.FC = () => {
       <NavbarWithBg />
 
       <main className="flex-grow">
-      <motion.section
-  className="relative text-white py-24"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.8 }}
->
-  {/* Background Image */}
-  <div className="absolute inset-0 -z-10">
-    <Image
-      src={PROFESSORPAGE}
-      alt="Background"
-      layout="fill"
-      objectFit="cover"
-      quality={100}
-      priority
-    />
-  </div>
-
-  <div className="container mx-auto px-4 relative z-10">
-    <div className="flex flex-col md:flex-row items-center justify-between">
-      <div className="flex items-center space-x-6 mb-6 md:mb-0">
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Avatar className="w-32 h-32 border-4 border-white">
-            <AvatarImage
-              src={student.imageUrl || ""}
-              alt={student.fullName}
+        <motion.section
+          className="relative text-white py-24"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Background Image */}
+          <div className="absolute inset-0 -z-10">
+            <Image
+              src={PROFESSORPAGE}
+              alt="Background"
+              layout="fill"
+              objectFit="cover"
+              quality={100}
+              priority
             />
-            <AvatarFallback className="bg-[#472014] text-white">
-              {student.fullName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-        </motion.div>
-        <div>
-          <h1 className="text-4xl font-extrabold mb-2 font-caveat text-black">
-            {student.fullName}
-          </h1>
-          <p className="text-xl font-bold text-black">{student.course}</p>
-          <p className="text-lg text-black">{student.university}</p>
-        </div>
-      </div>
+          </div>
 
-      {isOwnProfile && (
-        <Link href={"/edit-profile"}>
-          <Button className="bg-white px-4 py-2 border-2 border-white">
-            Edit Profile
-          </Button>
-        </Link>
-      )}
-    </div>
-  </div>
-</motion.section>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="flex items-center space-x-6 mb-6 md:mb-0">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Avatar className="w-32 h-32 border-4 border-white">
+                    <AvatarImage
+                      src={student.imageUrl || ""}
+                      alt={student.fullName}
+                    />
+                    <AvatarFallback className="bg-[#472014] text-white">
+                      {student.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+                <div>
+                  <h1 className="text-4xl font-extrabold mb-2 font-caveat text-black">
+                    {student.fullName}
+                  </h1>
+                  <p className="text-xl font-bold text-black">
+                    {student.course}
+                  </p>
+                  <p className="text-lg text-black">{student.university}</p>
+                </div>
+              </div>
+
+              {isOwnProfile && (
+                <Link href={"/edit-profile"}>
+                  <Button className="bg-white px-4 py-2 border-2 border-white">
+                    Edit Profile
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </motion.section>
 
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4">
@@ -452,7 +442,7 @@ const StudentProfilePage: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-[#472014] font-medium">
-                  <p>{student.experience}</p>
+                  <p>{student.experience || "No experience added yet."}</p>
                 </CardContent>
               </Card>
 
@@ -544,22 +534,22 @@ const StudentProfilePage: React.FC = () => {
 
         <section className="py-8">
           <div className="container mx-auto px-4">
-          <Tabs defaultValue="notifications">
-  <TabsList>
-    {isOwnProfile && (
-      <>
-        <TabsTrigger value="notifications">
-          Notifications {unreadCount > 0 && `(${unreadCount})`}
-        </TabsTrigger>
-        <TabsTrigger value="projects">My Projects</TabsTrigger>
-        <TabsTrigger value="proposal">Submit Proposal</TabsTrigger>
-      </>
-    )}
-  </TabsList>
-  {renderNotificationsTab()}
-  {renderProjectsTab()}
-  {renderProposalTab()}
-</Tabs>
+            <Tabs defaultValue="notifications">
+              <TabsList>
+                {isOwnProfile && (
+                  <>
+                    <TabsTrigger value="notifications">
+                      Notifications {unreadCount > 0 && `(${unreadCount})`}
+                    </TabsTrigger>
+                    <TabsTrigger value="projects">My Projects</TabsTrigger>
+                    <TabsTrigger value="proposal">Submit Proposal</TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+              {renderNotificationsTab()}
+              {renderProjectsTab()}
+              {renderProposalTab()}
+            </Tabs>
           </div>
         </section>
       </main>

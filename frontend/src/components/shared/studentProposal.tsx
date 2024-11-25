@@ -12,6 +12,7 @@ interface StudentProposalFormProps {
 
 interface FormDataType {
   topic: string;
+  techDescription: string;
   content: string;
 }
 
@@ -21,6 +22,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
   const [formData, setFormData] = useState<FormDataType>({
     topic: "",
     content: "",
+    techDescription: "",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -46,7 +48,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
       );
 
       // Reset form
-      setFormData({ topic: "", content: "" });
+      setFormData({ topic: "", content: "", techDescription: "" });
       toast.success("Proposal submitted successfully!");
     } catch (error) {
       console.error("Error submitting proposal:", error);
@@ -98,6 +100,41 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
               <option value="Project">Project</option>
               <option value="PhD Position">PhD Position</option>
             </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="topic"
+              className="block text-[#472014] font-semibold mb-2"
+            >
+              Topic
+            </label>
+            <input
+              type="text"
+              id="topic"
+              name="topic"
+              value={formData.topic}
+              onChange={handleChange}
+              required
+              className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="techDescription"
+              className="block text-[#472014] font-semibold mb-2"
+            >
+              Technical Description
+            </label>
+            <textarea
+              id="techDescription"
+              name="techDescription"
+              value={formData.techDescription}
+              onChange={handleChange}
+              required
+              className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
+            />
           </div>
 
           <Button
