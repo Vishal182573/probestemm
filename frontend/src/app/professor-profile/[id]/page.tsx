@@ -55,6 +55,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { PROFESSORPAGE } from "../../../../public";
+import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 
 interface AppliedApplicant {
   id: string;
@@ -549,6 +550,19 @@ const ProfessorProfilePage: React.FC = () => {
     }
   });
 
+  const renderEnrolledProjectsTab = () => (
+    <TabsContent value="enrolled-projects">
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <EnrolledProjectsTabs
+            userId={Array.isArray(id) ? id[0] : id}
+            role="professor"
+          />
+        </div>
+      </section>
+    </TabsContent>
+  );
+
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       <motion.div
@@ -953,6 +967,11 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
+          {
+            id: "enrolled-projects",
+            label: "Enrolled Projects",
+            icon: <BookOpen />,
+          },
         ]
       : []),
   ];
@@ -1666,6 +1685,7 @@ const ProfessorProfilePage: React.FC = () => {
                   </TabsContent>
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
+                  {renderEnrolledProjectsTab()}
                 </>
               )}
             </Tabs>

@@ -38,7 +38,7 @@ router.post(
   upload.array("images", 5),
   projectController.applyForProject
 );
-//status route
+//status routes for projects
 
 router.post("/:projectId/assign", projectController.assignParticipant);
 router.post("/:projectId/complete", projectController.completeProject);
@@ -47,4 +47,22 @@ router.get(
   projectController.getProjectsByUserId
 );
 
+// enrolled projects routes
+
+router.get(
+  "/enrolled/professor/:professorId",
+  projectController.getEnrolledProjectsForProfessor
+);
+
+// Get enrolled projects for a student
+router.get(
+  "/enrolled/student/:studentId",
+  projectController.getEnrolledProjectsForStudent
+);
+
+// Get enrolled projects for a business
+router.get(
+  "/enrolled/business/:businessId",
+  projectController.getEnrolledProjectsForBusiness
+);
 export default router;

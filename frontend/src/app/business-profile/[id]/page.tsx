@@ -25,6 +25,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
 import CreateProjectForm from "@/components/shared/professorprojectCreationForm";
+import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 
 type Notification = {
   id: string;
@@ -630,7 +631,14 @@ const BusinessProfilePage: React.FC = () => {
             <div className="mt-8">{renderProjectsList()}</div>
           </div>
         </section>
-
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <EnrolledProjectsTabs
+              userId={Array.isArray(id) ? id[0] : id}
+              role="business"
+            />
+          </div>
+        </section>
         <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="notifications">

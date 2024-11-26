@@ -892,6 +892,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
       where: { id: projectId },
       data: {
         status: Status.ONGOING,
+        selectedApplicationId: applicationId,
       },
     });
 
@@ -999,14 +1000,12 @@ export const completeProject = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    // Verify project is in ONGOING status
     if (project.status !== Status.ONGOING) {
       return res.status(400).json({
         error: "Only ONGOING projects can be marked as completed",
       });
     }
 
-    // Update project status to closed
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
@@ -1093,5 +1092,278 @@ export const completeProject = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error completing project:", error);
     res.status(500).json({ error: "Failed to complete project" });
+  }
+};
+
+// // Get projects where a professor is enrolled as a participant
+// export const getEnrolledProjectsForProfessor = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   try {
+//     const { professorId } = req.params;
+
+//     const applications = await prisma.professorApplication.findMany({
+//       where: { professorId },
+//       select: { id: true },
+//     });
+
+//     const applicationIds = applications.map((app) => app.id);
+
+//     const projects = await prisma.project.findMany({
+//       where: {
+//         status: Status.ONGOING,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     const closedProjects = await prisma.project.findMany({
+//       where: {
+//         status: Status.CLOSED,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     res.status(200).json([...projects, ...closedProjects]);
+//   } catch (error) {
+//     console.error("Error fetching enrolled projects for professor:", error);
+//     res.status(500).json({ error: "Failed to fetch enrolled projects" });
+//   }
+// };
+
+// // Get projects where a student is enrolled as a participant
+// export const getEnrolledProjectsForStudent = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   try {
+//     const { studentId } = req.params;
+
+//     const applications = await prisma.studentApplication.findMany({
+//       where: { studentId },
+//       select: { id: true },
+//     });
+
+//     const applicationIds = applications.map((app) => app.id);
+
+//     const projects = await prisma.project.findMany({
+//       where: {
+//         status: Status.ONGOING,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     const closedProjects = await prisma.project.findMany({
+//       where: {
+//         status: Status.CLOSED,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     res.status(200).json([...projects, ...closedProjects]);
+//   } catch (error) {
+//     console.error("Error fetching enrolled projects for student:", error);
+//     res.status(500).json({ error: "Failed to fetch enrolled projects" });
+//   }
+// };
+
+// // Get projects where a business is enrolled as a participant
+// export const getEnrolledProjectsForBusiness = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   try {
+//     const { businessId } = req.params;
+
+//     const applications = await prisma.businessApplication.findMany({
+//       where: { businessId },
+//       select: { id: true },
+//     });
+
+//     const applicationIds = applications.map((app) => app.id);
+
+//     const projects = await prisma.project.findMany({
+//       where: {
+//         status: Status.ONGOING,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     const closedProjects = await prisma.project.findMany({
+//       where: {
+//         status: Status.CLOSED,
+//         selectedApplicationId: { in: applicationIds },
+//       },
+//       include: {
+//         professor: true,
+//         business: true,
+//         student: true,
+//         duration: true,
+//       },
+//     });
+
+//     res.status(200).json([...projects, ...closedProjects]);
+//   } catch (error) {
+//     console.error("Error fetching enrolled projects for business:", error);
+//     res.status(500).json({ error: "Failed to fetch enrolled projects" });
+//   }
+// };
+
+// Get projects where a professor is enrolled as a participant
+export const getEnrolledProjectsForProfessor = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { professorId } = req.params;
+    const { status } = req.query;
+
+    // Fetch applications for the professor
+    const applications = await prisma.professorApplication.findMany({
+      where: { professorId },
+      select: { id: true },
+    });
+
+    const applicationIds = applications.map((app) => app.id);
+
+    // Build status filter
+    const statusFilter = status
+      ? { status: status as Status }
+      : { status: { in: [Status.ONGOING, Status.CLOSED] } };
+
+    // Fetch projects where the professor is enrolled
+    const projects = await prisma.project.findMany({
+      where: {
+        selectedApplicationId: { in: applicationIds },
+        ...statusFilter,
+      },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+        duration: true,
+      },
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error("Error fetching enrolled projects for professor:", error);
+    res.status(500).json({ error: "Failed to fetch enrolled projects" });
+  }
+};
+
+// Get projects where a student is enrolled as a participant
+export const getEnrolledProjectsForStudent = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { studentId } = req.params;
+    const { status } = req.query;
+
+    // Fetch applications for the student
+    const applications = await prisma.studentApplication.findMany({
+      where: { studentId },
+      select: { id: true },
+    });
+
+    const applicationIds = applications.map((app) => app.id);
+
+    // Build status filter
+    const statusFilter = status
+      ? { status: status as Status }
+      : { status: { in: [Status.ONGOING, Status.CLOSED] } };
+
+    // Fetch projects where the student is enrolled
+    const projects = await prisma.project.findMany({
+      where: {
+        selectedApplicationId: { in: applicationIds },
+        ...statusFilter,
+      },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+        duration: true,
+      },
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error("Error fetching enrolled projects for student:", error);
+    res.status(500).json({ error: "Failed to fetch enrolled projects" });
+  }
+};
+
+// Get projects where a business is enrolled as a participant
+export const getEnrolledProjectsForBusiness = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { businessId } = req.params;
+    const { status } = req.query;
+
+    // Fetch applications for the business
+    const applications = await prisma.businessApplication.findMany({
+      where: { businessId },
+      select: { id: true },
+    });
+
+    const applicationIds = applications.map((app) => app.id);
+
+    // Build status filter
+    const statusFilter = status
+      ? { status: status as Status }
+      : { status: { in: [Status.ONGOING, Status.CLOSED] } };
+
+    // Fetch projects where the business is enrolled
+    const projects = await prisma.project.findMany({
+      where: {
+        selectedApplicationId: { in: applicationIds },
+        ...statusFilter,
+      },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+        duration: true,
+      },
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error("Error fetching enrolled projects for business:", error);
+    res.status(500).json({ error: "Failed to fetch enrolled projects" });
   }
 };

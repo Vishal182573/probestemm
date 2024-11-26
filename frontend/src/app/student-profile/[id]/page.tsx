@@ -26,7 +26,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
 import StudentProposalForm from "@/components/shared/studentProposal";
-
+import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 interface Student {
   id: string;
   fullName: string;
@@ -60,6 +60,7 @@ interface Student {
     content: string;
     status: string;
     techDescription: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   }>;
 }
@@ -243,6 +244,19 @@ const StudentProfilePage: React.FC = () => {
           </Card>
         </motion.div>
       )}
+    </TabsContent>
+  );
+
+  const renderEnrolledProjectsTab = () => (
+    <TabsContent value="enrolled-projects">
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <EnrolledProjectsTabs
+            userId={Array.isArray(id) ? id[0] : id}
+            role="student"
+          />
+        </div>
+      </section>
     </TabsContent>
   );
 
@@ -543,12 +557,16 @@ const StudentProfilePage: React.FC = () => {
                     </TabsTrigger>
                     <TabsTrigger value="projects">My Proposals</TabsTrigger>
                     <TabsTrigger value="proposal">Submit Proposal</TabsTrigger>
+                    <TabsTrigger value="enrolled-projects">
+                      Enrolled Projects
+                    </TabsTrigger>
                   </>
                 )}
               </TabsList>
               {renderNotificationsTab()}
               {renderProjectsTab()}
               {renderProposalTab()}
+              {renderEnrolledProjectsTab()}
             </Tabs>
           </div>
         </section>
