@@ -43,7 +43,7 @@ router.post(
 router.post("/:projectId/assign", projectController.assignParticipant);
 router.post("/:projectId/complete", projectController.completeProject);
 router.get(
-  "/user/:userType/:userId/projects",
+  "/:userType/:userId/projects",
   projectController.getProjectsByUserId
 );
 

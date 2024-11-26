@@ -272,7 +272,7 @@ const StudentProfilePage: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                 <Folder className="mr-2" />
-                My Projects
+                My Proposals
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -541,7 +541,7 @@ const StudentProfilePage: React.FC = () => {
                     <TabsTrigger value="notifications">
                       Notifications {unreadCount > 0 && `(${unreadCount})`}
                     </TabsTrigger>
-                    <TabsTrigger value="projects">My Projects</TabsTrigger>
+                    <TabsTrigger value="projects">My Proposals</TabsTrigger>
                     <TabsTrigger value="proposal">Submit Proposal</TabsTrigger>
                   </>
                 )}

@@ -2,8 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
-import PatentsTab from "@/components/shared/patentstab";
-
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,6 +29,8 @@ import {
   BookX,
   Calendar,
   X,
+  FileText,
+  MapPin,
 } from "lucide-react";
 import {
   Dialog,
@@ -70,15 +70,6 @@ interface ApplicationsResponse {
   businessApplications: AppliedApplicant[];
 }
 
-interface Patent {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string[];
-  createdAt: string;
-  professorId: string;
-}
-
 interface Professor {
   id: string;
   fullName: string;
@@ -109,37 +100,11 @@ interface Professor {
   }>;
   achievements: Array<{ id: string; year: string; description: string }>;
   blogs: any;
-  projects: Array<{ id: string; topic: string; status: string }>;
+  projects: Project[];
   tags: Array<{
     category: string;
     subcategory: string;
   }>;
-}
-
-interface SelectedImage {
-  url: string;
-  title: string;
-}
-
-// interface ImageModalProps {
-//   isOpen: boolean;
-//   onClose: () => void;
-//   selectedImage: SelectedImage | null;
-// }
-
-interface Webinar {
-  id: string;
-  title: string;
-  topic: string;
-  place: string;
-  date: string;
-  maxAttendees: number;
-  duration: number;
-  isOnline: boolean;
-  meetingLink?: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
-  webinarImage?: string;
-  webinarDocument?: string;
 }
 
 interface Project {
@@ -191,16 +156,24 @@ type Notification = {
   projectId?: string;
 };
 
-interface BusinessProject {
+interface Webinar {
   id: string;
+  title: string;
   topic: string;
-  content: string;
-  status: "ONGOING";
-  type: "BUSINESS";
-  professor: {
-    id: string;
-    fullName: string;
-  };
+  place: string;
+  date: string;
+  maxAttendees: number;
+  duration: number;
+  isOnline: boolean;
+  meetingLink?: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
+  webinarImage?: string;
+  webinarDocument?: string;
+}
+
+interface SelectedImage {
+  url: string;
+  title: string;
 }
 
 const ProfessorProfilePage: React.FC = () => {
@@ -210,64 +183,29 @@ const ProfessorProfilePage: React.FC = () => {
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-  const [appliedStudentsMap, setAppliedStudentsMap] = useState<{
-    [projectId: string]: AppliedStudent[];
-  }>({});
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [businessProjects, setBusinessProjects] = useState<BusinessProject[]>(
-    []
-  );
-
-  const [collaborationType, setCollaborationType] = useState("");
-  const [studentOpportunityType, setStudentOpportunityType] = useState("");
-  const [isLoadingBusinessProjects, setIsLoadingBusinessProjects] =
-    useState(true);
-
-  const [businessProjectsError, setBusinessProjectsError] = useState<
-    string | null
-  >(null);
-
-  const [patents, setPatents] = useState<Patent[]>([]);
-  const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
-  const [isCreatingPatent, setIsCreatingPatent] = useState(false);
-
-  const [fellowProfessorProjects, setFellowProfessorProjects] = useState<
-    Project[]
-  >([]);
-  const [industryProjects, setIndustryProjects] = useState<Project[]>([]);
-  const [studentProjects, setStudentProjects] = useState<{
-    rnd: Project[];
-    phd: Project[];
-    internship: Project[];
-  }>({
-    rnd: [],
-    phd: [],
-    internship: [],
-  });
-
-  const openModal = (imageUrl: string, title: string) => {
-    setSelectedImage({ url: imageUrl, title });
-  };
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
     null
   );
   const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
     [projectId: string]: AppliedApplicant[];
   }>({});
-
   const [isLoadingApplicants, setIsLoadingApplicants] = useState<{
     [projectId: string]: boolean;
   }>({});
 
+  const openModal = (imageUrl: string, title: string) => {
+    setSelectedImage({ url: imageUrl, title });
+  };
+
   const closeModal = () => {
     setSelectedImage(null);
   };
+
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -281,116 +219,31 @@ const ProfessorProfilePage: React.FC = () => {
         setProfessor(professorResponse.data);
 
         if (isLoggedInUser && token) {
-          const [
-            webinarsResponse,
-            projectsResponse,
-            notificationsResponse,
-            // patentsResponse,
-          ] = await Promise.all([
+          const [webinarsResponse, notificationsResponse] = await Promise.all([
             axios.get(`${API_URL}/webinars/professor/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            // axios.get(`${API_URL}/project/professor/${id}/projects`, {
-            //   headers: { Authorization: `Bearer ${token}` },
-            // }),
             axios.get(`${API_URL}/notifications/professor/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/patents/professor/${id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ]);
 
           setWebinars(webinarsResponse.data);
-          setProjects(projectsResponse.data);
           setNotifications(notificationsResponse.data);
-          // setPatents(patentsResponse.data);
           setUnreadCount(
             notificationsResponse.data.filter((n: any) => !n.isRead).length
           );
-
-          try {
-            const businessProjectsResponse = await axios.get(
-              `${API_URL}/project/professor/${id}/projects/professors`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setBusinessProjects(businessProjectsResponse.data);
-          } catch (error) {
-            console.error("Error fetching business projects:", error);
-            setBusinessProjectsError(
-              "Failed to load business projects. Please try again."
-            );
-          }
         }
-
-        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
       } finally {
         setIsLoading(false);
-        setIsLoadingBusinessProjects(false);
       }
     };
 
     fetchProfessorData();
   }, [id, isLoggedInUser]);
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        // Fetch projects for fellow professors
-        const fellowProfessorResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "PROFESSOR_PROJECT",
-            category: "PROFESSOR_COLLABORATION",
-          },
-        });
-        setFellowProfessorProjects(fellowProfessorResponse.data);
-
-        // Fetch projects for industry
-        const industryResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "PROFESSOR_PROJECT",
-            category: "INDUSTRY_COLLABORATION",
-          },
-        });
-        setIndustryProjects(industryResponse.data);
-
-        // Fetch projects for students (R&D, PhD, Internship)
-        const rndResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "PROFESSOR_PROJECT",
-            category: "RND_PROJECT",
-          },
-        });
-        const phdResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "PROFESSOR_PROJECT",
-            category: "PHD_POSITION",
-          },
-        });
-        const internshipResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "PROFESSOR_PROJECT",
-            category: "INTERNSHIP",
-          },
-        });
-
-        setStudentProjects({
-          rnd: rndResponse.data,
-          phd: phdResponse.data,
-          internship: internshipResponse.data,
-        });
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    };
-
-    fetchProjects();
-  }, []);
 
   const fetchAppliedApplicants = async (projectId: string) => {
     setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: true }));
@@ -418,6 +271,7 @@ const ProfessorProfilePage: React.FC = () => {
       setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: false }));
     }
   };
+
   const toggleApplicants = (projectId: string) => {
     if (appliedApplicantsMap[projectId]) {
       setAppliedApplicantsMap((prevMap) => {
@@ -430,6 +284,85 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  const handleAssignApplicant = async (
+    projectId: string,
+    applicantId: string,
+    applicantType: string
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/project/${projectId}/assign`,
+        {
+          applicationId: applicantId,
+          applicationType: applicantType,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProfessor((prevProfessor) => {
+        if (!prevProfessor) return prevProfessor;
+        return {
+          ...prevProfessor,
+          projects: prevProfessor.projects.map((project) =>
+            project.id === projectId
+              ? { ...project, status: "ONGOING" }
+              : project
+          ),
+        };
+      });
+    } catch (error) {
+      console.error("Error assigning applicant:", error);
+      setError("Failed to assign applicant. Please try again.");
+    }
+  };
+
+  const handleCompleteProject = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/project/${projectId}/complete`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProfessor((prevProfessor) => {
+        if (!prevProfessor) return prevProfessor;
+        return {
+          ...prevProfessor,
+          projects: prevProfessor.projects.map((project) =>
+            project.id === projectId
+              ? { ...project, status: "CLOSED" }
+              : project
+          ),
+        };
+      });
+    } catch (error) {
+      console.error("Error completing project:", error);
+      setError("Failed to complete project. Please try again.");
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      await axios.patch(
+        `${API_URL}/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setNotifications(
+        notifications.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
+      setUnreadCount((prev) => prev - 1);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read. Please try again.");
+    }
+  };
   const handleCreateWebinar = async (
     webinarData: any,
     webinarImage: File | null,
@@ -503,103 +436,6 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
-  const handleCreateProject = async (projectData: any) => {
-    setIsCreatingProject(true);
-    try {
-      const token = localStorage.getItem("token");
-      let endpoint = `${API_URL}/project`;
-      let data = {};
-
-      if (collaborationType === "professors") {
-        endpoint += "/professor-collaboration";
-        data = {
-          ...projectData,
-          professorId: id,
-        };
-      } else if (collaborationType === "students") {
-        endpoint += "/student-opportunity";
-        data = {
-          ...projectData,
-          professorId: id,
-          category: studentOpportunityType.toUpperCase(),
-        };
-      } else if (collaborationType === "industries") {
-        endpoint += "/industry-collaboration";
-        data = {
-          ...projectData,
-          professorId: id,
-        };
-      } else {
-        throw new Error("Invalid collaboration type selected.");
-      }
-
-      const response = await axios.post(endpoint, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setProjects([...projects, response.data]);
-      setIsProjectDialogOpen(false);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      setError("Failed to create project. Please try again.");
-    } finally {
-      setIsCreatingProject(false);
-    }
-  };
-
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
-
-      await axios.patch(
-        `${API_URL}/notifications/${notificationId}/read`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setNotifications(
-        notifications.map((n) =>
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount((prev) => prev - 1);
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      setError("Failed to mark notification as read. Please try again.");
-    }
-  };
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const projectData: any = {
-      topic: formData.get("topic"),
-      content: formData.get("content"),
-      timeline: formData.get("timeline"),
-      tags: formData
-        .get("tags")
-        ?.toString()
-        .split(",")
-        .map((tag) => tag.trim()),
-      durationStartDate: formData.get("durationStartDate") as string,
-      durationEndDate: formData.get("durationEndDate") as string,
-    };
-
-    // Add additional fields based on collaboration type
-    if (collaborationType === "students") {
-      projectData.eligibility = formData.get("eligibility");
-      projectData.duration = formData.get("duration");
-      projectData.isFunded = formData.get("isFunded") === "true";
-      projectData.fundDetails = formData.get("fundDetails");
-      projectData.desirable = formData.get("desirable");
-    } else if (collaborationType === "industries") {
-      projectData.techDescription = formData.get("techDescription");
-      projectData.requirements = formData.get("requirements");
-    }
-
-    handleCreateProject(projectData);
-  };
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -610,6 +446,7 @@ const ProfessorProfilePage: React.FC = () => {
       </div>
     );
   }
+
   if (error) {
     return <div>{error}</div>;
   }
@@ -682,115 +519,35 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
-  const renderPatentsTab = () => (
-    <TabsContent value="patents">
-      <PatentsTab
-        isLoggedInUser={isLoggedInUser}
-        patents={patents}
-        API_URL={API_URL}
-      />
-    </TabsContent>
-  );
-
-  const renderBusinessProjectsTab = () => (
-    <TabsContent value="business-projects">
-      <motion.div
-        className="space-y-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="border border-[#eb5e17] bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Briefcase className="mr-2 text-[#eb5e17]" />
-              Enrolled Business Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingBusinessProjects ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-              </div>
-            ) : businessProjectsError ? (
-              <div className="text-center text-red-500 p-4">
-                {businessProjectsError}
-              </div>
-            ) : businessProjects.length > 0 ? (
-              <div className="space-y-6">
-                {businessProjects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor.fullName}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No business projects enrolled yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </TabsContent>
-  );
-
-  const getProjectType = () => {
-    switch (collaborationType) {
-      case "professors":
-        return "PROFESSOR_PROJECT";
-      case "students":
-        return "STUDENT_PROPOSAL";
-      case "industries":
-        return "BUSINESS_PROJECT";
-      default:
-        return null;
-    }
+  const categorizedProjects = {
+    industryCollaboration: [] as Project[],
+    professorCollaboration: [] as Project[],
+    internship: [] as Project[],
+    rndProject: [] as Project[],
+    phdPosition: [] as Project[],
   };
 
-  const getProposalCategory = () => {
-    switch (collaborationType) {
-      case "professors":
-        return "PROFESSOR_COLLABORATION";
-      case "students":
-        switch (studentOpportunityType) {
-          case "internship":
-            return "INTERNSHIP";
-          case "phd":
-            return "PHD_POSITION";
-          case "research":
-            return "RND_PROJECT";
-          default:
-            return "STUDENT_OPPORTUNITY";
-        }
-      case "industries":
-        return "TECHNOLOGY_SOLUTION";
+  professor.projects.forEach((project) => {
+    switch (project.category) {
+      case "INDUSTRY_COLLABORATION":
+        categorizedProjects.industryCollaboration.push(project);
+        break;
+      case "PROFESSOR_COLLABORATION":
+        categorizedProjects.professorCollaboration.push(project);
+        break;
+      case "INTERNSHIP":
+        categorizedProjects.internship.push(project);
+        break;
+      case "RND_PROJECT":
+        categorizedProjects.rndProject.push(project);
+        break;
+      case "PHD_POSITION":
+        categorizedProjects.phdPosition.push(project);
+        break;
       default:
-        return "PROJECT";
+        break;
     }
-  };
+  });
 
   const renderProjectsTab = () => (
     <TabsContent value="projects">
@@ -800,309 +557,18 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Dialog
-          open={isProjectDialogOpen}
-          onOpenChange={setIsProjectDialogOpen}
-        >
-          <DialogTrigger asChild>
-            <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
-              <Plus className="mr-2" />
-              Create Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="border-[#eb5e17]">
-            <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
-              <DialogTitle>Create a New Project</DialogTitle>
-            </DialogHeader>
-            <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label>Collaboration Type</Label>
-                  <Select
-                    name="collaborationType"
-                    value={collaborationType}
-                    onValueChange={(value) => {
-                      setCollaborationType(value);
-                      setStudentOpportunityType("");
-                    }}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Collaboration Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="students">Students</SelectItem>
-                      <SelectItem value="professors">Professors</SelectItem>
-                      <SelectItem value="industries">Industries</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {collaborationType === "students" && (
-                  <div>
-                    <Label>Student Opportunity Type</Label>
-                    <Select
-                      name="studentOpportunityType"
-                      value={studentOpportunityType}
-                      onValueChange={setStudentOpportunityType}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Opportunity Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
-                        <SelectItem value="PHD_POSITION">
-                          PhD Position
-                        </SelectItem>
-                        <SelectItem value="RND_PROJECT">
-                          Research Project
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* {collaborationType === "students"  && (
-                <div>
-                  <Label htmlFor="project-topic">Topic</Label>
-                  <Input
-                    id="project-topic"
-                    name="topic"
-                    placeholder="Enter project topic"
-                    required
-                  />
-                </div> )} */}
-                {collaborationType !== "industries" && (
-                  <div>
-                    <Label htmlFor="project-content">Description</Label>
-                    <Textarea
-                      id="project-content"
-                      name="content"
-                      placeholder="Enter project content"
-                      required
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label htmlFor="project-tags">Tags (comma separated)</Label>
-                  <Input
-                    id="project-tags"
-                    name="tags"
-                    placeholder="e.g., AI, Machine Learning, Data Science"
-                  />
-                </div>
-
-                {collaborationType === "students" && (
-                  <>
-                    <div>
-                      <Label htmlFor="project-eligibility">Eligibility</Label>
-                      <Input
-                        id="project-eligibility"
-                        name="eligibility"
-                        placeholder="Enter eligibility criteria"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="durationStartDate">Start Date</Label>
-                      <Input
-                        id="durationStartDate"
-                        name="durationStartDate"
-                        type="date"
-                        required
-                        className="..."
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="durationEndDate">End Date</Label>
-                      <Input
-                        id="durationEndDate"
-                        name="durationEndDate"
-                        type="date"
-                        required
-                        className="..."
-                      />
-                    </div>
-                    <div>
-                      <Label>Is Funded</Label>
-                      <Select name="isFunded" required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select funding status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Yes</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="project-desirable">
-                        Desirable Skills
-                      </Label>
-                      <Input
-                        id="project-desirable"
-                        name="desirable"
-                        placeholder="Enter desirable skills"
-                      />
-                    </div>
-                  </>
-                )}
-
-                {collaborationType === "industries" && (
-                  <>
-                    <div>
-                      <Label htmlFor="project-tech-description">
-                        Technology Description
-                      </Label>
-                      <Input
-                        id="project-tech-description"
-                        name="techDescription"
-                        placeholder="Enter technology description"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="project-requirements">
-                        What i looking for ?
-                      </Label>
-                      <Textarea
-                        id="project-requirements"
-                        name="requirements"
-                        placeholder="Enter project requirements"
-                      />
-                    </div>
-                  </>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isCreatingProject}
-                  className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
-                >
-                  {isCreatingProject ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create Project"
-                  )}
-                </Button>
-              </form>
-            </div>
-          </DialogContent>
-        </Dialog>
-        {/* Fellow Professors Projects */}
-        <Card className="border border-[#eb5e17] bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Briefcase className="mr-2 text-[#eb5e17]" />
-              Projects for Fellow Professors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {fellowProfessorProjects.length > 0 ? (
-              <ul className="space-y-4">
-                {fellowProfessorProjects.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No projects available.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Industry Projects */}
+        {/* Industry Collaboration Projects */}
         <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
               <Building className="mr-2 text-[#eb5e17]" />
-              Projects for Industry Collaboration
+              Industry Collaboration Projects
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {industryProjects.length > 0 ? (
+            {categorizedProjects.industryCollaboration.length > 0 ? (
               <ul className="space-y-4">
-                {industryProjects.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {/* {project.content.substring(0, 100)}... */}
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No projects available.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Student Projects */}
-        <Card className="border border-[#eb5e17] bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <GraduationCap className="mr-2 text-[#eb5e17]" />
-              Projects for Students
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* R&D Projects */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              R&D Projects
-            </h3>
-            {studentProjects.rnd.length > 0 ? (
-              <ul className="space-y-4 mb-6">
-                {studentProjects.rnd.map((project) => (
+                {categorizedProjects.industryCollaboration.map((project) => (
                   <li
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
@@ -1121,137 +587,6 @@ const ProfessorProfilePage: React.FC = () => {
                     <p className="text-sm text-[#686256] mb-2">
                       {project.content.substring(0, 100)}...
                     </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No R&D projects available.
-              </p>
-            )}
-
-            {/* PhD Projects */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              PhD Positions
-            </h3>
-            {studentProjects.phd.length > 0 ? (
-              <ul className="space-y-4 mb-6">
-                {studentProjects.phd.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No PhD positions available.
-              </p>
-            )}
-
-            {/* Internship Projects */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              Internship Opportunities
-            </h3>
-            {studentProjects.internship.length > 0 ? (
-              <ul className="space-y-4">
-                {studentProjects.internship.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No internship opportunities available.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="border border-[#eb5e17] bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Briefcase className="mr-2 text-[#eb5e17]" />
-              My Projects
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {projects.length > 0 ? (
-              <ul className="space-y-4">
-                {projects.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4>
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {/* {project.content.substring(0, 100)}... */}
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-[#472014]">
-                      <div className="flex items-center">
-                        <User className="mr-1 h-4 w-4" />
-                        <span>{project.professor?.fullName}</span>
-                      </div>
-                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1292,10 +627,20 @@ const ProfessorProfilePage: React.FC = () => {
                                       width={100}
                                       height={100}
                                     />
-
-                                    {/* Include other relevant details */}
                                   </div>
-                                  {/* You can add buttons to accept/reject the application */}
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAssignApplicant(
+                                        project.id,
+                                        applicant.id,
+                                        "business"
+                                      )
+                                    }
+                                    className="bg-[#eb5e17] text-white"
+                                  >
+                                    Assign
+                                  </Button>
                                 </li>
                               )
                             )}
@@ -1305,12 +650,293 @@ const ProfessorProfilePage: React.FC = () => {
                         )}
                       </div>
                     )}
+                    {project.status === "ONGOING" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteProject(project.id)}
+                        className="mt-2 bg-[#eb5e17] text-white"
+                      >
+                        Complete Project
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>
             ) : (
               <p className="text-center text-[#686256]">
                 No projects available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Professor Collaboration Projects */}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Briefcase className="mr-2 text-[#eb5e17]" />
+              Professor Collaboration Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categorizedProjects.professorCollaboration.length > 0 ? (
+              <ul className="space-y-4">
+                {categorizedProjects.professorCollaboration.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => toggleApplicants(project.id)}
+                    >
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
+                    </Button>
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold  text-gray-600">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.phoneNumber}
+                                    </p>
+                                    <Image
+                                      src={applicant.images[0]}
+                                      alt="Resume"
+                                      width={100}
+                                      height={100}
+                                    />
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAssignApplicant(
+                                        project.id,
+                                        applicant.id,
+                                        "professor"
+                                      )
+                                    }
+                                    className="bg-[#eb5e17] text-white"
+                                  >
+                                    Assign
+                                  </Button>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p>No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+                    {project.status === "ONGOING" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteProject(project.id)}
+                        className="mt-2 bg-[#eb5e17] text-white"
+                      >
+                        Complete Project
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No projects available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Student Projects */}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <GraduationCap className="mr-2 text-[#eb5e17]" />
+              Student Opportunities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Internship Projects */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              Internships
+            </h3>
+            {categorizedProjects.internship.length > 0 ? (
+              <ul className="space-y-4">
+                {categorizedProjects.internship.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => toggleApplicants(project.id)}
+                    >
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
+                    </Button>
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold  text-gray-600">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.phoneNumber}
+                                    </p>
+                                    <Image
+                                      src={applicant.images[0]}
+                                      alt="Resume"
+                                      width={100}
+                                      height={100}
+                                    />
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAssignApplicant(
+                                        project.id,
+                                        applicant.id,
+                                        "student"
+                                      )
+                                    }
+                                    className="bg-[#eb5e17] text-white"
+                                  >
+                                    Assign
+                                  </Button>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p>No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+                    {project.status === "ONGOING" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteProject(project.id)}
+                        className="mt-2 bg-[#eb5e17] text-white"
+                      >
+                        Complete Project
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No internships available.
+              </p>
+            )}
+
+            {/* R&D Projects */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              Research Projects
+            </h3>
+            {categorizedProjects.rndProject.length > 0 ? (
+              <ul className="space-y-4">
+                {categorizedProjects.rndProject.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    {/* Similar content as above */}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No research projects available.
+              </p>
+            )}
+
+            {/* PhD Positions */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              PhD Positions
+            </h3>
+            {categorizedProjects.phdPosition.length > 0 ? (
+              <ul className="space-y-4">
+                {categorizedProjects.phdPosition.map((project) => (
+                  <li
+                    key={project.id}
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    {/* Similar content as above */}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">
+                No PhD positions available.
               </p>
             )}
           </CardContent>
@@ -1327,12 +953,6 @@ const ProfessorProfilePage: React.FC = () => {
           { id: "webinars", label: "My Webinars", icon: <Video /> },
           { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
-          // { id: "patents", label: "Patents", icon: <BookOpen /> },
-          {
-            id: "business-projects",
-            label: "Business Projects",
-            icon: <Building />,
-          },
         ]
       : []),
   ];
@@ -2046,8 +1666,6 @@ const ProfessorProfilePage: React.FC = () => {
                   </TabsContent>
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
-                  {/* {renderPatentsTab()} */}
-                  {renderBusinessProjectsTab()}
                 </>
               )}
             </Tabs>

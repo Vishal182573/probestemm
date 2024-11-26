@@ -29,15 +29,17 @@ interface AuthenticatedRequest extends Request {
 
 const SearchQuerySchema = z.object({
   query: z.string().optional(),
-  field: z.enum(['fullName', 'title', 'department', 'university', 'location']).optional(),
+  field: z
+    .enum(["fullName", "title", "department", "university", "location"])
+    .optional(),
 });
 
 export const searchProfessors = async (req: Request, res: Response) => {
   try {
     const { query, field } = SearchQuerySchema.parse(req.query);
-    
+
     let whereClause: any = {
-      isApproved: true // Only return approved professors
+      isApproved: true, // Only return approved professors
     };
 
     // If no query is provided, return all approved professors
@@ -58,7 +60,7 @@ export const searchProfessors = async (req: Request, res: Response) => {
           position: true,
           createdAt: true,
           updatedAt: true,
-        }
+        },
       });
       return res.status(200).json(allProfessors);
     }
@@ -69,8 +71,8 @@ export const searchProfessors = async (req: Request, res: Response) => {
         isApproved: true,
         [field]: {
           contains: query,
-          mode: 'insensitive'
-        }
+          mode: "insensitive",
+        },
       };
     } else {
       // If no specific field is provided, search across all specified fields
@@ -80,34 +82,34 @@ export const searchProfessors = async (req: Request, res: Response) => {
           {
             fullName: {
               contains: query,
-              mode: 'insensitive'
-            }
+              mode: "insensitive",
+            },
           },
           {
             title: {
               contains: query,
-              mode: 'insensitive'
-            }
+              mode: "insensitive",
+            },
           },
           {
             department: {
               contains: query,
-              mode: 'insensitive'
-            }
+              mode: "insensitive",
+            },
           },
           {
             university: {
               contains: query,
-              mode: 'insensitive'
-            }
+              mode: "insensitive",
+            },
           },
           {
             location: {
               contains: query,
-              mode: 'insensitive'
-            }
-          }
-        ]
+              mode: "insensitive",
+            },
+          },
+        ],
       };
     }
 
@@ -127,11 +129,10 @@ export const searchProfessors = async (req: Request, res: Response) => {
         position: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
 
     return res.status(200).json(professors);
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
@@ -140,7 +141,6 @@ export const searchProfessors = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to search professors" });
   }
 };
-
 
 export const getProfessorById = async (req: Request, res: Response) => {
   try {
@@ -169,6 +169,8 @@ export const getProfessorById = async (req: Request, res: Response) => {
           select: {
             id: true,
             topic: true,
+            category: true,
+
             content: true,
             status: true,
           },
