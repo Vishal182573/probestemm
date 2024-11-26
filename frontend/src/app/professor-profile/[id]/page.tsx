@@ -198,6 +198,9 @@ const ProfessorProfilePage: React.FC = () => {
   const [isLoadingApplicants, setIsLoadingApplicants] = useState<{
     [projectId: string]: boolean;
   }>({});
+  const [collaborationType, setCollaborationType] = useState("");
+  const [studentOpportunityType, setStudentOpportunityType] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage({ url: imageUrl, title });
@@ -436,6 +439,79 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to update webinar status. Please try again.");
     }
   };
+  const handleCreateProject = async (projectData: any) => {
+    setIsCreatingProject(true);
+    try {
+      const token = localStorage.getItem("token");
+      let endpoint = `${API_URL}/project`;
+      let data = {};
+
+      if (collaborationType === "professors") {
+        endpoint += "/professor-collaboration";
+        data = {
+          ...projectData,
+          professorId: id,
+        };
+      } else if (collaborationType === "students") {
+        endpoint += "/student-opportunity";
+        data = {
+          ...projectData,
+          professorId: id,
+          category: studentOpportunityType.toUpperCase(),
+        };
+      } else if (collaborationType === "industries") {
+        endpoint += "/industry-collaboration";
+        data = {
+          ...projectData,
+          professorId: id,
+        };
+      } else {
+        throw new Error("Invalid collaboration type selected.");
+      }
+
+      const response = await axios.post(endpoint, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setProjects([...projects, response.data]);
+      setIsProjectDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      setError("Failed to create project. Please try again.");
+    } finally {
+      setIsCreatingProject(false);
+    }
+  };
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const projectData: any = {
+      topic: formData.get("topic"),
+      content: formData.get("content"),
+      timeline: formData.get("timeline"),
+      tags: formData
+        .get("tags")
+        ?.toString()
+        .split(",")
+        .map((tag) => tag.trim()),
+      durationStartDate: formData.get("durationStartDate") as string,
+      durationEndDate: formData.get("durationEndDate") as string,
+    };
+
+    // Add additional fields based on collaboration type
+    if (collaborationType === "students") {
+      projectData.eligibility = formData.get("eligibility");
+      projectData.duration = formData.get("duration");
+      projectData.isFunded = formData.get("isFunded") === "true";
+      projectData.fundDetails = formData.get("fundDetails");
+      projectData.desirable = formData.get("desirable");
+    } else if (collaborationType === "industries") {
+      projectData.techDescription = formData.get("techDescription");
+      projectData.requirements = formData.get("requirements");
+    }
+
+    handleCreateProject(projectData);
+  };
 
   if (isLoading) {
     return (
@@ -571,6 +647,199 @@ const ProfessorProfilePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        <Dialog
+          open={isProjectDialogOpen}
+          onOpenChange={setIsProjectDialogOpen}
+        >
+          <DialogTrigger asChild>
+            <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white">
+              <Plus className="mr-2" />
+              Create Project
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="border-[#eb5e17]">
+            <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
+              <DialogTitle>Create a New Project</DialogTitle>
+            </DialogHeader>
+            <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label>Collaboration Type</Label>
+                  <Select
+                    name="collaborationType"
+                    value={collaborationType}
+                    onValueChange={(value) => {
+                      setCollaborationType(value);
+                      setStudentOpportunityType("");
+                    }}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Collaboration Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="students">Students</SelectItem>
+                      <SelectItem value="professors">Professors</SelectItem>
+                      <SelectItem value="industries">Industries</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {collaborationType === "students" && (
+                  <div>
+                    <Label>Student Opportunity Type</Label>
+                    <Select
+                      name="studentOpportunityType"
+                      value={studentOpportunityType}
+                      onValueChange={setStudentOpportunityType}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Opportunity Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                        <SelectItem value="PHD_POSITION">
+                          PhD Position
+                        </SelectItem>
+                        <SelectItem value="RND_PROJECT">
+                          Research Project
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* {collaborationType === "students"  && (
+                <div>
+                  <Label htmlFor="project-topic">Topic</Label>
+                  <Input
+                    id="project-topic"
+                    name="topic"
+                    placeholder="Enter project topic"
+                    required
+                  />
+                </div> )} */}
+                {collaborationType !== "industries" && (
+                  <div>
+                    <Label htmlFor="project-content">Description</Label>
+                    <Textarea
+                      id="project-content"
+                      name="content"
+                      placeholder="Enter project content"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="project-tags">Tags (comma separated)</Label>
+                  <Input
+                    id="project-tags"
+                    name="tags"
+                    placeholder="e.g., AI, Machine Learning, Data Science"
+                  />
+                </div>
+
+                {collaborationType === "students" && (
+                  <>
+                    <div>
+                      <Label htmlFor="project-eligibility">Eligibility</Label>
+                      <Input
+                        id="project-eligibility"
+                        name="eligibility"
+                        placeholder="Enter eligibility criteria"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="durationStartDate">Start Date</Label>
+                      <Input
+                        id="durationStartDate"
+                        name="durationStartDate"
+                        type="date"
+                        required
+                        className="..."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="durationEndDate">End Date</Label>
+                      <Input
+                        id="durationEndDate"
+                        name="durationEndDate"
+                        type="date"
+                        required
+                        className="..."
+                      />
+                    </div>
+                    <div>
+                      <Label>Is Funded</Label>
+                      <Select name="isFunded" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select funding status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="project-desirable">
+                        Desirable Skills
+                      </Label>
+                      <Input
+                        id="project-desirable"
+                        name="desirable"
+                        placeholder="Enter desirable skills"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {collaborationType === "industries" && (
+                  <>
+                    <div>
+                      <Label htmlFor="project-tech-description">
+                        Technology Description
+                      </Label>
+                      <Input
+                        id="project-tech-description"
+                        name="techDescription"
+                        placeholder="Enter technology description"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="project-requirements">
+                        What i looking for ?
+                      </Label>
+                      <Textarea
+                        id="project-requirements"
+                        name="requirements"
+                        placeholder="Enter project requirements"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isCreatingProject}
+                  className="bg-[#eb5e17] hover:bg-[#472014] text-white w-full"
+                >
+                  {isCreatingProject ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Project"
+                  )}
+                </Button>
+              </form>
+            </div>
+          </DialogContent>
+        </Dialog>
         {/* Industry Collaboration Projects */}
         <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
@@ -599,8 +868,13 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {project.content === null ? (
+                        <p> No content available</p>
+                      ) : (
+                        project.content.substring(0, 100)
+                      )}
                     </p>
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -923,7 +1197,95 @@ const ProfessorProfilePage: React.FC = () => {
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    {/* Similar content as above */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => toggleApplicants(project.id)}
+                    >
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
+                    </Button>
+
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold  text-gray-600">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.phoneNumber}
+                                    </p>
+                                    <Image
+                                      src={applicant.images[0]}
+                                      alt="Resume"
+                                      width={100}
+                                      height={100}
+                                    />
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAssignApplicant(
+                                        project.id,
+                                        applicant.id,
+                                        "student"
+                                      )
+                                    }
+                                    className="bg-[#eb5e17] text-white"
+                                  >
+                                    Assign
+                                  </Button>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p>No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {project.status === "ONGOING" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteProject(project.id)}
+                        className="mt-2 bg-[#eb5e17] text-white"
+                      >
+                        Complete Project
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -944,7 +1306,95 @@ const ProfessorProfilePage: React.FC = () => {
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    {/* Similar content as above */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.content.substring(0, 100)}...
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => toggleApplicants(project.id)}
+                    >
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
+                    </Button>
+
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold  text-gray-600">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.phoneNumber}
+                                    </p>
+                                    <Image
+                                      src={applicant.images[0]}
+                                      alt="Resume"
+                                      width={100}
+                                      height={100}
+                                    />
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleAssignApplicant(
+                                        project.id,
+                                        applicant.id,
+                                        "student"
+                                      )
+                                    }
+                                    className="bg-[#eb5e17] text-white"
+                                  >
+                                    Assign
+                                  </Button>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p>No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {project.status === "ONGOING" && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteProject(project.id)}
+                        className="mt-2 bg-[#eb5e17] text-white"
+                      >
+                        Complete Project
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>
