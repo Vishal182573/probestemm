@@ -56,6 +56,7 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { PROFESSORPAGE } from "../../../../public";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
+import { Description } from "@radix-ui/react-dialog";
 
 interface AppliedApplicant {
   id: string;
@@ -112,6 +113,8 @@ interface Project {
   id: string;
   topic: string;
   content: string;
+  requirements:string;
+  techDescription:string;
   difficulty?: "EASY" | "INTERMEDIATE" | "HARD";
   timeline?: string;
   tags: string[];
@@ -485,6 +488,7 @@ const ProfessorProfilePage: React.FC = () => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    console.log("formdata",formData)
     const projectData: any = {
       topic: formData.get("topic"),
       content: formData.get("content"),
@@ -494,14 +498,15 @@ const ProfessorProfilePage: React.FC = () => {
         ?.toString()
         .split(",")
         .map((tag) => tag.trim()),
-      durationStartDate: formData.get("durationStartDate") as string,
-      durationEndDate: formData.get("durationEndDate") as string,
+      duration:{
+        startDate: formData.get("durationStartDate") as string,
+        endDate: formData.get("durationEndDate") as string,
+      }
     };
 
     // Add additional fields based on collaboration type
     if (collaborationType === "students") {
       projectData.eligibility = formData.get("eligibility");
-      projectData.duration = formData.get("duration");
       projectData.isFunded = formData.get("isFunded") === "true";
       projectData.fundDetails = formData.get("fundDetails");
       projectData.desirable = formData.get("desirable");
@@ -509,7 +514,7 @@ const ProfessorProfilePage: React.FC = () => {
       projectData.techDescription = formData.get("techDescription");
       projectData.requirements = formData.get("requirements");
     }
-
+    console.log(projectData)
     handleCreateProject(projectData);
   };
 
@@ -605,6 +610,7 @@ const ProfessorProfilePage: React.FC = () => {
   };
 
   professor.projects.forEach((project) => {
+    console.log(project)
     switch (project.category) {
       case "INDUSTRY_COLLABORATION":
         categorizedProjects.industryCollaboration.push(project);
@@ -858,7 +864,7 @@ const ProfessorProfilePage: React.FC = () => {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
+                        {project.techDescription}
                       </h4>
                       <Badge
                         variant="secondary"
@@ -867,13 +873,9 @@ const ProfessorProfilePage: React.FC = () => {
                         {project.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.content === null ? (
-                        <p> No content available</p>
-                      ) : (
-                        project.content.substring(0, 100)
-                      )}
-                    </p>
+                    <h4 className="text-sm  text-[#472014]">
+                        {project.requirements}
+                      </h4>
 
                     <Button
                       variant="outline"
@@ -886,7 +888,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2">
+                        <h5 className="text-md font-semibold mb-2 text-black">
                           Applicants:
                         </h5>
                         {isLoadingApplicants[project.id] ? (
@@ -934,7 +936,7 @@ const ProfessorProfilePage: React.FC = () => {
                             )}
                           </ul>
                         ) : (
-                          <p>No applicants yet.</p>
+                          <p className="text-black">No applicants yet.</p>
                         )}
                       </div>
                     )}
@@ -999,7 +1001,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2">
+                        <h5 className="text-md font-semibold mb-2 text-black">
                           Applicants:
                         </h5>
                         {isLoadingApplicants[project.id] ? (
@@ -1047,7 +1049,7 @@ const ProfessorProfilePage: React.FC = () => {
                             )}
                           </ul>
                         ) : (
-                          <p>No applicants yet.</p>
+                          <p className="text-black">No applicants yet.</p>
                         )}
                       </div>
                     )}
@@ -1116,7 +1118,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2">
+                        <h5 className="text-md font-semibold mb-2 text-black">
                           Applicants:
                         </h5>
                         {isLoadingApplicants[project.id] ? (
@@ -1164,7 +1166,7 @@ const ProfessorProfilePage: React.FC = () => {
                             )}
                           </ul>
                         ) : (
-                          <p>No applicants yet.</p>
+                          <p className="text-black">No applicants yet.</p>
                         )}
                       </div>
                     )}
@@ -1224,7 +1226,7 @@ const ProfessorProfilePage: React.FC = () => {
 
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2">
+                        <h5 className="text-md font-semibold mb-2 text-black">
                           Applicants:
                         </h5>
                         {isLoadingApplicants[project.id] ? (
@@ -1272,7 +1274,7 @@ const ProfessorProfilePage: React.FC = () => {
                             )}
                           </ul>
                         ) : (
-                          <p>No applicants yet.</p>
+                          <p className="text-black">No applicants yet.</p>
                         )}
                       </div>
                     )}
@@ -1332,7 +1334,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </Button>
 
                     {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
+                      <div className="mt-4 text-black">
                         <h5 className="text-md font-semibold mb-2">
                           Applicants:
                         </h5>
@@ -1381,7 +1383,7 @@ const ProfessorProfilePage: React.FC = () => {
                             )}
                           </ul>
                         ) : (
-                          <p>No applicants yet.</p>
+                          <p className="text-black">No applicants yet.</p>
                         )}
                       </div>
                     )}

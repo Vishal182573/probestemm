@@ -60,14 +60,14 @@ const setupAdminPanel = async () => {
                 edit: true,
               },
             },
-            researchHighlights: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
-            education: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
+            // researchHighlights: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
+            // education: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
             // achievements: {
             //   isVisible: { list: false, filter: true, show: true, edit: true },
             //   type: "reference",
@@ -166,10 +166,10 @@ const setupAdminPanel = async () => {
                 edit: true,
               },
             },
-            projects: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
+            // projects: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
           },
           actions: {
             new: {

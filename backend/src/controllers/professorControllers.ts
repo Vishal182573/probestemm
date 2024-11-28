@@ -172,6 +172,8 @@ export const getProfessorById = async (req: Request, res: Response) => {
             category: true,
 
             content: true,
+            requirements:true,
+            techDescription:true,
             status: true,
           },
         },

@@ -1,9 +1,10 @@
 // page.tsx
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo  } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Footer } from "@/components/shared/Footer";
@@ -35,6 +36,7 @@ import Modal from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 enum ProjectType {
   BUSINESS_PROJECT = "BUSINESS_PROJECT",
@@ -49,6 +51,7 @@ enum ProposalCategory {
   STUDENT_OPPORTUNITY = "STUDENT_OPPORTUNITY",
   INDUSTRY_COLLABORATION = "INDUSTRY_COLLABORATION",
   RND_PROJECT = "RND_PROJECT",
+  PROJECT="PROJECT"
 }
 
 interface Project {
@@ -58,6 +61,9 @@ interface Project {
   type: ProjectType;
   category: ProposalCategory;
   status: "OPEN" | "ONGOING" | "CLOSED";
+  professorId:string;
+  studentId:string;
+  businessId:string;
   tags: string[];
   eligibility?: string;
   timeline?: string;
@@ -127,132 +133,132 @@ const ProjectsPage: React.FC = () => {
     fetchProjects();
   }, [activeTab, activeCategory]);
 
-  const getCategoryFilters = () => {
-    switch (activeTab) {
-      case "professors":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant={
-                activeCategory === ProposalCategory.PROFESSOR_COLLABORATION
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() =>
-                setActiveCategory(ProposalCategory.PROFESSOR_COLLABORATION)
-              }
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              Professor Collaboration
-            </Button>
-            <Button
-              variant={
-                activeCategory === ProposalCategory.STUDENT_OPPORTUNITY
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() =>
-                setActiveCategory(ProposalCategory.STUDENT_OPPORTUNITY)
-              }
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Student Opportunities
-            </Button>
-            <Button
-              variant={
-                activeCategory === ProposalCategory.INDUSTRY_COLLABORATION
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() =>
-                setActiveCategory(ProposalCategory.INDUSTRY_COLLABORATION)
-              }
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Building className="mr-2 h-4 w-4" />
-              Industry Collaboration
-            </Button>
-          </div>
-        );
+  // const getCategoryFilters = () => {
+  //   switch (activeTab) {
+  //     case "professors":
+  //       return (
+  //         <div className="flex gap-2">
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.PROFESSOR_COLLABORATION
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() =>
+  //               setActiveCategory(ProposalCategory.PROFESSOR_COLLABORATION)
+  //             }
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Briefcase className="mr-2 h-4 w-4" />
+  //             Professor Collaboration
+  //           </Button>
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.STUDENT_OPPORTUNITY
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() =>
+  //               setActiveCategory(ProposalCategory.STUDENT_OPPORTUNITY)
+  //             }
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <GraduationCap className="mr-2 h-4 w-4" />
+  //             Student Opportunities
+  //           </Button>
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.INDUSTRY_COLLABORATION
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() =>
+  //               setActiveCategory(ProposalCategory.INDUSTRY_COLLABORATION)
+  //             }
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Building className="mr-2 h-4 w-4" />
+  //             Industry Collaboration
+  //           </Button>
+  //         </div>
+  //       );
 
-      case "industry":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant={
-                activeCategory === ProposalCategory.RND_PROJECT
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Book className="mr-2 h-4 w-4" />
-              R&D Projects
-            </Button>
-            <Button
-              variant={
-                activeCategory === ProposalCategory.INTERNSHIP
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Internships
-            </Button>
-          </div>
-        );
+  //     case "industry":
+  //       return (
+  //         <div className="flex gap-2">
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.RND_PROJECT
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Book className="mr-2 h-4 w-4" />
+  //             R&D Projects
+  //           </Button>
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.INTERNSHIP
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Calendar className="mr-2 h-4 w-4" />
+  //             Internships
+  //           </Button>
+  //         </div>
+  //       );
 
-      case "students":
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant={
-                activeCategory === ProposalCategory.RND_PROJECT
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Book className="mr-2 h-4 w-4" />
-              R&D Proposals
-            </Button>
-            <Button
-              variant={
-                activeCategory === ProposalCategory.PHD_POSITION
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() => setActiveCategory(ProposalCategory.PHD_POSITION)}
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Research Proposals
-            </Button>
-            <Button
-              variant={
-                activeCategory === ProposalCategory.INTERNSHIP
-                  ? "default"
-                  : "outline"
-              }
-              onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
-              className="bg-[#eb5e17] text-white hover:bg-[#472014]"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Internship Proposals
-            </Button>
-          </div>
-        );
+  //     case "students":
+  //       return (
+  //         <div className="flex gap-2">
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.RND_PROJECT
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() => setActiveCategory(ProposalCategory.RND_PROJECT)}
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Book className="mr-2 h-4 w-4" />
+  //             R&D Proposals
+  //           </Button>
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.PHD_POSITION
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() => setActiveCategory(ProposalCategory.PHD_POSITION)}
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <GraduationCap className="mr-2 h-4 w-4" />
+  //             Research Proposals
+  //           </Button>
+  //           <Button
+  //             variant={
+  //               activeCategory === ProposalCategory.INTERNSHIP
+  //                 ? "default"
+  //                 : "outline"
+  //             }
+  //             onClick={() => setActiveCategory(ProposalCategory.INTERNSHIP)}
+  //             className="bg-[#eb5e17] text-white hover:bg-[#472014]"
+  //           >
+  //             <Calendar className="mr-2 h-4 w-4" />
+  //             Internship Proposals
+  //           </Button>
+  //         </div>
+  //       );
 
-      default:
-        return null;
-    }
-  };
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   const openApplyModal = (project: Project) => {
     setSelectedProject(project);
@@ -309,7 +315,7 @@ const ProjectsPage: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            <div className="mb-8">{getCategoryFilters()}</div>
+            {/* <div className="mb-8">{getCategoryFilters()}</div> */}
 
             <ProjectsList
               projects={filteredProjects}
@@ -368,24 +374,44 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   index,
   onApply,
 }) => {
+  const router = useRouter();
+
   const renderDetails = () => {
     switch (project.category) {
       case ProposalCategory.PROFESSOR_COLLABORATION:
+        return (
+          <>
+            {/* Optional: Add specific details for Professor Collaboration if needed */}
+          </>
+        );
       case ProposalCategory.INDUSTRY_COLLABORATION:
         return (
           <>
             <div className="mb-2">
-              <h4 className="font-semibold">Requirements:</h4>
-              <p>{project.requirements}</p>
+              <h4 className="font-semibold">What professor is looking for :</h4>
+              <p>{project.requirements || 'No specific requirements mentioned'}</p>
             </div>
             <div className="mb-2">
               <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription}</p>
+              <p>{project.techDescription || 'No technical description provided'}</p>
             </div>
           </>
         );
-
+      case ProposalCategory.PROJECT:
+        return (
+          <>
+            <div className="mb-2">
+              <h4 className="font-semibold">Topic:</h4>
+              <p>{project.topic}</p>
+            </div>
+              <div className="mb-2">
+                <h4 className="font-semibold">TechDescription:</h4>
+                <p>{project.techDescription}</p>
+              </div>
+          </>
+        );
       case ProposalCategory.STUDENT_OPPORTUNITY:
+      case ProposalCategory.RND_PROJECT:
       case ProposalCategory.INTERNSHIP:
       case ProposalCategory.PHD_POSITION:
         return (
@@ -394,6 +420,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <h4 className="font-semibold">Eligibility:</h4>
               <p>{project.eligibility}</p>
             </div>
+            {project.topic && (
+              <div className="mb-2">
+                <h4 className="font-semibold">Topic:</h4>
+                <p>{project.topic}</p>
+              </div>
+            )}
+            {project.desirable && (
+              <div className="mb-2">
+                <h4 className="font-semibold">Desirable Skills:</h4>
+                <p>{project.desirable}</p>
+              </div>
+            )}
             {project.duration && (
               <div className="mb-2">
                 <h4 className="font-semibold">Duration:</h4>
@@ -405,13 +443,101 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
             <div className="mb-2">
               <h4 className="font-semibold">Funding:</h4>
-              <p>{project.isFunded ? `Yes - ${project.fundDetails}` : "No"}</p>
+              <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
+              <p>{project.fundDetails && project.fundDetails}</p>
             </div>
           </>
         );
-
       default:
         return null;
+    }
+  };
+
+  const canApply = useMemo(() => {
+    const userRole = localStorage.getItem('role');
+    const currentDate = new Date();
+    
+    // Check project status first (common for all)
+    const isProjectOpen = project.status === 'OPEN';
+
+    // Special handling for different roles and categories
+    switch (project.category) {
+      case ProposalCategory.PROFESSOR_COLLABORATION:
+        // For professor, only check status
+        if (userRole === 'professor') {
+          return isProjectOpen;
+        }
+        return false
+
+      case ProposalCategory.INDUSTRY_COLLABORATION:
+        // Only allow business role for industry collaboration
+        if (userRole === 'business') {
+          return isProjectOpen;
+        }
+        return false;
+      case ProposalCategory.PROJECT:
+        if(userRole!='student'){
+          return isProjectOpen;
+        }
+      return false;
+      case ProposalCategory.RND_PROJECT:
+        const roleOfUserRND = userRole;
+        const timeFrameRND = !project.duration || new Date(project.duration.startDate) >= currentDate;
+        if(project.type=="PROFESSOR_PROJECT" && roleOfUserRND=="student" && timeFrameRND) return isProjectOpen;
+        else if(project.type=="BUSINESS_PROJECT" && roleOfUserRND=="professor" && timeFrameRND) return isProjectOpen;
+       return false 
+      case ProposalCategory.INTERNSHIP:
+        const roleOfUser = userRole;
+        const timeFrame = !project.duration || new Date(project.duration.startDate) >= currentDate;
+        if(project.type=="PROFESSOR_PROJECT" && roleOfUser=="student" && timeFrame) return isProjectOpen;
+        else if(project.type=="BUSINESS_PROJECT" && roleOfUser=="student" && timeFrame) return isProjectOpen;
+       return false 
+      case ProposalCategory.PHD_POSITION:
+        // Original student application logic
+        const isStudent = userRole === 'student';
+        const isWithinValidTimeframe = !project.duration || new Date(project.duration.startDate) >= currentDate;
+        
+        return isStudent && isProjectOpen && isWithinValidTimeframe;
+
+      default:
+        return false;
+    }
+  }, [project]);
+
+  const handleApply = () => {
+    if (!canApply) {
+      alert('You are not eligible to apply for this project. Please check the eligibility criteria or project status.');
+      return;
+    }
+    onApply(project);
+  };
+
+  const handleRedirect = () => {
+    switch (project.type) {
+      case 'STUDENT_PROPOSAL':
+        router.push(`/student-profile/${project.studentId}`);
+        break;
+      case 'PROFESSOR_PROJECT':
+        router.push(`/professor-profile/${project.professorId}`);
+        break;
+      case 'BUSINESS_PROJECT':
+        router.push(`/business-profile/${project.businessId}`);
+        break;
+      default:
+        console.error('Unknown project type');
+    }
+  };
+
+  const getButtonLabel = () => {
+    switch (project.type) {
+      case 'STUDENT_PROPOSAL':
+        return 'View Student';
+      case 'PROFESSOR_PROJECT':
+        return 'View Professor';
+      case 'BUSINESS_PROJECT':
+        return 'View Industry';
+      default:
+        return 'Unknown Type';
     }
   };
 
@@ -424,10 +550,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       <Card className="h-full flex flex-col">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle className="text-lg font-bold">{project.topic}</CardTitle>
-            <Badge className="bg-[#eb5e17] text-white">
-              {project.category.replace(/_/g, " ")}
-            </Badge>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mt-2">
+                <Badge className="bg-[#eb5e17] text-white">
+                  {project.category.replace(/_/g, " ")}
+                </Badge>
+                <Badge 
+                  className={`
+                    ${project.status === 'OPEN' 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-red-500 text-white'}
+                  `}
+                >
+                  {project.status}
+                </Badge>
+              </div>
+            </div>
           </div>
           <CardDescription className="mt-2">{project.content}</CardDescription>
         </CardHeader>
@@ -445,13 +583,28 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             ))}
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-2">
+          <div className="flex w-full gap-2">
           <Button
-            onClick={() => onApply(project)}
-            className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
-          >
-            Apply Now
-          </Button>
+      onClick={handleRedirect}
+      variant="outline"
+      className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
+    >
+      {getButtonLabel()}
+    </Button>
+            <Button
+              onClick={handleApply}
+              disabled={!canApply}
+              className={`
+                flex-1 
+                ${canApply 
+                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
+                  : 'bg-gray-400 cursor-not-allowed'}
+              `}
+            >
+              {canApply ? 'Apply Now' : 'Cannot Apply'}
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </motion.div>
