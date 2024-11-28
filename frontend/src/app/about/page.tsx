@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FaIndustry, FaGraduationCap, FaExchangeAlt } from "react-icons/fa";
+import { FaIndustry, FaGraduationCap, FaExchangeAlt, FaBook, FaResearchgate } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/shared/Footer";
@@ -98,10 +98,10 @@ const AboutUsPage = () => {
           <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe STEM</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
-              <p className="text-lg text-[#472014]">
+              <p className="text-lg text-[#472014] text-center">
                 Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the STEM fields. We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
               </p>
-              <p className="text-lg text-[#472014]">
+              <p className="text-lg text-[#472014] text-center">
                 Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.
               </p>
             </div>
@@ -166,44 +166,47 @@ const AboutUsPage = () => {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card className="bg-white/90 backdrop-blur shadow-xl border-none mb-12">
-            <CardHeader>
-              <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                <FaGraduationCap className="mr-2 text-[#eb5e17]" /> Company
-                Projects
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-[#472014] text-lg">
-              <p>
-              Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D collaborations, consultancy projects, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
+              <CardHeader>
+                <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
+                  <FaBook className="mr-2 text-[#eb5e17]" /> Company
+                  Projects
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-[#472014] text-lg">
+                <p>
+                Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D collaborations, consultancy projects, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.
               </p>
-              <Link href={"/projects"}>
-                <Button className="mt-4 bg-[#5e17eb] text-white">
-                  Apply Now
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="bg-white/90 backdrop-blur shadow-xl border-none mb-12">
-            {/* <CardHeader>
-              <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                <FaGraduationCap className="mr-2 text-[#eb5e17]" /> Company
-                Projects
-              </CardTitle>
-            </CardHeader> */}
-            <CardContent className="text-[#472014] text-lg">
-              <p>
-              Research Corner will empower professors/researchers to present their unique findings as spotlights, offering them a platform to showcase breakthroughs and impactful discoveries. This section will also serve as a space for researchers to share announcements related to their work, including calls for a specific collaboration, upcoming events, or specialized opportunities, enhancing professional networking and community engagement.
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
+              <CardHeader>
+                <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
+                  <FaResearchgate className="mr-2 text-[#eb5e17]" /> Research Corner
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-[#472014] text-lg">
+                <p>
+                Research Corner will empower professors/researchers to present their unique findings as spotlights, offering them a platform to showcase breakthroughs and impactful discoveries. This section will also serve as a space for researchers to share announcements related to their work, including calls for a specific collaboration, upcoming events, or specialized opportunities, enhancing professional networking and community engagement.
               </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
       </motion.div>
       <Footer />
     </div>

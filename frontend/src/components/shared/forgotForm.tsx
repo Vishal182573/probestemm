@@ -118,7 +118,7 @@ const ForgotPasswordForm = () => {
         <SelectContent>
           <SelectItem value="student">Student</SelectItem>
           <SelectItem value="professor">Professor</SelectItem>
-          <SelectItem value="business">Business</SelectItem>
+          <SelectItem value="business">Industry</SelectItem>
         </SelectContent>
       </Select>
       

@@ -80,7 +80,7 @@ export const NavbarWithBg: React.FC = () => {
       id="profile-button"
       variant="ghost"
       onClick={toggleDropdown}
-      className="text-[#472014] flex items-center gap-2 hover:bg-blue-50"
+      className="text-[#472014] flex items-center gap-2 hover:bg-blue-50 hover:text-black"
     >
       <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-2 border-gray-300">
         {getProfileImageSrc() ? (
@@ -102,7 +102,7 @@ export const NavbarWithBg: React.FC = () => {
   const ProfileDropdown = () => (
     <div
       id="profile-dropdown"
-      className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
+      className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 "
     >
       <div className="py-1">
         <Link href={`/${user?.role}-profile/${user?.id}`}>
@@ -111,7 +111,7 @@ export const NavbarWithBg: React.FC = () => {
             My Profile
           </button>
         </Link>
-        <Link href={`/${user?.role}-profile/${user?.id}/edit`}>
+        <Link href={`/edit-profile`}>
           <button className="text-[#472014] hover:bg-blue-50 group flex items-center w-full px-4 py-2 text-sm">
             <Settings className="mr-3 h-5 w-5" />
             Edit Profile
@@ -180,7 +180,7 @@ export const NavbarWithBg: React.FC = () => {
               CONTACT US
             </NavLink>
             {isLoggedIn && user ? (
-              <div className="relative">
+              <div className="relative hover:text-black">
                 <ProfileButton />
                 {showDropdown && <ProfileDropdown />}
               </div>
@@ -272,7 +272,7 @@ const NavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`${className} hover:bg-blue-50 font-semibold text-sm`}
+      className={`${className} hover:bg-blue-50 font-semibold text-sm hover:text-[#472014]`}
     >
       {children}
     </Button>
@@ -287,7 +287,7 @@ const MobileNavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`w-full text-left ${className} hover:bg-blue-50`}
+      className={`w-full text-left ${className} hover:bg-blue-50 hover:text-[#472014]`}
     >
       {children}
     </Button>

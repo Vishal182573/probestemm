@@ -29,30 +29,91 @@ const authApi = axios.create({
 });
 
 const categories = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
-  ],
-  Technology: ["Computer Science", "Engineering"],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
-  ],
+    Physics: [
+      "Classical Mechanics",
+      "Electromagnetism",
+      "Thermodynamics",
+      "Quantum Mechanics",
+      "Relativity",
+    ],
+    Chemistry: [
+      "Organic Chemistry",
+      "Inorganic Chemistry",
+      "Physical Chemistry",
+      "Analytical Chemistry",
+    ],
+    Biology: [
+      "Molecular Biology",
+      "Cell Biology",
+      "Ecology",
+      "Evolutionary Biology",
+    ],
+    "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+    "Space Science": [
+      "Astronomy",
+      "Astrophysics",
+      "Planetary Science",
+      "Space Exploration",
+      "Astrobiology",
+      "Space Weather",
+      "Space Policy and Law",
+    ],
+    "Computer Science": [
+      "Algorithms and Data Structures",
+      "Software Engineering",
+      "Data Science",
+      "Cybersecurity",
+      "Human-Computer Interaction",
+    ],
+    Engineering: [
+      "Electrical Engineering",
+      "Mechanical Engineering",
+      "Civil Engineering",
+      "Chemical Engineering",
+    ],
+    "Pure Mathematics": [
+      "Algebra",
+      "Calculus",
+      "Geometry",
+      "Number Theory",
+    ],
+    "Applied Mathematics": [
+      "Statistics",
+      "Operations Research",
+      "Mathematical Modeling",
+      "Data Analysis",
+      "Mathematical Economics",
+    ],
+    "Data Engineering": [
+      "Data Pipeline Development",
+      "Data Storage and Management",
+    ],
+    Robotics: [
+      "Robot Design and Control",
+      "Human-Robot Interaction",
+      "Artificial Intelligence in Robotics",
+    ],
+    Biotechnology: [
+      "Genetic Engineering",
+      "Biochemical Engineering",
+      "Biomedical Engineering",
+      "Biomanufacturing",
+    ],
+    "Environmental Technology": [
+      "Renewable Energy Technologies",
+      "Environmental Monitoring and Management",
+    ],
+    "Space Technology": [
+      "Satellite Technology",
+      "Space Propulsion",
+      "Space Systems and Instruments",
+    ],
+    "Pharmaceutical Engineering": [
+      "Drug Formulation",
+      "Process Engineering for Drug Production",
+    ],
 } as const;
+
 
 type UserRole = "student" | "professor" | "business";
 
@@ -182,6 +243,7 @@ export const SignupForm: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
+      console.log(response.data.url)
       return response.data.url;
     } catch (error) {
       throw new Error('Failed to upload file');
@@ -516,20 +578,19 @@ const renderInitialForm = () => (
     </div>
 
     <div className="relative">
-      <input
-        type={showPassword ? "text" : "password"}
-        placeholder="Password"
-        value={userData.password}
-        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-        required
-        className="w-full p-2 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+        <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={userData.password}
+            onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+            required
+          />
       <button
         type="button"
         onClick={togglePasswordVisibility}
-        className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+        className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm text-white"
       >
-        {showPassword ? "Hide" : "Show"}
+        {showPassword ? "Hide" : "Show"} 
       </button>
     </div>
 
@@ -549,7 +610,7 @@ const renderInitialForm = () => (
     <div className="flex items-center space-x-2">
       <Checkbox id="terms" required />
       <label htmlFor="terms" className="text-sm text-muted-foreground">
-        I agree to the Terms of Service and Privacy Policy
+        I agree to the <a href="/terms-condition">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>
       </label>
     </div>
 

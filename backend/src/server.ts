@@ -68,10 +68,10 @@ const setupAdminPanel = async () => {
               isVisible: { list: false, filter: true, show: true, edit: true },
               type: "reference",
             },
-            achievements: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
+            // achievements: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
           },
           actions: {
             new: {
@@ -111,22 +111,22 @@ const setupAdminPanel = async () => {
                 edit: true,
               },
             },
-            researchInterests: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
-            positions: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
-            tags: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
-            achievements: {
-              isVisible: { list: false, filter: true, show: true, edit: true },
-              type: "reference",
-            },
+            // researchInterests: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
+            // positions: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
+            // tags: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
+            // achievements: {
+            //   isVisible: { list: false, filter: true, show: true, edit: true },
+            //   type: "reference",
+            // },
           },
           actions: {
             new: {
@@ -401,9 +401,9 @@ const setupAdminPanel = async () => {
       {
         resource: { model: getModelByName("Education"), client: prisma },
       },
-      {
-        resource: { model: getModelByName("Achievement"), client: prisma },
-      },
+      // {
+      //   resource: { model: getModelByName("Achievement"), client: prisma },
+      // },
       {
         resource: { model: getModelByName("ResearchInterest"), client: prisma },
       },
@@ -415,7 +415,7 @@ const setupAdminPanel = async () => {
       },
     ],
     branding: {
-      companyName: "Ed-Tech Admin Panel",
+      companyName: "Probe STEM Admin Panel",
       logo: undefined,
       favicon: undefined,
       theme: {

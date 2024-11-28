@@ -31,7 +31,7 @@ try {
     data: {
       email,
       code,
-      expiresAt: new Date(Date.now() + 30000), // 30 seconds from now
+      expiresAt: new Date(Date.now() + 60000), // 30 seconds from now
     },
   });
 

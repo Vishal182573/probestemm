@@ -92,7 +92,7 @@ export const Navbar: React.FC = () => {
       id="profile-button"
       variant="ghost"
       onClick={toggleDropdown}
-      className={`${dropdownTextColor} flex items-center gap-2 hover:bg-opacity-10 hover:bg-white`}
+      className={`${dropdownTextColor} flex items-center gap-2 hover:bg-opacity-10 hover:bg-white hover:text-black`}
     >
       <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
         {getProfileImageSrc() ? (
@@ -123,7 +123,7 @@ export const Navbar: React.FC = () => {
             My Profile
           </button>
         </Link>
-        <Link href={`/${user?.role}-profile/${user?.id}/edit`}>
+        <Link href={`edit-profile`}>
           <button className={`${dropdownTextColor} hover:bg-opacity-10 hover:bg-white group flex items-center w-full px-4 py-2 text-sm`}>
             <Settings className="mr-3 h-5 w-5" />
             Edit Profile
@@ -292,7 +292,7 @@ const NavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`${className} hover:bg-opacity-10 hover:bg-white font-semibold text-sm`}
+      className={`${className} hover:bg-opacity-10 hover:bg-blue-100 hover:text-[#472014] font-semibold text-sm`}
     >
       {children}
     </Button>
@@ -307,7 +307,7 @@ const MobileNavLink: React.FC<{
   <Link href={to}>
     <Button
       variant="ghost"
-      className={`w-full text-left ${className} hover:bg-opacity-10 hover:bg-white`}
+      className={`w-full text-left ${className} hover:bg-opacity-10 hover:bg-blue-100 hover:text-[#472014]`}
     >
       {children}
     </Button>
