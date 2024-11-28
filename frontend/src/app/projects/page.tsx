@@ -113,6 +113,7 @@ const ProjectsPage: React.FC = () => {
             category: activeCategory || undefined,
           },
         });
+        console.log(response.data);
         setProjects(response.data);
         setFilteredProjects(response.data);
         setLoading(false);

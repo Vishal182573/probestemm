@@ -276,6 +276,7 @@ export const SignupForm: React.FC = () => {
       if (idCardFile) {
         try {
           idCardUrl = await uploadFile(idCardFile);
+          console.log(idCardUrl)
         } catch (error) {
           setUploadError('Failed to upload ID card');
           setIsUploading(false);
@@ -661,7 +662,7 @@ const renderInitialForm = () => (
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="university">University</Label>
+        <Label htmlFor="university">University/Institute</Label>
         <Input
           id="university"
           type="text"

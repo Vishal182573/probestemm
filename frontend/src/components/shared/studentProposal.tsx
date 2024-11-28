@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, CheckCircle } from "lucide-react";
 import axios from "axios";
 import { API_URL } from "@/constants";
 import { toast } from "react-hot-toast";
@@ -25,6 +25,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     techDescription: "",
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,8 +48,9 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         }
       );
 
-      // Reset form
+      // Reset form and show submitted state
       setFormData({ topic: "", content: "", techDescription: "" });
+      setIsSubmitted(true);
       toast.success("Proposal submitted successfully!");
     } catch (error) {
       console.error("Error submitting proposal:", error);
@@ -67,6 +69,36 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
       [name]: value,
     }));
   };
+
+  const handleReset = () => {
+    setIsSubmitted(false);
+  };
+
+  if (isSubmitted) {
+    return (
+      <Card className="border-2 border-green-500/20 shadow-lg bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center text-2xl font-extrabold text-green-600 font-caveat">
+            <CheckCircle className="mr-2 h-8 w-8 text-green-600" />
+            Proposal Submitted
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center space-y-6">
+          <p className="text-gray-700">
+            Your project proposal has been successfully submitted!
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Button 
+              onClick={handleReset} 
+              className="bg-[#eb5e17] hover:bg-[#472014] text-white"
+            >
+              Submit Another Proposal
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">

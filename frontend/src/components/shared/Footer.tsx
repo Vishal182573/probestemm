@@ -147,10 +147,9 @@ export const Footer: React.FC = () => {
                   </Link>
                   <Link href={"/terms-condition"}>
                 <button
-                  onClick={() => redirect("/terms-condition")}
                   className="text-sm hover:text-[#c1502e] transition-colors"
                   >
-                  Terms of Service
+                  Terms & Conditions
                 </button>
                   </Link>
               </div>

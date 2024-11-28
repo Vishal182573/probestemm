@@ -210,7 +210,7 @@ export const Navbar: React.FC = () => {
                   variant="default"
                   className="bg-[#472014] text-white font-semibold"
                 >
-                  LOGIN / SIGNUP
+                  LOGIN
                 </Button>
               </Link>
             )}
@@ -272,7 +272,7 @@ export const Navbar: React.FC = () => {
                     variant="default"
                     className="w-full bg-[#472014] text-white hover:bg-[#8a5444]"
                   >
-                    LOGIN FOR FREE
+                    LOGIN
                   </Button>
                 </Link>
               )}

@@ -848,7 +848,7 @@ const EditProfileForm = () => {
                 </div>
 
                 {/* Positions Section */}
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label>Academic Positions</Label>
                   {profileData?.positions?.map(
                     (pos: Position, index: number) => (
@@ -928,7 +928,7 @@ const EditProfileForm = () => {
                       <PlusCircle className="mr-2 h-4 w-4" /> Add Position
                     </Button>
                   )}
-                </div>
+                </div> */}
 
                 {/* Website Field */}
                 <div>
