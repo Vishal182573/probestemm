@@ -51,6 +51,22 @@ export const categories = {
   ],
 } as const;
 
+const checkEmailAcrossRoles = async (email: string) => {
+  const [student, professor, business] = await Promise.all([
+    prisma.student.findUnique({ where: { email } }),
+    prisma.professor.findUnique({ where: { email } }),
+    prisma.business.findUnique({ where: { email } })
+  ]);
+
+  return {
+    isRegistered: !!(student || professor || business),
+    existingRole: student ? 'student' : 
+                  professor ? 'professor' : 
+                  business ? 'business' : 
+                  null
+  };
+};
+
 export const studentSignup = async (req: Request, res: Response) => {
   try {
     const userData: StudentData = req.body;
@@ -66,6 +82,13 @@ export const studentSignup = async (req: Request, res: Response) => {
 
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
+    }
+
+    const emailCheck = await checkEmailAcrossRoles(userData.email);
+    if (emailCheck.isRegistered) {
+      return res.status(400).json({ 
+        error: `Email already registered with ${emailCheck.existingRole} role` 
+      });
     }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
@@ -146,6 +169,13 @@ export const professorSignup = async (req: FileRequest, res: Response) => {
 
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
+    }
+
+    const emailCheck = await checkEmailAcrossRoles(userData.email);
+    if (emailCheck.isRegistered) {
+      return res.status(400).json({ 
+        error: `Email already registered with ${emailCheck.existingRole} role` 
+      });
     }
 
     // Hash password
@@ -321,6 +351,13 @@ export const businessSignup = async (req: Request, res: Response) => {
 
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
+    }
+
+    const emailCheck = await checkEmailAcrossRoles(userData.email);
+    if (emailCheck.isRegistered) {
+      return res.status(400).json({ 
+        error: `Email already registered with ${emailCheck.existingRole} role` 
+      });
     }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);

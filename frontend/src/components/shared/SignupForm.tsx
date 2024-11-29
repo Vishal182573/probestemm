@@ -234,18 +234,19 @@ export const SignupForm: React.FC = () => {
   };
 
   const uploadFile = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('image', file);
-  
     try {
-      const response = await axios.post<FileUploadResponse>(`${API_URL}/image/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      console.log(response.data.url)
-      return response.data.url;
+      const response = await axios.post<{ imageUrl: string }>(
+        `${API_URL}/image/upload`, 
+        {"image":file}, 
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data.imageUrl;
     } catch (error) {
+      console.error('Upload error:', error);
       throw new Error('Failed to upload file');
     }
   };
@@ -322,9 +323,9 @@ export const SignupForm: React.FC = () => {
         duration: 5000,
       });
   
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+      // setTimeout(() => {
+      //   router.push('/login');
+      // }, 3000);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setError(error.response.data.error || 'An error occurred during signup');
