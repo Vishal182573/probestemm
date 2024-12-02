@@ -11,7 +11,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     role: UserRole;
   };
-  file?: Express.Multer.File;
+  files?: Express.Multer.File[];
 }
 
 // Helper function to safely parse JSON
@@ -125,7 +125,7 @@ export const updateProfessor = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const file = req.file;
+  const files = req.files;
 
   try {
     const { id } = req.params;
@@ -133,20 +133,27 @@ export const updateProfessor = async (
 
     // Authorization check
     if (!req.user || req.user.id !== id || req.user.role !== "professor") {
-      cleanupUploadedFile(file);
+      if (files) {
+        files.forEach((file) => cleanupUploadedFile(file));
+      }
       return res
         .status(403)
         .json({ error: "Not authorized to update this profile" });
     }
 
-    // Handle file upload
+    // Handle file uploads for profile image
     let photoUrl: string | undefined = undefined;
-    if (file) {
-      try {
-        const result = await cloudinary.uploader.upload(file.path);
-        photoUrl = result.secure_url;
-      } finally {
-        cleanupUploadedFile(file);
+    if (files && files.length > 0) {
+      const profileImage = files.find(
+        (file) => file.fieldname === "profileImage"
+      );
+      if (profileImage) {
+        try {
+          const result = await cloudinary.uploader.upload(profileImage.path);
+          photoUrl = result.secure_url;
+        } finally {
+          cleanupUploadedFile(profileImage);
+        }
       }
     }
 
@@ -156,10 +163,41 @@ export const updateProfessor = async (
     const researchInterests = safeJSONParse(userData.researchInterests);
     const tags = safeJSONParse(userData.tags);
 
+    // Map images to research interests based on index
+    let researchInterestImagesMap: { [key: number]: string[] } = {};
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        const match = file.fieldname.match(/researchInterestImages\[(\d+)\]/);
+        if (match) {
+          const index = parseInt(match[1], 10);
+          if (!researchInterestImagesMap[index]) {
+            researchInterestImagesMap[index] = [];
+          }
+          researchInterestImagesMap[index].push(file.path);
+        }
+      });
+    }
+
+    // Upload images and map URLs
+    for (const [index, paths] of Object.entries(researchInterestImagesMap)) {
+      const uploadedUrls = [];
+      for (const path of paths) {
+        try {
+          const result = await cloudinary.uploader.upload(path);
+          uploadedUrls.push(result.secure_url);
+        } finally {
+          cleanupUploadedFile({ path } as Express.Multer.File);
+        }
+      }
+      researchInterests[parseInt(index, 10)].imageUrl = uploadedUrls;
+    }
+
     const updatedProfessor = await prisma.professor.update({
       where: { id },
       data: {
         fullName: userData.fullName,
+        bio: userData.bio,
+        googleScholar: userData.googleScholar,
         phoneNumber: userData.phoneNumber,
         location: userData.location,
         title: userData.title,
@@ -192,13 +230,13 @@ export const updateProfessor = async (
           })),
         },
 
-        // Update research interests
+        // Update research interests with multiple images
         researchInterests: {
           deleteMany: {},
           create: researchInterests.map((interest: any) => ({
             title: interest.title,
             description: interest.description || null,
-            imageUrl: interest.imageUrl || null,
+            imageUrl: interest.imageUrl || [],
           })),
         },
 
@@ -221,12 +259,13 @@ export const updateProfessor = async (
 
     res.status(200).json(updatedProfessor);
   } catch (error) {
-    cleanupUploadedFile(file);
+    if (files) {
+      files.forEach((file) => cleanupUploadedFile(file));
+    }
     console.error("Error updating professor:", error);
     res.status(500).json({ error: "Failed to update professor profile" });
   }
 };
-
 export const updateBusiness = async (
   req: AuthenticatedRequest,
   res: Response
