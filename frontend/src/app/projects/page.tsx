@@ -400,12 +400,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PROJECT:
         return (
           <>
-            <div className="mb-2">
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">Topic:</h4>
               <p>{project.topic}</p>
             </div>
-              <div className="mb-2">
-                <h4 className="font-semibold">TechDescription:</h4>
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold ">TechDescription:</h4>
                 <p>{project.techDescription}</p>
               </div>
           </>
@@ -598,7 +598,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className={`
                 flex-1 
                 ${canApply 
-                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-black' 
+                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
                   : 'bg-gray-400 cursor-not-allowed'}
               `}
             >
