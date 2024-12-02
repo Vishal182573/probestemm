@@ -1417,7 +1417,7 @@ const ProfessorProfilePage: React.FC = () => {
       ? [
           { id: "projects", label: "My Projects", icon: <Briefcase /> },
           { id: "webinars", label: "My Webinars", icon: <Video /> },
-          { id: "blogs", label: "My Blogs", icon: <BookOpen /> },
+          { id: "blogs", label: "My Research Corner", icon: <BookOpen /> },
           { id: "notifications", label: "Notifications", icon: <Bell /> },
           {
             id: "enrolled-projects",
@@ -1731,7 +1731,7 @@ const ProfessorProfilePage: React.FC = () => {
                         <CardHeader className="border-b border-gray-100">
                           <CardTitle className="flex items-center text-2xl font-bold">
                             <BookOpen className="mr-2 h-6 w-6 text-[#eb5e17]" />
-                            My Blogs
+                            My Research Corner
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4 md:p-6">

@@ -31,7 +31,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, roleType }) => {
             <p className="text-gray-600 mb-1">Name: {role.fullName}</p>
             <p className="text-gray-600 mb-1">Designation: {role.title}</p>
             <p className="text-gray-600 mb-1">Department: {role.department}</p>
-            <p className="text-gray-600 mb-1">University: {role.university}</p>
+            <p className="text-gray-600 mb-1">University/Institution: {role.university}</p>
             <p className="text-gray-600 mb-1">Country: {role.location}</p>
           </>
         );

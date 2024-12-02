@@ -99,10 +99,10 @@ const AboutUsPage = () => {
           <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe STEM</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
-              <p className="text-lg text-[#472014] text-center">
+              <p className="text-lg text-[#472014] text-left">
                 Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the STEM fields. We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
               </p>
-              <p className="text-lg text-[#472014] text-center">
+              <p className="text-lg text-[#472014] text-left">
                 Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.
               </p>
             </div>
@@ -122,7 +122,7 @@ const AboutUsPage = () => {
           transition={{ delay: 0.3 }}
           className="text-4xl font-bold mb-8 text-center text-[#472014] font-caveat"
         >
-          Why choose Probe STEM?
+          Core Features
         </motion.h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -182,8 +182,7 @@ const AboutUsPage = () => {
               </CardHeader>
               <CardContent className="text-[#472014] text-lg">
                 <p>
-                Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D collaborations, consultancy projects, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.
-              </p>
+                Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D projects, consultancy, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -196,7 +195,7 @@ const AboutUsPage = () => {
             <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                  <FaResearchgate className="mr-2 text-[#eb5e17]" /> Research Corner
+                  <FaResearchgate className="mr-2 text-[#eb5e17]" /> R <sup>c</sup>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-[#472014] text-lg">

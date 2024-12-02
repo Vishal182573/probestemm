@@ -8,9 +8,9 @@ import { TESTI1, TESTI2, TESTI3 } from "../../../public";
 
 const testimonials = [
   {
-    quote: "I am excited about the opportunity to utilize this platform to connect with colleagues and student researchers, both domestically and internationally, in order to exchange important data and collaborate on projects aimed at protecting our planet for future generations. I believe that by working together and sharing our knowledge, we can make a significant impact in addressing the environmental challenges that we face today.",
+    quote: "I am excited about the opportunity to utilize this platform to connect with colleagues and student researchers, both domestically and internationally. I believe that by working together and sharing our knowledge, we can make a significant impact in addressing the environmental challenges that we face today.",
     author: "Dr. Ali H Omar",
-    role: "Senior Scientist and Fellow of the American Meteorological Society",
+    role: "Senior Scientist, NASA, USA",
     image: TESTI2,
     rating: 5,
   },

@@ -387,11 +387,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.INDUSTRY_COLLABORATION:
         return (
           <>
-            <div className="mb-2">
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">What professor is looking for :</h4>
               <p>{project.requirements || 'No specific requirements mentioned'}</p>
             </div>
-            <div className="mb-2">
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
               <p>{project.techDescription || 'No technical description provided'}</p>
             </div>
@@ -416,24 +416,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PHD_POSITION:
         return (
           <>
-            <div className="mb-2">
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">Eligibility:</h4>
               <p>{project.eligibility}</p>
             </div>
             {project.topic && (
-              <div className="mb-2">
+              <div className="mb-2 text-black">
                 <h4 className="font-semibold">Topic:</h4>
                 <p>{project.topic}</p>
               </div>
             )}
             {project.desirable && (
-              <div className="mb-2">
+              <div className="mb-2 text-black">
                 <h4 className="font-semibold">Desirable Skills:</h4>
                 <p>{project.desirable}</p>
               </div>
             )}
             {project.duration && (
-              <div className="mb-2">
+              <div className="mb-2 text-black">
                 <h4 className="font-semibold">Duration:</h4>
                 <p>
                   {new Date(project.duration.startDate).toLocaleDateString()} -{" "}
@@ -441,7 +441,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 </p>
               </div>
             )}
-            <div className="mb-2">
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">Funding:</h4>
               <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
               <p>{project.fundDetails && project.fundDetails}</p>
@@ -547,7 +547,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col bg-white">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div className="flex flex-col">
@@ -558,8 +558,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 <Badge 
                   className={`
                     ${project.status === 'OPEN' 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-red-500 text-white'}
+                      ? 'bg-green-500 text-black' 
+                      : 'bg-red-500 text-black'}
                   `}
                 >
                   {project.status}
@@ -588,7 +588,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Button
       onClick={handleRedirect}
       variant="outline"
-      className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
+      className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17]"
     >
       {getButtonLabel()}
     </Button>
@@ -598,7 +598,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               className={`
                 flex-1 
                 ${canApply 
-                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
+                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-black' 
                   : 'bg-gray-400 cursor-not-allowed'}
               `}
             >
