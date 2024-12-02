@@ -308,13 +308,14 @@ const EditProfileForm = () => {
     }
   };
 
+  // components/EditProfileForm.tsx (Client-Side)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      if (typeof window === "undefined") return; // Guard against server-side execution
+      if (typeof window === "undefined") return;
 
       const token = localStorage.getItem("token");
       if (!token || !userId || !role) {
@@ -323,7 +324,21 @@ const EditProfileForm = () => {
 
       const formData = new FormData();
 
-      // Add all profile data to formData
+      // Add profile image
+      if (profileImage) {
+        formData.append("profileImage", profileImage);
+      }
+
+      // Add research interest images with indexed field names
+      profileData.researchInterests.forEach(
+        (interest: ResearchInterest, index: number) => {
+          if (interest.image) {
+            formData.append(`researchInterestImages[${index}]`, interest.image);
+          }
+        }
+      );
+
+      // Add the rest of the profile data
       Object.entries(profileData).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
@@ -331,10 +346,6 @@ const EditProfileForm = () => {
           formData.append(key, value.toString());
         }
       });
-
-      if (profileImage) {
-        formData.append("profileImage", profileImage);
-      }
 
       const response = await fetch(`${API_URL}/user/${role}s/${userId}`, {
         method: "PUT",
@@ -364,6 +375,15 @@ const EditProfileForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= 1950; year--) {
+      years.push(year);
+    }
+    return years;
   };
 
   return (
@@ -626,6 +646,41 @@ const EditProfileForm = () => {
                       />
                     </div>
 
+                    {/* Bio Field */}
+                    <div>
+                      <Label htmlFor="bio">Bio</Label>
+                      <Textarea
+                        id="bio"
+                        name="bio"
+                        value={profileData?.bio || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="degree">Degree</Label>
+                      <Input
+                        id="degree"
+                        name="degree"
+                        value={profileData?.degree || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    {/* Google Scholar Field */}
+                    <div>
+                      <Label htmlFor="googleScholar">Google Scholar URL</Label>
+                      <Input
+                        id="googleScholar"
+                        name="googleScholar"
+                        type="url"
+                        value={profileData?.googleScholar || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
                     {/* Research Interests Section */}
                     <div className="space-y-2">
                       <Label>Research Interests</Label>
@@ -848,9 +903,8 @@ const EditProfileForm = () => {
                   />
                 </div>
 
-                {/* Positions Section */}
-                {/* <div className="space-y-2">
-                  <Label>Academic Positions</Label>
+                <div className="space-y-2">
+                  <Label>Positions Held</Label>
                   {profileData?.positions?.map(
                     (pos: Position, index: number) => (
                       <div
@@ -875,24 +929,42 @@ const EditProfileForm = () => {
                           disabled={!isEditing}
                           className="flex-1"
                         />
-                        <Input
-                          placeholder="Start Year"
+                        <Select
                           value={pos.startYear}
-                          onChange={(e) =>
-                            updatePosition(index, "startYear", e.target.value)
+                          onValueChange={(value) =>
+                            updatePosition(index, "startYear", value)
                           }
                           disabled={!isEditing}
-                          className="flex-1"
-                        />
-                        <Input
-                          placeholder="End Year"
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Start Year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getYearOptions().map((year) => (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
                           value={pos.endYear}
-                          onChange={(e) =>
-                            updatePosition(index, "endYear", e.target.value)
+                          onValueChange={(value) =>
+                            updatePosition(index, "endYear", value)
                           }
                           disabled={!isEditing || pos.current}
-                          className="flex-1"
-                        />
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="End Year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getYearOptions().map((year) => (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             checked={pos.current}
@@ -929,8 +1001,7 @@ const EditProfileForm = () => {
                       <PlusCircle className="mr-2 h-4 w-4" /> Add Position
                     </Button>
                   )}
-                </div> */}
-
+                </div>
                 {/* Website Field */}
                 <div>
                   <Label htmlFor="website">Website</Label>
