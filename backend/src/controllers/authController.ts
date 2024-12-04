@@ -539,3 +539,59 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const checkEmailExistence = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const emailCheck = await checkEmailAcrossRoles(email);
+
+    if (emailCheck.isRegistered) {
+      return res.status(200).json({ 
+        exists: true, 
+        role: emailCheck.existingRole 
+      });
+    }
+
+    return res.status(200).json({ 
+      exists: false, 
+      role: null 
+    });
+  } catch (error) {
+    console.error("Error checking email existence:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const logUserAccess = async (req: Request, res: Response) => {
+  try {
+    const { emailId} = req.body;
+    const ipAddress = req.ip || req.socket.remoteAddress || 'Unknown';
+
+    // Validate required fields
+    if (!emailId) {
+      return res.status(400).json({ error: "Email and Full Name are required" });
+    }
+
+    // Create user access log entry
+    const userAccess = await prisma.userAccess.create({
+      data: {
+        emailId,
+        fullName:"",
+        ipAddress
+      }
+    });
+
+    res.status(201).json({ 
+      message: "User access logged successfully", 
+      accessLog: userAccess 
+    });
+  } catch (error) {
+    console.error("Error logging user access:", error);
+    res.status(500).json({ error: "Failed to log user access" });
+  }
+};

@@ -558,3 +558,12 @@ model EmailVerification {
   code      String
   expiresAt DateTime
 }
+
+// ip address model
+model UserAccess {
+  id         String   @id @default(cuid())
+  emailId    String
+  fullName   String
+  ipAddress  String
+  accessTime DateTime @default(now())
+}

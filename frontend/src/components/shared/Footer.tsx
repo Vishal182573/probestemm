@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
               <ul className="space-y-4">
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
                   <MdEmail className="mr-3 text-[#eb5e17]" size={20} />
-                  <a href="mailto:info@probestem.com">stemprobe@gmail.com</a>
+                  <a href="mailto:info@probestem.com">probestem2024@gmail.com</a>
                 </li>
                 <li className="flex items-center hover:text-[#c1502e] transition-colors">
                   <MdPhone className="mr-3 text-[#eb5e17]" size={20} />

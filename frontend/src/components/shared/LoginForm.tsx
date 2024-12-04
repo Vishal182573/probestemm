@@ -42,6 +42,10 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
     setError("");
     try {
+      await authApi.post('/send-ip', {
+        emailId: email,
+      });
+
       const response = await authApi.post("/signin", {
         email,
         password,

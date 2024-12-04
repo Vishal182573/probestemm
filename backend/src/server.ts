@@ -413,6 +413,9 @@ const setupAdminPanel = async () => {
       {
         resource: { model: getModelByName("Position"), client: prisma },
       },
+      {
+        resource: { model: getModelByName("UserAccess"), client: prisma },
+      },
     ],
     branding: {
       companyName: "Probe STEM Admin Panel",

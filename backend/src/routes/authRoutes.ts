@@ -8,6 +8,8 @@ import {
   signin,
   logout,
   resetPassword,
+  checkEmailExistence,
+  logUserAccess,
 } from "../controllers/authController";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
@@ -149,6 +151,24 @@ router.post("/logout", async (req, res) => {
 router.post("/reset-password", async (req, res) => {
   try {
     await resetPassword(req, res);
+  } catch (error) {
+    console.error("Error in logout:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/check-existence", async (req, res) => {
+  try {
+    await checkEmailExistence(req, res);
+  } catch (error) {
+    console.error("Error in logout:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/send-ip", async (req, res) => {
+  try {
+    await logUserAccess(req, res);
   } catch (error) {
     console.error("Error in logout:", error);
     res.status(500).json({ error: "Internal server error" });

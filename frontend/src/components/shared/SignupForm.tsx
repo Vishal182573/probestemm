@@ -323,9 +323,9 @@ export const SignupForm: React.FC = () => {
         duration: 5000,
       });
   
-      // setTimeout(() => {
-      //   router.push('/login');
-      // }, 3000);
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setError(error.response.data.error || 'An error occurred during signup');
@@ -414,19 +414,37 @@ const handleSendOtp = async () => {
     setEmailVerification(prev => ({ ...prev, error: 'Email is required' }));
     return;
   }
-
+  
   setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
   
   try {
-    const response = await axios.post(`${API_URL}/email/send-email`, { 
-      email: userData.email 
+    // First, check email existence
+    const existenceResponse = await axios.post(`${API_URL}/auth/check-existence`, {
+      email: userData.email
     });
+    
+    // If email already exists, show error
+    if (existenceResponse.data.exists) {
+      setEmailVerification(prev => ({
+        ...prev,
+        loading: false,
+        error: `Email is already registered with ${existenceResponse.data.role} role`
+      }));
+      return;
+    }
+    
+    // If email doesn't exist, proceed with OTP sending
+    const response = await axios.post(`${API_URL}/email/send-email`, {
+      email: userData.email
+    });
+    
     if (response.status === 200) {
       setEmailVerification(prev => ({
         ...prev,
         otpSent: true,
         loading: false
       }));
+      
       toast({
         title: "OTP Sent",
         description: "Please check your email for the verification code",
@@ -509,13 +527,14 @@ const [emailVerification, setEmailVerification] = useState({
 });
 
 const renderInitialForm = () => (
-  <form className="space-y-4" onSubmit={handleInitialSubmit}>
+  <form className="space-y-4 text-black bg-white" onSubmit={handleInitialSubmit}>
     <Input
       type="text"
       placeholder="Full Name"
       value={userData.fullName}
       onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
       required
+      className="text-black bg-white"
     />
     
     <div className="space-y-2">
@@ -530,6 +549,7 @@ const renderInitialForm = () => (
           }}
           required
           disabled={emailVerification.verified}
+          className="text-black bg-white"
         />
         {!emailVerification.verified && (
           <Button 
@@ -553,6 +573,7 @@ const renderInitialForm = () => (
             value={emailVerification.otp}
             onChange={(e) => setEmailVerification(prev => ({ ...prev, otp: e.target.value }))}
             required
+            className="text-black bg-white"
           />
           <Button 
             type="button" 
@@ -586,11 +607,12 @@ const renderInitialForm = () => (
             value={userData.password}
             onChange={(e) => setUserData({ ...userData, password: e.target.value })}
             required
+            className="text-black bg-white"
           />
       <button
         type="button"
         onClick={togglePasswordVisibility}
-        className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm text-white"
+        className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm "
       >
         {showPassword ? "Hide" : "Show"} 
       </button>
@@ -602,7 +624,7 @@ const renderInitialForm = () => (
       <SelectTrigger>
         <SelectValue placeholder="I am a..." />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="text-black bg-white">
         <SelectItem value="student">Student</SelectItem>
         <SelectItem value="professor">Professor/Researcher</SelectItem>
         <SelectItem value="business">Industry</SelectItem>
@@ -631,7 +653,7 @@ const renderInitialForm = () => (
   const renderProfessorForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="title">Designation</Label>
+        <Label htmlFor="title">Designation  <span className="text-red-500">*</span></Label>
         <Input
           id="title"
           type="text"
@@ -643,11 +665,13 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your academic designation"
+          className="text-black bg-white"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="department">Department</Label>
+        <Label htmlFor="department">Department <span className="text-red-500">*</span></Label>
         <Input
           id="department"
           type="text"
@@ -659,11 +683,13 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your department name"
+          className="text-black bg-white"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="university">University/Institute</Label>
+        <Label htmlFor="university">University/Institute <span className="text-red-500">*</span></Label>
         <Input
           id="university"
           type="text"
@@ -675,11 +701,13 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your university or institute name"
+          className="text-black bg-white"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="location">Country</Label>
+        <Label htmlFor="location">Country <span className="text-red-500">*</span></Label>
         <Input
           id="location"
           type="text"
@@ -691,18 +719,20 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your country"
+          className="text-black bg-white"
         />
       </div>
 
 
       <div className="space-y-2">
-        <Label>Tags (Optional: Select up to {MAX_TAGS})</Label>
+        <Label>Tags (Optional: Select up to {MAX_TAGS}) <span className="text-red-500">*</span></Label>
         <div className="flex space-x-2">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-black bg-white">
               {Object.keys(categories).map((category) => (
                 <SelectItem key={category} value={category}>
                   {category}
@@ -718,7 +748,7 @@ const renderInitialForm = () => (
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Subcategory" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-black bg-white">
               {selectedCategory &&
                 categories[selectedCategory as keyof typeof categories].map(
                   (subcategory) => (
@@ -757,7 +787,7 @@ const renderInitialForm = () => (
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="website">Website</Label>
+        <Label htmlFor="website">Website <span className="text-red-500">*</span></Label>
         <Input
           id="website"
           type="url"
@@ -769,11 +799,13 @@ const renderInitialForm = () => (
             })
           }
           required={true}
+          placeholder="Enter your professional website URL"
+          className="text-black bg-white"
         />
       </div>
 
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -787,7 +819,8 @@ const renderInitialForm = () => (
             }
           }}
           required
-          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+           placeholder="Upload your ID card"
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 bg-white text-black"
         />
         {idCardFile && (
           <span className="text-sm text-muted-foreground">
@@ -869,7 +902,7 @@ const renderInitialForm = () => (
         </Button>
       </div> */}
       <div className="space-y-2">
-        <Label htmlFor="collegeName">College/Institue Name</Label>
+        <Label htmlFor="collegeName">College/Institue Name <span className="text-red-500">*</span></Label>
         <Input
           id="collegeName"
           type="text"
@@ -881,10 +914,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter you College/Institute name"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="courseName">Course Name</Label>
+        <Label htmlFor="courseName">Course Name <span className="text-red-500">*</span></Label>
         <Input
           id="courseName"
           type="text"
@@ -896,10 +931,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your course name"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="location">Country</Label>
+        <Label htmlFor="location">Country <span className="text-red-500">*</span></Label>
         <Input
           id="location"
           type="text"
@@ -911,10 +948,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your country name"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -928,7 +967,8 @@ const renderInitialForm = () => (
             }
           }}
           required
-          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+          placeholder="Upload you Id card"
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/ bg-white text-black"
         />
         {idCardFile && (
           <span className="text-sm text-muted-foreground">
@@ -961,7 +1001,7 @@ const renderInitialForm = () => (
   const renderBusinessForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="companyName">Company Name</Label>
+        <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
         <Input
           id="companyName"
           type="text"
@@ -973,10 +1013,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter you company name"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="industry">Industry</Label>
+        <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
         <Input
           id="industry"
           type="text"
@@ -988,10 +1030,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter your Industry type Ex:- Pvt.Ltd"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="companyDescription">Company Description</Label>
+        <Label htmlFor="companyDescription">Company Description <span className="text-red-500">*</span></Label>
         <Textarea
           id="companyDescription"
           value={roleSpecificData.companyDescription || ""}
@@ -1002,10 +1046,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter description of your company"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="location">Country</Label>
+        <Label htmlFor="location">Country <span className="text-red-500">*</span></Label>
         <Input
           id="location"
           type="text"
@@ -1017,10 +1063,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter country. where your company situated"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="companyWebsite">Company Website</Label>
+        <Label htmlFor="companyWebsite">Company Website <span className="text-red-500">*</span></Label>
         <Input
           id="companyWebsite"
           type="url"
@@ -1032,10 +1080,12 @@ const renderInitialForm = () => (
             })
           }
           required
+          placeholder="Enter company website URL"
+          className="text-black bg-white"
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload (Required)</Label>
+      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -1049,7 +1099,8 @@ const renderInitialForm = () => (
             }
           }}
           required
-          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+          placeholder="Upload company related card"
+          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 bg-white text-black"
         />
         {idCardFile && (
           <span className="text-sm text-muted-foreground">
@@ -1093,7 +1144,7 @@ const renderInitialForm = () => (
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-white text-black">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">
           <User2Icon className="w-6 h-6 inline-block mr-2" />
@@ -1122,7 +1173,7 @@ const renderInitialForm = () => (
         {step === 2 && (
           <Button
             variant="outline"
-            className="mt-4 w-full"
+            className="mt-4 w-full text-white "
             onClick={() => setStep(1)}
           >
             Back to Basic Info

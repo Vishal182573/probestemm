@@ -113,19 +113,19 @@ interface Project {
   id: string;
   topic: string;
   content: string;
-  requirements:string;
-  techDescription:string;
+  requirements: string;
+  techDescription: string;
   difficulty?: "EASY" | "INTERMEDIATE" | "HARD";
   timeline?: string;
   tags: string[];
   status: "OPEN" | "ONGOING" | "CLOSED";
   type: "PROFESSOR_PROJECT" | "STUDENT_PROPOSAL" | "BUSINESS_PROJECT";
   category:
-    | "PROFESSOR_COLLABORATION"
-    | "INDUSTRY_COLLABORATION"
-    | "INTERNSHIP"
-    | "PHD_POSITION"
-    | "RND_PROJECT";
+  | "PROFESSOR_COLLABORATION"
+  | "INDUSTRY_COLLABORATION"
+  | "INTERNSHIP"
+  | "PHD_POSITION"
+  | "RND_PROJECT";
   professor?: {
     fullName: string;
     email: string;
@@ -485,10 +485,11 @@ const ProfessorProfilePage: React.FC = () => {
       setIsCreatingProject(false);
     }
   };
+  // console.log(notifications);
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    console.log("formdata",formData)
+    console.log("formdata", formData)
     const projectData: any = {
       topic: formData.get("topic"),
       content: formData.get("content"),
@@ -498,7 +499,7 @@ const ProfessorProfilePage: React.FC = () => {
         ?.toString()
         .split(",")
         .map((tag) => tag.trim()),
-      duration:{
+      duration: {
         startDate: formData.get("durationStartDate") as string,
         endDate: formData.get("durationEndDate") as string,
       }
@@ -514,7 +515,7 @@ const ProfessorProfilePage: React.FC = () => {
       projectData.techDescription = formData.get("techDescription");
       projectData.requirements = formData.get("requirements");
     }
-    console.log(projectData)
+    // console.log(projectData)
     handleCreateProject(projectData);
   };
 
@@ -539,67 +540,56 @@ const ProfessorProfilePage: React.FC = () => {
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
-      {id == localStorage.getItem("userId") && (
-        <Card className="border-2 border-[#eb5e17]/20 bg-white shadow-md">
-          <CardHeader className="border-b border-[#eb5e17]/10">
-            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-              <Bell className="mr-3 h-6 w-6 text-[#eb5e17]" />
-              Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {notifications.length > 0 ? (
-              <ul className="space-y-6">
-                {notifications.map((notification) => (
-                  <li
-                    key={notification.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/20 hover:bg-gray-50"
-                  >
-                    <div className="space-y-2">
-                      <p
-                        className={`${
-                          notification.isRead
-                            ? "text-gray-600"
-                            : "font-semibold"
-                        }`}
-                      >
-                        <p className="text-[#472014] text-xl font-bold leading-snug line-clamp-2">
-                          {notification.content}
-                        </p>
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(notification.createdAt).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
-                      </p>
-                    </div>
-                    {!notification.isRead && (
-                      <Button
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        size="sm"
-                        className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
-                      >
-                        Mark as Read
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center py-8 text-gray-500">
-                No notifications yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </TabsContent>
-  );
+   {id == localStorage.getItem("userId") && (
+   <Card className="border-2 border-[#eb5e17]/20 bg-white shadow-lg rounded-xl">
+   <CardHeader className="border-b border-[#eb5e17]/10 bg-[#eb5e17]/5">
+   <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+   <Bell className="mr-3 h-6 w-6 text-[#eb5e17]" />
+    Notifications
+   </CardTitle>
+   </CardHeader>
+   <CardContent className="p-6">
+   {notifications.length > 0 ? (
+   <ul className="space-y-4">
+   {notifications.map((notification) => (
+   <li
+   key={notification.id}
+   className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md"
+   >
+   <div className="flex-grow space-y-2">
+   <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
+   {notification.content}
+   </p>
+   <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
+   {new Date(notification.createdAt).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+   })}
+   </p>
+   </div>
+   {!notification.isRead && (
+   <Button
+   onClick={() => handleMarkAsRead(notification.id)}
+   size="sm"
+   className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
+   >
+    Mark as Read
+   </Button>
+   )}
+   </li>
+   ))}
+   </ul>
+   ) : (
+   <p className="text-center py-8 text-gray-500 italic">
+    No notifications yet.
+   </p>
+   )}
+   </CardContent>
+   </Card>
+   )}
+   </TabsContent>
+   );
 
   const categorizedProjects = {
     industryCollaboration: [] as Project[],
@@ -610,7 +600,7 @@ const ProfessorProfilePage: React.FC = () => {
   };
 
   professor.projects.forEach((project) => {
-    console.log(project)
+    // console.log(project)
     switch (project.category) {
       case "INDUSTRY_COLLABORATION":
         categorizedProjects.industryCollaboration.push(project);
@@ -663,11 +653,11 @@ const ProfessorProfilePage: React.FC = () => {
               Create Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-[#eb5e17]">
-            <DialogHeader className="bg-[#eb5e17] text-white p-4 rounded-t-lg">
+          <DialogContent className="border-[#eb5e17] bg-white">
+            <DialogHeader className="bg-[#eb5e17] text-black p-4 rounded-t-lg">
               <DialogTitle>Create a New Project</DialogTitle>
             </DialogHeader>
-            <div className="h-[500px] overflow-y-auto border rounded-lg p-4">
+            <div className="h-[500px] overflow-y-auto border rounded-lg p-4 text-black">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label>Collaboration Type</Label>
@@ -744,6 +734,7 @@ const ProfessorProfilePage: React.FC = () => {
                     id="project-tags"
                     name="tags"
                     placeholder="e.g., AI, Machine Learning, Data Science"
+                    className="bg-white text-black"
                   />
                 </div>
 
@@ -755,6 +746,7 @@ const ProfessorProfilePage: React.FC = () => {
                         id="project-eligibility"
                         name="eligibility"
                         placeholder="Enter eligibility criteria"
+                        className="bg-white text-black"
                       />
                     </div>
 
@@ -765,7 +757,7 @@ const ProfessorProfilePage: React.FC = () => {
                         name="durationStartDate"
                         type="date"
                         required
-                        className="..."
+                        className="bg-white text-black"
                       />
                     </div>
                     <div>
@@ -775,7 +767,7 @@ const ProfessorProfilePage: React.FC = () => {
                         name="durationEndDate"
                         type="date"
                         required
-                        className="..."
+                        className="bg-white text-black"
                       />
                     </div>
                     <div>
@@ -784,7 +776,7 @@ const ProfessorProfilePage: React.FC = () => {
                         <SelectTrigger>
                           <SelectValue placeholder="Select funding status" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white text-black">
                           <SelectItem value="true">Yes</SelectItem>
                           <SelectItem value="false">No</SelectItem>
                         </SelectContent>
@@ -798,6 +790,7 @@ const ProfessorProfilePage: React.FC = () => {
                         id="project-desirable"
                         name="desirable"
                         placeholder="Enter desirable skills"
+                        className="bg-white text-black"
                       />
                     </div>
                   </>
@@ -813,6 +806,7 @@ const ProfessorProfilePage: React.FC = () => {
                         id="project-tech-description"
                         name="techDescription"
                         placeholder="Enter technology description"
+                        className="bg-white text-black"
                       />
                     </div>
                     <div>
@@ -874,8 +868,8 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <h4 className="text-sm  text-[#472014]">
-                        {project.requirements}
-                      </h4>
+                      {project.requirements}
+                    </h4>
 
                     <Button
                       variant="outline"
@@ -1415,16 +1409,16 @@ const ProfessorProfilePage: React.FC = () => {
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     ...(isLoggedInUser
       ? [
-          { id: "projects", label: "My Projects", icon: <Briefcase /> },
-          { id: "webinars", label: "My Webinars", icon: <Video /> },
-          { id: "blogs", label: "My Research Corner", icon: <BookOpen /> },
-          { id: "notifications", label: "Notifications", icon: <Bell /> },
-          {
-            id: "enrolled-projects",
-            label: "Enrolled Projects",
-            icon: <BookOpen />,
-          },
-        ]
+        { id: "projects", label: "My Projects", icon: <Briefcase /> },
+        { id: "webinars", label: "My Webinars", icon: <Video /> },
+        { id: "blogs", label: "My Research Corner", icon: <BookOpen /> },
+        { id: "notifications", label: "Notifications", icon: <Bell /> },
+        {
+          id: "enrolled-projects",
+          label: "Enrolled Projects",
+          icon: <BookOpen />,
+        },
+      ]
       : []),
   ];
 
@@ -1586,7 +1580,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                       {professor.researchInterests &&
-                      professor.researchInterests.length > 0 ? (
+                        professor.researchInterests.length > 0 ? (
                         <ul className="space-y-4">
                           {professor.researchInterests.map((research) => (
                             <li key={research.title} className="space-y-2">
@@ -1763,9 +1757,9 @@ const ProfessorProfilePage: React.FC = () => {
                                       <p className="text-gray-600 line-clamp-3">
                                         {blog.content.length > 150
                                           ? `${blog.content.substring(
-                                              0,
-                                              150
-                                            )}...`
+                                            0,
+                                            150
+                                          )}...`
                                           : blog.content}
                                       </p>
                                     </div>
@@ -1852,91 +1846,62 @@ const ProfessorProfilePage: React.FC = () => {
                                     Request Webinar
                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="max-h-[80vh] overflow-y-auto bg-white">
                                   <DialogHeader>
-                                    <DialogTitle>
-                                      Request a New Webinar
-                                    </DialogTitle>
+                                    <DialogTitle className="text-black">Request a New Webinar</DialogTitle>
                                   </DialogHeader>
                                   <form
                                     onSubmit={(e) => {
                                       e.preventDefault();
-                                      const formData = new FormData(
-                                        e.currentTarget
-                                      );
+                                      const formData = new FormData(e.currentTarget);
                                       const webinarData = {
                                         professorId: id,
                                         title: formData.get("title") as string,
                                         topic: formData.get("topic") as string,
                                         place: formData.get("place") as string,
                                         date: formData.get("date") as string,
-                                        maxAttendees: parseInt(
-                                          formData.get("maxAttendees") as string
-                                        ),
-                                        duration: parseInt(
-                                          formData.get("duration") as string
-                                        ),
-                                        isOnline:
-                                          formData.get("place") === "online",
-                                        meetingLink: formData.get(
-                                          "meetingLink"
-                                        ) as string,
+                                        maxAttendees: parseInt(formData.get("maxAttendees") as string),
+                                        duration: parseInt(formData.get("duration") as string),
+                                        isOnline: formData.get("place") === "online",
+                                        meetingLink: formData.get("meetingLink") as string,
                                       };
 
-                                      const webinarImage = formData.get(
-                                        "webinarImage"
-                                      ) as File;
-                                      const webinarDocument = formData.get(
-                                        "webinarDocument"
-                                      ) as File;
-                                      handleCreateWebinar(
-                                        webinarData,
-                                        webinarImage,
-                                        webinarDocument
-                                      );
+                                      const webinarImage = formData.get("webinarImage") as File;
+                                      const webinarDocument = formData.get("webinarDocument") as File;
+                                      handleCreateWebinar(webinarData, webinarImage, webinarDocument);
                                     }}
-                                    className="space-y-4"
+                                    className="space-y-4 text-black"
                                   >
                                     <div>
-                                      <Label htmlFor="webinar-title">
-                                        Webinar Title
-                                      </Label>
+                                      <Label htmlFor="webinar-title">Webinar Title</Label>
                                       <Input
                                         id="webinar-title"
                                         name="title"
                                         placeholder="Enter webinar title"
                                         required
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-topic">
-                                        Topic
-                                      </Label>
+                                      <Label htmlFor="webinar-topic">Topic</Label>
                                       <Input
                                         id="webinar-topic"
                                         name="topic"
                                         placeholder="Enter webinar topic"
                                         required
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-place">
-                                        Place
-                                      </Label>
+                                      <Label htmlFor="webinar-place">Place</Label>
                                       <Select name="place" required>
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select a place" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="online">
-                                            Online
-                                          </SelectItem>
-                                          <SelectItem value="in-person">
-                                            In-person
-                                          </SelectItem>
-                                          <SelectItem value="hybrid">
-                                            Hybrid
-                                          </SelectItem>
+                                        <SelectContent className="text-black bg-white">
+                                          <SelectItem value="online">Online</SelectItem>
+                                          <SelectItem value="in-person">In-person</SelectItem>
+                                          <SelectItem value="hybrid">Hybrid</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -1947,30 +1912,29 @@ const ProfessorProfilePage: React.FC = () => {
                                         name="date"
                                         type="datetime-local"
                                         required
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-max-attendees">
-                                        Max Attendees
-                                      </Label>
+                                      <Label htmlFor="webinar-max-attendees">Max Attendees</Label>
                                       <Input
                                         id="webinar-max-attendees"
                                         name="maxAttendees"
                                         type="number"
                                         min="1"
                                         required
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-duration">
-                                        Duration (minutes)
-                                      </Label>
+                                      <Label htmlFor="webinar-duration">Duration (minutes)</Label>
                                       <Input
                                         id="webinar-duration"
                                         name="duration"
                                         type="number"
                                         min="1"
                                         required
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
@@ -1982,41 +1946,43 @@ const ProfessorProfilePage: React.FC = () => {
                                         name="meetingLink"
                                         type="url"
                                         placeholder="https://example.com/meeting"
+                                        className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-image">
-                                        Webinar Image
-                                      </Label>
-                                      <Input
-                                        id="webinar-image"
-                                        name="webinarImage"
-                                        type="file"
-                                        accept="image/*"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="webinar-document">
-                                        Webinar Document (PDF/DOC)
-                                      </Label>
-                                      <Input
-                                        id="webinar-document"
-                                        name="webinarDocument"
-                                        type="file"
-                                        accept=".pdf,.doc,.docx"
-                                      />
-                                      <p className="text-sm text-gray-500">
-                                        Upload a detailed document about the
-                                        webinar (max 10MB)
-                                      </p>
-                                    </div>
-                                    <Button type="submit">
-                                      Submit for Approval
-                                    </Button>
+  <Label htmlFor="webinar-image" className="mb-2 text-gray-700 font-medium">
+    Webinar Image
+  </Label>
+  <Input
+    id="webinar-image"
+    name="webinarImage"
+    type="file"
+    accept="image/*"
+    className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
+  />
+</div>
+<div>
+  <Label htmlFor="webinar-document" className="mb-2 text-gray-700 font-medium">
+    Webinar Document (PDF/DOC)
+  </Label>
+  <Input
+    id="webinar-document"
+    name="webinarDocument"
+    type="file"
+    accept=".pdf,.doc,.docx"
+    className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
+  />
+  <p className="text-sm text-gray-500 mt-1">
+    Upload a detailed document about the webinar (max 10MB)
+  </p>
+</div>
+
+                                    <Button type="submit">Submit for Approval</Button>
                                   </form>
                                 </DialogContent>
                               </Dialog>
                             </div>
+
                             {[
                               "PENDING",
                               "APPROVED",
@@ -2028,10 +1994,9 @@ const ProfessorProfilePage: React.FC = () => {
                                 <h3 className="text-xl font-semibold mb-2">
                                   {status === "PENDING"
                                     ? "Pending Approval"
-                                    : `${
-                                        status.charAt(0) +
-                                        status.slice(1).toLowerCase()
-                                      } Webinars`}
+                                    : `${status.charAt(0) +
+                                    status.slice(1).toLowerCase()
+                                    } Webinars`}
                                 </h3>
                                 <ul className="space-y-4">
                                   {webinars
@@ -2087,8 +2052,8 @@ const ProfessorProfilePage: React.FC = () => {
                                               status === "COMPLETED"
                                                 ? "secondary"
                                                 : status === "PENDING"
-                                                ? "outline"
-                                                : "default"
+                                                  ? "outline"
+                                                  : "default"
                                             }
                                             className="bg-[#eb5e17] hover:bg-[#472014] text-white font-caveat"
                                           >

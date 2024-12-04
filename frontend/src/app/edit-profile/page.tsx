@@ -387,13 +387,13 @@ const EditProfileForm = () => {
   };
 
   return (
-    <>
+    <div className="bg-white text-black">
       {userId && role ? (
         <>
           <NavbarWithBg />
-          <Card className="w-full max-w-2xl mx-auto min-h-screen my-12">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">
+          <Card className="w-full min-h-screen bg-black">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
+              <CardTitle className="text-2xl font-bold text-black">
                 Profile Settings
               </CardTitle>
               <Button
@@ -413,7 +413,7 @@ const EditProfileForm = () => {
             </CardHeader>
 
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6 text-black bg-white">
                 {/* Profile Image */}
                 <div className="space-y-2">
                   {imagePreview && (
@@ -423,7 +423,7 @@ const EditProfileForm = () => {
                         alt="Profile"
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-full"
+                        className="rounded-full text-black bg-white"
                       />
                     </div>
                   )}
@@ -435,7 +435,7 @@ const EditProfileForm = () => {
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
-                        className="mt-1"
+                        className="mt-1 text-black bg-white"
                       />
                     </div>
                   )}
@@ -451,6 +451,7 @@ const EditProfileForm = () => {
                       value={profileData?.fullName || ""}
                       onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="text-black bg-white"
                     />
                   </div>
 
@@ -462,6 +463,7 @@ const EditProfileForm = () => {
                       value={profileData?.phoneNumber || ""}
                       onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="text-black bg-white"
                     />
                   </div>
 
@@ -473,6 +475,7 @@ const EditProfileForm = () => {
                       value={profileData?.location || ""}
                       onChange={handleInputChange}
                       disabled={!isEditing}
+                      className="text-black bg-white"
                     />
                   </div>
                 </div>
@@ -481,13 +484,14 @@ const EditProfileForm = () => {
                 {role === "student" && (
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="university">University</Label>
+                      <Label htmlFor="university">University/Institution</Label>
                       <Input
                         id="university"
                         name="university"
                         value={profileData?.university || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -499,6 +503,7 @@ const EditProfileForm = () => {
                         value={profileData?.course || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -518,7 +523,7 @@ const EditProfileForm = () => {
                                 updateEducation(index, "degree", e.target.value)
                               }
                               disabled={!isEditing}
-                              className="flex-1"
+                              className="flex-1 text-black bg-white"
                             />
                             <Input
                               placeholder="Institution"
@@ -531,7 +536,7 @@ const EditProfileForm = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className="flex-1"
+                              className="flex-1 text-black bg-white"
                             />
                             <Input
                               placeholder="Year"
@@ -544,7 +549,7 @@ const EditProfileForm = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className="flex-1"
+                              className="flex-1 text-black bg-white"
                             />
                             {isEditing && (
                               <Button
@@ -587,7 +592,7 @@ const EditProfileForm = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className="flex-1"
+                              className="flex-1 text-black bg-white"
                             />
                             <Select
                               value={highlight.status}
@@ -599,7 +604,7 @@ const EditProfileForm = () => {
                               <SelectTrigger className="w-[200px]">
                                 <SelectValue placeholder="Status" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="text-black bg-white">
                                 <SelectItem value="ONGOING">Ongoing</SelectItem>
                                 <SelectItem value="COMPLETED">
                                   Completed
@@ -643,6 +648,7 @@ const EditProfileForm = () => {
                         value={profileData?.title || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -655,6 +661,7 @@ const EditProfileForm = () => {
                         value={profileData?.bio || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
                     <div>
@@ -665,6 +672,7 @@ const EditProfileForm = () => {
                         value={profileData?.degree || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -678,6 +686,7 @@ const EditProfileForm = () => {
                         value={profileData?.googleScholar || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -695,6 +704,7 @@ const EditProfileForm = () => {
                             })
                           }
                           disabled={!isEditing}
+                          className="text-black bg-white"
                         />
                         <Textarea
                           placeholder="Description"
@@ -706,6 +716,7 @@ const EditProfileForm = () => {
                             })
                           }
                           disabled={!isEditing}
+                          className="text-black bg-white"
                         />
                         {isEditing && (
                           <div className="flex flex-col space-y-2">
@@ -724,7 +735,7 @@ const EditProfileForm = () => {
                                   });
                                 }
                               }}
-                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-black bg-white"
                             />
                           </div>
                         )}
@@ -827,7 +838,7 @@ const EditProfileForm = () => {
                             <SelectTrigger className="w-[180px]">
                               <SelectValue placeholder="Category" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="text-black bg-white">
                               {Object.keys(categories).map((category) => (
                                 <SelectItem key={category} value={category}>
                                   {category}
@@ -843,7 +854,7 @@ const EditProfileForm = () => {
                             <SelectTrigger className="w-[180px]">
                               <SelectValue placeholder="Subcategory" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="text-black bg-white">
                               {selectedCategory &&
                                 categories[
                                   selectedCategory as keyof typeof categories
@@ -889,17 +900,19 @@ const EditProfileForm = () => {
                     value={profileData?.department || ""}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    className="text-black bg-white"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="university">University/Institue</Label>
+                  <Label htmlFor="university">University/Institution</Label>
                   <Input
                     id="university"
                     name="university"
                     value={profileData?.university || ""}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    className="text-black bg-white"
                   />
                 </div>
 
@@ -918,7 +931,7 @@ const EditProfileForm = () => {
                             updatePosition(index, "title", e.target.value)
                           }
                           disabled={!isEditing}
-                          className="flex-1"
+                          className="flex-1 text-black bg-white"
                         />
                         <Input
                           placeholder="Institution"
@@ -927,7 +940,7 @@ const EditProfileForm = () => {
                             updatePosition(index, "institution", e.target.value)
                           }
                           disabled={!isEditing}
-                          className="flex-1"
+                          className="flex-1 text-black bg-white"
                         />
                         <Select
                           value={pos.startYear}
@@ -939,7 +952,7 @@ const EditProfileForm = () => {
                           <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="Start Year" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="text-black bg-white">
                             {getYearOptions().map((year) => (
                               <SelectItem key={year} value={year.toString()}>
                                 {year}
@@ -957,7 +970,7 @@ const EditProfileForm = () => {
                           <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="End Year" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="text-black bg-white">
                             {getYearOptions().map((year) => (
                               <SelectItem key={year} value={year.toString()}>
                                 {year}
@@ -976,6 +989,7 @@ const EditProfileForm = () => {
                               )
                             }
                             disabled={!isEditing}
+                            className="text-black bg-white"
                           />
                           <Label>Current</Label>
                         </div>
@@ -996,6 +1010,7 @@ const EditProfileForm = () => {
                     <Button
                       type="button"
                       variant="outline"
+                      className="text-black bg-white"
                       onClick={addPosition}
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> Add Position
@@ -1012,6 +1027,7 @@ const EditProfileForm = () => {
                     value={profileData?.website || ""}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    className="text-black bg-white"
                   />
                 </div>
 
@@ -1025,6 +1041,7 @@ const EditProfileForm = () => {
                         value={profileData?.companyName || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -1036,6 +1053,7 @@ const EditProfileForm = () => {
                         value={profileData?.industry || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -1047,6 +1065,7 @@ const EditProfileForm = () => {
                         value={profileData?.description || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
 
@@ -1059,6 +1078,7 @@ const EditProfileForm = () => {
                         value={profileData?.website || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        className="text-black bg-white"
                       />
                     </div>
                   </div>
@@ -1080,7 +1100,7 @@ const EditProfileForm = () => {
                             updateAchievement(index, "year", e.target.value)
                           }
                           disabled={!isEditing}
-                          className="w-32"
+                          className="w-32 text-black bg-white"
                         />
                         <Input
                           placeholder="Description"
@@ -1093,13 +1113,14 @@ const EditProfileForm = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className="flex-1"
+                          className="flex-1 text-black bg-white"
                         />
                         {isEditing && (
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
+                            className="text-white"
                             onClick={() => removeAchievement(index)}
                           >
                             <X className="h-4 w-4" />
@@ -1113,6 +1134,7 @@ const EditProfileForm = () => {
                       type="button"
                       variant="outline"
                       onClick={addAchievement}
+                      className="text-black bg-white"
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
                     </Button>
@@ -1147,7 +1169,7 @@ const EditProfileForm = () => {
           <p>Loading...</p>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

@@ -84,7 +84,7 @@ const AboutUsPage = () => {
         >
           <h2 className="text-3xl font-bold text-[#472014] mb-4">Our Motto</h2>
           <p className="text-xl text-[#472014]">
-          Bridging the gap between academia and industry to make research a reality
+          Bridging the gap between academia and industry to ensure practical impacts and actionable solutions.
           </p>
         </motion.div>
 
