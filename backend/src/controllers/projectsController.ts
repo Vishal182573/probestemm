@@ -35,11 +35,10 @@ function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
     streamifier.createReadStream(fileBuffer).pipe(uploadStream);
   });
 }
-
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { professorId, topic, content, timeline, tags } = req.body;
+    const { cat,subcategory,professorId, topic, content, timeline, tags } = req.body;
 
     // Get professor details for notification
     const creatingProfessor = await prisma.professor.findUnique({
@@ -79,19 +78,22 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     `.trim();
 
     // Notify all professors
-    const allProfessors = await prisma.professor.findMany({
+    const matchingProfessors = await prisma.professorTag.findMany({
       where: {
-        id: { not: professorId },
-        isApproved: true,
+        AND: [{ category: cat }, { subcategory: subcategory }],
+      },
+      include: {
+        professor: true,
       },
     });
-
-    for (const professor of allProfessors) {
+    
+    for (const professor of matchingProfessors) {
       await createNotification(
         "PROJECT_APPLICATION",
         notificationContent,
         professor.id,
         "professor",
+        "/projects",
         project.id,
         "project"
       );

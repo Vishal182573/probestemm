@@ -213,6 +213,16 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
       },
     });
 
+    // await createNotification(
+    //   NotificationType.COMMENT,
+    //   `New comment on your blog: ${blog.title}`,
+    //   userId,
+    //   blogAuthorType as "professor" | "business",
+    //   `/blogs/${blog.id}`,
+    //   blog.id,
+    //   "blog"
+    // );
+
     return res.status(201).json(blog);
   } catch (error) {
     console.error("Error in createBlog:", error);
@@ -397,6 +407,7 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
       }`,
       blogAuthorId,
       blogAuthorType as "professor" | "business",
+      `/blogs/${blog.id}`,
       blog.id,
       "blog"
     );

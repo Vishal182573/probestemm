@@ -180,6 +180,93 @@ interface SelectedImage {
   title: string;
 }
 
+const categories = {
+  Physics: [
+    "Classical Mechanics",
+    "Electromagnetism",
+    "Thermodynamics",
+    "Quantum Mechanics",
+    "Relativity",
+  ],
+  Chemistry: [
+    "Organic Chemistry",
+    "Inorganic Chemistry",
+    "Physical Chemistry",
+    "Analytical Chemistry",
+  ],
+  Biology: [
+    "Molecular Biology",
+    "Cell Biology",
+    "Ecology",
+    "Evolutionary Biology",
+  ],
+  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+  "Space Science": [
+    "Astronomy",
+    "Astrophysics",
+    "Planetary Science",
+    "Space Exploration",
+    "Astrobiology",
+    "Space Weather",
+    "Space Policy and Law",
+  ],
+  "Computer Science": [
+    "Algorithms and Data Structures",
+    "Software Engineering",
+    "Data Science",
+    "Cybersecurity",
+    "Human-Computer Interaction",
+  ],
+  Engineering: [
+    "Electrical Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+  ],
+  "Pure Mathematics": [
+    "Algebra",
+    "Calculus",
+    "Geometry",
+    "Number Theory",
+  ],
+  "Applied Mathematics": [
+    "Statistics",
+    "Operations Research",
+    "Mathematical Modeling",
+    "Data Analysis",
+    "Mathematical Economics",
+  ],
+  "Data Engineering": [
+    "Data Pipeline Development",
+    "Data Storage and Management",
+  ],
+  Robotics: [
+    "Robot Design and Control",
+    "Human-Robot Interaction",
+    "Artificial Intelligence in Robotics",
+  ],
+  Biotechnology: [
+    "Genetic Engineering",
+    "Biochemical Engineering",
+    "Biomedical Engineering",
+    "Biomanufacturing",
+  ],
+  "Environmental Technology": [
+    "Renewable Energy Technologies",
+    "Environmental Monitoring and Management",
+  ],
+  "Space Technology": [
+    "Satellite Technology",
+    "Space Propulsion",
+    "Space Systems and Instruments",
+  ],
+  "Pharmaceutical Engineering": [
+    "Drug Formulation",
+    "Process Engineering for Drug Production",
+  ],
+};
+
+
 const ProfessorProfilePage: React.FC = () => {
   const { id } = useParams();
   const [professor, setProfessor] = useState<Professor | null>(null);
@@ -204,6 +291,8 @@ const ProfessorProfilePage: React.FC = () => {
   const [collaborationType, setCollaborationType] = useState("");
   const [studentOpportunityType, setStudentOpportunityType] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
 
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage({ url: imageUrl, title });
@@ -504,7 +593,10 @@ const ProfessorProfilePage: React.FC = () => {
         endDate: formData.get("durationEndDate") as string,
       }
     };
-
+    console.log(category);
+    console.log(subcategory);
+      projectData.cat = category;
+      projectData.subcategory = subcategory;
     // Add additional fields based on collaboration type
     if (collaborationType === "students") {
       projectData.eligibility = formData.get("eligibility");
@@ -540,56 +632,56 @@ const ProfessorProfilePage: React.FC = () => {
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
-   {id == localStorage.getItem("userId") && (
-   <Card className="border-2 border-[#eb5e17]/20 bg-white shadow-lg rounded-xl">
-   <CardHeader className="border-b border-[#eb5e17]/10 bg-[#eb5e17]/5">
-   <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
-   <Bell className="mr-3 h-6 w-6 text-[#eb5e17]" />
-    Notifications
-   </CardTitle>
-   </CardHeader>
-   <CardContent className="p-6">
-   {notifications.length > 0 ? (
-   <ul className="space-y-4">
-   {notifications.map((notification) => (
-   <li
-   key={notification.id}
-   className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md"
-   >
-   <div className="flex-grow space-y-2">
-   <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
-   {notification.content}
-   </p>
-   <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
-   {new Date(notification.createdAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-   })}
-   </p>
-   </div>
-   {!notification.isRead && (
-   <Button
-   onClick={() => handleMarkAsRead(notification.id)}
-   size="sm"
-   className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
-   >
-    Mark as Read
-   </Button>
-   )}
-   </li>
-   ))}
-   </ul>
-   ) : (
-   <p className="text-center py-8 text-gray-500 italic">
-    No notifications yet.
-   </p>
-   )}
-   </CardContent>
-   </Card>
-   )}
-   </TabsContent>
-   );
+      {id == localStorage.getItem("userId") && (
+        <Card className="border-2 border-[#eb5e17]/20 bg-white shadow-lg rounded-xl">
+          <CardHeader className="border-b border-[#eb5e17]/10 bg-[#eb5e17]/5">
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              <Bell className="mr-3 h-6 w-6 text-[#eb5e17]" />
+              Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {notifications.length > 0 ? (
+              <ul className="space-y-4">
+                {notifications.map((notification) => (
+                  <li
+                    key={notification.id}
+                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md"
+                  >
+                    <div className="flex-grow space-y-2">
+                      <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
+                        {notification.content}
+                      </p>
+                      <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
+                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    {!notification.isRead && (
+                      <Button
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        size="sm"
+                        className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
+                      >
+                        Mark as Read
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center py-8 text-gray-500 italic">
+                No notifications yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </TabsContent>
+  );
 
   const categorizedProjects = {
     industryCollaboration: [] as Project[],
@@ -680,6 +772,51 @@ const ProfessorProfilePage: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {collaborationType === "professors" && (
+                  <>
+                    <div>
+                      <Label>Category</Label>
+                      <Select
+                        name="cat"
+                        value={category}
+                        onValueChange={(value: string) => {
+                          setCategory(value);
+                          setSubcategory(''); // Reset subcategory when category changes
+                        }}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.keys(categories) as Array<keyof typeof categories>).map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {category && (
+                      <div>
+                        <Label>Subcategory</Label>
+                        <Select
+                          name="subcategory"
+                          value={subcategory}
+                          onValueChange={setSubcategory}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Subcategory" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories[category as keyof typeof categories].map((subcat) => (
+                              <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {collaborationType === "students" && (
                   <div>
@@ -1950,32 +2087,32 @@ const ProfessorProfilePage: React.FC = () => {
                                       />
                                     </div>
                                     <div>
-  <Label htmlFor="webinar-image" className="mb-2 text-gray-700 font-medium">
-    Webinar Image
-  </Label>
-  <Input
-    id="webinar-image"
-    name="webinarImage"
-    type="file"
-    accept="image/*"
-    className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
-  />
-</div>
-<div>
-  <Label htmlFor="webinar-document" className="mb-2 text-gray-700 font-medium">
-    Webinar Document (PDF/DOC)
-  </Label>
-  <Input
-    id="webinar-document"
-    name="webinarDocument"
-    type="file"
-    accept=".pdf,.doc,.docx"
-    className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
-  />
-  <p className="text-sm text-gray-500 mt-1">
-    Upload a detailed document about the webinar (max 10MB)
-  </p>
-</div>
+                                      <Label htmlFor="webinar-image" className="mb-2 text-gray-700 font-medium">
+                                        Webinar Image
+                                      </Label>
+                                      <Input
+                                        id="webinar-image"
+                                        name="webinarImage"
+                                        type="file"
+                                        accept="image/*"
+                                        className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="webinar-document" className="mb-2 text-gray-700 font-medium">
+                                        Webinar Document (PDF/DOC)
+                                      </Label>
+                                      <Input
+                                        id="webinar-document"
+                                        name="webinarDocument"
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
+                                      />
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        Upload a detailed document about the webinar (max 10MB)
+                                      </p>
+                                    </div>
 
                                     <Button type="submit">Submit for Approval</Button>
                                   </form>

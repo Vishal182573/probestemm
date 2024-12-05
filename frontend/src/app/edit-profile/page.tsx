@@ -23,30 +23,90 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
 
 const categories = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
+  Physics: [
+    "Classical Mechanics",
+    "Electromagnetism",
+    "Thermodynamics",
+    "Quantum Mechanics",
+    "Relativity",
   ],
-  Technology: ["Computer Science", "Engineering"],
+  Chemistry: [
+    "Organic Chemistry",
+    "Inorganic Chemistry",
+    "Physical Chemistry",
+    "Analytical Chemistry",
+  ],
+  Biology: [
+    "Molecular Biology",
+    "Cell Biology",
+    "Ecology",
+    "Evolutionary Biology",
+  ],
+  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+  "Space Science": [
+    "Astronomy",
+    "Astrophysics",
+    "Planetary Science",
+    "Space Exploration",
+    "Astrobiology",
+    "Space Weather",
+    "Space Policy and Law",
+  ],
+  "Computer Science": [
+    "Algorithms and Data Structures",
+    "Software Engineering",
+    "Data Science",
+    "Cybersecurity",
+    "Human-Computer Interaction",
+  ],
   Engineering: [
     "Electrical Engineering",
     "Mechanical Engineering",
     "Civil Engineering",
     "Chemical Engineering",
   ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
+  "Pure Mathematics": [
+    "Algebra",
+    "Calculus",
+    "Geometry",
+    "Number Theory",
   ],
-} as const;
+  "Applied Mathematics": [
+    "Statistics",
+    "Operations Research",
+    "Mathematical Modeling",
+    "Data Analysis",
+    "Mathematical Economics",
+  ],
+  "Data Engineering": [
+    "Data Pipeline Development",
+    "Data Storage and Management",
+  ],
+  Robotics: [
+    "Robot Design and Control",
+    "Human-Robot Interaction",
+    "Artificial Intelligence in Robotics",
+  ],
+  Biotechnology: [
+    "Genetic Engineering",
+    "Biochemical Engineering",
+    "Biomedical Engineering",
+    "Biomanufacturing",
+  ],
+  "Environmental Technology": [
+    "Renewable Energy Technologies",
+    "Environmental Monitoring and Management",
+  ],
+  "Space Technology": [
+    "Satellite Technology",
+    "Space Propulsion",
+    "Space Systems and Instruments",
+  ],
+  "Pharmaceutical Engineering": [
+    "Drug Formulation",
+    "Process Engineering for Drug Production",
+  ],
+};
 
 // Add interfaces for research interests and tags
 interface ResearchInterest {
@@ -329,7 +389,8 @@ const EditProfileForm = () => {
         formData.append("profileImage", profileImage);
       }
 
-      // Add research interest images with indexed field names
+      if(role=="professor"){
+        // Add research interest images with indexed field names
       profileData.researchInterests.forEach(
         (interest: ResearchInterest, index: number) => {
           if (interest.image) {
@@ -337,6 +398,8 @@ const EditProfileForm = () => {
           }
         }
       );
+      }
+      
 
       // Add the rest of the profile data
       Object.entries(profileData).forEach(([key, value]) => {
@@ -443,7 +506,9 @@ const EditProfileForm = () => {
 
                 {/* Common Fields */}
                 <div className="space-y-4">
-                  <div>
+                  {role !== "business" && (
+                    <>
+                    <div>
                     <Label htmlFor="fullName">Full Name</Label>
                     <Input
                       id="fullName"
@@ -466,6 +531,8 @@ const EditProfileForm = () => {
                       className="text-black bg-white"
                     />
                   </div>
+                  </>
+                  )}
 
                   <div>
                     <Label htmlFor="location">Location</Label>
@@ -892,7 +959,9 @@ const EditProfileForm = () => {
                     </div>
                   </div>
                 )}
-                <div>
+                {role !== "business" &&
+                  <>
+                    <div>
                   <Label htmlFor="department">Department</Label>
                   <Input
                     id="department"
@@ -1030,6 +1099,8 @@ const EditProfileForm = () => {
                     className="text-black bg-white"
                   />
                 </div>
+                  </>
+                }
 
                 {role === "business" && (
                   <div className="space-y-4">
@@ -1085,7 +1156,8 @@ const EditProfileForm = () => {
                 )}
 
                 {/* Achievements Section - Common for all roles */}
-                <div className="space-y-2">
+                {role !== "business" && (
+                  <div className="space-y-2">
                   <Label>Achievements</Label>
                   {profileData?.achievements?.map(
                     (achievement: Achievement, index: number) => (
@@ -1127,7 +1199,7 @@ const EditProfileForm = () => {
                           </Button>
                         )}
                       </div>
-                    )
+                    ) 
                   )}
                   {isEditing && (
                     <Button
@@ -1140,6 +1212,7 @@ const EditProfileForm = () => {
                     </Button>
                   )}
                 </div>
+                )}
 
                 {/* Submit Button */}
                 {isEditing && (

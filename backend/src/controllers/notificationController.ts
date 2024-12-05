@@ -10,6 +10,7 @@ export const createNotification = async (
   content: string,
   recipientId: string,
   recipientType: "student" | "professor" | "business",
+  redirectionLink?: string,
   relatedEntityId?: string,
   relatedEntityType?:
     | "blog"
@@ -23,10 +24,27 @@ export const createNotification = async (
   const notificationData: any = {
     type,
     content,
+    redirectionLink
   };
 
-  // Add recipient
-  notificationData[`${recipientType}Id`] = recipientId;
+  // Ensure the correct ID is used based on recipient type
+  if (recipientType === "professor") {
+    // If it's a ProfessorTag, find the associated Professor ID
+    const professorTag = await prisma.professorTag.findUnique({
+      where: { id: recipientId },
+      select: { professorId: true }
+    });
+
+    if (professorTag) {
+      notificationData.professorId = professorTag.professorId;
+    } else {
+      // If no associated Professor found, you might want to handle this case
+      throw new Error(`No professor found for tag ID: ${recipientId}`);
+    }
+  } else {
+    // For other recipient types, use the ID directly
+    notificationData[`${recipientType}Id`] = recipientId;
+  }
 
   // Add related entity if provided
   if (relatedEntityId && relatedEntityType) {

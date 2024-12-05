@@ -56,7 +56,7 @@ const RoleCard: React.FC<RoleCardProps> = ({ role, roleType }) => {
           <div className="flex items-center mb-4">
             <Avatar className="w-16 h-16 mr-4">
               <AvatarImage
-                src={role.photoUrl || role.profileImageUrl}
+                src={role.photoUrl || role.profileImageUrl || role.imageUrl}
                 alt={role.fullName || role.companyName}
               />
               <AvatarFallback className="text-[#472014] bg-[#c1502e]/10">

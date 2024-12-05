@@ -501,6 +501,7 @@ model Notification {
   content   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  redirectionLink String?
 
   // Recipients
   student   Student? @relation(fields: [studentId], references: [id])

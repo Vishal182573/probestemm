@@ -265,6 +265,7 @@ const BlogsPage: React.FC = () => {
           {blogs.map((blog) => {
             const authorInfo = getAuthorInfo(blog);
             return (
+              <Link href={`/blogs/${blog.id}`} className="flex-shrink-0">
               <motion.div
                 key={blog.id}
                 initial={{ opacity: 0, y: 50 }}
@@ -326,7 +327,7 @@ const BlogsPage: React.FC = () => {
                       </Button>
                     </div>
                     <div className="flex gap-2 sm:gap-4">
-                      <Link href={`/blogs/${blog.id}`} className="flex-shrink-0">
+                      
                         <Button
                           variant="outline"
                           size="sm"
@@ -335,7 +336,6 @@ const BlogsPage: React.FC = () => {
                           <MessageSquare className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           {blog.comments.length}
                         </Button>
-                      </Link>
                       <Link
                         href={
                           blog.professor
@@ -359,6 +359,7 @@ const BlogsPage: React.FC = () => {
                   </div>
                 </div>
               </motion.div>
+              </Link>
             );
           })}
         </div>

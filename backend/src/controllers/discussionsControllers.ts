@@ -39,8 +39,9 @@ export const createDiscussion = async (req: Request, res: Response) => {
         `New discussion in your area of expertise: "${title}"`,
         tag.professorId,
         "professor",
+        `/discussions/${discussion.id}`,
         discussion.id,
-        "discussion"
+        "discussion",
       );
     }
 
@@ -94,6 +95,7 @@ export const answerDiscussion = async (req: Request, res: Response) => {
       `Your discussion "${updatedDiscussion.title}" has received a new answer.`,
       updatedDiscussion.studentId,
       "student",
+      `/discussions/${discussionId}`,
       discussionId,
       "discussion"
     );

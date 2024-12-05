@@ -216,6 +216,7 @@ const BusinessProfilePage: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log(notifications);
 
       setNotifications(
         notifications.map((n) =>
@@ -483,6 +484,7 @@ const BusinessProfilePage: React.FC = () => {
             {notifications.length > 0 ? (
               <ul className="space-y-4">
                 {notifications.map((notification) => (
+                  // <a href={"projects"}>
                   <li
                     key={notification.id}
                     className="flex items-center justify-between border-b pb-4"
@@ -516,6 +518,7 @@ const BusinessProfilePage: React.FC = () => {
                       </Button>
                     )}
                   </li>
+                  // </a>
                 ))}
               </ul>
             ) : (
@@ -607,15 +610,15 @@ const BusinessProfilePage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="text-lg">
                   <ul className="space-y-4">
-                    <li className="flex items-center">
-                      <strong className="text-[#472014] min-w-[100px]">
-                        Website: {business.website || "N/A"}
-                      </strong>
+                    <li className="flex items-center text-black">
+                      
+                        Website : <a href={business.website || ""} className="text-blue-500 underline">{business.website || "N/A"}
+                      </a>
                     </li>
                     <li>
-                      <strong className="text-[#472014] block mb-2">
+                      <div className="text-[#472014] block mb-2">
                         Description: {business.description}
-                      </strong>
+                      </div>
                     </li>
                   </ul>
                 </CardContent>
