@@ -68,7 +68,7 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     // Enhanced notification message
     const notificationContent = `
       New Collaboration Opportunity!
-      Project: ${topic}
+      Project: ${content}
       Professor: ${creatingProfessor?.fullName}
       University: ${creatingProfessor?.university}
       Department: ${creatingProfessor?.department}
@@ -193,10 +193,12 @@ export const createStudentProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
+        "/projects",
         project.id,
         "project"
       );
     }
+
 
     res.status(201).json(project);
   } catch (error) {
@@ -266,6 +268,7 @@ export const createIndustryProject = async (req: Request, res: Response) => {
         notificationContent,
         business.id,
         "business",
+        "/projects",
         project.id,
         "project"
       );
@@ -494,6 +497,7 @@ export const applyForProject = async (req: Request, res: Response) => {
         notificationContent,
         creatorId,
         creatorType,
+        "/projects",
         project.id,
         "project"
       );
@@ -622,6 +626,7 @@ export const createRDProject = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
+        "/projects",
         project.id,
         "project"
       );
@@ -717,6 +722,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
+        "/projects",
         project.id,
         "project"
       );
@@ -781,6 +787,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
+        "/projects",
         project.id,
         "project"
       );
@@ -792,6 +799,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         notificationContent,
         business.id,
         "business",
+        "/projects",
         project.id,
         "project"
       );
@@ -900,7 +908,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
 
     // Create notification for the selected participant
     const notificationContent = `
-      Congratulations! You have been selected for the project "${project.topic}".
+      Congratulations! You have been selected for the project "${project.content}".
       Please proceed with the next steps as discussed.
       Project status has been updated to ONGOING.
     `.trim();
@@ -911,6 +919,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
         notificationContent,
         applicantId,
         applicantType,
+        "/projects",
         projectId,
         "project"
       );
@@ -919,7 +928,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
     // Notify other applicants they weren't selected
     const notifyOtherApplicants = async () => {
       const rejectionContent = `
-        Update regarding project "${project.topic}":
+        Update regarding project "${project.content}":
         Another participant has been selected for this project.
         Thank you for your interest.
       `.trim();
@@ -938,6 +947,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.professorId,
             "professor",
+            "/projects",
             projectId,
             "project"
           );
@@ -951,6 +961,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.studentId,
             "student",
+            "/projects",
             projectId,
             "project"
           );
@@ -964,6 +975,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.businessId,
             "business",
+            "/projects",
             projectId,
             "project"
           );
@@ -1030,6 +1042,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.professorId,
           "professor",
+          "/projects",
           projectId,
           "project"
         );
@@ -1039,6 +1052,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.businessId,
           "business",
+          "/projects",
           projectId,
           "project"
         );
@@ -1048,6 +1062,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.studentId,
           "student",
+          "projects",
           projectId,
           "project"
         );
@@ -1081,6 +1096,7 @@ export const completeProject = async (req: Request, res: Response) => {
             completionContent,
             recipientId,
             recipientType,
+            "/projects",
             projectId,
             "project"
           );

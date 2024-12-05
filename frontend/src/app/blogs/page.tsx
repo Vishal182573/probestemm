@@ -265,7 +265,7 @@ const BlogsPage: React.FC = () => {
           {blogs.map((blog) => {
             const authorInfo = getAuthorInfo(blog);
             return (
-              <Link href={`/blogs/${blog.id}`} className="flex-shrink-0">
+              <Link href={`/blogs/${blog.id}`} className="flex-shrink-0" key={`/blogs/${blog.id}`}>
               <motion.div
                 key={blog.id}
                 initial={{ opacity: 0, y: 50 }}

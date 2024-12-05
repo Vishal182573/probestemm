@@ -49,7 +49,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Footer } from "@/components/shared/Footer";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
@@ -158,6 +158,7 @@ type Notification = {
   webinarId?: string;
   discussionId?: string;
   projectId?: string;
+  redirectionLink?:string
 };
 
 interface Webinar {
@@ -645,9 +646,10 @@ const ProfessorProfilePage: React.FC = () => {
               <ul className="space-y-4">
                 {notifications.map((notification) => (
                   <li
-                    key={notification.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md"
+                  key={notification.id}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md cursor-pointer"
                   >
+                    <a href={notification.redirectionLink}>
                     <div className="flex-grow space-y-2">
                       <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
                         {notification.content}
@@ -669,7 +671,9 @@ const ProfessorProfilePage: React.FC = () => {
                         Mark as Read
                       </Button>
                     )}
+                    </a>
                   </li>
+
                 ))}
               </ul>
             ) : (

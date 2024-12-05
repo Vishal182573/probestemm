@@ -9,6 +9,7 @@ import { Database, Resource, getModelByName } from "@adminjs/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
+
 // Route imports
 import authRoutes from "./routes/authRoutes";
 import studentsRoutes from "./routes/studentRoutes";

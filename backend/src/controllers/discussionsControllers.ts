@@ -166,6 +166,7 @@ export const voteDiscussion = async (req: Request, res: Response) => {
       `Someone ${voteAction} your discussion "${updatedDiscussion.title}".`,
       updatedDiscussion.studentId,
       "student",
+      `/discussions/${discussionId}`,
       discussionId,
       "discussion"
     );
