@@ -389,17 +389,17 @@ const EditProfileForm = () => {
         formData.append("profileImage", profileImage);
       }
 
-      if(role=="professor"){
+      if (role == "professor") {
         // Add research interest images with indexed field names
-      profileData.researchInterests.forEach(
-        (interest: ResearchInterest, index: number) => {
-          if (interest.image) {
-            formData.append(`researchInterestImages[${index}]`, interest.image);
+        profileData.researchInterests.forEach(
+          (interest: ResearchInterest, index: number) => {
+            if (interest.image) {
+              formData.append(`researchInterestImages[${index}]`, interest.image);
+            }
           }
-        }
-      );
+        );
       }
-      
+
 
       // Add the rest of the profile data
       Object.entries(profileData).forEach(([key, value]) => {
@@ -450,11 +450,11 @@ const EditProfileForm = () => {
   };
 
   return (
-    <div className="bg-white text-black">
+    <div className="flex flex-col min-h-screen ">
+      <NavbarWithBg />
       {userId && role ? (
-        <>
-          <NavbarWithBg />
-          <Card className="w-full min-h-screen bg-black">
+        <div className="flex justify-center items-start p-0 h-screen">
+          <Card className="relative overflow-y-auto h-[80vh] my p-5 bg-white my-4 w-[50vw]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
               <CardTitle className="text-2xl font-bold text-black">
                 Profile Settings
@@ -475,7 +475,7 @@ const EditProfileForm = () => {
               </Button>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="p-0">
               <form onSubmit={handleSubmit} className="space-y-6 text-black bg-white">
                 {/* Profile Image */}
                 <div className="space-y-2">
@@ -508,30 +508,30 @@ const EditProfileForm = () => {
                 <div className="space-y-4">
                   {role !== "business" && (
                     <>
-                    <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      value={profileData?.fullName || ""}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="text-black bg-white"
-                    />
-                  </div>
+                      <div>
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          name="fullName"
+                          value={profileData?.fullName || ""}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className="text-black bg-white"
+                        />
+                      </div>
 
-                  <div>
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={profileData?.phoneNumber || ""}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="text-black bg-white"
-                    />
-                  </div>
-                  </>
+                      <div>
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          value={profileData?.phoneNumber || ""}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                          className="text-black bg-white"
+                        />
+                      </div>
+                    </>
                   )}
 
                   <div>
@@ -568,6 +568,17 @@ const EditProfileForm = () => {
                         id="course"
                         name="course"
                         value={profileData?.course || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="text-black bg-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="experience">Experience</Label>
+                      <Input
+                        id="experience"
+                        name="experience"
+                        value={profileData?.experience || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}
                         className="text-black bg-white"
@@ -636,6 +647,7 @@ const EditProfileForm = () => {
                           type="button"
                           variant="outline"
                           onClick={addEducation}
+                          className="bg-white text-black hover:text-white"
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Education
                         </Button>
@@ -696,6 +708,7 @@ const EditProfileForm = () => {
                           type="button"
                           variant="outline"
                           onClick={addResearchHighlight}
+                          className="bg-white text-black hover:text-white"
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Research
                           Highlight
@@ -959,146 +972,158 @@ const EditProfileForm = () => {
                     </div>
                   </div>
                 )}
-                {role !== "business" &&
+                {role === "professor" &&
                   <>
                     <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    name="department"
-                    value={profileData?.department || ""}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="text-black bg-white"
-                  />
-                </div>
+                      <Label htmlFor="department">Department</Label>
+                      <Input
+                        id="department"
+                        name="department"
+                        value={profileData?.department || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="text-black bg-white"
+                      />
+                    </div>
 
-                <div>
-                  <Label htmlFor="university">University/Institution</Label>
-                  <Input
-                    id="university"
-                    name="university"
-                    value={profileData?.university || ""}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="text-black bg-white"
-                  />
-                </div>
+                    <div>
+                      <Label htmlFor="university">University/Institution</Label>
+                      <Input
+                        id="university"
+                        name="university"
+                        value={profileData?.university || ""}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="text-black bg-white"
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label>Positions Held</Label>
-                  {profileData?.positions?.map(
-                    (pos: Position, index: number) => (
-                      <div
-                        key={index}
-                        className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
-                      >
-                        <Input
-                          placeholder="Title"
-                          value={pos.title}
-                          onChange={(e) =>
-                            updatePosition(index, "title", e.target.value)
-                          }
-                          disabled={!isEditing}
-                          className="flex-1 text-black bg-white"
-                        />
-                        <Input
-                          placeholder="Institution"
-                          value={pos.institution}
-                          onChange={(e) =>
-                            updatePosition(index, "institution", e.target.value)
-                          }
-                          disabled={!isEditing}
-                          className="flex-1 text-black bg-white"
-                        />
-                        <Select
-                          value={pos.startYear}
-                          onValueChange={(value) =>
-                            updatePosition(index, "startYear", value)
-                          }
-                          disabled={!isEditing}
-                        >
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="Start Year" />
-                          </SelectTrigger>
-                          <SelectContent className="text-black bg-white">
-                            {getYearOptions().map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={pos.endYear}
-                          onValueChange={(value) =>
-                            updatePosition(index, "endYear", value)
-                          }
-                          disabled={!isEditing || pos.current}
-                        >
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="End Year" />
-                          </SelectTrigger>
-                          <SelectContent className="text-black bg-white">
-                            {getYearOptions().map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={pos.current}
-                            onCheckedChange={(checked) =>
-                              updatePosition(
-                                index,
-                                "current",
-                                checked as boolean
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="text-black bg-white"
-                          />
-                          <Label>Current</Label>
-                        </div>
+                    {role === "professor" &&
+                      (<> <div className="space-y-2">
+                        <Label>Positions Held</Label>
+                        {profileData?.positions?.map(
+                          (pos: Position, index: number) => (
+                            <div
+                              key={index}
+                              className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                            >
+                              <Input
+                                placeholder="Title"
+                                value={pos.title}
+                                onChange={(e) =>
+                                  updatePosition(index, "title", e.target.value)
+                                }
+                                disabled={!isEditing}
+                                className="flex-1 text-black bg-white"
+                              />
+                              <Input
+                                placeholder="Institution"
+                                value={pos.institution}
+                                onChange={(e) =>
+                                  updatePosition(index, "institution", e.target.value)
+                                }
+                                disabled={!isEditing}
+                                className="flex-1 text-black bg-white"
+                              />
+                              <Select
+                                value={pos.startYear}
+                                onValueChange={(value) =>
+                                  updatePosition(index, "startYear", value)
+                                }
+                                disabled={!isEditing}
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="Start Year" />
+                                </SelectTrigger>
+                                <SelectContent className="text-black bg-white">
+                                  {getYearOptions().map((year) => (
+                                    <SelectItem key={year} value={year.toString()}>
+                                      {year}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select
+                                value={pos.endYear}
+                                onValueChange={(value) =>
+                                  updatePosition(index, "endYear", value)
+                                }
+                                disabled={!isEditing || pos.current}
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="End Year" />
+                                </SelectTrigger>
+                                <SelectContent className="text-black bg-white">
+                                  {getYearOptions().map((year) => (
+                                    <SelectItem key={year} value={year.toString()}>
+                                      {year}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={pos.current}
+                                  onCheckedChange={(checked) => {
+                                    // When checkbox is checked, set endYear to current year
+                                    const currentYear = new Date().getFullYear().toString();
+                                    updatePosition(
+                                      index,
+                                      "current",
+                                      checked as boolean
+                                    );
+
+                                    if (checked) {
+                                      updatePosition(index, "endYear", currentYear);
+                                    } else {
+                                      // Optionally clear the end year when unchecked
+                                      updatePosition(index, "endYear", "");
+                                    }
+                                  }}
+                                  disabled={!isEditing}
+                                  className="text-black bg-white"
+                                />
+                                <Label>Current</Label>
+                              </div>
+                              {isEditing && (
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => removePosition(index)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          )
+                        )}
                         {isEditing && (
                           <Button
                             type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => removePosition(index)}
+                            variant="outline"
+                            className="text-black bg-white"
+                            onClick={addPosition}
                           >
-                            <X className="h-4 w-4" />
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Position
                           </Button>
                         )}
                       </div>
-                    )
-                  )}
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="text-black bg-white"
-                      onClick={addPosition}
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Position
-                    </Button>
-                  )}
-                </div>
-                {/* Website Field */}
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    name="website"
-                    type="url"
-                    value={profileData?.website || ""}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="text-black bg-white"
-                  />
-                </div>
+                        {/* Website Field */}
+                        <div>
+                          <Label htmlFor="website">Website</Label>
+                          <Input
+                            id="website"
+                            name="website"
+                            type="url"
+                            value={profileData?.website || ""}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                            className="text-black bg-white"
+                          />
+                        </div>
+                      </>
+                      )}
                   </>
                 }
 
@@ -1158,60 +1183,60 @@ const EditProfileForm = () => {
                 {/* Achievements Section - Common for all roles */}
                 {role !== "business" && (
                   <div className="space-y-2">
-                  <Label>Achievements</Label>
-                  {profileData?.achievements?.map(
-                    (achievement: Achievement, index: number) => (
-                      <div
-                        key={index}
-                        className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                    <Label>Achievements</Label>
+                    {profileData?.achievements?.map(
+                      (achievement: Achievement, index: number) => (
+                        <div
+                          key={index}
+                          className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                        >
+                          <Input
+                            placeholder="Year"
+                            value={achievement.year}
+                            onChange={(e) =>
+                              updateAchievement(index, "year", e.target.value)
+                            }
+                            disabled={!isEditing}
+                            className="w-32 text-black bg-white"
+                          />
+                          <Input
+                            placeholder="Description"
+                            value={achievement.description}
+                            onChange={(e) =>
+                              updateAchievement(
+                                index,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                            disabled={!isEditing}
+                            className="flex-1 text-black bg-white"
+                          />
+                          {isEditing && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="text-white"
+                              onClick={() => removeAchievement(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )
+                    )}
+                    {isEditing && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addAchievement}
+                        className="text-black bg-white"
                       >
-                        <Input
-                          placeholder="Year"
-                          value={achievement.year}
-                          onChange={(e) =>
-                            updateAchievement(index, "year", e.target.value)
-                          }
-                          disabled={!isEditing}
-                          className="w-32 text-black bg-white"
-                        />
-                        <Input
-                          placeholder="Description"
-                          value={achievement.description}
-                          onChange={(e) =>
-                            updateAchievement(
-                              index,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          className="flex-1 text-black bg-white"
-                        />
-                        {isEditing && (
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="text-white"
-                            onClick={() => removeAchievement(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ) 
-                  )}
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={addAchievement}
-                      className="text-black bg-white"
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
-                    </Button>
-                  )}
-                </div>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
+                      </Button>
+                    )}
+                  </div>
                 )}
 
                 {/* Submit Button */}
@@ -1235,13 +1260,13 @@ const EditProfileForm = () => {
               </form>
             </CardContent>
           </Card>
-          <Footer />
-        </>
+        </div>
       ) : (
         <div className="flex items-center justify-center min-h-screen">
           <p>Loading...</p>
         </div>
       )}
+      <Footer />
     </div>
   );
 };

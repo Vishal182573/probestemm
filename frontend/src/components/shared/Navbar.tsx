@@ -20,6 +20,7 @@ export const Navbar: React.FC = () => {
     imageUrl?: string;
     photoUrl?: string;
     profileImageUrl?: string;
+    companyName?:string;
   } | null>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -106,7 +107,7 @@ export const Navbar: React.FC = () => {
           <User className={`${dropdownTextColor} w-5 h-5`} />
         )}
       </div>
-      <span className="font-medium">{user?.fullName || "User"}</span>
+      <span className="font-medium">{user?.fullName || user?.companyName || "User"}</span>
       <ChevronDown className={`w-4 h-4 ${showDropdown ? "rotate-180" : ""} transition-transform`} />
     </Button>
   );

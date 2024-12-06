@@ -35,6 +35,7 @@ type Notification = {
   isRead: boolean;
   businessId: string;
   projectId?: string;
+  redirectionLink?:string;
 };
 
 interface Business {
@@ -317,7 +318,7 @@ const BusinessProfilePage: React.FC = () => {
     const applications = applicationDetails[project.id] || [];
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 ">
         <h4 className="text-lg font-bold text-[#472014] mb-3">
           Applications ({applications.length})
         </h4>
@@ -325,7 +326,7 @@ const BusinessProfilePage: React.FC = () => {
           <p className="text-gray-500 italic">No applications yet</p>
         )}
         {applications.map((application) => (
-          <Card key={application.id} className="p-4 border-2 border-[#eb5e17]">
+          <Card key={application.id} className="p-4 border-2 border-[#eb5e17] bg-white">
             <div className="flex items-start justify-between">
               <div>
                 <h5 className="font-bold text-[#472014]">
@@ -425,9 +426,6 @@ const BusinessProfilePage: React.FC = () => {
               </p>
 
               <div className="flex justify-between items-center mb-4">
-                <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
-                  {project.difficulty}
-                </Badge>
                 <Badge
                   className={`px-4 py-2 rounded-full ${
                     project.status === "OPEN"
@@ -489,6 +487,7 @@ const BusinessProfilePage: React.FC = () => {
                     key={notification.id}
                     className="flex items-center justify-between border-b pb-4"
                   >
+                    <a href={notification.redirectionLink}>
                     <div>
                       <p
                         className={`${
@@ -501,7 +500,7 @@ const BusinessProfilePage: React.FC = () => {
                           dangerouslySetInnerHTML={{
                             __html: notification.content,
                           }}
-                          className="text-[#472014] text-2xl font-bold leading-tight line-clamp-2"
+                          className="text-[#472014]  line-clamp-2"
                         />
                       </p>
                       <p className="text-sm text-gray-500">
@@ -517,8 +516,8 @@ const BusinessProfilePage: React.FC = () => {
                         Mark as Read
                       </Button>
                     )}
+                    </a>
                   </li>
-                  // </a>
                 ))}
               </ul>
             ) : (

@@ -19,28 +19,88 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 const categories: { [key: string]: string[] } = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
+  Physics: [
+    "Classical Mechanics",
+    "Electromagnetism",
+    "Thermodynamics",
+    "Quantum Mechanics",
+    "Relativity",
   ],
-  Technology: ["Computer Science", "Engineering"],
+  Chemistry: [
+    "Organic Chemistry",
+    "Inorganic Chemistry",
+    "Physical Chemistry",
+    "Analytical Chemistry",
+  ],
+  Biology: [
+    "Molecular Biology",
+    "Cell Biology",
+    "Ecology",
+    "Evolutionary Biology",
+  ],
+  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+  "Space Science": [
+    "Astronomy",
+    "Astrophysics",
+    "Planetary Science",
+    "Space Exploration",
+    "Astrobiology",
+    "Space Weather",
+    "Space Policy and Law",
+  ],
+  "Computer Science": [
+    "Algorithms and Data Structures",
+    "Software Engineering",
+    "Data Science",
+    "Cybersecurity",
+    "Human-Computer Interaction",
+  ],
   Engineering: [
     "Electrical Engineering",
     "Mechanical Engineering",
     "Civil Engineering",
     "Chemical Engineering",
   ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
+  "Pure Mathematics": [
+    "Algebra",
+    "Calculus",
+    "Geometry",
+    "Number Theory",
+  ],
+  "Applied Mathematics": [
+    "Statistics",
+    "Operations Research",
+    "Mathematical Modeling",
+    "Data Analysis",
+    "Mathematical Economics",
+  ],
+  "Data Engineering": [
+    "Data Pipeline Development",
+    "Data Storage and Management",
+  ],
+  Robotics: [
+    "Robot Design and Control",
+    "Human-Robot Interaction",
+    "Artificial Intelligence in Robotics",
+  ],
+  Biotechnology: [
+    "Genetic Engineering",
+    "Biochemical Engineering",
+    "Biomedical Engineering",
+    "Biomanufacturing",
+  ],
+  "Environmental Technology": [
+    "Renewable Energy Technologies",
+    "Environmental Monitoring and Management",
+  ],
+  "Space Technology": [
+    "Satellite Technology",
+    "Space Propulsion",
+    "Space Systems and Instruments",
+  ],
+  "Pharmaceutical Engineering": [
+    "Drug Formulation",
+    "Process Engineering for Drug Production",
   ],
 };
 

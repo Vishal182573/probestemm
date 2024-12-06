@@ -92,9 +92,9 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
             {project.content && project.content.substring(0, 100)}...
           </p>
           <div className="flex justify-between items-center mb-4">
-            <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
-              {project.difficulty}
-            </Badge>
+            {/* <Badge className="bg-[#eb5e17] text-white px-4 py-2 rounded-full">
+              {project.}
+            </Badge> */}
             <Badge
               className={`px-4 py-2 rounded-full ${
                 project.status === "OPEN"

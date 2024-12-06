@@ -158,7 +158,7 @@ type Notification = {
   webinarId?: string;
   discussionId?: string;
   projectId?: string;
-  redirectionLink?:string
+  redirectionLink?: string
 };
 
 interface Webinar {
@@ -596,8 +596,8 @@ const ProfessorProfilePage: React.FC = () => {
     };
     console.log(category);
     console.log(subcategory);
-      projectData.cat = category;
-      projectData.subcategory = subcategory;
+    projectData.cat = category;
+    projectData.subcategory = subcategory;
     // Add additional fields based on collaboration type
     if (collaborationType === "students") {
       projectData.eligibility = formData.get("eligibility");
@@ -646,31 +646,31 @@ const ProfessorProfilePage: React.FC = () => {
               <ul className="space-y-4">
                 {notifications.map((notification) => (
                   <li
-                  key={notification.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md cursor-pointer"
+                    key={notification.id}
+                    className="flex items-center justify-between rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#eb5e17]/30 hover:bg-[#eb5e17]/5 hover:shadow-md cursor-pointer"
                   >
                     <a href={notification.redirectionLink}>
-                    <div className="flex-grow space-y-2">
-                      <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
-                        {notification.content}
-                      </p>
-                      <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
-                        {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    {!notification.isRead && (
-                      <Button
-                        onClick={() => handleMarkAsRead(notification.id)}
-                        size="sm"
-                        className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
-                      >
-                        Mark as Read
-                      </Button>
-                    )}
+                      <div className="flex-grow space-y-2">
+                        <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
+                          {notification.content}
+                        </p>
+                        <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
+                          {new Date(notification.createdAt).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      {!notification.isRead && (
+                        <Button
+                          onClick={() => handleMarkAsRead(notification.id)}
+                          size="sm"
+                          className="ml-4 bg-[#eb5e17] text-white transition-colors hover:bg-[#472014]"
+                        >
+                          Mark as Read
+                        </Button>
+                      )}
                     </a>
                   </li>
 
@@ -1770,15 +1770,19 @@ const ProfessorProfilePage: React.FC = () => {
                       {professor.positions.length > 0 ? (
                         <ul className="space-y-2">
                           {professor.positions.map((position) => (
-                            <li key={position.id} className="flex items-center">
+                            <li
+                              key={position.id}
+                              className="flex items-center space-x-2 overflow-x-auto"
+                            >
                               <Badge
                                 variant="outline"
-                                className="mr-2 text-black"
+                                className="w-[120px] h-8 flex items-center justify-center shrink-0 text-center text-xs font-normal text-black"
                               >
-                                {position.startYear} -{" "}
-                                {position.endYear || "Present"}
+                                {position.startYear} - {position.endYear || "Present"}
                               </Badge>
-                              {position.title}, {position.institution}
+                              <span >
+                                {position.title}, {position.institution}
+                              </span>
                             </li>
                           ))}
                         </ul>

@@ -36,7 +36,7 @@ export const createDiscussion = async (req: Request, res: Response) => {
     for (const tag of matchingProfessors) {
       await createNotification(
         NotificationType.DISCUSSION_TAG,
-        `New discussion in your area of expertise: "${title}"`,
+        `New discussion in your area of expertise`,
         tag.professorId,
         "professor",
         `/discussions/${discussion.id}`,

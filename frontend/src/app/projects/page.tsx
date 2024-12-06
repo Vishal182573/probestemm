@@ -618,11 +618,28 @@ interface ApplyModalProps {
 }
 
 const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
-  const { register, handleSubmit, reset } = useForm();
-  const [submitting, setSubmitting] = useState(false);
+  const { register, handleSubmit, reset, setValue } = useForm({
+    defaultValues: {
+      name: localStorage.getItem("fullName") || "",
+      email: localStorage.getItem("email") || "",
+      phoneNumber: localStorage.getItem("phoneNumber") || "",
+      description: "",
+      images: null
+    }
+  });
+  
+  const [submitting, setSubmitting] = React.useState(false);
+
+  // Optional: If you want to update form values if localStorage changes
+  useEffect(() => {
+    setValue('name', localStorage.getItem("fullName") || localStorage.getItem("companyName") || "");
+    setValue('email', localStorage.getItem("email") || "");
+    setValue('phoneNumber', localStorage.getItem("phoneNumber") || "");
+  }, [setValue, show]); // Add show to reset when modal opens
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
+    console.log(FormData);
     try {
       const formData = new FormData();
       formData.append("applicantId", localStorage.getItem("userId") || "");
@@ -631,22 +648,22 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
       formData.append("email", data.email);
       formData.append("phoneNumber", data.phoneNumber || "");
       formData.append("description", data.description);
-
+      
       if (data.images && data.images.length > 0) {
         Array.from(data.images).forEach((file) => {
           formData.append("images", file as File);
         });
       }
-
+      
       await axios.post(`${API_URL}/project/${project.id}/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
+      
       reset();
       onClose();
     } catch (error) {
       console.error("Error submitting application:", error);
-      alert("Failed to submit application");
+      alert("you already applied to this collection");
     } finally {
       setSubmitting(false);
     }
@@ -659,36 +676,35 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
           <div>
             <Input
               placeholder="Your Name"
-              {...register("name", { required: true })}
-              className="w-full"
+              {...register("name")}
+              className="w-full text-black bg-white"
+              disabled
             />
           </div>
-
           <div>
             <Input
               type="email"
               placeholder="Your Email"
-              {...register("email", { required: true })}
-              className="w-full"
+              {...register("email")}
+              className="w-full text-black bg-white"
+              disabled
             />
           </div>
-
-          <div>
+          {/* <div>
             <Input
               placeholder="Phone Number"
               {...register("phoneNumber")}
-              className="w-full"
+              className="w-full text-black bg-white"
+              disabled
             />
-          </div>
-
+          </div> */}
           <div>
             <Textarea
-              placeholder="Why are you interested in this project? Describe your relevant experience..."
+              placeholder="Application Description"
               {...register("description", { required: true })}
               className="w-full min-h-[150px]"
             />
           </div>
-
           <div>
             <p className="text-sm text-gray-500 mb-2">
               Upload supporting documents (Optional)
@@ -698,11 +714,10 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
               multiple
               accept="image/*,.pdf,.doc,.docx"
               {...register("images")}
-              className="w-full"
+              className="w-full bg-white text-black"
             />
           </div>
         </div>
-
         <div className="flex justify-end space-x-2 mt-6">
           <Button
             type="button"

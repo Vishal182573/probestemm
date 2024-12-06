@@ -15,9 +15,9 @@ const testimonials = [
     rating: 5,
   },
   {
-    quote: "As an educator, Probe STEM provides me with cutting-edge tools to engage my students like never before.",
-    author: "Dr. James L.",
-    role: "University Professor",
+    quote: "I’m eager to unite with a global network of researchers, leveraging this platform to pioneer groundbreaking sustainable solutions. As an academician, I have always felt the need for a forum that can actively promote industrial collaborations. In my view, this initiative is a step in the right direction",
+    author: "Ankur Suri",
+    role: "Teaching Professor, University of Washington Tacoma, USA",
     image: TESTI3,
     rating: 5,
   },

@@ -68,13 +68,6 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     // Enhanced notification message
     const notificationContent = `
       New Collaboration Opportunity!
-      Project: ${content}
-      Professor: ${creatingProfessor?.fullName}
-      University: ${creatingProfessor?.university}
-      Department: ${creatingProfessor?.department}
-      Contact: ${creatingProfessor?.email} ${
-      creatingProfessor?.phoneNumber ? `/ ${creatingProfessor.phoneNumber}` : ""
-    }
     `.trim();
 
     // Notify all professors
@@ -166,23 +159,6 @@ export const createStudentProject = async (req: Request, res: Response) => {
     // Enhanced notification message
     const notificationContent = `
       New ${category.toLowerCase().replace("_", " ")} Opportunity!
-      Project: ${topic}
-      Professor: ${creatingProfessor?.fullName}
-      University: ${creatingProfessor?.university}
-      Department: ${creatingProfessor?.department}
-      Duration: ${
-        project.duration
-          ? `${new Date(
-              project.duration.startDate
-            ).toLocaleDateString()} to ${new Date(
-              project.duration.endDate
-            ).toLocaleDateString()}`
-          : "Not specified"
-      }
-      Funding: ${isFunded ? "Yes" : "No"}
-      Contact: ${creatingProfessor?.email} ${
-      creatingProfessor?.phoneNumber ? `/ ${creatingProfessor.phoneNumber}` : ""
-    }
     `.trim();
 
     // Notify all students
@@ -250,14 +226,6 @@ export const createIndustryProject = async (req: Request, res: Response) => {
     // Enhanced notification message
     const notificationContent = `
       New Industry Collaboration Opportunity!
-      Project: ${topic}
-      Professor: ${creatingProfessor?.fullName}
-      University: ${creatingProfessor?.university}
-      Department: ${creatingProfessor?.department}
-      Technology Focus: ${techDescription}
-      Contact: ${creatingProfessor?.email} ${
-      creatingProfessor?.phoneNumber ? `/ ${creatingProfessor.phoneNumber}` : ""
-    }
     `.trim();
 
     // Notify all businesses
@@ -486,9 +454,7 @@ export const applyForProject = async (req: Request, res: Response) => {
       }
 
       const notificationContent = `
-        New application received for your project "${project.topic}".
-        Applicant: ${applicantInfo}
-        Description: ${description}
+        New application received for your project
       `.trim();
 
       // Send notification to project creator
@@ -602,22 +568,6 @@ export const createRDProject = async (req: Request, res: Response) => {
 
     const notificationContent = `
       New R&D Project Opportunity!
-      Project: ${topic}
-      Company: ${creatingBusiness?.companyName}
-      Industry: ${creatingBusiness?.industry}
-      Duration: ${
-        project.duration
-          ? `${new Date(
-              project.duration.startDate
-            ).toLocaleDateString()} to ${new Date(
-              project.duration.endDate
-            ).toLocaleDateString()}`
-          : "Not specified"
-      }
-      Funding: ${isFunded ? "Yes" : "No"}
-      Contact: ${creatingBusiness?.email} ${
-      creatingBusiness?.phoneNumber ? `/ ${creatingBusiness.phoneNumber}` : ""
-    }
     `.trim();
 
     for (const professor of allProfessors) {
@@ -698,22 +648,6 @@ export const createInternshipProject = async (req: Request, res: Response) => {
 
     const notificationContent = `
       New Internship Opportunity!
-      Project: ${topic}
-      Company: ${creatingBusiness?.companyName}
-      Industry: ${creatingBusiness?.industry}
-      Duration: ${
-        project.duration
-          ? `${new Date(
-              project.duration.startDate
-            ).toLocaleDateString()} to ${new Date(
-              project.duration.endDate
-            ).toLocaleDateString()}`
-          : "Not specified"
-      }
-      Funding: ${isFunded ? "Yes" : "No"}
-      Contact: ${creatingBusiness?.email} ${
-      creatingBusiness?.phoneNumber ? `/ ${creatingBusiness.phoneNumber}` : ""
-    }
     `.trim();
 
     for (const student of allStudents) {
@@ -765,14 +699,6 @@ export const createStudentProposal = async (req: Request, res: Response) => {
     // Notify professors and businesses based on proposal category
     const notificationContent = `
       New Student Proposal!
-     
-      Topic: ${topic}
-      Student: ${creatingStudent?.fullName}
-      University: ${creatingStudent?.university}
-      Course: ${creatingStudent?.course}
-      Contact: ${creatingStudent?.email} ${
-      creatingStudent?.phoneNumber ? `/ ${creatingStudent.phoneNumber}` : ""
-    }
     `.trim();
 
     const [professors, businesses] = await Promise.all([
@@ -908,9 +834,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
 
     // Create notification for the selected participant
     const notificationContent = `
-      Congratulations! You have been selected for the project "${project.content}".
-      Please proceed with the next steps as discussed.
-      Project status has been updated to ONGOING.
+      Congratulations! You have been selected for the project
     `.trim();
 
     if (applicantId) {

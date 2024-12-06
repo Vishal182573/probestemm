@@ -126,7 +126,7 @@ export const Footer: React.FC = () => {
                 className="mb-4"
               />
               <p className="text-2xl text-[#eb5e17] text-center lg:text-left">
-              Bridging the gap between academia and industry to make research a reality
+              Bridging the gap between academia and industry to ensure practical impacts and actionable solutions
               </p>
             </div>
           </div>

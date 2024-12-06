@@ -78,6 +78,7 @@ type Notification = {
   isRead: boolean;
   studentId: string;
   discussionId?: string;
+  redirectionLink?:string
 };
 
 const StudentProfilePage: React.FC = () => {
@@ -207,6 +208,7 @@ const StudentProfilePage: React.FC = () => {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                     >
+                      <a href={notification.redirectionLink}>
                       <div className="flex-grow mb-4 sm:mb-0">
                         <p
                           className={`text-[#472014] ${
@@ -232,6 +234,7 @@ const StudentProfilePage: React.FC = () => {
                           Mark as Read
                         </Button>
                       )}
+                      </a>
                     </motion.li>
                   ))}
                 </ul>
