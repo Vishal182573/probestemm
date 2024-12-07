@@ -13,6 +13,7 @@ const testimonials = [
     role: "Senior Scientist, NASA, USA",
     image: TESTI2,
     rating: 5,
+    link:"",
   },
   {
     quote: "I’m eager to unite with a global network of researchers, leveraging this platform to pioneer groundbreaking sustainable solutions. As an academician, I have always felt the need for a forum that can actively promote industrial collaborations. In my view, this initiative is a step in the right direction",
@@ -20,6 +21,7 @@ const testimonials = [
     role: "Teaching Professor, University of Washington Tacoma, USA",
     image: TESTI3,
     rating: 5,
+    link:"https://probestem.com/professor-profile/cm486fpm4001lmm36ssnd00jg"
   },
   {
     quote: "The talent we've recruited through Probe STEM has been exceptional. It's our go-to platform for finding innovators.",
@@ -27,6 +29,7 @@ const testimonials = [
     role: "Tech Startup Founder",
     image: TESTI1,
     rating: 5,
+    link:""
   },
 ];
 
@@ -52,6 +55,7 @@ const TestimonialsSection = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
             >
+              <a href={testimonial.link}>
               <Card className="h-full bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
                 <CardContent className="p-8">
                   <div className="relative mb-6">
@@ -95,6 +99,7 @@ const TestimonialsSection = () => {
                   </div>
                 </CardContent>
               </Card>
+              </a>
             </motion.div>
           ))}
         </div>

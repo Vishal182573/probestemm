@@ -282,7 +282,7 @@ const ProjectsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-[#472014]">
+    <div className="flex flex-col min-h-screen  text-[#472014]">
       <NavbarWithBg />
       <main className="flex-grow">
         <Banner

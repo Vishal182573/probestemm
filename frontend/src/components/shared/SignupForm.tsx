@@ -170,11 +170,11 @@ interface RoleSpecificData extends UserData {
   tags?: Tag[];
   education?: Education[];
   collegeName?: string;
-  courseName?: string;
+  course?: string;
   experience?: string;
   companyName?: string;
   industry?: string;
-  companyDescription?: string;
+  description?: string;
   companyWebsite?: string;
 }
 
@@ -315,7 +315,6 @@ export const SignupForm: React.FC = () => {
           },
         }
       );
-  
       setIsSuccess(true);
       toast({
         title: 'Account created successfully!',
@@ -689,7 +688,7 @@ const renderInitialForm = () => (
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="university">University/Institute <span className="text-red-500">*</span></Label>
+        <Label htmlFor="university">University/Institution<span className="text-red-500">*</span></Label>
         <Input
           id="university"
           type="text"
@@ -902,15 +901,15 @@ const renderInitialForm = () => (
         </Button>
       </div> */}
       <div className="space-y-2">
-        <Label htmlFor="collegeName">College/Institue Name <span className="text-red-500">*</span></Label>
+        <Label htmlFor="university">College/Institue Name <span className="text-red-500">*</span></Label>
         <Input
-          id="collegeName"
+          id="university"
           type="text"
-          value={roleSpecificData.collegeName || ""}
+          value={roleSpecificData.university || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              collegeName: e.target.value,
+              university: e.target.value,
             })
           }
           required
@@ -919,15 +918,15 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="courseName">Course Name <span className="text-red-500">*</span></Label>
+        <Label htmlFor="course">Course Name <span className="text-red-500">*</span></Label>
         <Input
-          id="courseName"
+          id="course"
           type="text"
-          value={roleSpecificData.courseName || ""}
+          value={roleSpecificData.course || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              courseName: e.target.value,
+              course: e.target.value,
             })
           }
           required
@@ -1035,14 +1034,14 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="companyDescription">Company Description <span className="text-red-500">*</span></Label>
+        <Label htmlFor="description">Company Description <span className="text-red-500">*</span></Label>
         <Textarea
-          id="companyDescription"
-          value={roleSpecificData.companyDescription || ""}
+          id="description"
+          value={roleSpecificData.description || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              companyDescription: e.target.value,
+              description: e.target.value,
             })
           }
           required
@@ -1068,15 +1067,15 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="companyWebsite">Company Website <span className="text-red-500">*</span></Label>
+        <Label htmlFor="website">Company Website <span className="text-red-500">*</span></Label>
         <Input
-          id="companyWebsite"
+          id="website"
           type="url"
-          value={roleSpecificData.companyWebsite || ""}
+          value={roleSpecificData.website || ""}
           onChange={(e) =>
             setRoleSpecificData({
               ...roleSpecificData,
-              companyWebsite: e.target.value,
+              website: e.target.value,
             })
           }
           required
