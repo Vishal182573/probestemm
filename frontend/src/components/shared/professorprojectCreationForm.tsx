@@ -70,7 +70,6 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
       setCollaborationType("");
     } catch (error) {
       console.error("Error creating project:", error);
-      setError("Failed to create project. Please try again.");
     } finally {
       setIsCreatingProject(false);
     }

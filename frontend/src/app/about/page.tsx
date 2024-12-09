@@ -100,7 +100,7 @@ const AboutUsPage = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <p className="text-lg text-[#472014] text-left">
-              Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the Science, Technology, Engineering and Mathematics fields (STEM). We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
+              Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the Science, Technology, Engineering and Mathematics fields. We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
               </p>
               <p className="text-lg text-[#472014] text-left">
                 Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.

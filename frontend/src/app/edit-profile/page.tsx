@@ -14,7 +14,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
+  SelectTrigger, 
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -375,6 +375,10 @@ const EditProfileForm = () => {
     setError(null);
 
     try {
+      console.log('Profile Image:', profileImage);
+      console.log('Token:', localStorage.getItem('token'));
+      console.log('UserId:', userId);
+      console.log('Role:', role);
       if (typeof window === "undefined") return;
 
       const token = localStorage.getItem("token");
@@ -384,7 +388,6 @@ const EditProfileForm = () => {
 
       const formData = new FormData();
 
-      // Add profile image
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }

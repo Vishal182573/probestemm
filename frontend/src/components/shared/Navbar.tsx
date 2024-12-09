@@ -194,7 +194,7 @@ export const Navbar: React.FC = () => {
             <NavLink to="/blogs" className={linkTextColor}>
               RESEARCH CORNER
             </NavLink>
-            <NavLink to="/projects" className={linkTextColor}>
+            <NavLink to="/projects/professor" className={linkTextColor}>
               PROJECTS
             </NavLink>
             <NavLink to="/contact" className={linkTextColor}>
@@ -235,7 +235,7 @@ export const Navbar: React.FC = () => {
               <MobileNavLink to="/blogs" className={linkTextColor}>
                 RESEARCH CORNER
               </MobileNavLink>
-              <MobileNavLink to="/projects" className={linkTextColor}>
+              <MobileNavLink to="/projects/professor" className={linkTextColor}>
                 PROJECTS
               </MobileNavLink>
               <MobileNavLink to="/contact" className={linkTextColor}>

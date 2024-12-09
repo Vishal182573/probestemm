@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import React, { useState, useEffect,useMemo  } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { Footer } from "@/components/shared/Footer";
@@ -31,12 +31,12 @@ import {
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-import { PROJECT } from "../../../public";
+import { PROJECT } from "../../../../public";
 import Modal from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 enum ProjectType {
   BUSINESS_PROJECT = "BUSINESS_PROJECT",
@@ -98,12 +98,72 @@ const ProjectsPage: React.FC = () => {
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("professors");
   const [activeCategory, setActiveCategory] = useState<ProposalCategory | null>(
     null
   );
   const [showModal, setShowModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  
+  // Determine initial tab based on URL params
+  const getInitialTab = () => {
+    // If no params, return null to trigger default tab
+    if (!params || !params.tabName) {
+      return 'professors'; // Default to professors
+    }
+  
+    const tabName = (params.tabName as string).toLowerCase();
+    
+    // Validate and normalize tab name
+    switch (tabName) {
+      case 'professors':
+      case 'professor':
+        return 'professors';
+      case 'industry':
+      case 'industries':
+      case 'business':
+      case 'businesses':
+        return 'industry';
+      case 'students':
+      case 'student':
+        return 'students';
+      default:
+        // If an invalid tab is specified, redirect to professors
+        router.replace('/projects/professors');
+        return 'professors';
+    }
+  };
+            
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab());
+  // Keep the rest of the code the same as the original implementation
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/project`, {
+          params: {
+            type:
+              activeTab === "professors"
+                ? ProjectType.PROFESSOR_PROJECT
+                : activeTab === "industry"
+                ? ProjectType.BUSINESS_PROJECT
+                : ProjectType.STUDENT_PROPOSAL,
+            category: activeCategory || undefined,
+          },
+        });
+        console.log(response.data);
+        setProjects(response.data);
+        setFilteredProjects(response.data);
+        setLoading(false);
+      } catch (error) { 
+        console.error("Error fetching projects:", error);
+        setError("Failed to load projects");
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [activeTab, activeCategory]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -294,7 +354,7 @@ const ProjectsPage: React.FC = () => {
 
         <div className="max-w-6xl mx-auto px-4 pt-4">
           <Tabs
-            defaultValue="professors"
+            value={activeTab}
             onValueChange={(value) => {
               setActiveTab(value);
               setActiveCategory(null);
@@ -314,8 +374,6 @@ const ProjectsPage: React.FC = () => {
                 Student Proposals
               </TabsTrigger>
             </TabsList>
-
-            {/* <div className="mb-8">{getCategoryFilters()}</div> */}
 
             <ProjectsList
               projects={filteredProjects}
@@ -375,7 +433,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onApply,
 }) => {
   const router = useRouter();
+  
+  const [application_button,setapplication_button] = useState<string> ("APPLY NOW");
+  
 
+  useEffect(()=>{
+    const role = localStorage.getItem("role");
+  switch (role){
+    case "professor" : if(project.category==="PROJECT") setapplication_button("Respond Now")
+  }
+  },[])
   const renderDetails = () => {
     switch (project.category) {
       case ProposalCategory.PROFESSOR_COLLABORATION:
@@ -602,7 +669,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                   : 'bg-gray-400 cursor-not-allowed'}
               `}
             >
-              {canApply ? 'Apply Now' : 'Cannot Apply'}
+              {canApply ? `${application_button}` : 'Cannot Apply'}
             </Button>
           </div>
         </CardFooter>

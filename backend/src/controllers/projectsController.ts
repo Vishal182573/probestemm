@@ -86,7 +86,7 @@ export const createProfessorProject = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
-        "/projects",
+        "/projects/professor",
         project.id,
         "project"
       );
@@ -169,7 +169,7 @@ export const createStudentProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
-        "/projects",
+        "/projects/professor",
         project.id,
         "project"
       );
@@ -236,7 +236,7 @@ export const createIndustryProject = async (req: Request, res: Response) => {
         notificationContent,
         business.id,
         "business",
-        "/projects",
+        "/projects/professor",
         project.id,
         "project"
       );
@@ -463,7 +463,7 @@ export const applyForProject = async (req: Request, res: Response) => {
         notificationContent,
         creatorId,
         creatorType,
-        "/projects",
+        `/projects/${creatorType}`,
         project.id,
         "project"
       );
@@ -576,7 +576,7 @@ export const createRDProject = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
-        "/projects",
+        "/projects/business",
         project.id,
         "project"
       );
@@ -656,7 +656,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
-        "/projects",
+        "/projects/business",
         project.id,
         "project"
       );
@@ -713,7 +713,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
-        "/projects",
+        "/projects/student",
         project.id,
         "project"
       );
@@ -725,7 +725,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         notificationContent,
         business.id,
         "business",
-        "/projects",
+        "/projects/student",
         project.id,
         "project"
       );
@@ -834,7 +834,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
 
     // Create notification for the selected participant
     const notificationContent = `
-      Congratulations! You have been selected for the project
+      Congratulations! You have been selected for the project go to ongoing projects
     `.trim();
 
     if (applicantId) {
@@ -843,7 +843,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
         notificationContent,
         applicantId,
         applicantType,
-        "/projects",
+        `${applicantType}-profile/${applicantId}`,
         projectId,
         "project"
       );
@@ -871,7 +871,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.professorId,
             "professor",
-            "/projects",
+            `/professor-profile/${app.professorId}`,
             projectId,
             "project"
           );
@@ -885,7 +885,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.studentId,
             "student",
-            "/projects",
+            `/student-profile/${app.studentId}`,
             projectId,
             "project"
           );
@@ -899,7 +899,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.businessId,
             "business",
-            "/projects",
+            `/business-profile/${app.businessId}`,
             projectId,
             "project"
           );
@@ -953,7 +953,7 @@ export const completeProject = async (req: Request, res: Response) => {
 
     // Create completion notification content
     const completionContent = `
-      Project "${project.topic}" has been marked as completed.
+      Project "${project.content}" has been marked as completed.
       ${completionNotes ? `\nCompletion Notes: ${completionNotes}` : ""}
     `.trim();
 
@@ -966,7 +966,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.professorId,
           "professor",
-          "/projects",
+          `professor-profile/${project.professorId}`,
           projectId,
           "project"
         );
@@ -976,7 +976,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.businessId,
           "business",
-          "/projects",
+          `business-profile/${project.businessId}`,
           projectId,
           "project"
         );
@@ -986,7 +986,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.studentId,
           "student",
-          "projects",
+          `student-profile/${project.studentId}`,
           projectId,
           "project"
         );
@@ -1020,7 +1020,7 @@ export const completeProject = async (req: Request, res: Response) => {
             completionContent,
             recipientId,
             recipientType,
-            "/projects",
+            `${recipientType}-profile/${recipientId}`,
             projectId,
             "project"
           );

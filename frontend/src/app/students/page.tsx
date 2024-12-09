@@ -110,7 +110,7 @@ export default function StudentsPage() {
           <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
-              className="pl-10 pr-4 py-2 bg-white"
+              className="pl-10 pr-4 py-2 bg-white text-black"
               placeholder="Search students by name, university, course, or location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

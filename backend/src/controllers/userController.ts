@@ -126,7 +126,6 @@ export const updateProfessor = async (
   res: Response
 ) => {
   const files = req.files;
-
   try {
     const { id } = req.params;
     const userData = req.body;
@@ -151,7 +150,7 @@ export const updateProfessor = async (
         try {
           const result = await cloudinary.uploader.upload(profileImage.path);
           photoUrl = result.secure_url;
-          console.log(photoUrl);
+          // console.log(photoUrl);
         } finally {
           cleanupUploadedFile(profileImage);
         }
