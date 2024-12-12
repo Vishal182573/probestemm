@@ -943,7 +943,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
             <Input
               id="website"
               name="website"
-              type="url"
+              type="text"
               value={profileData?.website || ""}
               onChange={handleInputChange}
               disabled={!isEditing}
@@ -990,7 +990,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
                 <Input
                   id="website"
                   name="website"
-                  type="url"
+                  type="text"
                   value={profileData?.website || ""}
                   onChange={handleInputChange}
                   disabled={!isEditing}

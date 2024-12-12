@@ -361,15 +361,15 @@ const ProjectsPage: React.FC = () => {
             }}
           >
             <TabsList className="mb-8">
-              <TabsTrigger value="professors">
+              <TabsTrigger value="professors" className="text-white">
                 <UserCircle className="mr-2 h-5 w-5" />
                 Professor Projects
               </TabsTrigger>
-              <TabsTrigger value="industry">
+              <TabsTrigger value="industry" className="text-white">
                 <Building className="mr-2 h-5 w-5" />
                 Industry Projects
               </TabsTrigger>
-              <TabsTrigger value="students">
+              <TabsTrigger value="students" className="text-white">
                 <GraduationCap className="mr-2 h-5 w-5" />
                 Student Proposals
               </TabsTrigger>

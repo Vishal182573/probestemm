@@ -252,34 +252,34 @@ export const createIndustryProject = async (req: Request, res: Response) => {
 // Get projects by type
 export const getProjectsByType = async (req: Request, res: Response) => {
   try {
-    const { type, category } = req.query;
-
-    const projects = await prisma.project.findMany({
-      where: {
-        type: type as ProjectType,
-        category: category as ProposalCategory,
-        status: Status.OPEN,
-      },
-      include: {
-        professor: {
-          select: {
-            fullName: true,
-            email: true,
-            phoneNumber: true,
-            university: true,
-            department: true,
-          },
-        },
-        duration: true,
-      },
-    });
-
-    res.status(200).json(projects);
+     const { type, category } = req.query;
+     const projects = await prisma.project.findMany({
+         where: {
+             type: type as ProjectType,
+             category: category as ProposalCategory
+         },
+         include: {
+             professor: {
+                 select: {
+                     fullName: true,
+                     email: true,
+                     phoneNumber: true,
+                     university: true,
+                     department: true,
+                 },
+             },
+             duration: true,
+         },
+         orderBy: {
+             createdAt: 'desc' // This will return the collections in reverse order
+         }
+     });
+     res.status(200).json(projects);
   } catch (error) {
-    console.error("Error fetching projects:", error);
-    res.status(500).json({ error: "Failed to fetch projects" });
+     console.error("Error fetching projects:", error);
+     res.status(500).json({ error: "Failed to fetch projects" });
   }
-};
+ };
 
 // Get projects by user ID and type
 export const getProjectsByUserId = async (req: Request, res: Response) => {

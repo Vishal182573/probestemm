@@ -269,9 +269,46 @@ export const updateProfessorApprovalStatus = async (
     });
   }
 };
+
+export const checkProfessorApprovalStatus = async (req: Request, res: Response) => {
+  try {
+    const { professorId } = req.params;
+
+    if (!professorId) {
+      return res.status(400).json({ error: "Professor ID is required" });
+    }
+
+    const professor = await prisma.professor.findUnique({
+      where: { id: professorId },
+      select: { 
+        id: true, 
+        isApproved: true,
+        fullName: true 
+      }
+    });
+
+    if (!professor) {
+      return res.status(404).json({ error: "Professor not found" });
+    }
+
+    return res.status(200).json({
+      id: professor.id,
+      fullName: professor.fullName,
+      isApproved: professor.isApproved
+    });
+  } catch (error) {
+    console.error("Error checking professor approval status:", error);
+    return res.status(500).json({ 
+      error: "Failed to check professor approval status",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
 export default {
   searchProfessors,
   getProfessorById,
   updateProfessor,
   updateProfessorApprovalStatus,
 };
+

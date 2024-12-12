@@ -4,7 +4,7 @@ import { Star, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { TESTI1, TESTI2, TESTI3 } from "../../../public";
+import { TESTI2, TESTI3 } from "../../../public";
 
 const testimonials = [
   {
@@ -16,21 +16,21 @@ const testimonials = [
     link:"",
   },
   {
+    quote: "Probe STEM is an inspiring platform that opens up incredible opportunities for students like me seeking research projects aligned with their interests. This initiative fosters a sense of purpose in research by encouraging innovations that benefit both the academic community and society at large. Truly a game-changer for anyone dedicated to meaningful research and the exchange of knowledge!",
+    author: "Shashank Gupta",
+    role: "Integrated Programme in Management \n Indian Institute of Management (IIM) Indore, India",
+    image: TESTI3,
+    rating: 5,
+    link:"https://probestem.com/student-profile/cm4e56k0k000c6ykllu6hml1a"
+  },
+  {
     quote: "I’m eager to unite with a global network of researchers, leveraging this platform to pioneer groundbreaking sustainable solutions. As an academician, I have always felt the need for a forum that can actively promote industrial collaborations. In my view, this initiative is a step in the right direction",
     author: "Ankur Suri",
     role: "Teaching Professor, University of Washington Tacoma, USA",
     image: TESTI3,
     rating: 5,
     link:"https://probestem.com/professor-profile/cm486fpm4001lmm36ssnd00jg"
-  },
-  {
-    quote: "The talent we've recruited through Probe STEM has been exceptional. It's our go-to platform for finding innovators.",
-    author: "Emily R.",
-    role: "Tech Startup Founder",
-    image: TESTI1,
-    rating: 5,
-    link:""
-  },
+  }
 ];
 
 const TestimonialsSection = () => {

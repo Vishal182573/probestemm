@@ -14,7 +14,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger, 
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -114,7 +114,7 @@ interface ResearchInterest {
   description: string;
   image?: File;
   imagePreview?: string;
-  imageUrl?: string;
+  imageUrl?: string[];
 }
 
 interface Tag {
@@ -176,8 +176,83 @@ const EditProfileForm = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
+      // Add file validation
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+      if (!validImageTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a JPEG, PNG, or GIF image.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > maxFileSize) {
+        toast({
+          title: "File Too Large",
+          description: "Image must be smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       setProfileImage(file);
       setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleResearchInterestImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index?: number
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      // Add file validation
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+      if (!validImageTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a JPEG, PNG, or GIF image.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > maxFileSize) {
+        toast({
+          title: "File Too Large",
+          description: "Image must be smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+
+      if (index !== undefined) {
+        // Update existing research interest
+        setProfileData((prev: any) => ({  // Add explicit type annotation here
+          ...prev,
+          researchInterests: prev.researchInterests.map((interest: ResearchInterest, i: number) =>
+            i === index
+              ? { ...interest, image: file, imagePreview: previewUrl }
+              : interest
+          )
+        }));
+      } else {
+        // For new research interest
+        setNewResearchInterest({
+          ...newResearchInterest,
+          image: file,
+          imagePreview: previewUrl
+        });
+      }
     }
   };
 
@@ -375,41 +450,64 @@ const EditProfileForm = () => {
     setError(null);
 
     try {
-      console.log('Profile Image:', profileImage);
-      console.log('Token:', localStorage.getItem('token'));
-      console.log('UserId:', userId);
-      console.log('Role:', role);
       if (typeof window === "undefined") return;
 
       const token = localStorage.getItem("token");
       if (!token || !userId || !role) {
-        throw new Error("No authentication token found");
+        throw new Error("Authentication failed");
       }
 
       const formData = new FormData();
 
+      // Validate profile image before upload
       if (profileImage) {
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        if (!validImageTypes.includes(profileImage.type)) {
+          throw new Error("Invalid profile image type");
+        }
+
+        if (profileImage.size > maxFileSize) {
+          throw new Error("Profile image exceeds 5MB limit");
+        }
+
         formData.append("profileImage", profileImage);
       }
 
-      if (role == "professor") {
-        // Add research interest images with indexed field names
+      // Systematic research interest image handling
+      if (role === "professor" && profileData.researchInterests) {
         profileData.researchInterests.forEach(
           (interest: ResearchInterest, index: number) => {
             if (interest.image) {
+              // Validate research interest image
+              const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+              const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+              if (!validImageTypes.includes(interest.image.type)) {
+                throw new Error(`Invalid image type for research interest at index ${index}`);
+              }
+
+              if (interest.image.size > maxFileSize) {
+                throw new Error(`Research interest image at index ${index} exceeds 5MB limit`);
+              }
+
               formData.append(`researchInterestImages[${index}]`, interest.image);
             }
           }
         );
       }
 
-
-      // Add the rest of the profile data
+      // Convert non-file data to JSON or string
       Object.entries(profileData).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          formData.append(key, JSON.stringify(value));
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, value.toString());
+        // Skip file/image fields which are already handled
+        if (key !== 'profileImage' &&
+          !(role === 'professor' && key === 'researchInterests')) {
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else if (value !== null && value !== undefined) {
+            formData.append(key, value.toString());
+          }
         }
       });
 
@@ -422,7 +520,10 @@ const EditProfileForm = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        // Improved error handling
+        const errorResponse = await response.text();
+        console.error('Server error response:', errorResponse);
+        throw new Error(`Failed to update profile: ${errorResponse}`);
       }
 
       toast({
@@ -432,11 +533,11 @@ const EditProfileForm = () => {
       setIsEditing(false);
       await fetchProfileData();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      console.error('Profile update error:', error);
       toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
+        title: "Upload Error",
+        description: error instanceof Error ? error.message : "File upload failed",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -457,7 +558,7 @@ const EditProfileForm = () => {
       <NavbarWithBg />
       {userId && role ? (
         <div className="flex justify-center items-start p-0 h-screen">
-          <Card className="relative overflow-y-auto h-[80vh] my p-5 bg-white my-4 w-[50vw]">
+          <Card className="relative overflow-y-auto h-[80vh] my p-5 bg-white my-4 lg:w-[50vw] w-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
               <CardTitle className="text-2xl font-bold text-black">
                 Profile Settings
@@ -503,6 +604,7 @@ const EditProfileForm = () => {
                         onChange={handleImageChange}
                         className="mt-1 text-black bg-white"
                       />
+                      Image must be in jpeg, jpg and png form only
                     </div>
                   )}
                 </div>
@@ -892,14 +994,15 @@ const EditProfileForm = () => {
                                 <div className="relative w-full h-48">
                                   <Image
                                     src={
-                                      interest.imageUrl ||
-                                      interest.imagePreview ||
-                                      ""
+                                      Array.isArray(interest.imageUrl)
+                                        ? interest.imageUrl[0]
+                                        : (interest.imageUrl || interest.imagePreview || "/placeholder.png")
                                     }
                                     alt={interest.title}
-                                    layout="fill"
-                                    objectFit="cover"
-                                    className="rounded-md"
+                                    fill  // Use 'fill' instead of 'layout="fill"' in newer Next.js versions
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-cover rounded-md"
+                                    priority={false}
                                   />
                                 </div>
                               )}
@@ -1002,13 +1105,13 @@ const EditProfileForm = () => {
                     </div>
 
                     {role === "professor" &&
-                      (<> <div className="space-y-2">
-                        <Label>Positions Held</Label>
-                        {profileData?.positions?.map(
-                          (pos: Position, index: number) => (
+                      (<>
+                        <div className="space-y-2">
+                          <Label>Positions Held</Label>
+                          {profileData?.positions?.map((pos: Position, index: number) => (
                             <div
                               key={index}
-                              className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
+                              className="grid grid-cols-1 gap-4 p-4 bg-secondary/20 rounded-lg sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                             >
                               <Input
                                 placeholder="Title"
@@ -1035,7 +1138,7 @@ const EditProfileForm = () => {
                                 }
                                 disabled={!isEditing}
                               >
-                                <SelectTrigger className="w-[120px]">
+                                <SelectTrigger className="w-full">
                                   <SelectValue placeholder="Start Year" />
                                 </SelectTrigger>
                                 <SelectContent className="text-black bg-white">
@@ -1053,7 +1156,7 @@ const EditProfileForm = () => {
                                 }
                                 disabled={!isEditing || pos.current}
                               >
-                                <SelectTrigger className="w-[120px]">
+                                <SelectTrigger className="w-full">
                                   <SelectValue placeholder="End Year" />
                                 </SelectTrigger>
                                 <SelectContent className="text-black bg-white">
@@ -1068,18 +1171,12 @@ const EditProfileForm = () => {
                                 <Checkbox
                                   checked={pos.current}
                                   onCheckedChange={(checked) => {
-                                    // When checkbox is checked, set endYear to current year
                                     const currentYear = new Date().getFullYear().toString();
-                                    updatePosition(
-                                      index,
-                                      "current",
-                                      checked as boolean
-                                    );
+                                    updatePosition(index, "current", checked as boolean);
 
                                     if (checked) {
                                       updatePosition(index, "endYear", currentYear);
                                     } else {
-                                      // Optionally clear the end year when unchecked
                                       updatePosition(index, "endYear", "");
                                     }
                                   }}
@@ -1094,24 +1191,24 @@ const EditProfileForm = () => {
                                   variant="destructive"
                                   size="icon"
                                   onClick={() => removePosition(index)}
+                                  className="mt-2 sm:mt-0"
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>
                               )}
                             </div>
-                          )
-                        )}
-                        {isEditing && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="text-black bg-white"
-                            onClick={addPosition}
-                          >
-                            <PlusCircle className="mr-2 h-4 w-4" /> Add Position
-                          </Button>
-                        )}
-                      </div>
+                          ))}
+                          {isEditing && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="text-black bg-white"
+                              onClick={addPosition}
+                            >
+                              <PlusCircle className="mr-2 h-4 w-4" /> Add Position
+                            </Button>
+                          )}
+                        </div>
                         {/* Website Field */}
                         <div>
                           <Label htmlFor="website">Website</Label>

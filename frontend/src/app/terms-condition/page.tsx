@@ -3,61 +3,88 @@ import NavbarWithBg from '@/components/shared/NavbarWithbg';
 import React from 'react';
 
 const TermsAndConditionModal: React.FC = () => {
-  const policyCategories = [
+  const termsAndConditions = [
     {
-      title: 'User Verification and Project Approval',
-      description: 'Probe STEM prioritizes platform integrity through careful verification of user profiles and project submissions.',
+      title: 'Acceptance of Terms',
       details: [
-        'Faculty member details are verified before profile approval',
-        'Industry projects undergo admin review before publication',
-        'Students\' credentials are not formally verified',
-        'Users are responsible for assessing collaborator credibility'
+        'By accessing or using Probe STEM, you agree to comply with these Terms and Conditions, which govern your use of the platform.',
+        'If you do not agree, you may not use the platform.'
       ]
     },
     {
-      title: 'Liability Disclaimer',
-      description: 'The platform disclaims responsibility for financial losses or misuse of research resources.',
+      title: 'Eligibility',
       details: [
-        'No liability for financial losses from fraud or misrepresentation',
-        'Not responsible for misuse of research data or intellectual property',
-        'Users must conduct due diligence in collaborations'
+        'Users must be 18 years or older or have parental/guardian consent to join.',
+        'Registration requires accurate and up-to-date information.'
       ]
     },
     {
-      title: 'Content and Collaboration Guidelines',
-      description: 'Maintaining high standards of academic integrity and professional discourse.',
+      title: 'User Responsibilities',
       details: [
-        'Only original, properly cited research allowed',
-        'Respectful and professional communication',
-        'Constructive problem-solving encouraged',
-        'Discriminatory or offensive content prohibited'
+        'You are responsible for the content you share, ensuring it is accurate, lawful, and aligns with Probe STEM’s mission.',
+        'Protect your login credentials. Probe STEM is not liable for unauthorized access resulting from any cybercrime.'
       ]
     },
     {
-      title: 'Privacy and Data Protection',
-      description: 'Committed to protecting user data and intellectual property.',
+      title: 'Prohibited Activities',
       details: [
-        'Compliance with international data protection laws (GDPR)',
-        'Minimal data collection',
-        'No third-party data sharing without consent',
-        'Respect for intellectual property rights'
+        'Uploading plagiarized, illegal, defamatory, or offensive material.',
+        'Engaging in fraudulent activities, spamming, or unauthorized advertising.',
+        'Using the platform to infringe on intellectual property rights.'
       ]
     },
     {
-      title: 'Inclusivity and Diversity',
-      description: 'Fostering a global, accessible platform for STEM collaboration.',
+      title: 'Intellectual Property',
       details: [
-        'Equal access to opportunities',
-        'Promotion of diversity in STEM',
-        'Sensitivity to cultural differences',
-        'Accessibility for users with disabilities'
+        'Users retain ownership of their content but grant Probe STEM a non-exclusive, worldwide, royalty-free license to use, display, and share it within the platform.',
+        'Probe STEM’s logo, name, and platform design are proprietary and must not be used without prior permission.'
+      ]
+    },
+    {
+      title: 'Content Review and Removal',
+      details: [
+        'Probe STEM reserves the right to review, edit, or remove content that violates these terms or does not align with its mission.',
+        'Deleted content cannot be restored once removed.'
+      ]
+    },
+    {
+      title: 'Privacy',
+      details: [
+        'User data will be handled in accordance with the Probe STEM Privacy Policy, ensuring confidentiality and secure processing.'
+      ]
+    },
+    {
+      title: 'Disclaimer of Warranties',
+      details: [
+        'Probe STEM provides the platform “as is” without warranties of any kind, including accuracy, reliability, or availability.',
+        'Users bear the risk of using the platform for research or collaborations.'
+      ]
+    },
+    {
+      title: 'Limitation of Liability',
+      details: [
+        'Probe STEM is not liable for direct, indirect, incidental, or consequential damages resulting from the use or inability to use the platform.',
+        'Users are responsible for the outcomes of their collaborations.'
+      ]
+    },
+    {
+      title: 'Termination',
+      details: [
+        'Probe STEM may suspend or terminate accounts for violating these terms without prior notice.',
+        'Users may deactivate their accounts at any time, though previously shared content may remain on the platform.'
+      ]
+    },
+    {
+      title: 'Changes to Terms',
+      details: [
+        'Probe STEM reserves the right to update these terms at any time. Continued use of the platform after changes indicates acceptance of the revised terms.'
       ]
     }
   ];
 
   return (
     <div className="bg-white flex-col items-center justify-center">
-        <NavbarWithBg/>
+      <NavbarWithBg />
       <div className="bg-white rounded-xl w-full shadow-xl my-7">
         {/* Modal Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
@@ -67,16 +94,14 @@ const TermsAndConditionModal: React.FC = () => {
         {/* Modal Body */}
         <div className="p-6 space-y-6">
           <p className="text-gray-700 mb-4">
-            Effective from 1st November, 2024: By using Probe STEM, you agree to our User Agreement 
-            and Professional Privacy Policies, which govern your platform interactions.
+            Effective from 30th November, 2024: By accessing or using Probe STEM, you agree to our Terms and Conditions, which govern your interactions with the platform.
           </p>
 
-          {policyCategories.map((category, index) => (
+          {termsAndConditions.map((term, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-xl font-semibold text-[#472014] mb-3">{category.title}</h3>
-              <p className="text-gray-600 mb-3">{category.description}</p>
+              <h3 className="text-xl font-semibold text-[#472014] mb-3">{term.title}</h3>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
-                {category.details.map((detail, detailIndex) => (
+                {term.details.map((detail, detailIndex) => (
                   <li key={detailIndex}>{detail}</li>
                 ))}
               </ul>
@@ -86,13 +111,12 @@ const TermsAndConditionModal: React.FC = () => {
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="text-xl font-semibold text-blue-800 mb-3">Platform Mission</h3>
             <p className="text-blue-700">
-              Probe STEM is dedicated to fostering collaboration between students, 
-              faculty, and industry experts through innovation and research.
+              Probe STEM is dedicated to fostering collaboration between students, faculty, and industry experts through innovation and research.
             </p>
           </div>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };

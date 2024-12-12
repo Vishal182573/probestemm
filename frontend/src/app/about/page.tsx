@@ -3,7 +3,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FaIndustry, FaGraduationCap, FaExchangeAlt, FaBook, FaResearchgate } from "react-icons/fa";
+import { FaIndustry, FaGraduationCap, FaExchangeAlt, FaBook, FaResearchgate, FaBookReader } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/shared/Footer";
@@ -55,7 +55,6 @@ const Stats = () => (
     <CountUpAnimation end={200} label="Professors Associated" />
     <CountUpAnimation end={100} label="Industries Associated" />
     <CountUpAnimation end={500} label="Projects Completed" />
-    <CountUpAnimation end={15} label="Avg. Professor Experience (Years)" />
   </div>
 );
 
@@ -195,7 +194,7 @@ const AboutUsPage = () => {
             <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                  <FaResearchgate className="mr-2 text-[#eb5e17]" /> R <sup>c</sup>
+                  <FaBookReader className="mr-2 text-[#eb5e17]" /> R <sup>c</sup>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-[#472014] text-lg">
