@@ -125,35 +125,26 @@ export const updateProfessor = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const files = req.files;
+  const file = req.file;
   try {
     const { id } = req.params;
     const userData = req.body;
 
     // Authorization check
     if (!req.user || req.user.id !== id || req.user.role !== "professor") {
-      if (files) {
-        files.forEach((file) => cleanupUploadedFile(file));
-      }
       return res
         .status(403)
         .json({ error: "Not authorized to update this profile" });
     }
 
-    // Handle file uploads for profile image
+    // Handle file upload
     let photoUrl: string | undefined = undefined;
-    if (files && files.length > 0) {
-      const profileImage = files.find(
-        (file) => file.fieldname === "profileImage"
-      );
-      if (profileImage) {
-        try {
-          const result = await cloudinary.uploader.upload(profileImage.path);
-          photoUrl = result.secure_url;
-          console.log(photoUrl);
-        } finally {
-          cleanupUploadedFile(profileImage);
-        }
+    if (file) {
+      try {
+        const result = await cloudinary.uploader.upload(file.path);
+        photoUrl = result.secure_url;
+      } finally {
+        cleanupUploadedFile(file);
       }
     }
 
@@ -165,18 +156,18 @@ export const updateProfessor = async (
 
     // Map images to research interests based on index
     let researchInterestImagesMap: { [key: number]: string[] } = {};
-    if (files && files.length > 0) {
-      files.forEach((file) => {
-        const match = file.fieldname.match(/researchInterestImages\[(\d+)\]/);
-        if (match) {
-          const index = parseInt(match[1], 10);
-          if (!researchInterestImagesMap[index]) {
-            researchInterestImagesMap[index] = [];
-          }
-          researchInterestImagesMap[index].push(file.path);
-        }
-      });
-    }
+    // if (files && files.length > 0) {
+    //   files.forEach((file) => {
+    //     const match = file.fieldname.match(/researchInterestImages\[(\d+)\]/);
+    //     if (match) {
+    //       const index = parseInt(match[1], 10);
+    //       if (!researchInterestImagesMap[index]) {
+    //         researchInterestImagesMap[index] = [];
+    //       }
+    //       researchInterestImagesMap[index].push(file.path);
+    //     }
+    //   });
+    // }
 
     // Upload images and map URLs
     for (const [index, paths] of Object.entries(researchInterestImagesMap)) {
@@ -259,9 +250,6 @@ export const updateProfessor = async (
 
     res.status(200).json(updatedProfessor);
   } catch (error) {
-    if (files) {
-      files.forEach((file) => cleanupUploadedFile(file));
-    }
     console.error("Error updating professor:", error);
     res.status(500).json({ error: "Failed to update professor profile" });
   }

@@ -42,10 +42,7 @@ router.put(
 router.put(
   "/professors/:id",
   authMiddleware,
-  upload.fields([
-    { name: 'profileImage', maxCount: 1 },
-    { name: 'researchInterestImages', maxCount: 5 } // if needed
-  ]), 
+  upload.single("profileImage"),
   async (req, res) => { 
     try { 
       await updateProfessor(req, res);  

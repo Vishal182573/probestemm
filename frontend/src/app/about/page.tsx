@@ -87,7 +87,7 @@ const AboutUsPage = () => {
           </p>
         </motion.div>
 
-        <Stats />
+        {/* <Stats /> */}
         {/* New About Section */}
         <motion.div
           initial={{ y: -30, opacity: 0 }}

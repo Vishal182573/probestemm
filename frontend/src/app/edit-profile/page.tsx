@@ -461,17 +461,6 @@ const EditProfileForm = () => {
 
       // Validate profile image before upload
       if (profileImage) {
-        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        const maxFileSize = 5 * 1024 * 1024; // 5MB
-
-        if (!validImageTypes.includes(profileImage.type)) {
-          throw new Error("Invalid profile image type");
-        }
-
-        if (profileImage.size > maxFileSize) {
-          throw new Error("Profile image exceeds 5MB limit");
-        }
-
         formData.append("profileImage", profileImage);
       }
 
@@ -1215,7 +1204,7 @@ const EditProfileForm = () => {
                           <Input
                             id="website"
                             name="website"
-                            type="url"
+                            type="text"
                             value={profileData?.website || ""}
                             onChange={handleInputChange}
                             disabled={!isEditing}
@@ -1270,7 +1259,7 @@ const EditProfileForm = () => {
                       <Input
                         id="website"
                         name="website"
-                        type="url"
+                        type="text"
                         value={profileData?.website || ""}
                         onChange={handleInputChange}
                         disabled={!isEditing}

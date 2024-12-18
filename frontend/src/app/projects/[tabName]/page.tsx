@@ -441,6 +441,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     const role = localStorage.getItem("role");
   switch (role){
     case "professor" : if(project.category==="PROJECT") setapplication_button("Respond Now")
+      case "business" : if(project.category==="PROJECT") setapplication_button("Respond Now")  
   }
   },[])
   const renderDetails = () => {

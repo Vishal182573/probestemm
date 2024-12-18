@@ -833,10 +833,12 @@ export const assignParticipant = async (req: Request, res: Response) => {
     });
 
     // Create notification for the selected participant
-    const notificationContent = `
+    let notificationContent = `
       Congratulations! You have been selected for the project go to ongoing projects
     `.trim();
-
+    if(project.category=="PROFESSOR_COLLABORATION"){
+      notificationContent = `Congratulation! You have found a collaborator`.trim();
+    }
     if (applicantId) {
       await createNotification(
         NotificationType.PROJECT_APPLICATION,

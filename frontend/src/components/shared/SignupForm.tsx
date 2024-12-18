@@ -1070,7 +1070,7 @@ const renderInitialForm = () => (
         <Label htmlFor="website">Company Website <span className="text-red-500">*</span></Label>
         <Input
           id="website"
-          type="url"
+          type="text"
           value={roleSpecificData.website || ""}
           onChange={(e) =>
             setRoleSpecificData({

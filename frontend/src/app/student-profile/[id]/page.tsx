@@ -16,6 +16,7 @@ import {
   Star,
   Bell,
   Folder,
+  Loader2,
 } from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
@@ -81,6 +82,20 @@ type Notification = {
   redirectionLink?:string
 };
 
+interface AppliedApplicant {
+  id: string;
+  name: string;
+  email: string;
+  description: string;
+  images: string[];
+}
+
+interface ApplicationsResponse {
+  professorApplications: AppliedApplicant[];
+  studentApplications: AppliedApplicant[];
+  businessApplications: AppliedApplicant[];
+}
+
 const StudentProfilePage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -124,6 +139,56 @@ const StudentProfilePage: React.FC = () => {
 
     fetchData();
   }, [id, router]);
+
+  const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
+    [projectId: string]: AppliedApplicant[];
+  }>({});
+
+  // State for loading applicants
+  const [isLoadingApplicants, setIsLoadingApplicants] = useState<{
+    [projectId: string]: boolean;
+  }>({});
+
+  // Function to fetch applicants for a specific project
+  const fetchAppliedApplicants = async (projectId: string) => {
+    setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: true }));
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get<ApplicationsResponse>(
+        `${API_URL}/project/${projectId}/applications`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const allApplications: AppliedApplicant[] = [
+        ...response.data.professorApplications,
+        ...response.data.studentApplications,
+        ...response.data.businessApplications,
+      ];
+
+      setAppliedApplicantsMap((prevMap) => ({
+        ...prevMap,
+        [projectId]: allApplications,
+      }));
+    } catch (error) {
+      console.error("Error fetching applied applicants:", error);
+      setError("Failed to fetch applied applicants. Please try again.");
+    } finally {
+      setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: false }));
+    }
+  };
+
+  // Toggle applicants display
+  const toggleApplicants = (projectId: string) => {
+    if (appliedApplicantsMap[projectId]) {
+      setAppliedApplicantsMap((prevMap) => {
+        const newMap = { ...prevMap };
+        delete newMap[projectId];
+        return newMap;
+      });
+    } else {
+      fetchAppliedApplicants(projectId);
+    }
+  };
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -181,6 +246,7 @@ const StudentProfilePage: React.FC = () => {
       },
     },
   };
+
 
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
@@ -280,76 +346,103 @@ const StudentProfilePage: React.FC = () => {
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       {isOwnProfile && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-            <CardHeader>
-              <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
-                <Folder className="mr-2" />
-                My Proposals
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {student.projects && student.projects.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {student.projects.map((project) => (
-                    <motion.div
-                      key={project.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
+        <Card className="border border-[#eb5e17] bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
+              My Proposals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {student.projects && student.projects.length > 0 ? (
+              <ul className="space-y-4">
+                {student.projects.map((project) => (
+                  <li 
+                    key={project.id} 
+                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-lg font-semibold text-[#472014]">
+                        {project.topic || "Untitled Project"}
+                      </h4>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#686256] text-white"
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-sm text-[#686256] mb-2">
+                      Content: {project.content}
+                    </p>
+                    
+                    {project.techDescription && (
+                      <p className="text-sm text-[#686256] mb-2">
+                        Tech Description: {project.techDescription}
+                      </p>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 mr-2"
+                      onClick={() => toggleApplicants(project.id)}
                     >
-                      <Card className="border-2 border-[#eb5e17]/20 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white">
-                        <CardHeader>
-                          <CardTitle className="text-xl font-bold text-[#472014]">
-                            {project.topic || "Untitled Project"}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-32">
-                                Content:
-                              </span>
-                              <span className="font-medium">
-                                {project.content}
-                              </span>
-                            </div>
-                            {project.techDescription && (
-                              <div className="flex items-center text-[#472014]">
-                                <span className="font-semibold w-32">
-                                  Tech Description:
-                                </span>
-                                <span className="font-medium">
-                                  {project.techDescription}
-                                </span>
-                              </div>
+                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
+                      Applicants
+                    </Button>
+
+                    {appliedApplicantsMap[project.id] && (
+                      <div className="mt-4">
+                        <h5 className="text-md font-semibold mb-2 text-black">
+                          Applicants:
+                        </h5>
+                        {isLoadingApplicants[project.id] ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                        ) : appliedApplicantsMap[project.id].length > 0 ? (
+                          <ul className="space-y-2">
+                            {appliedApplicantsMap[project.id].map(
+                              (applicant) => (
+                                <li
+                                  key={applicant.id}
+                                  className="flex items-center space-x-4"
+                                >
+                                  <div>
+                                    <p className="font-semibold text-gray-600">
+                                      {applicant.name}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.email}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {applicant.description}
+                                    </p>
+                                    {applicant.images && applicant.images[0] && (
+                                      <Image
+                                        src={applicant.images[0]}
+                                        alt="Resume"
+                                        width={100}
+                                        height={100}
+                                      />
+                                    )}
+                                  </div>
+                                </li>
+                              )
                             )}
-                            <div className="flex items-center text-[#472014]">
-                              <span className="font-semibold w-32">
-                                Status:
-                              </span>
-                              <Badge className="bg-[#eb5e17]/10 text-[#eb5e17] font-semibold">
-                                {project.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[#686256] text-center py-8 font-medium">
-                  No projects found.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+                          </ul>
+                        ) : (
+                          <p className="text-black">No applicants yet.</p>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-center text-[#686256]">No projects found.</p>
+            )}
+          </CardContent>
+        </Card>
       )}
     </TabsContent>
   );

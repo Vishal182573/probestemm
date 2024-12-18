@@ -62,7 +62,7 @@ interface AppliedApplicant {
   id: string;
   name: string;
   email: string;
-  phoneNumber: string;
+  description: string;
   images: string[];
 }
 
@@ -1044,7 +1044,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       {applicant.email}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                      {applicant.phoneNumber}
+                                      {applicant.description}
                                     </p>
                                     <Image
                                       src={applicant.images[0]}
@@ -1157,7 +1157,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       {applicant.email}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                      {applicant.phoneNumber}
+                                      {applicant.description}
                                     </p>
                                     <Image
                                       src={applicant.images[0]}
@@ -1274,7 +1274,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       {applicant.email}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                      {applicant.phoneNumber}
+                                      {applicant.description}
                                     </p>
                                     <Image
                                       src={applicant.images[0]}
@@ -1382,7 +1382,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       {applicant.email}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                      {applicant.phoneNumber}
+                                      {applicant.description}
                                     </p>
                                     <Image
                                       src={applicant.images[0]}
@@ -1491,7 +1491,7 @@ const ProfessorProfilePage: React.FC = () => {
                                       {applicant.email}
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                      {applicant.phoneNumber}
+                                      {applicant.description}
                                     </p>
                                     <Image
                                       src={applicant.images[0]}
