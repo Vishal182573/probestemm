@@ -84,6 +84,8 @@ type Notification = {
 
 interface AppliedApplicant {
   id: string;
+  businessId:string;
+  professorId:string;
   name: string;
   email: string;
   description: string;
@@ -405,7 +407,13 @@ const StudentProfilePage: React.FC = () => {
                               (applicant) => (
                                 <li
                                   key={applicant.id}
-                                  className="flex items-center space-x-4"
+                                  className="flex items-center space-x-4 cursor-pointer"
+                                  onClick={() => {
+                                    const route = applicant.professorId
+                                      ? `/professor-profile/${applicant.professorId}`
+                                      : `/business-profile/${applicant.businessId}`;
+                                    window.location.href = route;
+                                  }}
                                 >
                                   <div>
                                     <p className="font-semibold text-gray-600">

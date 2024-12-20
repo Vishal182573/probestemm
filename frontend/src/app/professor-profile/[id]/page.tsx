@@ -59,7 +59,10 @@ import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import { Description } from "@radix-ui/react-dialog";
 
 interface AppliedApplicant {
-  id: string;
+  id:string;
+  professorId: string;
+  studentId:string;
+  businessId:string;
   name: string;
   email: string;
   description: string;
@@ -1054,7 +1057,9 @@ const ProfessorProfilePage: React.FC = () => {
                                   className="flex items-center space-x-4"
                                 >
                                   <div>
-                                    <p className="font-semibold  text-gray-600">
+                                  <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
+    window.location.href = `/business-profile/${applicant.businessId}`;
+  }}>
                                       {applicant.name}
                                     </p>
                                     <p className="text-sm text-gray-600">
@@ -1167,7 +1172,9 @@ const ProfessorProfilePage: React.FC = () => {
                                   className="flex items-center space-x-4"
                                 >
                                   <div>
-                                    <p className="font-semibold  text-gray-600">
+                                    <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
+    window.location.href = `/professor-profile/${applicant.professorId}`;
+  }}>
                                       {applicant.name}
                                     </p>
                                     <p className="text-sm text-gray-600">
@@ -1284,7 +1291,9 @@ const ProfessorProfilePage: React.FC = () => {
                                   className="flex items-center space-x-4"
                                 >
                                   <div>
-                                    <p className="font-semibold  text-gray-600">
+                                  <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
+    window.location.href = `/student-profile/${applicant.studentId}`;
+  }}>
                                       {applicant.name}
                                     </p>
                                     <p className="text-sm text-gray-600">
@@ -1792,9 +1801,9 @@ const ProfessorProfilePage: React.FC = () => {
                             >
                               <Badge
                                 variant="outline"
-                                className="w-[120px] h-8 flex items-center justify-center shrink-0 text-center text-xs font-normal text-black"
+                                className="w-[140px] h-8 flex items-center justify-center shrink-0 text-center text-xs font-normal text-black"
                               >
-                                {position.startYear} - {position.endYear || "Present"}
+                                {position.startYear} - { position.current ? "Current year" :  position.endYear}
                               </Badge>
                               <span >
                                 {position.title}, {position.institution}

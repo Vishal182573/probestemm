@@ -810,7 +810,7 @@ const renderInitialForm = () => (
       </div>
 
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your research paper image (2mb)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -819,12 +819,17 @@ const renderInitialForm = () => (
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setIdCardFile(file);
-              setUploadError(null);
+              if(file.size >  2 * 1024 * 1024){
+                alert("file size must be less then 2 mb")
+                return
+              }else{
+                setIdCardFile(file);
+                setUploadError(null);
+              }
             }
           }}
           required
-           placeholder="Upload your ID card"
+           placeholder="Upload your research paper image"
           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 bg-white text-black"
         />
         {idCardFile && (
@@ -958,7 +963,7 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your research paper image (2mb)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -967,12 +972,17 @@ const renderInitialForm = () => (
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setIdCardFile(file);
-              setUploadError(null);
+              if(file.size >  2 * 1024 * 1024){
+                alert("file size must be less then 2 mb")
+                return;
+              }else{
+                setIdCardFile(file);
+                setUploadError(null);
+              }
             }
           }}
           required
-          placeholder="Upload you Id card"
+          placeholder="Upload your research paper image"
           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/ bg-white text-black"
         />
         {idCardFile && (
@@ -1090,7 +1100,7 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">ID Card Upload <span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your company brochure image (2mb)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -1099,12 +1109,17 @@ const renderInitialForm = () => (
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
-              setIdCardFile(file);
-              setUploadError(null);
+              if(file.size >  2 * 1024 * 1024){
+                alert("file size must be less then 2 mb")
+                return;
+              }else{
+                setIdCardFile(file);
+                setUploadError(null);
+              }
             }
           }}
           required
-          placeholder="Upload company related card"
+          placeholder="Upload company brochure"
           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 bg-white text-black"
         />
         {idCardFile && (

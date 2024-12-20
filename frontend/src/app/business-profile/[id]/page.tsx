@@ -59,7 +59,7 @@ interface ApplicationDetails {
     id: string;
     name: string;
     email: string;
-    phoneNumber: string;
+    phoneNumber: string; 
     institution?: string;
     department?: string;
   };
@@ -329,7 +329,9 @@ const BusinessProfilePage: React.FC = () => {
           <Card key={application.id} className="p-4 border-2 border-[#eb5e17] bg-white">
             <div className="flex items-start justify-between">
               <div>
-                <h5 className="font-bold text-[#472014]">
+                <h5 className="font-bold text-[#472014] cursor-pointer" onClick={() => {
+    window.location.href = `/${application.applicationType}-profile/${application.applicantDetails.id}`;
+  }}>
                   {application.applicantDetails.name}
                 </h5>
                 <p className="text-gray-600">
