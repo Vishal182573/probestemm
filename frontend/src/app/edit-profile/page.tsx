@@ -23,26 +23,32 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
 
 const categories = {
-  Physics: [
+  "Physics": [
     "Classical Mechanics",
     "Electromagnetism",
     "Thermodynamics",
     "Quantum Mechanics",
     "Relativity",
   ],
-  Chemistry: [
+  "Chemistry": [
     "Organic Chemistry",
     "Inorganic Chemistry",
     "Physical Chemistry",
     "Analytical Chemistry",
   ],
-  Biology: [
+  "Biology": [
     "Molecular Biology",
     "Cell Biology",
     "Ecology",
     "Evolutionary Biology",
   ],
-  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+  "Earth Sciences": [
+    "Geology",
+    "Meteorology",
+    "Oceanography",
+    "Natural Hazards and Risk Assessment",
+    "Hydrology",
+  ],
   "Space Science": [
     "Astronomy",
     "Astrophysics",
@@ -52,68 +58,57 @@ const categories = {
     "Space Weather",
     "Space Policy and Law",
   ],
-  "Computer Science": [
-    "Algorithms and Data Structures",
-    "Software Engineering",
-    "Data Science",
+  "Technology": [
+    "Artificial Intelligence & Machine Learning",
+    "Robotics & Automation",
     "Cybersecurity",
-    "Human-Computer Interaction",
+    "Information Technology",
+    "Communication Technology",
+    "Biotechnology",
+    "Nanotechnology",
+    "Energy Technology",
   ],
-  Engineering: [
-    "Electrical Engineering",
+  "Engineering": [
     "Mechanical Engineering",
+    "Electrical & Electronics Engineering",
     "Civil Engineering",
     "Chemical Engineering",
+    "Computer Science Engineering",
+    "Biomedical Engineering",
+    "Industrial & Manufacturing Engineering",
+    "Aerospace Engineering",
+    "Environmental Engineering",
+    "Agricultural Engineering",
+    "Marine & Ocean Engineering",
+    "Data Science Engineering",
   ],
   "Pure Mathematics": [
     "Algebra",
     "Calculus",
     "Geometry",
     "Number Theory",
+    "Analysis",
+    "Topology",
+    "Graph Theory",
   ],
   "Applied Mathematics": [
-    "Statistics",
+    "Probability and Statistics",
     "Operations Research",
-    "Mathematical Modeling",
-    "Data Analysis",
-    "Mathematical Economics",
+    "Numerical Analysis",
+    "Mathematical Modelling",
+    "Data Science",
+    "Economics and Computation",
+    "Financial Mathematics",
+    "Game Theory",
   ],
-  "Data Engineering": [
-    "Data Pipeline Development",
-    "Data Storage and Management",
-  ],
-  Robotics: [
-    "Robot Design and Control",
-    "Human-Robot Interaction",
-    "Artificial Intelligence in Robotics",
-  ],
-  Biotechnology: [
-    "Genetic Engineering",
-    "Biochemical Engineering",
-    "Biomedical Engineering",
-    "Biomanufacturing",
-  ],
-  "Environmental Technology": [
-    "Renewable Energy Technologies",
-    "Environmental Monitoring and Management",
-  ],
-  "Space Technology": [
-    "Satellite Technology",
-    "Space Propulsion",
-    "Space Systems and Instruments",
-  ],
-  "Pharmaceutical Engineering": [
-    "Drug Formulation",
-    "Process Engineering for Drug Production",
-  ],
-};
+} as const;
 
 // Add interfaces for research interests and tags
 interface ResearchInterest {
   title: string;
   description: string;
-  image?: File;
-  imagePreview?: string;
+  images?: File[];
+  imagePreviews?: string[];
   imageUrl?: string[];
 }
 
@@ -156,11 +151,12 @@ const EditProfileForm = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [newResearchInterest, setNewResearchInterest] =
-    useState<ResearchInterest>({
-      title: "",
-      description: "",
-    });
+  const [newResearchInterest, setNewResearchInterest] = useState<ResearchInterest>({
+    title: '',
+    description: '',
+    images: [],
+    imagePreviews: [],
+  });
 
   // Move localStorage access to useEffect
   useEffect(() => {
@@ -204,55 +200,146 @@ const EditProfileForm = () => {
     }
   };
 
-  const handleResearchInterestImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index?: number
-  ) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleImageUpload = async (files: File[]) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('images', file);
+    });
 
-      // Add file validation
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      const maxFileSize = 5 * 1024 * 1024; // 5MB
+    try {
+      const response = await fetch(`${API_URL}/image/upload-multiple`, {
+        method: 'POST',
+        body: formData,
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to upload images');
+      }
+
+      const { imageUrls } = await response.json();
+      return imageUrls;
+    } catch (error) {
+      toast({
+        title: "Error uploading images",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+      return [];
+    }
+  };
+
+  const handleResearchImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+    const validFiles = files.filter(file => {
       if (!validImageTypes.includes(file.type)) {
         toast({
           title: "Invalid File Type",
-          description: "Please upload a JPEG, PNG, or GIF image.",
+          description: `${file.name} is not a valid image type.`,
           variant: "destructive"
         });
-        return;
+        return false;
       }
-
       if (file.size > maxFileSize) {
         toast({
           title: "File Too Large",
-          description: "Image must be smaller than 5MB.",
+          description: `${file.name} must be smaller than 5MB.`,
           variant: "destructive"
         });
-        return;
+        return false;
+      }
+      return true;
+    });
+
+    const previews = validFiles.map(file => URL.createObjectURL(file));
+
+    setNewResearchInterest(prev => ({
+      ...prev,
+      images: [...(prev.images || []), ...validFiles],
+      imagePreviews: [...(prev.imagePreviews || []), ...previews]
+    }));
+  };
+
+  const removeImage = (index: number) => {
+    setNewResearchInterest(prev => {
+      const newImages = [...(prev.images || [])];
+      const newPreviews = [...(prev.imagePreviews || [])];
+
+      if (prev.imagePreviews?.[index]) {
+        URL.revokeObjectURL(prev.imagePreviews[index]);
       }
 
-      const previewUrl = URL.createObjectURL(file);
+      newImages.splice(index, 1);
+      newPreviews.splice(index, 1);
 
-      if (index !== undefined) {
-        // Update existing research interest
-        setProfileData((prev: any) => ({  // Add explicit type annotation here
-          ...prev,
-          researchInterests: prev.researchInterests.map((interest: ResearchInterest, i: number) =>
-            i === index
-              ? { ...interest, image: file, imagePreview: previewUrl }
-              : interest
-          )
-        }));
-      } else {
-        // For new research interest
-        setNewResearchInterest({
-          ...newResearchInterest,
-          image: file,
-          imagePreview: previewUrl
-        });
-      }
+      return {
+        ...prev,
+        images: newImages,
+        imagePreviews: newPreviews
+      };
+    });
+  };
+
+  const addResearchInterest = async () => {
+    if (!newResearchInterest.title || !newResearchInterest.description) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newResearchInterest.images?.length) {
+      toast({
+        title: "Missing Images",
+        description: "Please upload at least one image.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Upload images first
+      const imageUrls = await handleImageUpload(newResearchInterest.images);
+
+      // Add research interest with image URLs
+      setProfileData((prev: any) => ({
+        ...prev,
+        researchInterests: [
+          ...(prev.researchInterests || []),
+          {
+            title: newResearchInterest.title,
+            description: newResearchInterest.description,
+            imageUrl: imageUrls
+          }
+        ],
+      }));
+
+      // Clear form and previews
+      newResearchInterest.imagePreviews?.forEach(preview => {
+        URL.revokeObjectURL(preview);
+      });
+
+      setNewResearchInterest({
+        title: '',
+        description: '',
+        images: [],
+        imagePreviews: []
+      });
+
+      toast({
+        title: "Success",
+        description: "Research interest added successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add research interest. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -377,19 +464,6 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, researchHighlights: newHighlights });
   };
 
-  const addResearchInterest = () => {
-    if (newResearchInterest.title && newResearchInterest.description) {
-      setProfileData((prev: any) => ({
-        ...prev,
-        researchInterests: [
-          ...(prev.researchInterests || []),
-          newResearchInterest,
-        ],
-      }));
-      setNewResearchInterest({ title: "", description: "" });
-    }
-  };
-
   const removeResearchInterest = (index: number) => {
     const newInterests = [...profileData.researchInterests];
     newInterests.splice(index, 1);
@@ -464,39 +538,11 @@ const EditProfileForm = () => {
         formData.append("profileImage", profileImage);
       }
 
-      // Systematic research interest image handling
-      if (role === "professor" && profileData.researchInterests) {
-        profileData.researchInterests.forEach(
-          (interest: ResearchInterest, index: number) => {
-            if (interest.image) {
-              // Validate research interest image
-              const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-              const maxFileSize = 5 * 1024 * 1024; // 5MB
-
-              if (!validImageTypes.includes(interest.image.type)) {
-                throw new Error(`Invalid image type for research interest at index ${index}`);
-              }
-
-              if (interest.image.size > maxFileSize) {
-                throw new Error(`Research interest image at index ${index} exceeds 5MB limit`);
-              }
-
-              formData.append(`researchInterestImages[${index}]`, interest.image);
-            }
-          }
-        );
-      }
-
-      // Convert non-file data to JSON or string
       Object.entries(profileData).forEach(([key, value]) => {
-        // Skip file/image fields which are already handled
-        if (key !== 'profileImage' &&
-          !(role === 'professor' && key === 'researchInterests')) {
-          if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else if (value !== null && value !== undefined) {
-            formData.append(key, value.toString());
-          }
+        if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value.toString());
         }
       });
 
@@ -865,139 +911,115 @@ const EditProfileForm = () => {
                     </div>
 
                     {/* Research Interests Section */}
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Label>Research Interests</Label>
-                      <div className="flex flex-col space-y-2">
+                      <div className="flex flex-col space-y-4">
                         <Input
                           placeholder="Interest Title"
                           value={newResearchInterest.title}
-                          onChange={(e) =>
-                            setNewResearchInterest({
-                              ...newResearchInterest,
-                              title: e.target.value,
-                            })
-                          }
-                          disabled={!isEditing}
+                          onChange={(e) => setNewResearchInterest(prev => ({
+                            ...prev,
+                            title: e.target.value
+                          }))}
                           className="text-black bg-white"
                         />
+
                         <Textarea
                           placeholder="Description"
                           value={newResearchInterest.description}
-                          onChange={(e) =>
-                            setNewResearchInterest({
-                              ...newResearchInterest,
-                              description: e.target.value,
-                            })
-                          }
-                          disabled={!isEditing}
+                          onChange={(e) => setNewResearchInterest(prev => ({
+                            ...prev,
+                            description: e.target.value
+                          }))}
                           className="text-black bg-white"
                         />
-                        {isEditing && (
-                          <div className="flex flex-col space-y-2">
-                            <Label>Upload Image</Label>
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const previewUrl = URL.createObjectURL(file);
-                                  setNewResearchInterest({
-                                    ...newResearchInterest,
-                                    image: file,
-                                    imagePreview: previewUrl,
-                                  });
-                                }
-                              }}
-                              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-black bg-white"
-                            />
-                          </div>
-                        )}
-                        {newResearchInterest.imagePreview && (
-                          <div className="relative w-40 h-40">
-                            <Image
-                              src={newResearchInterest.imagePreview}
-                              alt="Preview"
-                              width={160}
-                              height={160}
-                              className="rounded-md object-cover"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2"
-                              onClick={() => {
-                                if (newResearchInterest.imagePreview) {
-                                  URL.revokeObjectURL(
-                                    newResearchInterest.imagePreview
-                                  );
-                                }
-                                setNewResearchInterest({
-                                  ...newResearchInterest,
-                                  image: undefined,
-                                  imagePreview: undefined,
-                                });
-                              }}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        {isEditing && (
-                          <Button type="button" onClick={addResearchInterest}>
-                            Add Research Interest
-                          </Button>
-                        )}
-                      </div>
-                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {profileData?.researchInterests?.map(
-                          (interest: ResearchInterest, index: number) => (
-                            <div
-                              key={index}
-                              className="bg-primary/10 p-4 rounded-md flex flex-col space-y-2"
-                            >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium">
-                                    {interest.title}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {interest.description}
-                                  </p>
-                                </div>
-                                {isEditing && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() =>
-                                      removeResearchInterest(index)
-                                    }
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                )}
+
+                        <div className="space-y-2">
+                          <Label>Upload Images</Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleResearchImageChange}
+                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-black bg-white"
+                          />
+                        </div>
+
+                        {/* Image Previews Grid */}
+                        {newResearchInterest.imagePreviews && newResearchInterest.imagePreviews.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {newResearchInterest.imagePreviews.map((preview, index) => (
+                              <div key={index} className="relative aspect-square">
+                                <Image
+                                  src={preview}
+                                  alt={`Preview ${index + 1}`}
+                                  fill
+                                  className="rounded-md object-cover"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute top-2 right-2"
+                                  onClick={() => removeImage(index)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
                               </div>
-                              {(interest.imageUrl || interest.imagePreview) && (
-                                <div className="relative w-full h-48">
-                                  <Image
-                                    src={
-                                      Array.isArray(interest.imageUrl)
-                                        ? interest.imageUrl[0]
-                                        : (interest.imageUrl || interest.imagePreview || "/placeholder.png")
-                                    }
-                                    alt={interest.title}
-                                    fill  // Use 'fill' instead of 'layout="fill"' in newer Next.js versions
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-cover rounded-md"
-                                    priority={false}
-                                  />
-                                </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <Button
+                          type="button"
+                          onClick={addResearchInterest}
+                          className="w-full"
+                        >
+                          Add Research Interest
+                        </Button>
+                      </div>
+
+                      {/* Existing Research Interests */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                        {profileData?.researchInterests?.map((interest: ResearchInterest, index: number) => (
+                          <div
+                            key={index}
+                            className="bg-primary/10 p-4 rounded-md space-y-4"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium">{interest.title}</h4>
+                                <p className="text-sm text-muted-foreground">{interest.description}</p>
+                              </div>
+                              {isEditing && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeResearchInterest(index)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
                               )}
                             </div>
-                          )
-                        )}
+
+                            {interest.imageUrl && interest.imageUrl.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {interest.imageUrl.map((url, imgIndex) => (
+                                  <div key={imgIndex} className="relative aspect-square">
+                                    <Image
+                                      src={url}
+                                      alt={`${interest.title} image ${imgIndex + 1}`}
+                                      fill
+                                      className="rounded-md object-cover"
+                                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
 

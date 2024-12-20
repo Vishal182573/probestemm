@@ -80,23 +80,59 @@ const QuestionDetailPage: React.FC = () => {
   };
 
   const handleAddAnswer = async () => {
-    if (newAnswer.trim() !== "") {
-      try {
-        const userString = localStorage.getItem("user");
-        if (!userString) {
-          setError("User not found in localStorage");
+    if (newAnswer.trim() === "") {
+      return;
+    }
+  
+    try {
+      const userString = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+  
+      if (!userString || !token) {
+        setError("User not found in localStorage");
+        return;
+      }
+  
+      const user = JSON.parse(userString);
+  
+      // If user is a professor, check their approval status
+      if (role === "professor") {
+        const professorResponse = await axios.get(
+          `${API_URL}/professors/${user.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+  
+        if (!professorResponse.data.isApproved) {
+          alert("Your profile has not been approved by admin yet. Please wait for approval before posting answers.");
+          setNewAnswer(""); // Clear the answer input
           return;
         }
-        const user = JSON.parse(userString);
-        await axios.post(`${API_URL}/discussion/answer`, {
+      }
+  
+      // Proceed with posting the answer
+      await axios.post(
+        `${API_URL}/discussion/answer`,
+        {
           content: newAnswer,
           discussionId: id,
-          userType: localStorage.getItem("role"), // or 'BUSINESS', depending on the user type
-          userId: user.id, // Replace with actual user ID
-        });
-        setNewAnswer("");
-        fetchDiscussion(); // Refetch to update the answers list
-      } catch {
+          userType: role,
+          userId: user.id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+  
+      setNewAnswer(""); // Clear the input field
+      fetchDiscussion(); // Refetch to update the answers list
+    } catch (error) {
+      console.error("Error posting answer:", error);
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || "Failed to post answer");
+      } else {
         setError("Failed to post answer");
       }
     }

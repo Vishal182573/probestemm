@@ -25,29 +25,84 @@ const generateToken = (id: string, role: UserRole) => {
   });
 };
 
-export const categories = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
+const categories = {
+  "Physics": [
+    "Classical Mechanics",
+    "Electromagnetism",
+    "Thermodynamics",
+    "Quantum Mechanics",
+    "Relativity",
   ],
-  Technology: ["Computer Science", "Engineering"],
-  Engineering: [
-    "Electrical Engineering",
+  "Chemistry": [
+    "Organic Chemistry",
+    "Inorganic Chemistry",
+    "Physical Chemistry",
+    "Analytical Chemistry",
+  ],
+  "Biology": [
+    "Molecular Biology",
+    "Cell Biology",
+    "Ecology",
+    "Evolutionary Biology",
+  ],
+  "Earth Sciences": [
+    "Geology",
+    "Meteorology",
+    "Oceanography",
+    "Natural Hazards and Risk Assessment",
+    "Hydrology",
+  ],
+  "Space Science": [
+    "Astronomy",
+    "Astrophysics",
+    "Planetary Science",
+    "Space Exploration",
+    "Astrobiology",
+    "Space Weather",
+    "Space Policy and Law",
+  ],
+  "Technology": [
+    "Artificial Intelligence & Machine Learning",
+    "Robotics & Automation",
+    "Cybersecurity",
+    "Information Technology",
+    "Communication Technology",
+    "Biotechnology",
+    "Nanotechnology",
+    "Energy Technology",
+  ],
+  "Engineering": [
     "Mechanical Engineering",
+    "Electrical & Electronics Engineering",
     "Civil Engineering",
     "Chemical Engineering",
+    "Computer Science Engineering",
+    "Biomedical Engineering",
+    "Industrial & Manufacturing Engineering",
+    "Aerospace Engineering",
+    "Environmental Engineering",
+    "Agricultural Engineering",
+    "Marine & Ocean Engineering",
+    "Data Science Engineering",
   ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
+  "Pure Mathematics": [
+    "Algebra",
+    "Calculus",
+    "Geometry",
+    "Number Theory",
+    "Analysis",
+    "Topology",
+    "Graph Theory",
+  ],
+  "Applied Mathematics": [
+    "Probability and Statistics",
+    "Operations Research",
+    "Numerical Analysis",
+    "Mathematical Modelling",
+    "Data Science",
+    "Economics and Computation",
+    "Financial Mathematics",
+    "Game Theory",
   ],
 } as const;
 

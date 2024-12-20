@@ -38,9 +38,9 @@ function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { cat,subcategory,professorId, topic, content, timeline, tags } = req.body;
+    const { cat, subcategory, professorId, topic, content, timeline, tags } = req.body;
 
-    // Get professor details for notification
+    // First verify the creating professor exists
     const creatingProfessor = await prisma.professor.findUnique({
       where: { id: professorId },
       select: {
@@ -52,6 +52,11 @@ export const createProfessorProject = async (req: Request, res: Response) => {
       },
     });
 
+    if (!creatingProfessor) {
+      return res.status(404).json({ error: "Creating professor not found" });
+    }
+
+    // Create the project
     const project = await prisma.project.create({
       data: {
         topic,
@@ -68,29 +73,38 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     // Enhanced notification message
     const notificationContent = `
       New Collaboration Opportunity!
+      Professor ${creatingProfessor.fullName} from ${creatingProfessor.university} 
     `.trim();
 
-    // Notify all professors
+    // Fetch and notify matching professors
     const matchingProfessors = await prisma.professorTag.findMany({
       where: {
-        AND: [{ category: cat }, { subcategory: subcategory }],
+        AND: [{ category: cat }, { subcategory: subcategory },{ professorId: { not: professorId } }],
       },
       include: {
         professor: true,
       },
     });
-    
-    for (const professor of matchingProfessors) {
-      await createNotification(
-        "PROJECT_APPLICATION",
-        notificationContent,
-        professor.id,
-        "professor",
-        "/projects/professor",
-        project.id,
-        "project"
-      );
-    }
+
+    // Create notifications in parallel
+    await Promise.all(
+      matchingProfessors.map((professorTag) =>
+        createNotification(
+          "PROJECT_APPLICATION",
+          notificationContent,
+          professorTag.professorId,
+          "professor",
+          "/projects/professor",
+          project.id,
+          "project"
+        ).catch((error) => {
+          console.error(
+            `Failed to create notification for professor ${professorTag.professorId}:`,
+            error
+          );
+        })
+      )
+    );
 
     res.status(201).json(project);
   } catch (error) {

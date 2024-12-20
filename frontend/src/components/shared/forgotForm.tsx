@@ -28,6 +28,12 @@ const ForgotPasswordForm = () => {
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  
+    const togglePasswordVisibility = () => {
+      setShowPassword((prev) => !prev);
+    };
+  
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,13 +176,23 @@ const ForgotPasswordForm = () => {
 
   const renderStep3 = () => (
     <form onSubmit={handleResetPassword} className="space-y-4">
-      <Input
-        type="password"
-        placeholder="Enter new password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#eb5e17] h-12 text-black"
-      />
+      <div className="relative">
+              <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="bg-white/50 border-2 border-[#686256]/20 focus:border-[#eb5e17] h-12 text-black"
+                />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm "
+            >
+              {showPassword ? "Hide" : "Show"} 
+            </button>
+          </div>
       
       <Button
         type="submit"

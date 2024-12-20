@@ -88,9 +88,10 @@ interface Professor {
   department: string;
   position: string;
   researchInterests: Array<{
+    id:string;
     title: string;
     description: string;
-    imageUrl: string;
+    imageUrl: string[];
   }>;
   positions: Array<{
     id: string;
@@ -139,14 +140,6 @@ interface Project {
   };
 }
 
-interface AppliedStudent {
-  projectId: string;
-  studentId: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-}
-
 type Notification = {
   id: string;
   type: "COMMENT" | "LIKE" | "DISLIKE";
@@ -176,32 +169,48 @@ interface Webinar {
   webinarDocument?: string;
 }
 
-interface SelectedImage {
-  url: string;
+
+interface ResearchInterest {
+  id: string;
   title: string;
+  description?: string;
+  imageUrl: string[];
+  professorId: string;
+}
+
+interface ResearchInterestsProps {
+  professor: {
+    researchInterests: ResearchInterest[];
+  };
 }
 
 const categories = {
-  Physics: [
+  "Physics": [
     "Classical Mechanics",
     "Electromagnetism",
     "Thermodynamics",
     "Quantum Mechanics",
     "Relativity",
   ],
-  Chemistry: [
+  "Chemistry": [
     "Organic Chemistry",
     "Inorganic Chemistry",
     "Physical Chemistry",
     "Analytical Chemistry",
   ],
-  Biology: [
+  "Biology": [
     "Molecular Biology",
     "Cell Biology",
     "Ecology",
     "Evolutionary Biology",
   ],
-  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
+  "Earth Sciences": [
+    "Geology",
+    "Meteorology",
+    "Oceanography",
+    "Natural Hazards and Risk Assessment",
+    "Hydrology",
+  ],
   "Space Science": [
     "Astronomy",
     "Astrophysics",
@@ -211,61 +220,50 @@ const categories = {
     "Space Weather",
     "Space Policy and Law",
   ],
-  "Computer Science": [
-    "Algorithms and Data Structures",
-    "Software Engineering",
-    "Data Science",
+  "Technology": [
+    "Artificial Intelligence & Machine Learning",
+    "Robotics & Automation",
     "Cybersecurity",
-    "Human-Computer Interaction",
+    "Information Technology",
+    "Communication Technology",
+    "Biotechnology",
+    "Nanotechnology",
+    "Energy Technology",
   ],
-  Engineering: [
-    "Electrical Engineering",
+  "Engineering": [
     "Mechanical Engineering",
+    "Electrical & Electronics Engineering",
     "Civil Engineering",
     "Chemical Engineering",
+    "Computer Science Engineering",
+    "Biomedical Engineering",
+    "Industrial & Manufacturing Engineering",
+    "Aerospace Engineering",
+    "Environmental Engineering",
+    "Agricultural Engineering",
+    "Marine & Ocean Engineering",
+    "Data Science Engineering",
   ],
   "Pure Mathematics": [
     "Algebra",
     "Calculus",
     "Geometry",
     "Number Theory",
+    "Analysis",
+    "Topology",
+    "Graph Theory",
   ],
   "Applied Mathematics": [
-    "Statistics",
+    "Probability and Statistics",
     "Operations Research",
-    "Mathematical Modeling",
-    "Data Analysis",
-    "Mathematical Economics",
+    "Numerical Analysis",
+    "Mathematical Modelling",
+    "Data Science",
+    "Economics and Computation",
+    "Financial Mathematics",
+    "Game Theory",
   ],
-  "Data Engineering": [
-    "Data Pipeline Development",
-    "Data Storage and Management",
-  ],
-  Robotics: [
-    "Robot Design and Control",
-    "Human-Robot Interaction",
-    "Artificial Intelligence in Robotics",
-  ],
-  Biotechnology: [
-    "Genetic Engineering",
-    "Biochemical Engineering",
-    "Biomedical Engineering",
-    "Biomanufacturing",
-  ],
-  "Environmental Technology": [
-    "Renewable Energy Technologies",
-    "Environmental Monitoring and Management",
-  ],
-  "Space Technology": [
-    "Satellite Technology",
-    "Space Propulsion",
-    "Space Systems and Instruments",
-  ],
-  "Pharmaceutical Engineering": [
-    "Drug Formulation",
-    "Process Engineering for Drug Production",
-  ],
-};
+} as const;
 
 
 const ProfessorProfilePage: React.FC = () => {
@@ -280,9 +278,6 @@ const ProfessorProfilePage: React.FC = () => {
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(
-    null
-  );
   const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
     [projectId: string]: AppliedApplicant[];
   }>({});
@@ -295,12 +290,17 @@ const ProfessorProfilePage: React.FC = () => {
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string>('');
+
   const openModal = (imageUrl: string, title: string) => {
-    setSelectedImage({ url: imageUrl, title });
+    setSelectedImage(imageUrl);
+    setSelectedTitle(title);
   };
 
   const closeModal = () => {
     setSelectedImage(null);
+    setSelectedTitle('');
   };
 
   useEffect(() => {
@@ -460,6 +460,7 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to mark notification as read. Please try again.");
     }
   };
+
   const handleCreateWebinar = async (
     webinarData: any,
     webinarImage: File | null,
@@ -470,37 +471,52 @@ const ProfessorProfilePage: React.FC = () => {
       if (!token) {
         throw new Error("No authentication token found");
       }
-
+  
+      // First check professor's approval status
+      const professorResponse = await axios.get(
+        `${API_URL}/professors/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+  
+      if (!professorResponse.data.isApproved) {
+        alert("Your profile has not been approved by admin yet. Please wait for approval before creating webinars.");
+        // Clear the form - you'll need to pass setFormData as a prop or use a ref
+        // setFormData(initialFormState);
+        return;
+      }
+  
       const formData = new FormData();
-
+  
       // Append webinar data
       Object.keys(webinarData).forEach((key) => {
         formData.append(key, webinarData[key]);
       });
-
+  
       // Append image if it exists
       if (webinarImage) {
         formData.append("webinarImage", webinarImage);
       }
-
+  
       // Append document if it exists
       if (webinarDocument) {
         formData.append("webinarDocument", webinarDocument);
       }
-
+  
       console.log("Sending webinar data:", webinarData);
       console.log("Sending webinar image:", webinarImage);
       console.log("Sending webinar document:", webinarDocument);
-
+  
       const response = await axios.post(`${API_URL}/webinars`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-
+  
       console.log("Server response:", response.data);
-
+  
       setWebinars((prevWebinars) => [...prevWebinars, response.data]);
       setIsWebinarDialogOpen(false);
     } catch (error) {
@@ -513,6 +529,7 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to create webinar. Please try again.");
     }
   };
+  
   const handleUpdateWebinarStatus = async (
     webinarId: string,
     newStatus: "COMPLETED" | "CANCELLED"
@@ -1716,40 +1733,39 @@ const ProfessorProfilePage: React.FC = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center text-2xl font-bold">
                         <BookOpen className="mr-2" />
-                        Research Highlights
+                        Research Interests
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {professor.researchInterests &&
-                        professor.researchInterests.length > 0 ? (
-                        <ul className="space-y-4">
+                      {professor.researchInterests && professor.researchInterests.length > 0 ? (
+                        <ul className="space-y-6">
                           {professor.researchInterests.map((research) => (
-                            <li key={research.title} className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-black">
+                            <li key={research.id} className="space-y-3">
+                              <div className="flex flex-col gap-3">
+                                <Badge variant="outline" className="text-black w-fit">
                                   {research.title}
                                 </Badge>
-                                {research.imageUrl && (
-                                  <Image
-                                    src={research.imageUrl}
-                                    alt={research.title}
-                                    height={100}
-                                    width={100}
-                                    className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                                    onClick={() =>
-                                      openModal(
-                                        research.imageUrl,
-                                        research.title
-                                      )
-                                    }
-                                  />
+                                {research.imageUrl && research.imageUrl.length > 0 && (
+                                  <div className="flex gap-2 flex-wrap">
+                                    {research.imageUrl.map((url, index) => (
+                                      <Image
+                                        key={`${research.id}-${index}`}
+                                        src={url}
+                                        alt={`${research.title} - Image ${index + 1}`}
+                                        height={100}
+                                        width={100}
+                                        className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => openModal(url, research.title)}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                                {research.description && (
+                                  <p className="text-sm text-gray-600">
+                                    {research.description}
+                                  </p>
                                 )}
                               </div>
-                              {research.description && (
-                                <p className="text-sm text-gray-600 ml-2">
-                                  {research.description}
-                                </p>
-                              )}
                             </li>
                           ))}
                         </ul>
@@ -1827,30 +1843,24 @@ const ProfessorProfilePage: React.FC = () => {
 
                   {selectedImage && (
                     <div
-                      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
                       onClick={closeModal}
                     >
-                      <div
-                        className="relative max-w-4xl w-full bg-white rounded-lg p-2"
-                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                      >
+                      <div className="relative max-w-4xl w-full aspect-video bg-white rounded-lg p-2">
+                        <Image
+                          src={selectedImage}
+                          alt={selectedTitle}
+                          fill
+                          className="object-contain rounded"
+                        />
                         <button
                           onClick={closeModal}
-                          className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                          className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100"
                         >
                           <X className="h-6 w-6" />
                         </button>
-                        <div className="mt-8 mb-4 text-center">
-                          <h3 className="text-lg font-semibold text-[#472014]">
-                            {selectedImage.title}
-                          </h3>
-                        </div>
-                        <div className="flex justify-center">
-                          <Image
-                            src={selectedImage.url}
-                            alt={selectedImage.title}
-                            className="max-h-[80vh] w-auto object-contain"
-                          />
+                        <div className="absolute bottom-4 left-4 bg-white px-3 py-1 rounded-full">
+                          <p className="text-sm font-medium">{selectedTitle}</p>
                         </div>
                       </div>
                     </div>

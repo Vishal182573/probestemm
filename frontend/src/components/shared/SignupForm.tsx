@@ -29,89 +29,84 @@ const authApi = axios.create({
 });
 
 const categories = {
-    Physics: [
-      "Classical Mechanics",
-      "Electromagnetism",
-      "Thermodynamics",
-      "Quantum Mechanics",
-      "Relativity",
-    ],
-    Chemistry: [
-      "Organic Chemistry",
-      "Inorganic Chemistry",
-      "Physical Chemistry",
-      "Analytical Chemistry",
-    ],
-    Biology: [
-      "Molecular Biology",
-      "Cell Biology",
-      "Ecology",
-      "Evolutionary Biology",
-    ],
-    "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
-    "Space Science": [
-      "Astronomy",
-      "Astrophysics",
-      "Planetary Science",
-      "Space Exploration",
-      "Astrobiology",
-      "Space Weather",
-      "Space Policy and Law",
-    ],
-    "Computer Science": [
-      "Algorithms and Data Structures",
-      "Software Engineering",
-      "Data Science",
-      "Cybersecurity",
-      "Human-Computer Interaction",
-    ],
-    Engineering: [
-      "Electrical Engineering",
-      "Mechanical Engineering",
-      "Civil Engineering",
-      "Chemical Engineering",
-    ],
-    "Pure Mathematics": [
-      "Algebra",
-      "Calculus",
-      "Geometry",
-      "Number Theory",
-    ],
-    "Applied Mathematics": [
-      "Statistics",
-      "Operations Research",
-      "Mathematical Modeling",
-      "Data Analysis",
-      "Mathematical Economics",
-    ],
-    "Data Engineering": [
-      "Data Pipeline Development",
-      "Data Storage and Management",
-    ],
-    Robotics: [
-      "Robot Design and Control",
-      "Human-Robot Interaction",
-      "Artificial Intelligence in Robotics",
-    ],
-    Biotechnology: [
-      "Genetic Engineering",
-      "Biochemical Engineering",
-      "Biomedical Engineering",
-      "Biomanufacturing",
-    ],
-    "Environmental Technology": [
-      "Renewable Energy Technologies",
-      "Environmental Monitoring and Management",
-    ],
-    "Space Technology": [
-      "Satellite Technology",
-      "Space Propulsion",
-      "Space Systems and Instruments",
-    ],
-    "Pharmaceutical Engineering": [
-      "Drug Formulation",
-      "Process Engineering for Drug Production",
-    ],
+  "Physics": [
+    "Classical Mechanics",
+    "Electromagnetism",
+    "Thermodynamics",
+    "Quantum Mechanics",
+    "Relativity",
+  ],
+  "Chemistry": [
+    "Organic Chemistry",
+    "Inorganic Chemistry",
+    "Physical Chemistry",
+    "Analytical Chemistry",
+  ],
+  "Biology": [
+    "Molecular Biology",
+    "Cell Biology",
+    "Ecology",
+    "Evolutionary Biology",
+  ],
+  "Earth Sciences": [
+    "Geology",
+    "Meteorology",
+    "Oceanography",
+    "Natural Hazards and Risk Assessment",
+    "Hydrology",
+  ],
+  "Space Science": [
+    "Astronomy",
+    "Astrophysics",
+    "Planetary Science",
+    "Space Exploration",
+    "Astrobiology",
+    "Space Weather",
+    "Space Policy and Law",
+  ],
+  "Technology": [
+    "Artificial Intelligence & Machine Learning",
+    "Robotics & Automation",
+    "Cybersecurity",
+    "Information Technology",
+    "Communication Technology",
+    "Biotechnology",
+    "Nanotechnology",
+    "Energy Technology",
+  ],
+  "Engineering": [
+    "Mechanical Engineering",
+    "Electrical & Electronics Engineering",
+    "Civil Engineering",
+    "Chemical Engineering",
+    "Computer Science Engineering",
+    "Biomedical Engineering",
+    "Industrial & Manufacturing Engineering",
+    "Aerospace Engineering",
+    "Environmental Engineering",
+    "Agricultural Engineering",
+    "Marine & Ocean Engineering",
+    "Data Science Engineering",
+  ],
+  "Pure Mathematics": [
+    "Algebra",
+    "Calculus",
+    "Geometry",
+    "Number Theory",
+    "Analysis",
+    "Topology",
+    "Graph Theory",
+  ],
+  "Applied Mathematics": [
+    "Probability and Statistics",
+    "Operations Research",
+    "Numerical Analysis",
+    "Mathematical Modelling",
+    "Data Science",
+    "Economics and Computation",
+    "Financial Mathematics",
+    "Game Theory",
+  ],
 } as const;
 
 
@@ -315,6 +310,17 @@ export const SignupForm: React.FC = () => {
           },
         }
       );
+
+      // Send signup email after successful registration
+    try {
+      await axios.post(`${API_URL}/email/signup-email`, {
+        email: userData.email
+      });
+    } catch (emailError) {
+      console.error('Failed to send signup email:', emailError);
+      // Note: We don't want to block the signup process if email sending fails
+    }
+
       setIsSuccess(true);
       toast({
         title: 'Account created successfully!',

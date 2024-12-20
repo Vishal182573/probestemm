@@ -5,6 +5,7 @@ import type { Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
+
 export const createNotification = async (
   type: NotificationType,
   content: string,
@@ -21,22 +22,70 @@ export const createNotification = async (
     | "tags"
     | "professor-approval"
 ) => {
-  const notificationData: any = {
-    type,
-    content,
-    redirectionLink
-  };
+  try {
+    // First verify that the recipient exists
+    let recipientExists = false;
+    
+    switch (recipientType) {
+      case "professor":
+        recipientExists = await prisma.professor.findUnique({
+          where: { id: recipientId }
+        }) !== null;
+        break;
+      case "student":
+        recipientExists = await prisma.student.findUnique({
+          where: { id: recipientId }
+        }) !== null;
+        break;
+      case "business":
+        recipientExists = await prisma.business.findUnique({
+          where: { id: recipientId }
+        }) !== null;
+        break;
+    }
 
-  notificationData[`${recipientType}Id`] = recipientId;
+    if (!recipientExists) {
+      throw new Error(`${recipientType} with ID ${recipientId} does not exist`);
+    }
 
-  // Add related entity if provided
-  if (relatedEntityId && relatedEntityType) {
-    notificationData[`${relatedEntityType}Id`] = relatedEntityId;
+    // If related entity is provided, verify it exists
+    if (relatedEntityId && relatedEntityType) {
+      let entityExists = false;
+      
+      switch (relatedEntityType) {
+        case "project":
+          entityExists = await prisma.project.findUnique({
+            where: { id: relatedEntityId }
+          }) !== null;
+          break;
+        // Add other entity checks as needed
+      }
+
+      if (!entityExists) {
+        throw new Error(`${relatedEntityType} with ID ${relatedEntityId} does not exist`);
+      }
+    }
+
+    const notificationData: any = {
+      type,
+      content,
+      redirectionLink,
+      [`${recipientType}Id`]: recipientId
+    };
+
+    if (relatedEntityId && relatedEntityType) {
+      notificationData[`${relatedEntityType}Id`] = relatedEntityId;
+    }
+
+    const notification = await prisma.notification.create({
+      data: notificationData,
+    });
+
+    return notification;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    throw error;
   }
-
-  await prisma.notification.create({
-    data: notificationData,
-  });
 };
 
 export const getNotifications = async (req: Request, res: Response) => {

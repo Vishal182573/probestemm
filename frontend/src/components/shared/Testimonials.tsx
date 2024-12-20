@@ -30,7 +30,7 @@ const testimonials = [
     author: "Ankur Suri",
     role: "Teaching Professor",
     department: "University of Washington Tacoma, USA",
-    image: "",
+    image: "https://res.cloudinary.com/drwyju0q7/image/upload/v1734676542/ikqe5ygbcni7hqallrvz.jpg",
     rating: 5,
     link:"https://probestem.com/professor-profile/cm486fpm4001lmm36ssnd00jg"
   }

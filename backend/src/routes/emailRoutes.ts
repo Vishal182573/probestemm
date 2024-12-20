@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { sendVerificationEmail, validateCode } from '../controllers/emailController';
+import { sendVerificationEmail, sendWelcomeEmail, validateCode } from '../controllers/emailController';
 
 const router = Router();
+
+// Route to signup email
+router.post('/signup-email', sendWelcomeEmail);
 
 // Route to send verification email
 router.post('/send-email', sendVerificationEmail);
