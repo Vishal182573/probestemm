@@ -10,7 +10,7 @@ const testimonials = [
   {
     quote: "I am excited about the opportunity to utilize this platform to connect with colleagues and student researchers, both domestically and internationally. I believe that by working together and sharing our knowledge, we can make a significant impact in addressing the environmental challenges that we face today.",
     author: "Dr. Ali H Omar",
-    role: "Senior Scientist",
+    role: "Senior Scientist,",
     department: "NASA Langley Research Center, USA",
     image: TESTI2,
     rating: 5,
@@ -28,7 +28,7 @@ const testimonials = [
   {
     quote: "I'm eager to unite with a global network of researchers, leveraging this platform to pioneer groundbreaking sustainable solutions. As an academician, I have always felt the need for a forum that can actively promote industrial collaborations. In my view, this initiative is a step in the right direction",
     author: "Ankur Suri",
-    role: "Teaching Professor",
+    role: "Teaching Professor,",
     department: "University of Washington Tacoma, USA",
     image: "https://res.cloudinary.com/drwyju0q7/image/upload/v1734676542/ikqe5ygbcni7hqallrvz.jpg",
     rating: 5,

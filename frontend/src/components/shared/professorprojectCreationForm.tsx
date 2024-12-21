@@ -32,7 +32,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
     setError("");
 
     const formData = new FormData(e.currentTarget);
-    const fundValue = formData.get("fundDetails");
+    const isFunded = formData.get("isFunded");
 
     const data = {
       businessId,
@@ -43,7 +43,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
         startDate: formData.get("startDate"),
         endDate: formData.get("endDate"),
       },
-      fundDetails: fundValue ? String(fundValue) : "",
+      isFunded:isFunded==="true"?true:false,
       desirable: formData.get("desirable"),
       tags: (formData.get("tags") as string)
         .split(",")
@@ -194,14 +194,17 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Fund Amount</Label>
-                <Input
-                  type="number"
-                  name="fundDetails"
-                  placeholder="Enter fund amount"
-                  className="bg-white"
-                />
+              <div>
+                <Label>Is Funded</Label>
+                <Select name="isFunded" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select funding status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white text-black">
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

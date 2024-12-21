@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */ 
+/* eslint-disable @typescript-eslint/no-explicit-any */ 
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -501,6 +502,30 @@ const handleVerifyOtp = async () => {
   }
 };
 
+const validateTwoWords = (value:string) => {
+  const words = value.trim().split(/\s+/);
+  if (words.length !== 2) {
+    setError('Please enter exactly two words (first and last name)');
+    return false;
+  }
+  if (words[0].length === 0 || words[1].length === 0) {
+    setError('Both first and last name are required');
+    return false;
+  }
+  setError('');
+  return true;
+};
+
+const handleChange = (e:any) => {
+  const value = e.target.value;
+  setUserData({ ...userData, fullName: value });
+  validateTwoWords(value);
+};
+
+const handleBlur = () => {
+  validateTwoWords(userData.fullName);
+};
+
 const handleInitialSubmit = (e: React.FormEvent) => {
   e.preventDefault();
   
@@ -533,14 +558,18 @@ const [emailVerification, setEmailVerification] = useState({
 
 const renderInitialForm = () => (
   <form className="space-y-4 text-black bg-white" onSubmit={handleInitialSubmit}>
-    <Input
-      type="text"
-      placeholder="Full Name"
-      value={userData.fullName}
-      onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
-      required
-      className="text-black bg-white"
-    />
+    <div className="flex flex-col gap-2">
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={userData.fullName}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        required
+        className="px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-describedby="nameError"
+      />
+    </div>
     
     <div className="space-y-2">
       <div className="flex gap-2">

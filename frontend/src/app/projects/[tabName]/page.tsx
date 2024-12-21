@@ -385,7 +385,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Funding:</h4>
               <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
-              <p>{project.fundDetails && project.fundDetails}</p>
+              {/* <p>{project.fundDetails && project.fundDetails}</p> */}
             </div>
           </>
         );
