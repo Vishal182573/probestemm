@@ -17,6 +17,9 @@ import {
   FileText,
   Calendar,
   MapPin,
+  User,
+  Mail,
+  Phone,
 } from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
@@ -78,6 +81,16 @@ interface Project {
   business?: { id: string; companyName: string };
   professor?: { id: string; fullName: string };
   applications?: ApplicationDetails[];
+  selectedApplicant: {
+    id:string;
+    type: string;
+    userId: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    description: string;
+    images: string[]
+  }
 }
 
 interface AppliedProfessor {
@@ -116,15 +129,12 @@ const BusinessProfilePage: React.FC = () => {
         setBusiness(businessResponse.data);
 
         // Fetch projects regardless of whether the user is logged in
-        const projectsResponse = await axios.get(`${API_URL}/project`, {
-          params: {
-            type: "BUSINESS_PROJECT",
-            businessId: id,
-          },
+        const projectsResponse = await axios.get(`${API_URL}/project/business/${id}/projects`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
         setProjects(projectsResponse.data);
+        console.log(projectsResponse.data);
 
         if (isLoggedInUser && token) {
           // Fetch notifications
@@ -217,7 +227,6 @@ const BusinessProfilePage: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log(notifications);
 
       setNotifications(
         notifications.map((n) =>
@@ -463,9 +472,36 @@ const BusinessProfilePage: React.FC = () => {
                   Complete Project
                 </Button>
               )}
+              {project.selectedApplicant && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-[#eb5e17]/20" >
+                <h4 className="text-lg font-semibold text-[#472014] mb-3 flex items-center">
+                  <User className="mr-2 h-5 w-5" />
+                  Selected Applicant
+                </h4>
+                <div className="space-y-2">
+                  <p className="flex items-center text-gray-700">
+                    <span className="font-medium mr-2">Name:</span> {project.selectedApplicant.name}
+                  </p>
+                  <p className="flex items-center text-gray-700">
+                    <Mail className="mr-2 h-4 w-4" />
+                    {project.selectedApplicant.email}
+                  </p>
+                  <p className="text-gray-700 mt-2">{project.selectedApplicant.description}</p>
+                  <Button 
+                    onClick={() => {
+                      window.location.href = `/${project.selectedApplicant.type}-profile/${project.selectedApplicant.userId}`;
+                    }}
+                    className="mt-3 bg-[#003d82] hover:bg-[#472014] text-white"
+                  >
+                    View {project.selectedApplicant.type.charAt(0).toUpperCase() + project.selectedApplicant.type.slice(1)} Profile
+                  </Button>
+                </div>
+              </div>
+              )}
             </li>
           ))}
         </ul>
+        
       </CardContent>
     </Card>
   );

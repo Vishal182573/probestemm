@@ -295,43 +295,129 @@ export const getProjectsByType = async (req: Request, res: Response) => {
   }
  };
 
-// Get projects by user ID and type
-export const getProjectsByUserId = async (req: Request, res: Response) => {
+ export const getProjectsByUserId = async (req: Request, res: Response) => {
   try {
     const { userId, userType } = req.params;
-
+    
     if (!["professor", "student", "business"].includes(userType)) {
       return res.status(400).json({ error: "Invalid user type" });
     }
 
-    let projects: any[];
+    // Base query object with common includes
+    const baseQueryObject = {
+      include: {
+        professorApplications: {
+          select: {
+            id: true,
+            professorId: true,
+            name: true,
+            email: true,
+            phoneNumber: true,
+            description: true,
+            images: true,
+          },
+        },
+        studentApplications: {
+          select: {
+            id: true,
+            studentId: true,
+            name: true,
+            email: true,
+            phoneNumber: true,
+            description: true,
+            images: true,
+          },
+        },
+        businessApplications: {
+          select: {
+            id: true,
+            businessId: true,
+            name: true,
+            email: true,
+            phoneNumber: true,
+            description: true,
+            images: true,
+          },
+        },
+      },
+    };
 
-    switch (userType) {
-      case "professor":
-        projects = await prisma.project.findMany({
-          where: { professorId: userId },
-        });
-        break;
-      case "student":
-        projects = await prisma.project.findMany({
-          where: { studentId: userId },
-        });
-        break;
-      case "business":
-        projects = await prisma.project.findMany({
-          where: { businessId: userId },
-        });
-        break;
-      default:
-        projects = [];
-    }
+    // Set where clause based on user type
+    const whereClause = {
+      [userType + 'Id']: userId,
+    };
 
-    res.status(200).json(projects);
+    // Fetch projects with all applications
+    const projects = await prisma.project.findMany({
+      where: whereClause,
+      ...baseQueryObject,
+    });
+
+    // Process projects to include selected applicant info with type
+    const processedProjects = projects.map(project => {
+      let selectedApplicant = null;
+      let applicantType = null;
+      let applicantCollection = null;
+      
+      if (project.selectedApplicationId) {
+        // Check each application type for the selected applicant
+        const professorApplicant = project.professorApplications.find(
+          app => app.id === project.selectedApplicationId
+        );
+        const studentApplicant = project.studentApplications.find(
+          app => app.id === project.selectedApplicationId
+        );
+        const businessApplicant = project.businessApplications.find(
+          app => app.id === project.selectedApplicationId
+        );
+
+        if (professorApplicant) {
+          selectedApplicant = professorApplicant;
+          applicantType = 'professor';
+          applicantCollection = 'professorApplications';
+        } else if (studentApplicant) {
+          selectedApplicant = studentApplicant;
+          applicantType = 'student';
+          applicantCollection = 'studentApplications';
+        } else if (businessApplicant) {
+          selectedApplicant = businessApplicant;
+          applicantType = 'business';
+          applicantCollection = 'businessApplications';
+        }
+      }
+
+      // Create a clean project object without the application arrays
+      const { 
+        professorApplications, 
+        studentApplications, 
+        businessApplications, 
+        ...projectWithoutApplications 
+      } = project;
+
+      // Return project with enhanced selected applicant info
+      return {
+        ...projectWithoutApplications,
+        selectedApplicant: selectedApplicant ? {
+          id: selectedApplicant.id,
+          type: applicantType,
+          collection: applicantCollection,
+          userId: selectedApplicant[`${applicantType}Id`],
+          name: selectedApplicant.name,
+          email: selectedApplicant.email,
+          phoneNumber: selectedApplicant.phoneNumber,
+          description: selectedApplicant.description,
+          images: selectedApplicant.images,
+        } : null,
+      };
+    });
+
+    res.status(200).json(processedProjects);
   } catch (error) {
     console.error("Error fetching projects by user ID:", error);
     res.status(500).json({ error: "Failed to fetch projects" });
   }
 };
+
 
 // Apply for a project
 export const applyForProject = async (req: Request, res: Response) => {
