@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { Server } from 'socket.io';
 import { FRONTEND_URL } from "./constants";
 import { AdminJS } from "adminjs";
 import type { AdminJSOptions, BrandingOptions } from "adminjs";
@@ -8,6 +9,7 @@ import AdminJSExpress from "@adminjs/express";
 import { Database, Resource, getModelByName } from "@adminjs/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { createServer } from 'http';
 
 
 // Route imports
@@ -27,12 +29,83 @@ import faqRoutes from "./routes/faqRoutes";
 import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
 import emailRoutes from "./routes/emailRoutes";
+import chatRoutes from "./routes/chatRoutes"
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 const prisma = new PrismaClient();
+
+// Socket.IO Configuration
+const io = new Server(httpServer, {
+  cors: {
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+// Store connected users
+const connectedUsers = new Map();
+
+// Socket.IO middleware for authentication
+io.use((socket, next) => {
+  const userId = socket.handshake.auth.userId;
+  const userType = socket.handshake.auth.userType;
+  
+  if (!userId) {
+    return next(new Error('Authentication error'));
+  }
+  
+  socket.data.userId = userId;
+  socket.data.userType = userType;
+  next();
+});
+
+io.on('connection', (socket) => {
+  const userId = socket.data.userId;
+  connectedUsers.set(userId, socket.id);
+
+  // console.log(`User connected: ${userId}, Socket ID: ${socket.id}`);
+
+  // Join a room specific to the user
+  socket.join(userId);
+
+  // Handle sending messages
+socket.on('sendMessage', async (messageData) => {
+  const { chatRoomId, senderId, receiverId } = messageData;
+  
+  // Append createdAt field with the current date and time
+  messageData.createdAt = new Date().toISOString(); // ISO string for a standard date-time format
+  
+  // Get receiver's socket ID
+  const receiverSocketId = connectedUsers.get(receiverId);
+  
+  if (receiverSocketId) {
+    // Emit to specific user
+    io.to(receiverSocketId).emit('receiveMessage', messageData);
+  }
+  
+  // Also emit to sender for consistency
+  socket.emit('receiveMessage', messageData);
+});
+
+
+  // Handle typing status with improved targeting
+  socket.on('typing', ({ userId, chatRoomId, isTyping }) => {
+    socket.broadcast.to(chatRoomId).emit('userTyping', { 
+      userId, 
+      chatRoomId, 
+      isTyping 
+    });
+  });
+
+  socket.on('disconnect', () => {
+    connectedUsers.delete(userId);
+  });
+});
 
 // Register Prisma Adapter
 AdminJS.registerAdapter({ Database, Resource });
@@ -486,15 +559,17 @@ const startApp = async () => {
   app.use("/api/user", userRoutes);
   app.use("/api/patents", patentRoutes);
   app.use("/api/email", emailRoutes);
+  app.use("/api/chat",chatRoutes);
 
   // Default route
   app.get("/", (req, res) => {
     res.send("Server is running");
   });
 
-  // Start server
-  app.listen(PORT, () => {
+  // Start server using httpServer instead of app.listen
+  httpServer.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Socket.IO server is running on port ${PORT}`);
     console.log(
       `AdminJS started on http://localhost:${PORT}${admin.options.rootPath}`
     );
@@ -507,3 +582,5 @@ startApp().catch((error) => {
 });
 
 export default app;
+
+export { io };

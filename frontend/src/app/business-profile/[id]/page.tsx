@@ -217,6 +217,29 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  const handleContact = async ()=>{
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      const response = await axios.post(
+        `${API_URL}/chat/rooms`,
+        {
+          userOneId:id,
+          userOneType:"business",
+          userTwoId:localStorage.getItem("userId"),
+          userTwoType:localStorage.getItem("role")
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if(response.status == 200) alert("Open chat box");
+
+    } catch (error:any) {
+      console.error("Error marking notification as read:", error);
+      setError(error.message);
+    }
+  }
+
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -617,6 +640,9 @@ const BusinessProfilePage: React.FC = () => {
                   <p className="text-xl text-black">{business.location}</p>
                 </div>
               </div>
+              <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                                  Contact User
+              </Button>
               <div className="flex items-center space-x-2">
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>

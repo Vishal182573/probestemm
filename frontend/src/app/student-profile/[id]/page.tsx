@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -178,6 +178,29 @@ const StudentProfilePage: React.FC = () => {
       setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: false }));
     }
   };
+
+  const handleContact = async ()=>{
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      const response = await axios.post(
+        `${API_URL}/chat/rooms`,
+        {
+          userOneId:id,
+          userOneType:"student",
+          userTwoId:localStorage.getItem("userId"),
+          userTwoType:localStorage.getItem("role")
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if(response.status == 200) alert("Open chat box");
+
+    } catch (error:any) {
+      console.error("Error marking notification as read:", error);
+      setError(error.message);
+    }
+  }
 
   // Toggle applicants display
   const toggleApplicants = (projectId: string) => {
@@ -508,6 +531,9 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg text-black">{student.university}</p>
                 </div>
               </div>
+              <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                    Contact User
+              </Button>
 
               {isOwnProfile && (
                 <Link href={"/edit-profile"}>

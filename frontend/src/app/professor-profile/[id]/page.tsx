@@ -552,6 +552,30 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to update webinar status. Please try again.");
     }
   };
+
+  const handleContact = async ()=>{
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      const response = await axios.post(
+        `${API_URL}/chat/rooms`,
+        {
+          userOneId:id,
+          userOneType:"professor",
+          userTwoId:localStorage.getItem("userId"),
+          userTwoType:localStorage.getItem("role")
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if(response.status == 200) alert("Open chat box");
+
+    } catch (error:any) {
+      console.error("Error marking notification as read:", error);
+      setError(error.message);
+    }
+  }
+
   const handleCreateProject = async (projectData: any) => {
     setIsCreatingProject(true);
     try {
@@ -1656,6 +1680,9 @@ const ProfessorProfilePage: React.FC = () => {
                   <Globe className="mr-2 h-4 w-4 text-black" />
                   Google Scholar
                 </a>
+                <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                                    Contact User
+                </Button>
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>
                     <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">

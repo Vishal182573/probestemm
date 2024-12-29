@@ -626,6 +626,7 @@ export const logUserAccess = async (req: Request, res: Response) => {
   try {
     const { emailId} = req.body;
     const ipAddress = req.ip || req.socket.remoteAddress || 'Unknown';
+    console.log(ipAddress);
 
     // Validate required fields
     if (!emailId) {

@@ -1,0 +1,593 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { MessageCircle, Send, X, Search, Loader2, CheckCheck } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { API_URL } from '@/constants';
+import { cn } from "@/lib/utils";
+import { Socket, io } from 'socket.io-client';
+import { SOCKET_URL } from '@/constants';
+
+interface User {
+  id: string;
+  fullName?: string;
+  companyName?: string;
+  email: string;
+  imageUrl?: string;
+  role?: string;
+}
+
+interface ChatRoom {
+  id: string;
+  userOneId: string;
+  userTwoId: string;
+  userOneType: string;
+  userTwoType: string;
+  createdAt: string;
+  updatedAt: string;
+  otherUser: User;
+  otherUserType: string;
+  messages?: ChatMessage[];
+}
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  mediaUrls: string[];
+  mediaType: string | null;
+  senderId: string;
+  senderType: string;
+  chatRoomId: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const GlobalChatBox: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState<number>(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const messageEndRef = useRef<HTMLDivElement>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({});
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const [currentUser, setCurrentUser] = useState<{ id: string | null; type: string | null }>({ 
+    id: null, 
+    type: null 
+  });
+  const [isClient, setIsClient] = useState(false);
+
+  // Set isClient to true once the component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Initialize currentUser after component mounts and only if we're on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem("userId");
+      const userType = localStorage.getItem("role");
+      
+      if (userId && userType) {
+        setCurrentUser({
+          id: userId,
+          type: userType
+        });
+      }
+    }
+  }, [isClient]);
+
+  const scrollToBottom = useCallback(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    if (currentUser.id) {
+      fetchChatRooms();
+      const interval = setInterval(fetchUnreadCounts, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser.id]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedChat?.messages, scrollToBottom]);
+
+  useEffect(() => {
+    if (!currentUser.id) return;
+
+    const newSocket = io(SOCKET_URL, {
+      auth: {
+        userId: currentUser.id,
+        userType: currentUser.type
+      },
+      withCredentials: true,
+      transports: ['websocket']
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to socket server with ID:', newSocket.id);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    newSocket.on('receiveMessage', (message: ChatMessage) => {
+      setSelectedChat(prev => {
+        if (!prev || prev.id !== message.chatRoomId) return prev;
+        return {
+          ...prev,
+          messages: [...(prev.messages || []), message]
+        };
+      });
+      
+      if (selectedChat?.id === message.chatRoomId) {
+        markMessagesAsRead(message.chatRoomId);
+      }
+      fetchUnreadCounts();
+    });
+
+    newSocket.on('userTyping', ({ userId, chatRoomId, isTyping }) => {
+      if (selectedChat?.id === chatRoomId && userId !== currentUser.id) {
+        setTypingUsers(prev => {
+          const newState = { ...prev };
+          if (isTyping) {
+            newState[userId] = true;
+          } else {
+            delete newState[userId];
+          }
+          return newState;
+        });
+      }
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+      }
+    };
+  }, [currentUser.id, currentUser.type, selectedChat?.id]);
+
+  const fetchChatRooms = async () => {
+    if (!currentUser.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/chat/rooms/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch chat rooms');
+      const data = await response.json();
+      setChatRooms(data);
+    } catch (error) {
+      console.error('Failed to fetch chat rooms:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUnreadCounts = async () => {
+    if (!currentUser.id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/messages/unread/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch unread counts');
+      const data = await response.json();
+      setUnreadCounts(data.unreadCount);
+    } catch (error) {
+      console.error('Failed to fetch unread counts:', error);
+    }
+  };
+
+  const markMessagesAsRead = async (chatId: string) => {
+    if (!currentUser.id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/messages/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatRoomId: chatId, userId: currentUser.id })
+      });
+      if (!response.ok) throw new Error('Failed to mark messages as read');
+      await fetchUnreadCounts();
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+    }
+  };
+
+  const fetchChatMessages = async (chatId: string, page = 1, limit = 50) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/chat/messages?chatId=${chatId}&page=${page}&limit=${limit}`
+      );
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      return data.messages ?? [];
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+      return [];
+    }
+  };
+
+  const sendNewMessage = async () => {
+    if (!message.trim() || !selectedChat || sending || !socket || !currentUser.id) {
+      console.log('Cannot send message:', { 
+        hasMessage: !!message.trim(), 
+        hasSelectedChat: !!selectedChat, 
+        sending, 
+        hasSocket: !!socket,
+        hasCurrentUser: !!currentUser.id
+      });
+      return;
+    }
+
+    try {
+      setSending(true);
+      const messageData = {
+        chatRoomId: selectedChat.id,
+        senderId: currentUser.id,
+        senderType: currentUser.type,
+        receiverId: selectedChat.otherUser.id,
+        content: message.trim(),
+      };
+
+      socket.emit('sendMessage', messageData, (error: any) => {
+        if (error) {
+          console.error('Socket message error:', error);
+        }
+      });
+
+      const response = await fetch(`${API_URL}/chat/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData)
+      });
+
+      setMessage('');
+      handleTyping(false);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleTyping = useCallback((typing: boolean) => {
+    if (!socket || !selectedChat || !currentUser.id) return;
+
+    socket.emit('typing', {
+      userId: currentUser.id,
+      chatRoomId: selectedChat.id,
+      isTyping: typing
+    }, (error: any) => {
+      if (error) {
+        console.error('Error emitting typing status:', error);
+      }
+    });
+  }, [socket, selectedChat, currentUser.id]);
+
+  const debouncedTyping = useCallback(() => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    handleTyping(true);
+    typingTimeoutRef.current = setTimeout(() => {
+      handleTyping(false);
+    }, 1000);
+  }, [handleTyping]);
+
+  const handleMessageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setMessage(newValue);
+    
+    if (newValue.length > 0) {
+      debouncedTyping();
+    } else {
+      handleTyping(false);
+    }
+  };
+
+  const handleChatSelect = async (chat: ChatRoom) => {
+    setSelectedChat(chat);
+    setIsSidebarOpen(window.innerWidth > 768);
+    const messages = await fetchChatMessages(chat.id);
+    messages.reverse();
+    setSelectedChat(prev => prev ? { ...chat, messages } : null);
+    await markMessagesAsRead(chat.id);
+  };
+
+  const filteredChatRooms = chatRooms.filter(chat =>
+    chat.otherUser?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    chat.otherUser?.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    chat.otherUser?.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const MessageView: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
+    const isCurrentUser = msg.senderId === currentUser.id;
+    const messageTime = new Date(msg.createdAt).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const getInitial = () => {
+      if (!isClient) return '';
+      
+      if (isCurrentUser) {
+        return localStorage.getItem("fullName")?.toUpperCase()[0] || 
+               localStorage.getItem("companyName")?.toUpperCase()[0] || '?';
+      }
+      return selectedChat?.otherUser.fullName?.toUpperCase()[0] || 
+             selectedChat?.otherUser.companyName?.toUpperCase()[0] || '?';
+    };
+
+    return (
+      <div
+        className={cn(
+          "flex mb-4",
+          isCurrentUser ? "justify-end" : "justify-start"
+        )}
+      >
+        <div className={cn(
+          "flex items-start gap-2 max-w-[80%] group",
+          isCurrentUser ? "flex-row-reverse" : "flex-row"
+        )}>
+          <Avatar className="w-8 h-8 shrink-0 transition-transform group-hover:scale-105">
+            <AvatarImage src={selectedChat?.otherUser?.imageUrl} />
+            <AvatarFallback className={cn(
+              "text-white transition-colors",
+              isCurrentUser ? 'bg-[#eb5e17]' : 'bg-gray-400'
+            )}>
+              {getInitial()}
+            </AvatarFallback>
+          </Avatar>
+          <div className={cn(
+            "flex flex-col",
+            isCurrentUser ? "items-end" : "items-start"
+          )}>
+            <div className={cn(
+              "p-3 rounded-lg break-words shadow-sm transition-all duration-200",
+              isCurrentUser ? 
+                "bg-[#eb5e17] text-white hover:bg-[#eb5e17]/90" : 
+                "bg-white hover:bg-gray-50"
+            )}>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+              <span>{messageTime}</span>
+              {isCurrentUser && (
+                <div className="flex items-center gap-1">
+                  <CheckCheck className={cn(
+                    "h-3 w-3",
+                    msg.isRead ? "text-[#eb5e17]" : "text-gray-400"
+                  )} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const TypingIndicator: React.FC = () => {
+    const typingCount = Object.values(typingUsers).filter(Boolean).length;
+    if (!typingCount) return null;
+
+    return (
+      <div className="flex items-center gap-2 text-gray-500 text-sm bg-white/80 backdrop-blur-sm p-2 rounded-lg shadow-sm transition-all duration-200 animate-fade-in">
+        <div className="flex space-x-1">
+          <div className="w-2 h-2 bg-[#eb5e17] rounded-full animate-bounce [animation-delay:-0.3s]" />
+          <div className="w-2 h-2 bg-[#eb5e17] rounded-full animate-bounce [animation-delay:-0.15s]" />
+          <div className="w-2 h-2 bg-[#eb5e17] rounded-full animate-bounce" />
+        </div>
+        <span className="text-black font-medium">
+          {typingCount === 1 ? 'Someone is typing...' : `${typingCount} people are typing...`}
+        </span>
+      </div>
+    );
+  };
+
+  if (!isClient) {
+    return null;
+  }
+
+  return (
+    <>
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-4 right-4 h-14 w-14 rounded-full bg-[#eb5e17] hover:bg-[#eb5e17]/90 text-white p-0 z-50 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+      >
+        <MessageCircle className="h-7 w-7" />
+        <span className="absolute -top-2 -right-2 bg-white text-[#eb5e17] rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold shadow-md border-2 border-[#eb5e17]">
+          {unreadCounts}
+        </span>
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-[900px] h-[80vh] max-h-[800px] flex flex-col p-0 focus:ring-0 focus:ring-offset-0 focus:outline-none gap-0 text-black">
+          <DialogHeader className="p-4 border-b bg-white ">
+            <DialogTitle className="flex justify-between items-center text-lg font-semibold">
+              <span>Messages</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-1 overflow-hidden text-black">
+            {/* Sidebar */}
+            <div className={cn(
+              "w-full md:w-80 border-r flex flex-col absolute md:relative inset-0 bg-white z-10 transition-transform duration-200",
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            )}>
+              <div className="p-4 border-b">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search chats..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 bg-gray-50 border-gray-200 focus:ring-[#eb5e17]/20"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="ml-2 md:hidden absolute right-4 top-4"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <ScrollArea className="flex-1">
+                <div className="p-2 space-y-1">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-[#eb5e17]" />
+                    </div>
+                  ) : filteredChatRooms.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No chats found</p>
+                    </div>
+                  ) : (
+                    filteredChatRooms.map(chat => (
+                      <div
+                        key={chat.id}
+                        className={cn(
+                          "flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200",
+                          selectedChat?.id === chat.id ? 'bg-gray-100 hover:bg-gray-100' : ''
+                        )}
+                        onClick={() => handleChatSelect(chat)}
+                      >
+                        <Avatar className="h-12 w-12 shrink-0">
+                          <AvatarImage src={chat.otherUser?.imageUrl} />
+                          <AvatarFallback className="bg-[#eb5e17]/90 text-white">
+                            {chat.otherUser?.fullName?.[0]?.toUpperCase() ||
+                              chat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="ml-3 flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {chat.otherUser?.fullName || chat.otherUser?.companyName}
+                          </p>
+                          <p className="text-xs text-gray-500 capitalize truncate">
+                            {chat.otherUser?.role || chat.otherUserType}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col bg-gray-50">
+              {!selectedChat ? (
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                  <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+                    <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">Start a Conversation</p>
+                    <p className="text-sm text-gray-400">Select a chat from the sidebar to start messaging</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="px-6 py-4 border-b bg-white flex items-center justify-between shadow-sm">
+                    <div className="flex items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden mr-2"
+                        onClick={() => setIsSidebarOpen(true)}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={selectedChat.otherUser?.imageUrl} />
+                        <AvatarFallback className="bg-[#eb5e17] text-white">
+                          {selectedChat.otherUser?.fullName?.[0]?.toUpperCase() ||
+                            selectedChat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="ml-3 cursor-pointer">
+                        <p className="font-medium hover:text-[#eb5e17] transition-colors" 
+                           onClick={() => {
+                             window.location.href = `/${selectedChat.userOneId === currentUser.id ? selectedChat.userTwoType : selectedChat.userOneType}-profile/${selectedChat.otherUser.id}`;
+                           }}>
+                          {selectedChat.otherUser?.fullName || selectedChat.otherUser?.companyName}
+                        </p>
+                        <p className="text-xs text-gray-500 capitalize">
+                          {selectedChat.otherUser?.role || selectedChat.otherUserType}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ScrollArea className="flex-1 px-6 py-4">
+                    <div className="space-y-4 min-h-full">
+                      <TypingIndicator/>
+                      {selectedChat.messages?.map((msg) => (
+                        <MessageView key={msg.id} msg={msg} />
+                      ))}
+                      <div ref={messageEndRef} />
+                    </div>
+                  </ScrollArea>
+
+                  <div className="p-4 border-t bg-white shadow-lg">
+                    <div className="flex items-center gap-2 max-w-4xl mx-auto">
+                      <Input
+                        placeholder="Type a message..."
+                        value={message}
+                        onChange={handleMessageInput}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendNewMessage();
+                          }
+                        }}
+                        className="flex-1 text-gray-900 bg-white focus:ring-[#eb5e17]/20 border-gray-200"
+                        disabled={sending}
+                        autoComplete="off"
+                      />
+                      <Button
+                        onClick={sendNewMessage}
+                        className="bg-[#eb5e17] hover:bg-[#eb5e17]/90 text-white px-4 h-10"
+                        disabled={sending}
+                      >
+                        {sending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default GlobalChatBox;

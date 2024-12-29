@@ -568,3 +568,43 @@ model UserAccess {
   ipAddress  String
   accessTime DateTime @default(now())
 }
+
+model ChatRoom {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Define user types and IDs
+  userOneId   String
+  userOneType UserRole
+  userTwoId   String 
+  userTwoType UserRole
+
+  messages Message[]
+
+  @@unique([userOneId, userTwoId])
+}
+
+// Individual messages in a chat
+model Message {
+  id        String   @id @default(cuid())
+  content   String   // Text content
+  mediaUrls String[] // Array of media URLs (images, documents)
+  mediaType String?  // Type of media (image, document, etc.)
+  
+  senderId  String   // ID of the sender
+  senderType UserRole // Type of the sender (STUDENT, PROFESSOR, BUSINESS)
+  
+  chatRoom  ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  chatRoomId String
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  student
+  professor
+  business
+}
