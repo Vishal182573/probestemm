@@ -112,13 +112,26 @@ const GlobalChatBox: React.FC = () => {
   useEffect(() => {
     if (!currentUser.id) return;
 
+    // const  = io(SOCKET_URL, {
+    //   auth: {
+    //     userId: currentUser.id,
+    //     userType: currentUser.type
+    //   },
+    //   withCredentials: true,
+    //   transports: ['websocket']
+    // });
+
     const newSocket = io(SOCKET_URL, {
       auth: {
         userId: currentUser.id,
         userType: currentUser.type
       },
-      withCredentials: true,
-      transports: ['websocket']
+      path: '/api/socket.io',
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     newSocket.on('connect', () => {

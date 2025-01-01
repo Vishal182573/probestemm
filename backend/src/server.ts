@@ -40,11 +40,13 @@ const prisma = new PrismaClient();
 
 // Socket.IO Configuration
 const io = new Server(httpServer, {
+  path: '/api/socket.io', // Add this line
   cors: {
     origin: FRONTEND_URL,
     methods: ['GET', 'POST'],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling'] // Add this line to ensure fallback
 });
 
 // Store connected users
