@@ -28,6 +28,7 @@ import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
 import StudentProposalForm from "@/components/shared/studentProposal";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
+import GlobalChatBox from "@/components/shared/GlobalChatBox";
 interface Student {
   id: string;
   fullName: string;
@@ -194,7 +195,9 @@ const StudentProfilePage: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if(response.status == 200) alert("Open chat box");
+      if(response.status == 200){
+          router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+      }
 
     } catch (error:any) {
       console.error("Error marking notification as read:", error);
@@ -481,6 +484,8 @@ const StudentProfilePage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
+      {isOwnProfile && <GlobalChatBox/>
+      }
 
       <main className="flex-grow">
         <motion.section

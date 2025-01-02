@@ -97,7 +97,6 @@ export const getChatMessages = async (req: Request, res: Response) => {
 export const getUserChats = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-
     const chatRooms = await prisma.chatRoom.findMany({
       where: {
         OR: [
@@ -111,7 +110,18 @@ export const getUserChats = async (req: Request, res: Response) => {
         userOneType: true,
         userTwoId: true,
         userTwoType: true,
-        updatedAt: true
+        updatedAt: true,
+        messages: {
+          where: {
+            isRead: false,
+            NOT: {
+              senderId: userId // Exclude messages sent by the requesting user
+            }
+          },
+          select: {
+            id: true
+          }
+        }
       }
     });
 
@@ -120,8 +130,8 @@ export const getUserChats = async (req: Request, res: Response) => {
       chatRooms.map(async (chat) => {
         const otherUserId = chat.userOneId === userId ? chat.userTwoId : chat.userOneId;
         const otherUserType = chat.userOneId === userId ? chat.userTwoType : chat.userOneType;
-        
         let otherUser;
+
         switch (otherUserType) {
           case 'student':
             otherUser = await prisma.student.findUnique({ where: { id: otherUserId } });
@@ -136,7 +146,9 @@ export const getUserChats = async (req: Request, res: Response) => {
 
         return {
           ...chat,
-          otherUser
+          unreadCount: chat.messages.length, // Count of unread messages
+          otherUser,
+          // messages: undefined // Remove messages array from response
         };
       })
     );

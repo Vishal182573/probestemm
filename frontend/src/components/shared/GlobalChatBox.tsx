@@ -17,6 +17,7 @@ import { API_URL } from '@/constants';
 import { cn } from "@/lib/utils";
 import { Socket, io } from 'socket.io-client';
 import { SOCKET_URL } from '@/constants';
+import { Badge } from '../ui/badge';
 
 interface User {
   id: string;
@@ -24,6 +25,8 @@ interface User {
   companyName?: string;
   email: string;
   imageUrl?: string;
+  photoUrl?:string;
+  profileImageUrl?:string;
   role?: string;
 }
 
@@ -38,6 +41,7 @@ interface ChatRoom {
   otherUser: User;
   otherUserType: string;
   messages?: ChatMessage[];
+  unreadCount:number;
 }
 
 interface ChatMessage {
@@ -54,7 +58,7 @@ interface ChatMessage {
 }
 
 const GlobalChatBox: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState('');
   const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +76,61 @@ const GlobalChatBox: React.FC = () => {
     type: null 
   });
   const [isClient, setIsClient] = useState(false);
+  const [chatRoomUnreadCounts, setChatRoomUnreadCounts] = useState<{[key: string]: number}>({});
+  const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
+
+  useEffect(() => {
+    if (currentUser.id) {
+      fetchChatRooms();
+      // Set up intervals for both total and individual unread counts
+      const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
+      const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
+      
+      return () => {
+        clearInterval(totalUnreadInterval);
+        clearInterval(roomUnreadInterval);
+      };
+    }
+  }, [currentUser.id]);
+
+  // Add function to refresh selected chat
+  const refreshSelectedChat = useCallback(async () => {
+    if (!selectedChat?.id) return;
+    
+    try {
+      const messages = await fetchChatMessages(selectedChat.id);
+      messages.reverse();
+      setSelectedChat(prev => prev ? { ...prev, messages } : null);
+    } catch (error) {
+      console.error('Failed to refresh chat:', error);
+    }
+  }, [selectedChat?.id]);
+
+  // Add effect for periodic chat refresh
+  useEffect(() => {
+    const intervalId = setInterval(refreshSelectedChat, 3000);
+    return () => clearInterval(intervalId);
+  }, [refreshSelectedChat]);
+
+   // Add new function to fetch unread counts for each chat room
+   const fetchChatRoomUnreadCounts = async () => {
+    if (!currentUser.id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/rooms/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch chat room unread counts');
+      const data = await response.json();
+      
+      const counts: {[key: string]: number} = {};
+      data.forEach((room: ChatRoom) => {
+        counts[room.id] = room.unreadCount;
+      });
+      
+      setChatRoomUnreadCounts(counts);
+    } catch (error) {
+      console.error('Failed to fetch chat room unread counts:', error);
+    }
+  };
 
   // Set isClient to true once the component mounts
   useEffect(() => {
@@ -111,15 +170,6 @@ const GlobalChatBox: React.FC = () => {
 
   useEffect(() => {
     if (!currentUser.id) return;
-
-    // const  = io(SOCKET_URL, {
-    //   auth: {
-    //     userId: currentUser.id,
-    //     userType: currentUser.type
-    //   },
-    //   withCredentials: true,
-    //   transports: ['websocket']
-    // });
 
     const newSocket = io(SOCKET_URL, {
       auth: {
@@ -171,14 +221,26 @@ const GlobalChatBox: React.FC = () => {
       }
     });
 
+    
+    // Add online status events
+    newSocket.emit('userOnline', { userId: currentUser.id });
+    
+    newSocket.on('userStatusUpdate', ({ userId, isOnline }) => {
+      setOnlineUsers(prev => ({
+        ...prev,
+        [userId]: isOnline
+      }));
+    });
+
     setSocket(newSocket);
 
     return () => {
       if (newSocket) {
+        newSocket.emit('userOffline', { userId: currentUser.id });
         newSocket.disconnect();
       }
     };
-  }, [currentUser.id, currentUser.type, selectedChat?.id]);
+  }, [currentUser.id, currentUser.type]);
 
   const fetchChatRooms = async () => {
     if (!currentUser.id) return;
@@ -333,24 +395,26 @@ const GlobalChatBox: React.FC = () => {
     chat.otherUser?.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const MessageView: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
+  const MessageView = ({ msg }: { msg: ChatMessage }) => {
     const isCurrentUser = msg.senderId === currentUser.id;
     const messageTime = new Date(msg.createdAt).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit'
     });
 
+    
     const getInitial = () => {
       if (!isClient) return '';
-      
       if (isCurrentUser) {
-        return localStorage.getItem("fullName")?.toUpperCase()[0] || 
-               localStorage.getItem("companyName")?.toUpperCase()[0] || '?';
+        return localStorage.getItem("fullName")?.toUpperCase()[0] ||
+          localStorage.getItem("companyName")?.toUpperCase()[0] || '?';
       }
-      return selectedChat?.otherUser.fullName?.toUpperCase()[0] || 
-             selectedChat?.otherUser.companyName?.toUpperCase()[0] || '?';
+      return selectedChat?.otherUser.fullName?.toUpperCase()[0] ||
+        selectedChat?.otherUser.companyName?.toUpperCase()[0] || '?';
     };
-
+  
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
     return (
       <div
         className={cn(
@@ -363,7 +427,11 @@ const GlobalChatBox: React.FC = () => {
           isCurrentUser ? "flex-row-reverse" : "flex-row"
         )}>
           <Avatar className="w-8 h-8 shrink-0 transition-transform group-hover:scale-105">
-            <AvatarImage src={selectedChat?.otherUser?.imageUrl} />
+            <AvatarImage src={isCurrentUser
+      ? user.photoUrl || user.photoImageUrl || user.imageUrl
+      : selectedChat?.otherUser?.imageUrl || 
+        selectedChat?.otherUser?.photoUrl || 
+        selectedChat?.otherUser?.profileImageUrl} />
             <AvatarFallback className={cn(
               "text-white transition-colors",
               isCurrentUser ? 'bg-[#eb5e17]' : 'bg-gray-400'
@@ -377,9 +445,9 @@ const GlobalChatBox: React.FC = () => {
           )}>
             <div className={cn(
               "p-3 rounded-lg break-words shadow-sm transition-all duration-200",
-              isCurrentUser ? 
-                "bg-[#eb5e17] text-white hover:bg-[#eb5e17]/90" : 
-                "bg-white hover:bg-gray-50"
+              isCurrentUser
+                ? "bg-[#eb5e17] text-white hover:bg-[#eb5e17]/90"
+                : "bg-white hover:bg-gray-50"
             )}>
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
             </div>
@@ -388,8 +456,8 @@ const GlobalChatBox: React.FC = () => {
               {isCurrentUser && (
                 <div className="flex items-center gap-1">
                   <CheckCheck className={cn(
-                    "h-3 w-3",
-                    msg.isRead ? "text-[#eb5e17]" : "text-gray-400"
+                    "h-4 w-4",
+                    msg.isRead ? "text-blue-600" : "text-gray-400"
                   )} />
                 </div>
               )}
@@ -417,6 +485,46 @@ const GlobalChatBox: React.FC = () => {
       </div>
     );
   };
+
+  // Update ChatRoomItem to show online status
+  const ChatRoomItem = ({ chat }: { chat: ChatRoom }) => (
+    <div
+      className={cn(
+        "flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 relative",
+        selectedChat?.id === chat.id ? 'bg-gray-100 hover:bg-gray-100' : ''
+      )}
+      onClick={() => handleChatSelect(chat)}
+    >
+      <div className="relative">
+        <Avatar className="h-12 w-12 shrink-0">
+          <AvatarImage src={chat.otherUser?.imageUrl} />
+          <AvatarFallback className="bg-[#eb5e17]/90 text-white">
+            {chat.otherUser?.fullName?.[0]?.toUpperCase() ||
+              chat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}
+          </AvatarFallback>
+        </Avatar>
+        <div className={cn(
+          "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white",
+          onlineUsers[chat.otherUser.id] ? "bg-green-500" : "bg-gray-400"
+        )} />
+      </div>
+      <div className="ml-3 flex-1 min-w-0">
+        <div className="flex justify-between items-start">
+          <p className="text-sm font-medium truncate">
+            {chat.otherUser?.fullName || chat.otherUser?.companyName}
+          </p>
+          {chatRoomUnreadCounts[chat.id] > 0 && (
+            <Badge className="bg-[#eb5e17] hover:bg-[#eb5e17]/90 ml-2">
+              {chatRoomUnreadCounts[chat.id]}
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-gray-500 capitalize truncate">
+          {chat.otherUser?.role || chat.otherUserType}
+        </p>
+      </div>
+    </div>
+  );
 
   if (!isClient) {
     return null;
@@ -481,30 +589,7 @@ const GlobalChatBox: React.FC = () => {
                     </div>
                   ) : (
                     filteredChatRooms.map(chat => (
-                      <div
-                        key={chat.id}
-                        className={cn(
-                          "flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200",
-                          selectedChat?.id === chat.id ? 'bg-gray-100 hover:bg-gray-100' : ''
-                        )}
-                        onClick={() => handleChatSelect(chat)}
-                      >
-                        <Avatar className="h-12 w-12 shrink-0">
-                          <AvatarImage src={chat.otherUser?.imageUrl} />
-                          <AvatarFallback className="bg-[#eb5e17]/90 text-white">
-                            {chat.otherUser?.fullName?.[0]?.toUpperCase() ||
-                              chat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="ml-3 flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {chat.otherUser?.fullName || chat.otherUser?.companyName}
-                          </p>
-                          <p className="text-xs text-gray-500 capitalize truncate">
-                            {chat.otherUser?.role || chat.otherUserType}
-                          </p>
-                        </div>
-                      </div>
+                      <ChatRoomItem key={chat.id} chat={chat} />
                     ))
                   )}
                 </div>

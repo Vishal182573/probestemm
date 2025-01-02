@@ -66,6 +66,9 @@ io.use((socket, next) => {
   next();
 });
 
+// Add a Map to track online users
+const onlineUsers = new Map();
+
 io.on('connection', (socket) => {
   const userId = socket.data.userId;
   connectedUsers.set(userId, socket.id);
@@ -104,9 +107,36 @@ socket.on('sendMessage', async (messageData) => {
     });
   });
 
-  socket.on('disconnect', () => {
-    connectedUsers.delete(userId);
+  // Handle user coming online
+  socket.on('userOnline', ({ userId }) => {
+    onlineUsers.set(userId, true);
+    // Broadcast to all connected clients that this user is online
+    io.emit('userStatusUpdate', { userId, isOnline: true });
   });
+
+  // Handle user going offline
+  socket.on('userOffline', ({ userId }) => {
+    onlineUsers.delete(userId);
+    // Broadcast to all connected clients that this user is offline
+    io.emit('userStatusUpdate', { userId, isOnline: false });
+  });
+
+  socket.on('disconnect', () => {
+    const userId = socket.data.userId;
+    connectedUsers.delete(userId);
+    onlineUsers.delete(userId);
+    // Broadcast offline status when user disconnects
+    io.emit('userStatusUpdate', { userId, isOnline: false });
+  });
+
+  // When a new user connects, send them the current online users
+  const onlineUsersArray = Array.from(onlineUsers.keys());
+  socket.emit('initialOnlineUsers', 
+    onlineUsersArray.reduce((acc, userId) => {
+      acc[userId] = true;
+      return acc;
+    }, {})
+  );
 });
 
 // Register Prisma Adapter

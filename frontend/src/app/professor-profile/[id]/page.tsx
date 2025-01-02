@@ -49,7 +49,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Footer } from "@/components/shared/Footer";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
@@ -57,6 +57,7 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { PROFESSORPAGE } from "../../../../public";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import { Description } from "@radix-ui/react-dialog";
+import GlobalChatBox from "@/components/shared/GlobalChatBox";
 
 interface AppliedApplicant {
   id:string;
@@ -305,6 +306,8 @@ const ProfessorProfilePage: React.FC = () => {
     setSelectedImage(null);
     setSelectedTitle('');
   };
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProfessorData = async () => {
@@ -568,7 +571,9 @@ const ProfessorProfilePage: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if(response.status == 200) alert("Open chat box");
+      if(response.status == 200){
+        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+      }
 
     } catch (error:any) {
       console.error("Error marking notification as read:", error);
@@ -1616,7 +1621,8 @@ const ProfessorProfilePage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
-
+      {isLoggedInUser && 
+        <GlobalChatBox/>}
       <main className="flex-grow">
         <motion.section
           className="relative text-white py-24"

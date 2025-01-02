@@ -29,6 +29,7 @@ import Image from "next/image";
 import { PROFESSORPAGE } from "../../../../public";
 import CreateProjectForm from "@/components/shared/professorprojectCreationForm";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
+import GlobalChatBox from "@/components/shared/GlobalChatBox";
 
 type Notification = {
   id: string;
@@ -232,7 +233,9 @@ const BusinessProfilePage: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if(response.status == 200) alert("Open chat box");
+      if(response.status == 200){
+          router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+      }
 
     } catch (error:any) {
       console.error("Error marking notification as read:", error);
@@ -593,7 +596,8 @@ const BusinessProfilePage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
-
+      {isLoggedInUser && 
+        <GlobalChatBox/>}
       <main className="flex-grow">
         <motion.section
           className="relative bg-gradient-to-b from-[#eb5e17] to-[#686256] text-white py-24"

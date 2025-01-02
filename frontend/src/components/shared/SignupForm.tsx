@@ -275,7 +275,8 @@ export const SignupForm: React.FC = () => {
           idCardUrl = await uploadFile(idCardFile);
           console.log(idCardUrl)
         } catch (error) {
-          setUploadError('Failed to upload ID card');
+          if(userData.role=="student" || userData.role=="professor") setUploadError('Failed to upload research paper');
+          else setUploadError('Failed to upload company brochure image');
           setIsUploading(false);
           return;
         }
@@ -839,7 +840,7 @@ const renderInitialForm = () => (
       </div>
 
       <div className="space-y-2">
-      <Label htmlFor="idCard">Upload your research paper image (2mb)<span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your research paper image (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -992,7 +993,7 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">Upload your research paper image (2mb)<span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your research paper image (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -1129,7 +1130,7 @@ const renderInitialForm = () => (
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">Upload your company brochure image (2mb)<span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your company brochure image (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
