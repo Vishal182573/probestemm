@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { sendVerificationEmail, sendWelcomeEmail, validateCode } from '../controllers/emailController';
+import { scheduleDailyEmails, sendVerificationEmail, sendWelcomeEmail, validateCode } from '../controllers/emailController';
+
+scheduleDailyEmails();
 
 const router = Router();
 

@@ -2,6 +2,7 @@ import type{ Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { sendEmail } from '../utils/sendEmail.ts';
 import generateCode from '../utils/otp.ts';
+import cron from 'node-cron';
 
 const prisma = new PrismaClient();
 
@@ -292,4 +293,242 @@ export const sendWelcomeEmail = async (req: Request, res: Response) => {
     console.error('Error sending welcome email:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+};
+
+
+const generateDailyEmailHTML = (userType: 'STUDENT' | 'PROFESSOR' | 'BUSINESS', userName: string = '') => {
+  const currentDate = new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Update from ProbeSTEM</title>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 30px;
+      }
+      .logo {
+        color: #2c3e50;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .date {
+        text-align: right;
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+      .content {
+        color: #34495e;
+        font-size: 14px;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .highlight-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #3498db;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #7f8c8d;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        ProbeSTEM
+      </div>
+      
+      <div class="date">
+        ${currentDate}
+      </div>
+      
+      <div class="content">
+        <p>Dear ${userName || (userType === 'STUDENT' ? 'Student' : userType === 'PROFESSOR' ? 'Professor' : 'Industry Partner')},</p>
+        
+        <p>We noticed you haven't checked in with the ProbeSTEM community today. There's always something exciting happening in our ecosystem!</p>
+        
+        <div class="highlight-box">
+          ${userType === 'STUDENT' ? `
+            <p><strong>For Students:</strong></p>
+            <ul>
+              <li>Explore new research opportunities and projects</li>
+              <li>Connect with professors in your field</li>
+              <li>Participate in ongoing discussions</li>
+              <li>Check out upcoming webinars</li>
+            </ul>
+          ` : userType === 'PROFESSOR' ? `
+            <p><strong>For Professors:</strong></p>
+            <ul>
+              <li>Share your research interests and patents</li>
+              <li>Post new project opportunities</li>
+              <li>Connect with industry partners</li>
+              <li>Schedule upcoming webinars</li>
+            </ul>
+          ` : `
+            <p><strong>For Industry Partners:</strong></p>
+            <ul>
+              <li>Post collaboration opportunities</li>
+              <li>Connect with academic researchers</li>
+              <li>Explore student talent</li>
+              <li>Share industry insights through blogs</li>
+            </ul>
+          `}
+        </div>
+        
+        <p>Don't miss out on potential opportunities. Log in now to:</p>
+        <ul>
+          <li>Check your messages in the chat room</li>
+          <li>Review new project applications</li>
+          <li>Participate in discussions</li>
+        </ul>
+        
+        <center>
+          <a href="https://probestem.com/login" class="cta-button">
+            Log In Now
+          </a>
+        </center>
+        
+        <p>Stay connected, stay innovative!</p>
+        
+        <p>Best regards,<br>
+        The ProbeSTEM Team</p>
+      </div>
+      
+      <div class="footer">
+        <p>© ${new Date().getFullYear()} ProbeSTEM. All rights reserved.</p>
+        <p>If you wish to update your email preferences, please visit your account settings.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+};
+
+export const sendDailyReminderEmails = async () => {
+  try {
+    // Fetch all users from different tables
+    const [students, professors, businesses] = await Promise.all([
+      prisma.student.findMany({
+        select: {
+          id: true,
+          email: true,
+          fullName: true
+        }
+      }),
+      prisma.professor.findMany({
+        where: {
+          isApproved: true // Only send to approved professors
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true
+        }
+      }),
+      prisma.business.findMany({
+        select: {
+          id: true,
+          email: true,
+          companyName: true
+        }
+      })
+    ]);
+
+    // Send emails to students
+    const studentEmails = students.map(student =>
+      sendEmail({
+        to: student.email,
+        subject: 'Your Daily ProbeSTEM Update',
+        html: generateDailyEmailHTML('STUDENT', student.fullName)
+      })
+    );
+
+    // Send emails to professors
+    const professorEmails = professors.map(professor =>
+      sendEmail({
+        to: professor.email,
+        subject: 'Your Daily ProbeSTEM Update',
+        html: generateDailyEmailHTML('PROFESSOR', professor.fullName)
+      })
+    );
+
+    // Send emails to businesses
+    const businessEmails = businesses.map(business =>
+      sendEmail({
+        to: business.email,
+        subject: 'Your Daily ProbeSTEM Update',
+        html: generateDailyEmailHTML('BUSINESS', business.companyName)
+      })
+    );
+
+    // Send all emails concurrently
+    await Promise.all([
+      ...studentEmails,
+      ...professorEmails,
+      ...businessEmails
+    ]);
+
+    const totalEmails = students.length + professors.length + businesses.length;
+    console.log(`Successfully sent ${totalEmails} daily reminder emails`);
+    
+    return {
+      success: true,
+      emailsSent: {
+        total: totalEmails,
+        students: students.length,
+        professors: professors.length,
+        businesses: businesses.length
+      }
+    };
+
+  } catch (error) {
+    console.error('Error sending daily reminder emails:', error);
+    throw error;
+  }
+};
+
+// Schedule the daily email job to run at 4:00 PM (16:00)
+export const scheduleDailyEmails = () => {
+  cron.schedule('0 16 * * *', async () => {
+    try {
+      await sendDailyReminderEmails();
+    } catch (error) {
+      console.error('Failed to send daily emails:', error);
+    }
+  });
 };
