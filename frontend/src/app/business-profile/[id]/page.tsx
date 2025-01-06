@@ -645,7 +645,7 @@ const BusinessProfilePage: React.FC = () => {
                 </div>
               </div>
               <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-                                  Contact User
+              Send Message
               </Button>
               <div className="flex items-center space-x-2">
                 {isLoggedInUser && (

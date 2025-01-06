@@ -1687,7 +1687,7 @@ const ProfessorProfilePage: React.FC = () => {
                   Google Scholar
                 </a>
                 <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-                                    Contact User
+                Send Message
                 </Button>
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>

@@ -297,141 +297,51 @@ export const sendWelcomeEmail = async (req: Request, res: Response) => {
 
 
 const generateDailyEmailHTML = (userType: 'STUDENT' | 'PROFESSOR' | 'BUSINESS', userName: string = '') => {
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
   return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Update from ProbeSTEM</title>
+    <title>A Gentle Reminder from Probe STEM ⭐</title>
     <style>
       body {
         font-family: 'Arial', sans-serif;
         line-height: 1.6;
-        color: #333;
+        color: #ffffff;
+        background-color: #1a1f24;
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
-        background-color: #f4f4f4;
       }
       .container {
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        padding: 30px;
-      }
-      .logo {
-        color: #2c3e50;
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-      .date {
-        text-align: right;
-        color: #666;
-        font-size: 14px;
-        margin-bottom: 20px;
+        padding: 20px;
       }
       .content {
-        color: #34495e;
         font-size: 14px;
       }
-      .cta-button {
-        display: inline-block;
-        background-color: #3498db;
-        color: white;
-        padding: 12px 24px;
+      .link {
+        color: #3498db;
         text-decoration: none;
-        border-radius: 5px;
-        margin: 20px 0;
       }
-      .highlight-box {
-        background-color: #f8f9fa;
-        border-left: 4px solid #3498db;
-        padding: 15px;
-        margin: 20px 0;
-      }
-      .footer {
-        margin-top: 20px;
-        font-size: 12px;
-        color: #7f8c8d;
-        text-align: center;
+      p {
+        margin: 10px 0;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="logo">
-        ProbeSTEM
-      </div>
-      
-      <div class="date">
-        ${currentDate}
-      </div>
-      
       <div class="content">
-        <p>Dear ${userName || (userType === 'STUDENT' ? 'Student' : userType === 'PROFESSOR' ? 'Professor' : 'Industry Partner')},</p>
+        <p>Dear user,</p>
         
-        <p>We noticed you haven't checked in with the ProbeSTEM community today. There's always something exciting happening in our ecosystem!</p>
+        <p>We noticed you might have missed some exciting updates and activities on Probe STEM! 🌐✨</p>
         
-        <div class="highlight-box">
-          ${userType === 'STUDENT' ? `
-            <p><strong>For Students:</strong></p>
-            <ul>
-              <li>Explore new research opportunities and projects</li>
-              <li>Connect with professors in your field</li>
-              <li>Participate in ongoing discussions</li>
-              <li>Check out upcoming webinars</li>
-            </ul>
-          ` : userType === 'PROFESSOR' ? `
-            <p><strong>For Professors:</strong></p>
-            <ul>
-              <li>Share your research interests and patents</li>
-              <li>Post new project opportunities</li>
-              <li>Connect with industry partners</li>
-              <li>Schedule upcoming webinars</li>
-            </ul>
-          ` : `
-            <p><strong>For Industry Partners:</strong></p>
-            <ul>
-              <li>Post collaboration opportunities</li>
-              <li>Connect with academic researchers</li>
-              <li>Explore student talent</li>
-              <li>Share industry insights through blogs</li>
-            </ul>
-          `}
-        </div>
+        <p>Don't miss out on connecting with global thinkers, exploring new opportunities, and making impactful collaborations. Log in now at <a href="https://probestem.com" class="link">probestem.com</a> to catch up on all the latest.</p>
         
-        <p>Don't miss out on potential opportunities. Log in now to:</p>
-        <ul>
-          <li>Check your messages in the chat room</li>
-          <li>Review new project applications</li>
-          <li>Participate in discussions</li>
-        </ul>
+        <p>Together, let's drive innovation forward! 🚀</p>
         
-        <center>
-          <a href="https://probestem.com/login" class="cta-button">
-            Log In Now
-          </a>
-        </center>
-        
-        <p>Stay connected, stay innovative!</p>
-        
-        <p>Best regards,<br>
-        The ProbeSTEM Team</p>
-      </div>
-      
-      <div class="footer">
-        <p>© ${new Date().getFullYear()} ProbeSTEM. All rights reserved.</p>
-        <p>If you wish to update your email preferences, please visit your account settings.</p>
+        <p>Warm regards,<br>
+        The Probe STEM Team</p>
       </div>
     </div>
   </body>
@@ -473,7 +383,7 @@ export const sendDailyReminderEmails = async () => {
     const studentEmails = students.map(student =>
       sendEmail({
         to: student.email,
-        subject: 'Your Daily ProbeSTEM Update',
+        subject: 'A Gentle Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('STUDENT', student.fullName)
       })
     );
@@ -482,7 +392,7 @@ export const sendDailyReminderEmails = async () => {
     const professorEmails = professors.map(professor =>
       sendEmail({
         to: professor.email,
-        subject: 'Your Daily ProbeSTEM Update',
+        subject: 'A Gentle Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('PROFESSOR', professor.fullName)
       })
     );
@@ -491,7 +401,7 @@ export const sendDailyReminderEmails = async () => {
     const businessEmails = businesses.map(business =>
       sendEmail({
         to: business.email,
-        subject: 'Your Daily ProbeSTEM Update',
+        subject: 'A Gentle Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('BUSINESS', business.companyName)
       })
     );
@@ -524,7 +434,7 @@ export const sendDailyReminderEmails = async () => {
 
 // Schedule the daily email job to run at 4:00 PM (16:00)
 export const scheduleDailyEmails = () => {
-  cron.schedule('0 16 * * *', async () => {
+  cron.schedule('0 18 * * *', async () => {
     try {
       await sendDailyReminderEmails();
     } catch (error) {

@@ -537,7 +537,7 @@ const StudentProfilePage: React.FC = () => {
                 </div>
               </div>
               <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-                    Contact User
+                    Send Message
               </Button>
 
               {isOwnProfile && (
