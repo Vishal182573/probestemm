@@ -7,6 +7,7 @@ import {
   User,
   ArrowRight,
   Download,
+  Link as LinkIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ interface Webinar {
   professorId: string;
   webinarImage?: string;
   webinarDocument?: string;
+  meetingLink?: string;
 }
 
 const NotificationsComponent: React.FC = () => {
@@ -56,12 +58,9 @@ const NotificationsComponent: React.FC = () => {
     const fetchWebinars = async () => {
       try {
         const token = localStorage.getItem("token");
-        // if (!token) {
-        //   router.push("/login");
-        //   return;
-        // }
         const response = await axios.get(`${API_URL}/webinars`);
         setWebinars(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch webinars:", error);
       }
@@ -219,6 +218,26 @@ const NotificationsComponent: React.FC = () => {
                                     </p>
                                   </TooltipContent>
                                 </Tooltip>
+
+                                {webinar.meetingLink && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        onClick={() => {
+                                          window.open(webinar.meetingLink, "_blank");
+                                        }}
+                                        variant="outline"
+                                        className="bg-green-600 text-white hover:bg-green-700 group flex items-center gap-2 mx-2"
+                                      >
+                                        Meet Link
+                                        <LinkIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Join the webinar meeting</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
 
                                 <Tooltip>
                                   <TooltipTrigger asChild>
