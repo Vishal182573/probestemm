@@ -58,7 +58,7 @@ interface ChatMessage {
 }
 
 const GlobalChatBox: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
