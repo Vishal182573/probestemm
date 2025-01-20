@@ -58,6 +58,11 @@ export const createNotification = async (
             where: { id: relatedEntityId }
           }) !== null;
           break;
+        case "webinar":  // Add this case
+         entityExists = await prisma.webinar.findUnique({
+           where: { id: relatedEntityId }
+         }) !== null;
+         break;
         // Add other entity checks as needed
       }
 

@@ -4,12 +4,13 @@ import cors from "cors";
 import { Server } from 'socket.io';
 import { FRONTEND_URL } from "./constants";
 import { AdminJS } from "adminjs";
-import type { AdminJSOptions, BrandingOptions } from "adminjs";
+import type { AdminJSOptions, BrandingOptions, ActionResponse } from "adminjs";
 import AdminJSExpress from "@adminjs/express";
 import { Database, Resource, getModelByName } from "@adminjs/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { createServer } from 'http';
+import { createNotification } from "./controllers/notificationController";
 
 
 // Route imports
@@ -400,6 +401,60 @@ const setupAdminPanel = async () => {
               type: "reference",
             },
           },
+          actions: {
+            edit: {
+              after: async (response: ActionResponse) => {
+                // Check if webinar status was changed to APPROVED
+                if (response.record.params.status === 'APPROVED') {
+                  try {
+                    // Get all students
+                    const students = await prisma.student.findMany({
+                      select: { id: true }
+                    });
+
+                    // Get all professors
+                    const professors = await prisma.professor.findMany({
+                      select: { id: true }
+                    });
+
+                    const webinarTitle = response.record.params.title;
+                    const webinarId = response.record.params.id;
+                    const notificationContent = `New webinar : ${webinarTitle}`;
+                    const redirectionLink = `/webinars`;
+
+                    // Send notifications to all students
+                    for (const student of students) {
+                      await createNotification(
+                        'WEBINAR_STATUS',
+                        notificationContent,
+                        student.id,
+                        'student',
+                        redirectionLink,
+                        webinarId,
+                        'webinar'
+                      );
+                    }
+
+                    // Send notifications to all professors
+                    for (const professor of professors) {
+                      await createNotification(
+                        'WEBINAR_STATUS',
+                        notificationContent,
+                        professor.id,
+                        'professor',
+                        redirectionLink,
+                        webinarId,
+                        'webinar'
+                      );
+                    }
+                  } catch (error) {
+                    console.error('Error sending webinar approval notifications:', error);
+                  }
+                }
+                return response;
+              },
+            },
+          },
         },
       },
       {
@@ -524,27 +579,73 @@ const setupAdminPanel = async () => {
       },
     ],
     branding: {
-      companyName: "Probe STEM Admin Panel",
-      logo: undefined,
-      favicon: undefined,
+      companyName: "Probe STEM Admin",
+      logo: "https://your-logo-url.png",
+      favicon: "https://your-favicon-url.ico",
       theme: {
         colors: {
-          primary100: "#FF0000",
-          primary80: "#FF1A1A",
-          primary60: "#FF3333",
-          primary40: "#FF4D4D",
-          primary20: "#FF6666",
-          grey100: "#151515",
-          grey80: "#333333",
-          grey60: "#4d4d4d",
-          grey40: "#666666",
-          grey20: "#dddddd",
-          filterBg: "#333333",
-          accent: "#151515",
-          hoverBg: "#151515",
+          primary100: "#4361ee",
+          primary80: "#4895ef",
+          primary60: "#4cc9f0",
+          primary40: "#7209b7",
+          primary20: "#b5179e",
+          
+          grey100: "#1b1b1b",
+          grey80: "#2d2d2d",
+          grey60: "#505050",
+          grey40: "#8c8c8c",
+          grey20: "#e6e6e6",
+          
+          filterBg: "#f8f9fa",
+          accent: "#3a0ca3",
+          hoverBg: "#f1f3f5",
+
+          successLight: "#d4edda",
+          success: "#28a745",
+          errorLight: "#f8d7da",
+          error: "#dc3545",
+          warningLight: "#fff3cd",
+          warning: "#ffc107",
+          infoLight: "#d1ecf1",
+          info: "#17a2b8",
+        },
+        borders: {
+          default: "2px",
+          input: "1px",
+          filterInput: "1px",
+          table: "1px",
+        },
+        fontSizes: {
+          xs: "12px",
+          sm: "14px",
+          default: "16px",
+          lg: "18px",
+          xl: "20px",
+          h1: "36px",
+          h2: "28px",
+          h3: "24px",
+          h4: "20px",
+          h5: "16px",
+        },
+        font: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" as any,
+        shadows: {
+          login: "0 15px 24px 0 rgba(0, 0, 0, 0.1)",
+          cardHover: "0 4px 12px 0 rgba(0, 0, 0, 0.1)",
+          drawer: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
+          card: "0 1px 6px 0 rgba(0, 0, 0, 0.1)",
         },
       },
+      assets: {
+        styles: [
+          "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+        ],
+      }
     } as BrandingOptions,
+    dashboard: {
+      handler: async () => {
+        return { some: "data" }
+      },
+    },
     rootPath: "/api/admin",
   };
 

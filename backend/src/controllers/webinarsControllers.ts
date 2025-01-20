@@ -19,7 +19,7 @@ export const getAllWebinars = async (req: Request, res: Response) => {
     const webinars = await prisma.webinar.findMany({
       where: {
         status: {
-          in: ["APPROVED", "COMPLETED", "PENDING"],
+          in: ["APPROVED", "COMPLETED"],
         },
       },
     });
