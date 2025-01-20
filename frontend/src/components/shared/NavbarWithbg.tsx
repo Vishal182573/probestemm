@@ -6,10 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT } from "../../../public";
 
+// Main navigation component with background
 export const NavbarWithBg: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  // State management for menu, authentication, and dropdown
+  const [isMenuOpen, setIsMenuOpen] = useState(false);  // Controls mobile menu visibility
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Tracks user authentication status
+  const [showDropdown, setShowDropdown] = useState(false);  // Controls profile dropdown visibility
+  
+  // User state interface with optional fields for different user types
   const [user, setUser] = useState<{
     id?: string;
     fullName?: string;
@@ -22,9 +26,11 @@ export const NavbarWithBg: React.FC = () => {
     companyName?:string;
   } | null>(null);
 
+  // Toggle handlers for menu and dropdown
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
+  // Effect hook to check authentication status on component mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userString = localStorage.getItem("user");
@@ -37,6 +43,7 @@ export const NavbarWithBg: React.FC = () => {
     }
   }, []);
 
+  // Effect hook to handle clicking outside of dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = document.getElementById('profile-dropdown');
@@ -54,11 +61,13 @@ export const NavbarWithBg: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Logout handler - clears localStorage and refreshes page
   const handleLogout = () => {
     localStorage.clear();
     window.location.reload();
   };
 
+  // Helper function to determine profile image source based on user role
   const getProfileImageSrc = () => {
     if (!user || !user.role) return null;
 
@@ -74,8 +83,10 @@ export const NavbarWithBg: React.FC = () => {
     }
   };
 
+  // Common style for navigation links
   const linkTextColor = "text-[#472014]";
 
+  // Profile button component with user info and dropdown trigger
   const ProfileButton = () => (
     <Button
       id="profile-button"
@@ -100,6 +111,7 @@ export const NavbarWithBg: React.FC = () => {
     </Button>
   );
 
+  // Dropdown menu component for authenticated users
   const ProfileDropdown = () => (
     <div
       id="profile-dropdown"
@@ -132,9 +144,12 @@ export const NavbarWithBg: React.FC = () => {
   );
 
   return (
+    // Main navigation container
     <nav className="bg-white shadow-md sticky top-0 z-50 w-full transition-colors duration-300">
       <div className="container mx-auto px-4">
+        {/* Navigation header with logo and menu items */}
         <div className="flex justify-between items-center h-24 relative">
+          {/* Logo section */}
           <Link href="/" className="relative">
             <div className="flex items-center justify-center h-24">
               <div className="relative h-full flex items-center">
@@ -155,9 +170,13 @@ export const NavbarWithBg: React.FC = () => {
               </div>
             </div>
           </Link>
+
+          {/* Mobile menu toggle button */}
           <button className="md:hidden text-gray-600" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
+
+          {/* Desktop navigation links */}
           <div className="hidden md:flex items-center space-x-2">
             <NavLink to="/" className={linkTextColor}>
               HOME
@@ -197,6 +216,8 @@ export const NavbarWithBg: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Mobile menu (shown when isMenuOpen is true) */}
         {isMenuOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-2">
@@ -265,6 +286,7 @@ export const NavbarWithBg: React.FC = () => {
   );
 };
 
+// Reusable NavLink component for desktop navigation
 const NavLink: React.FC<{
   to: string;
   children: React.ReactNode;
@@ -280,6 +302,7 @@ const NavLink: React.FC<{
   </Link>
 );
 
+// Reusable MobileNavLink component for mobile navigation
 const MobileNavLink: React.FC<{
   to: string;
   children: React.ReactNode;

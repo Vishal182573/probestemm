@@ -42,6 +42,7 @@ import { DISCUSSION } from "../../../public";
 // import ContactForm from "@/components/shared/Feedback";
 import { Footer } from "@/components/shared/Footer";
 
+// Interface definitions for Discussion and Pagination data structures
 interface Discussion {
   id: string;
   title: string;
@@ -63,6 +64,7 @@ interface PaginationInfo {
   totalCount: number;
 }
 
+// Category and subcategory mapping object - defines the hierarchical structure of academic subjects
 const categories: { [key: string]: string[] } = {
   Physics: [
     "Classical Mechanics",
@@ -149,29 +151,36 @@ const categories: { [key: string]: string[] } = {
   ],
 };
 
+// Main Discussion Forum Component
 const DiscussionForum: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("recent");
-  const [status, setStatus] = useState("all");
-  const [category, setCategory] = useState<string | undefined>(undefined);
-  const [subcategory, setSubcategory] = useState<string | undefined>(undefined);
-  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  // State management for filters, search, and data
+  const [searchQuery, setSearchQuery] = useState("");  // Stores search input value
+  const [sortBy, setSortBy] = useState("recent");      // Controls sorting order
+  const [status, setStatus] = useState("all");         // Filters by discussion status
+  const [category, setCategory] = useState<string | undefined>(undefined);     // Selected main category
+  const [subcategory, setSubcategory] = useState<string | undefined>(undefined); // Selected subcategory
+  const [discussions, setDiscussions] = useState<Discussion[]>([]); // Stores fetched discussions
 
+  // Pagination state management
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
     pageSize: 10,
     totalCount: 0,
   });
+
+  // User role state for conditional rendering
   const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
 
+  // Effect hook to fetch discussions when filters change
   useEffect(() => {
     fetchDiscussions();
     const role = localStorage.getItem("role");
     setUserRole(role);
   }, [sortBy, status, category, subcategory, pagination.currentPage]);
 
+  // Function to fetch discussions from the API with current filters
   const fetchDiscussions = async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -201,11 +210,13 @@ const DiscussionForum: React.FC = () => {
     }
   };
 
+  // Handler for search button click
   const handleSearch = () => {
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
     fetchDiscussions();
   };
 
+  // Handler for upvote/downvote actions
   const handleVote = async (
     discussionId: string,
     voteType: "UPVOTE" | "DOWNVOTE"
@@ -227,12 +238,14 @@ const DiscussionForum: React.FC = () => {
   //   router.push(`/discussions/${questionId}`);
   // };
 
+  // Handler for pagination page changes
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, currentPage: newPage }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Navigation and Banner Section */}
       <NavbarWithBg />
       <Banner
         imageSrc={DISCUSSION}
@@ -247,7 +260,7 @@ const DiscussionForum: React.FC = () => {
         exit={{ opacity: 0 }}
         className="container mx-auto px-4 py-8 md:py-12"
       >
-        {/* Search and Ask Question Section */}
+        {/* Search and Ask Question Section - Allows users to search discussions and create new ones */}
         <motion.div
           className="bg-white rounded-2xl shadow-lg p-6 mb-8"
           initial={{ y: 50, opacity: 0 }}
@@ -284,7 +297,7 @@ const DiscussionForum: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Filters Section */}
+        {/* Filters Section - Contains dropdowns for sorting, status, category, and subcategory filters */}
         <motion.div
           className="bg-white rounded-2xl shadow-lg p-6 mb-8"
           initial={{ y: 50, opacity: 0 }}
@@ -358,7 +371,7 @@ const DiscussionForum: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Discussions List */}
+        {/* Discussions List - Displays discussion cards with voting, metadata, and navigation */}
         <AnimatePresence>
           {discussions.map((discussion, index) => (
             <motion.div
@@ -471,7 +484,7 @@ const DiscussionForum: React.FC = () => {
           ))}
         </AnimatePresence>
 
-        {/* Pagination */}
+        {/* Pagination Controls - Allows navigation between pages of discussions */}
         <div className="flex justify-center items-center gap-4 mt-8">
           <Button
             onClick={() => handlePageChange(pagination.currentPage - 1)}

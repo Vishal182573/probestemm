@@ -24,11 +24,13 @@ import { toast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { API_URL } from "@/constants";
 
+// Define the base URL for authentication API calls
 const authApi = axios.create({
   baseURL: `${API_URL}/auth`,
   withCredentials: true,
 });
 
+// Define available categories and subcategories for user selection
 const categories = {
   "Physics": [
     "Classical Mechanics",
@@ -110,9 +112,10 @@ const categories = {
   ],
 } as const;
 
-
+// Type definitions for different aspects of user data
 type UserRole = "student" | "professor" | "business";
 
+// Interface definitions for various data structures
 interface Education {
   degree: string;
   institution: string;
@@ -178,11 +181,17 @@ interface FileUploadResponse {
   url: string;
 }
 
+// Main SignupForm component
 export const SignupForm: React.FC = () => {
+  // State management for file upload
   const [idCardFile, setIdCardFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // State management for form progression
   const [step, setStep] = useState(1);
+
+  // State management for basic user data
   const [userData, setUserData] = useState<UserData>({
     fullName: "",
     email: "",
@@ -190,6 +199,7 @@ export const SignupForm: React.FC = () => {
     role: "student",
   });
 
+  // State management for role-specific data
   const [roleSpecificData, setRoleSpecificData] = useState<RoleSpecificData>({
     fullName: "",
     email: "",
@@ -200,6 +210,7 @@ export const SignupForm: React.FC = () => {
     education: [],
   });
 
+  // State management for form status and UI elements
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -208,14 +219,17 @@ export const SignupForm: React.FC = () => {
       title: "",
       description: "",
     });
+
+  // Router and password visibility state
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
+  // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
   
-
+  // Function to handle education field updates
   const updateEducation = (
     index: number,
     field: keyof Education,
@@ -229,6 +243,7 @@ export const SignupForm: React.FC = () => {
     setRoleSpecificData({ ...roleSpecificData, education: newEducation });
   };
 
+  // Function to handle file uploads
   const uploadFile = async (file: File): Promise<string> => {
     try {
       const response = await axios.post<{ imageUrl: string }>(
@@ -247,6 +262,7 @@ export const SignupForm: React.FC = () => {
     }
   };
 
+  // Functions to manage education entries
   const addEducation = () => {
     setRoleSpecificData({
       ...roleSpecificData,
@@ -263,6 +279,7 @@ export const SignupForm: React.FC = () => {
     setRoleSpecificData({ ...roleSpecificData, education: newEducation });
   };
 
+  // Function to handle role-specific form submission
   const handleRoleSpecificSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -344,6 +361,7 @@ export const SignupForm: React.FC = () => {
     }
   };
 
+  // Constants and functions for tag management
   const MAX_TAGS = 3;
 
   const addTag = (category: string, subcategory: string) => {
@@ -390,6 +408,7 @@ export const SignupForm: React.FC = () => {
     setRoleSpecificData({ ...roleSpecificData, tags: newTags });
   };
 
+  // Functions to manage research interests
   const addResearchInterest = () => {
     if (newResearchInterest.title && newResearchInterest.description) {
       setRoleSpecificData({
@@ -411,279 +430,281 @@ export const SignupForm: React.FC = () => {
       researchInterests: newInterests,
     });
   };
-const [verified, setVerified] = useState(false);
-const [otp, setOtp] = useState('');
-const [otpSent, setOtpSent] = useState(false);
-const [emailError, setEmailError] = useState('');
 
-const handleSendOtp = async () => {
-  if (!userData.email) {
-    setEmailVerification(prev => ({ ...prev, error: 'Email is required' }));
-    return;
-  }
-  
-  setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
-  
-  try {
-    // First, check email existence
-    const existenceResponse = await axios.post(`${API_URL}/auth/check-existence`, {
-      email: userData.email
-    });
-    
-    // If email already exists, show error
-    if (existenceResponse.data.exists) {
-      setEmailVerification(prev => ({
-        ...prev,
-        loading: false,
-        error: `Email is already registered with ${existenceResponse.data.role} role`
-      }));
+  // State management for email verification
+  const [emailVerification, setEmailVerification] = useState({
+    otpSent: false,
+    otp: '',
+    verified: false,
+    loading: false,
+    error: ''
+  });
+
+  // Function to handle OTP sending
+  const handleSendOtp = async () => {
+    if (!userData.email) {
+      setEmailVerification(prev => ({ ...prev, error: 'Email is required' }));
       return;
     }
     
-    // If email doesn't exist, proceed with OTP sending
-    const response = await axios.post(`${API_URL}/email/send-email`, {
-      email: userData.email
-    });
+    setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
     
-    if (response.status === 200) {
-      setEmailVerification(prev => ({
-        ...prev,
-        otpSent: true,
-        loading: false
-      }));
+    try {
+      // First, check email existence
+      const existenceResponse = await axios.post(`${API_URL}/auth/check-existence`, {
+        email: userData.email
+      });
       
-      toast({
-        title: "OTP Sent",
-        description: "Please check your email for the verification code",
+      // If email already exists, show error
+      if (existenceResponse.data.exists) {
+        setEmailVerification(prev => ({
+          ...prev,
+          loading: false,
+          error: `Email is already registered with ${existenceResponse.data.role} role`
+        }));
+        return;
+      }
+      
+      // If email doesn't exist, proceed with OTP sending
+      const response = await axios.post(`${API_URL}/email/send-email`, {
+        email: userData.email
       });
-    }
-  } catch (error) {
-    setEmailVerification(prev => ({
-      ...prev,
-      loading: false,
-      error: 'Failed to send verification email. Please try again.'
-    }));
-  }
-};
-
-const handleVerifyOtp = async () => {
-  if (!emailVerification.otp) {
-    setEmailVerification(prev => ({
-      ...prev,
-      error: 'Please enter the verification code'
-    }));
-    return;
-  }
-
-  setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
-
-  try {
-    const response = await axios.post(`${API_URL}/email/validate-code`, {
-      email: userData.email,
-      code: emailVerification.otp
-    });
-    
-    if (response.status === 200) {
+      
+      if (response.status === 200) {
+        setEmailVerification(prev => ({
+          ...prev,
+          otpSent: true,
+          loading: false
+        }));
+        
+        toast({
+          title: "OTP Sent",
+          description: "Please check your email for the verification code",
+        });
+      }
+    } catch (error) {
       setEmailVerification(prev => ({
         ...prev,
-        verified: true,
-        loading: false
+        loading: false,
+        error: 'Failed to send verification email. Please try again.'
       }));
-      toast({
-        title: "Email Verified",
-        description: "Your email has been successfully verified",
-      });
     }
-  } catch (error) {
-    setEmailVerification(prev => ({
-      ...prev,
-      loading: false,
-      error: 'Invalid verification code. Please try again.'
-    }));
-  }
-};
+  };
 
-const validateTwoWords = (value:string) => {
-  const words = value.trim().split(/\s+/);
-  if (words.length !== 2) {
-    setError('Please enter exactly two words (first and last name)');
-    return false;
-  }
-  if (words[0].length === 0 || words[1].length === 0) {
-    setError('Both first and last name are required');
-    return false;
-  }
-  setError('');
-  return true;
-};
+  // Function to verify OTP
+  const handleVerifyOtp = async () => {
+    if (!emailVerification.otp) {
+      setEmailVerification(prev => ({
+        ...prev,
+        error: 'Please enter the verification code'
+      }));
+      return;
+    }
 
-const handleChange = (e:any) => {
-  const value = e.target.value;
-  setUserData({ ...userData, fullName: value });
-  validateTwoWords(value);
-};
+    setEmailVerification(prev => ({ ...prev, loading: true, error: '' }));
 
-const handleBlur = () => {
-  validateTwoWords(userData.fullName);
-};
+    try {
+      const response = await axios.post(`${API_URL}/email/validate-code`, {
+        email: userData.email,
+        code: emailVerification.otp
+      });
+      
+      if (response.status === 200) {
+        setEmailVerification(prev => ({
+          ...prev,
+          verified: true,
+          loading: false
+        }));
+        toast({
+          title: "Email Verified",
+          description: "Your email has been successfully verified",
+        });
+      }
+    } catch (error) {
+      setEmailVerification(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Invalid verification code. Please try again.'
+      }));
+    }
+  };
 
-const handleInitialSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (!emailVerification.verified) {
-    toast({
-      title: "Email verification required",
-      description: "Please verify your email before proceeding",
-      variant: "destructive"
-    });
-    return;
-  }
+  // Function to validate full name format
+  const validateTwoWords = (value:string) => {
+    const words = value.trim().split(/\s+/);
+    if (words.length !== 2) {
+      setError('Please enter exactly two words (first and last name)');
+      return false;
+    }
+    if (words[0].length === 0 || words[1].length === 0) {
+      setError('Both first and last name are required');
+      return false;
+    }
+    setError('');
+    return true;
+  };
 
-  setRoleSpecificData({
-    ...roleSpecificData,
-    fullName: userData.fullName,
-    email: userData.email,
-    password: userData.password,
-    role: userData.role,
-  });
-  setStep(2);
-};
+  // Event handlers for form inputs
+  const handleChange = (e:any) => {
+    const value = e.target.value;
+    setUserData({ ...userData, fullName: value });
+    validateTwoWords(value);
+  };
 
-const [emailVerification, setEmailVerification] = useState({
-  otpSent: false,
-  otp: '',
-  verified: false,
-  loading: false,
-  error: ''
-});
+  const handleBlur = () => {
+    validateTwoWords(userData.fullName);
+  };
 
-const renderInitialForm = () => (
-  <form className="space-y-4 text-black bg-white" onSubmit={handleInitialSubmit}>
-    <div className="flex flex-col gap-2">
-      <input
-        type="text"
-        placeholder="Full Name"
-        value={userData.fullName}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        required
-        className="px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-describedby="nameError"
-      />
-    </div>
+  // Function to handle initial form submission
+  const handleInitialSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Input
-          type="email"
-          placeholder="Email Address"
-          value={userData.email}
-          onChange={(e) => {
-            setUserData({ ...userData, email: e.target.value });
-            setEmailVerification(prev => ({ ...prev, verified: false, otpSent: false }));
-          }}
+    if (!emailVerification.verified) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email before proceeding",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRoleSpecificData({
+      ...roleSpecificData,
+      fullName: userData.fullName,
+      email: userData.email,
+      password: userData.password,
+      role: userData.role,
+    });
+    setStep(2);
+  };
+
+  // Render functions for different form sections
+  const renderInitialForm = () => (
+    <form className="space-y-4 text-black bg-white" onSubmit={handleInitialSubmit}>
+      <div className="flex flex-col gap-2">
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={userData.fullName}
+          onChange={handleChange}
+          onBlur={handleBlur}
           required
-          disabled={emailVerification.verified}
-          className="text-black bg-white"
+          className="px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-describedby="nameError"
         />
-        {!emailVerification.verified && (
-          <Button 
-            type="button" 
-            onClick={handleSendOtp}
-            disabled={emailVerification.loading || !userData.email}
-            className="whitespace-nowrap"
-          >
-            {emailVerification.loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : emailVerification.otpSent ? 'Resend OTP' : 'Send OTP'}
-          </Button>
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            type="email"
+            placeholder="Email Address"
+            value={userData.email}
+            onChange={(e) => {
+              setUserData({ ...userData, email: e.target.value });
+              setEmailVerification(prev => ({ ...prev, verified: false, otpSent: false }));
+            }}
+            required
+            disabled={emailVerification.verified}
+            className="text-black bg-white"
+          />
+          {!emailVerification.verified && (
+            <Button 
+              type="button" 
+              onClick={handleSendOtp}
+              disabled={emailVerification.loading || !userData.email}
+              className="whitespace-nowrap"
+            >
+              {emailVerification.loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : emailVerification.otpSent ? 'Resend OTP' : 'Send OTP'}
+            </Button>
+          )}
+        </div>
+
+        {emailVerification.otpSent && !emailVerification.verified && (
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Enter Verification Code"
+              value={emailVerification.otp}
+              onChange={(e) => setEmailVerification(prev => ({ ...prev, otp: e.target.value }))}
+              required
+              className="text-black bg-white"
+            />
+            <Button 
+              type="button" 
+              onClick={handleVerifyOtp}
+              disabled={emailVerification.loading || !emailVerification.otp}
+              className="whitespace-nowrap"
+            >
+              {emailVerification.loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : 'Verify'}
+            </Button>
+          </div>
+        )}
+
+        {emailVerification.error && (
+          <p className="text-sm text-red-500">{emailVerification.error}</p>
+        )}
+
+        {emailVerification.verified && (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <Check className="h-4 w-4" />
+            Email verified successfully
+          </div>
         )}
       </div>
 
-      {emailVerification.otpSent && !emailVerification.verified && (
-        <div className="flex gap-2">
+      <div className="relative">
           <Input
-            type="text"
-            placeholder="Enter Verification Code"
-            value={emailVerification.otp}
-            onChange={(e) => setEmailVerification(prev => ({ ...prev, otp: e.target.value }))}
-            required
-            className="text-black bg-white"
-          />
-          <Button 
-            type="button" 
-            onClick={handleVerifyOtp}
-            disabled={emailVerification.loading || !emailVerification.otp}
-            className="whitespace-nowrap"
-          >
-            {emailVerification.loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : 'Verify'}
-          </Button>
-        </div>
-      )}
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={userData.password}
+              onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+              required
+              className="text-black bg-white"
+            />
+        <button
+          type="button"
+          onClick={togglePasswordVisibility}
+          className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm "
+        >
+          {showPassword ? "Hide" : "Show"} 
+        </button>
+      </div>
 
-      {emailVerification.error && (
-        <p className="text-sm text-red-500">{emailVerification.error}</p>
-      )}
-
-      {emailVerification.verified && (
-        <div className="flex items-center gap-2 text-sm text-green-600">
-          <Check className="h-4 w-4" />
-          Email verified successfully
-        </div>
-      )}
-    </div>
-
-    <div className="relative">
-        <Input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={userData.password}
-            onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-            required
-            className="text-black bg-white"
-          />
-      <button
-        type="button"
-        onClick={togglePasswordVisibility}
-        className="absolute inset-y-0 right-3 flex items-center text-gray-600 text-sm "
+      <Select
+        onValueChange={(value) => setUserData({ ...userData, role: value as UserRole })}
       >
-        {showPassword ? "Hide" : "Show"} 
-      </button>
-    </div>
+        <SelectTrigger>
+          <SelectValue placeholder="I am a..." />
+        </SelectTrigger>
+        <SelectContent className="text-black bg-white">
+          <SelectItem value="student">Student</SelectItem>
+          <SelectItem value="professor">Professor/Researcher</SelectItem>
+          <SelectItem value="business">Industry</SelectItem>
+        </SelectContent>
+      </Select>
 
-    <Select
-      onValueChange={(value) => setUserData({ ...userData, role: value as UserRole })}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="I am a..." />
-      </SelectTrigger>
-      <SelectContent className="text-black bg-white">
-        <SelectItem value="student">Student</SelectItem>
-        <SelectItem value="professor">Professor/Researcher</SelectItem>
-        <SelectItem value="business">Industry</SelectItem>
-      </SelectContent>
-    </Select>
+      <div className="flex items-center space-x-2">
+        <Checkbox id="terms" required />
+        <label htmlFor="terms" className="text-sm text-muted-foreground">
+          I agree to the <a href="/terms-condition">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>
+        </label>
+      </div>
 
-    <div className="flex items-center space-x-2">
-      <Checkbox id="terms" required />
-      <label htmlFor="terms" className="text-sm text-muted-foreground">
-        I agree to the <a href="/terms-condition">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>
-      </label>
-    </div>
-
-    <Button 
-      type="submit" 
-      className="w-full"
-      disabled={!emailVerification.verified}
-    >
-      Next
-      <User2Icon className="ml-2 h-4 w-4" />
-    </Button>
-  </form>
-);
-
+      <Button 
+        type="submit" 
+        className="w-full"
+        disabled={!emailVerification.verified}
+      >
+        Next
+        <User2Icon className="ml-2 h-4 w-4" />
+      </Button>
+    </form>
+  );
 
   const renderProfessorForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
@@ -892,55 +913,6 @@ const renderInitialForm = () => (
 
   const renderStudentForm = () => (
     <form className="space-y-4" onSubmit={handleRoleSpecificSubmit}>
-      {/* <div className="space-y-2">
-        <Label>Education</Label>
-        {roleSpecificData.education?.map((edu, index) => (
-          <div key={index} className="flex space-x-2">
-            <Input
-              placeholder="Degree"
-              value={edu.degree}
-              onChange={(e) => updateEducation(index, "degree", e.target.value)}
-              required
-            />
-            <Input
-              placeholder="Institution"
-              value={edu.institution}
-              onChange={(e) =>
-                updateEducation(index, "institution", e.target.value)
-              }
-              required
-            />
-            <select
-  value={edu.passingYear}
-  onChange={(e) => updateEducation(index, "passingYear", e.target.value)}
-  required
-  className="bg-secondary text-white text-center px-1 rounded-lg "
->
-  <option value="" disabled>Select Year</option>
-  {Array.from({ length: 50 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return (
-      <option key={year} value={year}>
-        {year}
-      </option>
-    );
-  })}
-</select>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => removeEducation(index)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-        <Button type="button" variant="outline" onClick={addEducation}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Education
-        </Button>
-      </div> */}
       <div className="space-y-2">
         <Label htmlFor="university">College/Institue Name <span className="text-red-500">*</span></Label>
         <Input
@@ -1180,6 +1152,7 @@ const renderInitialForm = () => (
   </form>
   );
 
+  // Function to render appropriate form based on user role
   const renderRoleSpecificForm = () => {
     switch (userData.role) {
       case "professor":
@@ -1193,6 +1166,7 @@ const renderInitialForm = () => (
     }
   };
 
+  // Main component render
   return (
     <Card className="w-full max-w-md mx-auto bg-white text-black">
       <CardHeader>

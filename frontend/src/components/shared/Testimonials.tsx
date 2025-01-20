@@ -1,11 +1,13 @@
 "use client"
+// Import necessary dependencies
 import React from "react";
 import { Star, Quote } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // For animations
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { TESTI2} from "../../../public";
 
+// Array of testimonial data containing user reviews and information
 const testimonials = [
   {
     quote: "I am excited about the opportunity to utilize this platform to connect with colleagues and student researchers, both domestically and internationally. I believe that by working together and sharing our knowledge, we can make a significant impact in addressing the environmental challenges that we face today.",
@@ -38,8 +40,11 @@ const testimonials = [
 
 const TestimonialsSection = () => {
   return (
+    // Main section container with gradient background
     <section className="py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      {/* Main content wrapper with z-index for proper layering */}
       <div className="max-w-7xl mx-auto relative z-10">
+        {/* Animated heading using Framer Motion */}
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,8 +54,11 @@ const TestimonialsSection = () => {
           What our Community Says
         </motion.h2>
 
+        {/* Grid container for testimonial cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {/* Map through testimonials array to create individual cards */}
           {testimonials.map((testimonial, index) => (
+            // Animated card wrapper with hover effects
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 50 }}
@@ -59,14 +67,19 @@ const TestimonialsSection = () => {
               transition={{ delay: index * 0.2 }}
               className="group"
             >
+              {/* Clickable link wrapper for the entire card */}
               <a href={testimonial.link} className="block h-full">
+                {/* Card component with hover animations */}
                 <Card className="h-full bg-white border-none shadow-lg group-hover:shadow-xl transition-all duration-300 ease-in-out transform group-hover:-translate-y-2">
                   <CardContent className="p-6 md:p-8 flex flex-col h-full">
+                    {/* Main content area with quote and rating */}
                     <div className="flex-grow">
+                      {/* Quote icon decoration */}
                       <div className="relative mb-4">
                         <Quote className="absolute top-0 left-0 h-8 w-8 text-gray-100 -z-10" />
                       </div>
 
+                      {/* Star rating display with animation */}
                       <div className="flex justify-start mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
                           <motion.div
@@ -80,13 +93,16 @@ const TestimonialsSection = () => {
                         ))}
                       </div>
 
+                      {/* Testimonial quote text */}
                       <p className="text-gray-700 mb-6 text-base md:text-lg leading-relaxed min-h-[150px]">
                         {testimonial.quote}
                       </p>
                     </div>
 
+                    {/* Author information section */}
                     <div className="mt-auto">
                       <div className="flex items-center pt-6 border-t border-gray-100">
+                        {/* Author profile image */}
                         <div className="relative w-10 h-10 md:w-12 md:h-12 mr-4">
                           <Image
                             src={testimonial.image || '/default-avatar.png'}
@@ -95,6 +111,7 @@ const TestimonialsSection = () => {
                             className="rounded-full object-cover bg-gray-100"
                           />
                         </div>
+                        {/* Author details (name, role, department) */}
                         <div className="flex-grow">
                           <p className="font-semibold text-gray-800 text-sm md:text-base">
                             {testimonial.author}
@@ -116,7 +133,7 @@ const TestimonialsSection = () => {
         </div>
       </div>
 
-      {/* Decorative Elements */}
+      {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-full -z-10 blur-2xl opacity-50" />
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-purple-50 to-transparent rounded-full -z-10 blur-2xl opacity-50" />
     </section>

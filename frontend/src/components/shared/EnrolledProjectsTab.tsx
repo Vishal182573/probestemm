@@ -8,6 +8,7 @@ import { API_URL } from "@/constants";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 
+// Define TypeScript interface for Project structure
 interface Project {
   id: string;
   topic: string;
@@ -17,34 +18,41 @@ interface Project {
   status: "OPEN" | "ONGOING" | "CLOSED";
   type: string;
   category: string;
+  // Optional nested objects for different user types
   business?: { id: string; companyName: string; email: string };
   professor?: { id: string; fullName: string; email: string };
   student?: { id: string; name: string; email: string };
 }
 
+// Define props interface for the EnrolledProjectsTabs component
 interface EnrolledProjectsTabsProps {
   userId: string;
   role: "professor" | "student" | "business";
 }
 
+// Main component definition
 const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
   userId,
   role,
 }) => {
+  // State management for projects and error handling
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [closedProjects, setClosedProjects] = useState<Project[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // useEffect hook to fetch enrolled projects when component mounts
   useEffect(() => {
     const fetchEnrolledProjects = async () => {
       try {
+        // Check for authentication token
         const token = localStorage.getItem("token");
         if (!token) {
           router.push("/login");
           return;
         }
 
+        // Fetch ongoing projects
         const ongoingResponse = await axios.get(
           `${API_URL}/project/enrolled/${role}/${userId}`,
           {
@@ -53,6 +61,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
           }
         );
 
+        // Fetch closed projects
         const closedResponse = await axios.get(
           `${API_URL}/project/enrolled/${role}/${userId}`,
           {
@@ -61,6 +70,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
           }
         );
 
+        // Update state with fetched data
         setOngoingProjects(ongoingResponse.data);
         setClosedProjects(closedResponse.data);
       } catch (error) {
@@ -72,6 +82,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
     fetchEnrolledProjects();
   }, [userId, role, router]);
 
+  // Helper function to extract owner information from project
   const getOwnerInfo = (project: Project) => {
     if (project.business?.id) {
       return {
@@ -98,6 +109,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
     return null;
   };
 
+  // Function to render project list with consistent styling
   const renderProjects = (projects: Project[]) => (
     <ul className="space-y-6">
       {projects.map((project) => {
@@ -159,16 +171,21 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
     </ul>
   );
 
+  // Error handling display
   if (error) {
     return <div>{error}</div>;
   }
 
+  // Render main component UI with tabs
   return (
     <Tabs defaultValue="ongoing">
+      {/* Tab navigation */}
       <TabsList>
         <TabsTrigger value="ongoing">Ongoing Projects</TabsTrigger>
         <TabsTrigger value="closed">Closed Projects</TabsTrigger>
       </TabsList>
+
+      {/* Ongoing projects tab content */}
       <TabsContent value="ongoing">
         <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
           <CardHeader>
@@ -177,6 +194,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Conditional rendering based on projects availability */}
             {ongoingProjects.length > 0 ? (
               renderProjects(ongoingProjects)
             ) : (
@@ -185,6 +203,8 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
           </CardContent>
         </Card>
       </TabsContent>
+
+      {/* Closed projects tab content */}
       <TabsContent value="closed">
         <Card className="border-2 border-[#eb5e17] shadow-xl bg-white">
           <CardHeader>
@@ -193,6 +213,7 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Conditional rendering based on projects availability */}
             {closedProjects.length > 0 ? (
               renderProjects(closedProjects)
             ) : (
@@ -205,4 +226,5 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
   );
 };
 
+// Export the component
 export default EnrolledProjectsTabs;

@@ -1,25 +1,32 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
+
+// Import necessary dependencies and components
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+// Import icons for feature cards
 import { FaIndustry, FaGraduationCap, FaExchangeAlt, FaBook, FaResearchgate, FaBookReader } from "react-icons/fa";
+// Import UI components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+// Import shared components
 import { Footer } from "@/components/shared/Footer";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
-// import FeaturesDemo from "@/components/shared/TextImageComponent";
+// Import assets and Next.js components
 import { ABOUT, ABOUTPAGE} from "../../../public";
 import Link from "next/link";
 import Image from "next/image";
 
+// Interface definition for the CountUpAnimation component props
 interface CountUpAnimationProps {
-  end: number;
-  duration?: number;
-  label?: string;
+  end: number;          // Final number to count up to
+  duration?: number;    // Duration of animation in milliseconds
+  label?: string;       // Label to display below the number
 }
 
+// CountUpAnimation Component: Animates a number counting up from 0 to a target value
 const CountUpAnimation: React.FC<CountUpAnimationProps> = ({
   end,
   duration = 2000,
@@ -49,6 +56,7 @@ const CountUpAnimation: React.FC<CountUpAnimationProps> = ({
   );
 };
 
+// Stats Component: Displays a grid of animated statistics
 const Stats = () => (
   <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-white/90 backdrop-blur shadow-xl rounded-lg p-6 mb-12">
     <CountUpAnimation end={5000} label="Students Enrolled" />
@@ -58,24 +66,30 @@ const Stats = () => (
   </div>
 );
 
+// Main AboutUsPage Component
 const AboutUsPage = () => {
   return (
     <div className="bg-white min-h-screen">
+      {/* Navigation bar with background */}
       <NavbarWithBg />
+
+      {/* Hero banner section with main image and title */}
       <Banner
         imageSrc={ABOUT}
         altText="About Us Banner"
         title="Probe STEM"
         subtitle="Empowering the next generation of innovators"
       />
+
+      {/* Main content container with animations */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="container mx-auto p-8"
       >
-
-      <motion.div
+        {/* Motto Section */}
+        <motion.div
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -87,8 +101,7 @@ const AboutUsPage = () => {
           </p>
         </motion.div>
 
-        {/* <Stats /> */}
-        {/* New About Section */}
+        {/* About Section with image */}
         <motion.div
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -115,6 +128,7 @@ const AboutUsPage = () => {
           </div>
         </motion.div>
 
+        {/* Core Features Section Title */}
         <motion.h2
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -124,7 +138,9 @@ const AboutUsPage = () => {
           Core Features
         </motion.h2>
 
+        {/* First row of feature cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Industry Collaboration Card */}
           <motion.div
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -145,6 +161,7 @@ const AboutUsPage = () => {
             </Card>
           </motion.div>
 
+          {/* Knowledge Exchange Card */}
           <motion.div
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -166,7 +183,9 @@ const AboutUsPage = () => {
           </motion.div>
         </div>
 
+        {/* Second row of feature cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Company Projects Card */}
           <motion.div
             initial={{ x: -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -186,6 +205,7 @@ const AboutUsPage = () => {
             </Card>
           </motion.div>
 
+          {/* Research Corner Card */}
           <motion.div
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -207,6 +227,7 @@ const AboutUsPage = () => {
         </div>
 
       </motion.div>
+      {/* Footer component */}
       <Footer />
     </div>
   );

@@ -1,8 +1,12 @@
+// Import necessary components and React
 import { Footer } from '@/components/shared/Footer';
 import NavbarWithBg from '@/components/shared/NavbarWithbg';
 import React from 'react';
 
+// Define the main Privacy Policy component as a functional component
 const ProbeStemPolicyModal: React.FC = () => {
+  // Array of policy categories containing structured data for each policy section
+  // Each category has a title, description, and an array of detailed points
   const policyCategories = [
     {
       title: 'User Verification',
@@ -105,26 +109,38 @@ const ProbeStemPolicyModal: React.FC = () => {
   ];
 
   return (
+    // Main container with white background
     <div className="bg-white flex-col items-center justify-center">
+      {/* Navigation bar component with background */}
       <NavbarWithBg />
+      
+      {/* Main content container with shadow and rounded corners */}
       <div className="bg-white rounded-xl w-full shadow-xl my-7">
-        {/* Modal Header */}
+        {/* Header section with title */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#472014]">Probe STEM Platform Policies</h2>
         </div>
 
-        {/* Modal Body */}
+        {/* Main content section with policy information */}
         <div className="p-6 space-y-6">
+          {/* Effective date and agreement notice */}
           <p className="text-gray-700 mb-4">
             Effective from 30th November, 2024: By using Probe STEM, you agree to our User Agreement and Professional Privacy Policies, which govern your platform interactions.
           </p>
+          
+          {/* Data security disclaimer */}
           <p className="text-gray-700 mb-4">
           Probe STEM takes reasonable precautions to ensure the security and integrity of data hosted on its platform. However, in the event of a cybercrime or data breach, Probe STEM shall not be held responsible for any loss, theft, or corruption of user data. Users are advised to maintain backups of their work and implement their own security measures to safeguard against potential risks.
           </p>
+
+          {/* Map through policy categories to create individual policy sections */}
           {policyCategories.map((category, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-lg">
+              {/* Category title */}
               <h3 className="text-xl font-semibold text-[#472014] mb-3">{category.title}</h3>
+              {/* Category description */}
               <p className="text-gray-600 mb-3">{category.description}</p>
+              {/* List of detailed points for each category */}
               <ul className="list-disc list-inside text-gray-700 space-y-2">
                 {category.details.map((detail, detailIndex) => (
                   <li key={detailIndex}>{detail}</li>
@@ -133,6 +149,7 @@ const ProbeStemPolicyModal: React.FC = () => {
             </div>
           ))}
 
+          {/* Platform mission statement section with distinct styling */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="text-xl font-semibold text-blue-800 mb-3">Platform Mission</h3>
             <p className="text-blue-700">
@@ -141,9 +158,12 @@ const ProbeStemPolicyModal: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Footer component */}
       <Footer />
     </div>
   );
 };
 
+// Export the component as the default export
 export default ProbeStemPolicyModal;

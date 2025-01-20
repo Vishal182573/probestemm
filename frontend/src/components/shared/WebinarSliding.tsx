@@ -8,6 +8,7 @@ import axios from "axios";
 import { API_URL } from "@/constants";
 import Image from "next/image";
 
+// Define the Webinar interface to type-check the webinar data structure
 interface Webinar {
   id: string;
   title: string;
@@ -20,12 +21,24 @@ interface Webinar {
   webinarImage?: string;
 }
 
+// WebinarSlider Component: Handles the sliding animation of webinar cards
 const WebinarSlider: React.FC = () => {
+  // State Management
+  // webinars: Stores all fetched webinars
   const [webinars, setWebinars] = useState<Webinar[]>([]);
+  // visibleWebinars: Stores currently displayed webinars
   const [visibleWebinars, setVisibleWebinars] = useState<Webinar[]>([]);
+  // isLoading: Tracks loading state during API calls
   const [isLoading, setIsLoading] = useState(true);
+  // displayCount: Controls number of visible webinars based on screen size
   const [displayCount, setDisplayCount] = useState(4);
 
+  // Responsive Layout Effect:
+  // Updates displayCount based on window width
+  // - Mobile (<640px): 1 webinar
+  // - Tablet (<1024px): 2 webinars
+  // - Small Desktop (<1280px): 3 webinars
+  // - Large Desktop: 4 webinars
   useEffect(() => {
     const updateDisplayCount = () => {
       if (window.innerWidth < 640) {
@@ -44,6 +57,8 @@ const WebinarSlider: React.FC = () => {
     return () => window.removeEventListener('resize', updateDisplayCount);
   }, []);
 
+  // Data Fetching Effect:
+  // Fetches webinars from API and filters for approved ones
   useEffect(() => {
     const fetchWebinars = async () => {
       try {
@@ -64,6 +79,9 @@ const WebinarSlider: React.FC = () => {
     fetchWebinars();
   }, [displayCount]);
 
+  // Sliding Animation Effect:
+  // Handles the automatic sliding of webinars every 3 seconds
+  // Removes first webinar and adds next one in sequence
   useEffect(() => {
     if (webinars.length === 0 || isLoading) return;
 
@@ -84,16 +102,27 @@ const WebinarSlider: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [webinars, isLoading, displayCount]);
 
+  // Loading State UI
   if (isLoading) {
     return <div className="h-[400px] flex items-center justify-center">Loading...</div>;
   }
 
+  // Main Render:
+  // Displays webinar cards with sliding animations using Framer Motion
   return (
+    // Container with overflow control
     <div className="w-full overflow-hidden bg-white py-6 md:py-12">
       <div className="relative max-w-full">
         <div className="flex gap-2 md:gap-4">
           <AnimatePresence initial={false}>
             {visibleWebinars.map((webinar, index) => (
+              // Individual Webinar Card:
+              // - Responsive width based on displayCount
+              // - Animated entrance and exit
+              // - Hover effects
+              // - Image or fallback video icon
+              // - Gradient overlay for text visibility
+              // - Webinar details with icons
               <motion.div
                 key={`${webinar.id}-${index}`}
                 className={`flex-shrink-0 ${
@@ -168,6 +197,8 @@ const WebinarSlider: React.FC = () => {
   );
 };
 
+// Main Export Component:
+// Wraps WebinarSlider with section styling and heading
 export default function WebinarSliderSection() {
   return (
     <section className="py-10 md:py-20 bg-white">

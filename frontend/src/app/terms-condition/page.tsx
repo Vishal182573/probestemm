@@ -1,8 +1,12 @@
+// Import necessary components and React
 import { Footer } from '@/components/shared/Footer';
 import NavbarWithBg from '@/components/shared/NavbarWithbg';
 import React from 'react';
 
+// Define the main Terms and Conditions component as a functional component
 const TermsAndConditionModal: React.FC = () => {
+  // Define an array of terms and conditions objects
+  // Each object contains a title and an array of details
   const termsAndConditions = [
     {
       title: 'Acceptance of Terms',
@@ -83,23 +87,31 @@ const TermsAndConditionModal: React.FC = () => {
   ];
 
   return (
+    // Main container with white background
     <div className="bg-white flex-col items-center justify-center">
+      {/* Navigation bar component with background */}
       <NavbarWithBg />
+      
+      {/* Terms and conditions content container with shadow and rounded corners */}
       <div className="bg-white rounded-xl w-full shadow-xl my-7">
-        {/* Modal Header */}
+        {/* Header section with title */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#472014]">Probe STEM Terms and Conditions</h2>
         </div>
 
-        {/* Modal Body */}
+        {/* Main content section */}
         <div className="p-6 space-y-6">
+          {/* Effective date and introduction text */}
           <p className="text-gray-700 mb-4">
             Effective from 30th November, 2024: By accessing or using Probe STEM, you agree to our Terms and Conditions, which govern your interactions with the platform.
           </p>
 
+          {/* Map through terms and conditions array to create individual sections */}
           {termsAndConditions.map((term, index) => (
             <div key={index} className="bg-gray-50 p-4 rounded-lg">
+              {/* Section title */}
               <h3 className="text-xl font-semibold text-[#472014] mb-3">{term.title}</h3>
+              {/* List of details for each section */}
               <ul className="list-disc list-inside text-gray-700 space-y-2">
                 {term.details.map((detail, detailIndex) => (
                   <li key={detailIndex}>{detail}</li>
@@ -108,6 +120,7 @@ const TermsAndConditionModal: React.FC = () => {
             </div>
           ))}
 
+          {/* Platform mission section with different styling */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="text-xl font-semibold text-blue-800 mb-3">Platform Mission</h3>
             <p className="text-blue-700">
@@ -116,9 +129,12 @@ const TermsAndConditionModal: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Footer component */}
       <Footer />
     </div>
   );
 };
 
+// Export the component as default
 export default TermsAndConditionModal;

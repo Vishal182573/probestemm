@@ -32,6 +32,7 @@ import { API_URL } from "@/constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+// Define the Webinar interface to type-check the webinar data structure
 interface Webinar {
   id: string;
   title: string;
@@ -46,14 +47,19 @@ interface Webinar {
   meetingLink?: string;
 }
 
+// Main NotificationsComponent - Displays a list of webinars with filtering and pagination
 const NotificationsComponent: React.FC = () => {
+  // Initialize router for navigation
   const router = useRouter();
-  const [webinars, setWebinars] = useState<Webinar[]>([]);
-  const [filteredWebinars, setFilteredWebinars] = useState<Webinar[]>([]);
-  const [filter, setFilter] = useState<"APPROVED" | "COMPLETED" | "ALL">("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [webinarsPerPage] = useState(5);
 
+  // State management
+  const [webinars, setWebinars] = useState<Webinar[]>([]); // Stores all webinars
+  const [filteredWebinars, setFilteredWebinars] = useState<Webinar[]>([]); // Stores filtered webinars based on status
+  const [filter, setFilter] = useState<"APPROVED" | "COMPLETED" | "ALL">("ALL"); // Current filter selection
+  const [currentPage, setCurrentPage] = useState(1); // Current page number for pagination
+  const [webinarsPerPage] = useState(5); // Number of webinars to display per page
+
+  // Fetch webinars from API on component mount
   useEffect(() => {
     const fetchWebinars = async () => {
       try {
@@ -69,6 +75,7 @@ const NotificationsComponent: React.FC = () => {
     fetchWebinars();
   }, []);
 
+  // Filter webinars whenever the filter or webinars list changes
   useEffect(() => {
     const filtered =
       filter === "ALL"
@@ -78,6 +85,7 @@ const NotificationsComponent: React.FC = () => {
     setCurrentPage(1);
   }, [filter, webinars]);
 
+  // Pagination logic
   const indexOfLastWebinar = currentPage * webinarsPerPage;
   const indexOfFirstWebinar = indexOfLastWebinar - webinarsPerPage;
   const currentWebinars = filteredWebinars.slice(
@@ -85,10 +93,12 @@ const NotificationsComponent: React.FC = () => {
     indexOfLastWebinar
   );
 
+  // Function to handle page changes
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <Card className="max-w-7xl mx-auto bg-white shadow-lg border-[#eb5e17]">
+      {/* Header section with title and total count */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-4xl font-bold text-[#472014] font-caveat">
           Webinars
@@ -98,6 +108,7 @@ const NotificationsComponent: React.FC = () => {
         </Badge>
       </CardHeader>
       <CardContent>
+        {/* Filter dropdown section */}
         <div className="mb-6">
           <Select
             onValueChange={(value: "APPROVED" | "COMPLETED" | "ALL") =>
@@ -115,8 +126,10 @@ const NotificationsComponent: React.FC = () => {
           </Select>
         </div>
 
+        {/* Animated list of webinars with empty state handling */}
         <AnimatePresence>
           {currentWebinars.length === 0 ? (
+            // Empty state message
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -126,8 +139,10 @@ const NotificationsComponent: React.FC = () => {
               No webinars found
             </motion.p>
           ) : (
+            // List of webinar cards
             <ul className="space-y-6">
               {currentWebinars.map((webinar) => (
+                // Individual webinar card with animation
                 <motion.li
                   key={webinar.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -137,7 +152,9 @@ const NotificationsComponent: React.FC = () => {
                 >
                   <Card className="bg-white border-[#eb5e17] overflow-hidden hover:shadow-xl transition-shadow duration-300">
                     <CardContent className="p-0">
+                      {/* Webinar card layout with image and details */}
                       <div className="flex flex-col md:flex-row">
+                        {/* Webinar image section */}
                         <div className="w-full md:w-1/3 h-48 md:h-auto relative">
                           {webinar.webinarImage ? (
                             <Image
@@ -152,7 +169,10 @@ const NotificationsComponent: React.FC = () => {
                             </div>
                           )}
                         </div>
+
+                        {/* Webinar details section */}
                         <div className="w-full md:w-2/3 p-6">
+                          {/* Title and status badge */}
                           <div className="flex justify-between items-start mb-4">
                             <h3 className="text-2xl font-semibold text-[#472014]">
                               {webinar.title}
@@ -171,6 +191,7 @@ const NotificationsComponent: React.FC = () => {
                             </Badge>
                           </div>
 
+                          {/* Webinar metadata (date, place, attendees) */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
                               <Calendar className="h-4 w-4 mr-2 text-[#eb5e17]" />
@@ -186,7 +207,9 @@ const NotificationsComponent: React.FC = () => {
                             </div>
                           </div>
 
+                          {/* Topic and action buttons section */}
                           <div className="bg-gray-50 p-4 rounded-lg">
+                            {/* Topic information and action buttons with tooltips */}
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="text-sm font-medium text-[#472014]">
@@ -271,6 +294,7 @@ const NotificationsComponent: React.FC = () => {
           )}
         </AnimatePresence>
 
+        {/* Pagination controls */}
         <div className="flex justify-center mt-8">
           {Array.from(
             { length: Math.ceil(filteredWebinars.length / webinarsPerPage) },

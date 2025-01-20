@@ -61,7 +61,10 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce function to prevent too many API calls
+  // Utility function to debounce API calls
+  // Prevents excessive API calls while user is typing
+  // func: Function to debounce
+  // wait: Delay in milliseconds
   const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
     return (...args: any[]) => {
@@ -70,7 +73,9 @@ export default function StudentsPage() {
     };
   };
 
-  // Fetch students with search query
+  // Function to fetch students data
+  // Handles loading states and error handling
+  // query: Search string to filter students
   const fetchStudents = async (query: string) => {
     try {
       setLoading(true);
@@ -84,9 +89,12 @@ export default function StudentsPage() {
     }
   };
 
-  // Debounced version of fetchStudents
+  // Create a debounced version of fetchStudents
+  // Waits 500ms after last keystroke before making API call
   const debouncedFetch = debounce(fetchStudents, 500);
 
+  // Effect hook to trigger search when query changes
+  // Re-runs whenever searchQuery state changes
   useEffect(() => {
     debouncedFetch(searchQuery);
   }, [searchQuery]);
@@ -106,7 +114,7 @@ export default function StudentsPage() {
             Students
           </h1>
 
-          {/* Search Bar */}
+          {/* Search input field with icon */}
           <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
@@ -117,7 +125,7 @@ export default function StudentsPage() {
             />
           </div>
 
-          {/* Loading State */}
+          {/* Loading spinner indicator */}
           {loading && (
             <div className="flex justify-center items-center py-8">
               <ReloadIcon className="h-6 w-6 animate-spin" />
@@ -125,14 +133,14 @@ export default function StudentsPage() {
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error message display */}
           {error && (
             <div className="text-red-500 p-4 rounded-lg bg-red-50">
               Error: {error}
             </div>
           )}
 
-          {/* Results */}
+          {/* Student list display */}
           {!loading && !error && (
             <div className="relative">
               <RoleList roles={students} roleType="student" />

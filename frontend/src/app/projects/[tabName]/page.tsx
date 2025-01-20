@@ -38,12 +38,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
 
+// Enums defining the types of projects and proposal categories
 enum ProjectType {
   BUSINESS_PROJECT = "BUSINESS_PROJECT",
   PROFESSOR_PROJECT = "PROFESSOR_PROJECT",
   STUDENT_PROPOSAL = "STUDENT_PROPOSAL",
 }
 
+// Categories for different types of proposals/projects
 enum ProposalCategory {
   INTERNSHIP = "INTERNSHIP",
   PHD_POSITION = "PHD_POSITION",
@@ -54,6 +56,7 @@ enum ProposalCategory {
   PROJECT="PROJECT"
 }
 
+// TypeScript interface defining the structure of a Project
 interface Project {
   id: string;
   topic: string;
@@ -93,20 +96,22 @@ interface Project {
   };
 }
 
+// Main component for the Projects page
 const ProjectsPage: React.FC = () => {
-  const [, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<ProposalCategory | null>(
-    null
-  );
-  const [showModal, setShowModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  // State management for projects and UI controls
+  const [, setProjects] = useState<Project[]>([]); // Stores all projects
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]); // Stores filtered projects
+  const [loading, setLoading] = useState(true); // Loading state indicator
+  const [, setError] = useState<string | null>(null); // Error state management
+  const [activeCategory, setActiveCategory] = useState<ProposalCategory | null>(null); // Currently selected category
+  const [showModal, setShowModal] = useState(false); // Controls application modal visibility
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null); // Currently selected project
+  
+  // Navigation and routing hooks
   const params = useParams();
   const router = useRouter();
   
-  // Determine initial tab based on URL params
+  // Function to determine initial tab based on URL parameters
   const getInitialTab = () => {
     // If no params, return null to trigger default tab
     if (!params || !params.tabName) {
@@ -136,7 +141,8 @@ const ProjectsPage: React.FC = () => {
   };
             
   const [activeTab, setActiveTab] = useState<string>(getInitialTab());
-  // Keep the rest of the code the same as the original implementation
+
+  // Effect hook to fetch projects when tab or category changes
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -165,34 +171,7 @@ const ProjectsPage: React.FC = () => {
     fetchProjects();
   }, [activeTab, activeCategory]);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/project`, {
-          params: {
-            type:
-              activeTab === "professors"
-                ? ProjectType.PROFESSOR_PROJECT
-                : activeTab === "industry"
-                ? ProjectType.BUSINESS_PROJECT
-                : ProjectType.STUDENT_PROPOSAL,
-            category: activeCategory || undefined,
-          },
-        });
-        console.log(response.data);
-        setProjects(response.data);
-        setFilteredProjects(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        setError("Failed to load projects");
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, [activeTab, activeCategory]);
-
+  // Modal control functions
   const openApplyModal = (project: Project) => {
     setSelectedProject(project);
     setShowModal(true);
@@ -203,6 +182,7 @@ const ProjectsPage: React.FC = () => {
     setSelectedProject(null);
   };
 
+  // Loading state UI
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -214,6 +194,7 @@ const ProjectsPage: React.FC = () => {
     );
   }
 
+  // Main component render
   return (
     <div className="flex flex-col min-h-screen  text-[#472014]">
       <NavbarWithBg />
@@ -268,6 +249,7 @@ const ProjectsPage: React.FC = () => {
   );
 };
 
+// Component to display the list of projects in a grid
 interface ProjectsListProps {
   projects: Project[];
   onApply: (project: Project) => void;
@@ -294,6 +276,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply }) => {
   );
 };
 
+// Component for individual project cards
 interface ProjectCardProps {
   project: Project;
   index: number;
@@ -305,18 +288,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   index,
   onApply,
 }) => {
+  // Router hook for navigation
   const router = useRouter();
   
-  const [application_button,setapplication_button] = useState<string> ("APPLY NOW");
+  // State for dynamic application button text
+  const [application_button, setapplication_button] = useState<string>("APPLY NOW");
   
-
-  useEffect(()=>{
+  // Effect to set button text based on user role
+  useEffect(() => {
     const role = localStorage.getItem("role");
   switch (role){
     case "professor" : if(project.category==="PROJECT") setapplication_button("Respond Now")
       case "business" : if(project.category==="PROJECT") setapplication_button("Respond Now")  
   }
-  },[])
+  }, []);
+
+  // Function to render different details based on project category
   const renderDetails = () => {
     switch (project.category) {
       case ProposalCategory.PROFESSOR_COLLABORATION:
@@ -394,6 +381,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
+  // Memoized function to determine if user can apply to project
   const canApply = useMemo(() => {
     const userRole = localStorage.getItem('role');
     const currentDate = new Date();
@@ -445,6 +433,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   }, [project]);
 
+  // Handler functions for user interactions
   const handleApply = () => {
     if (!canApply) {
       alert('You are not eligible to apply for this project. Please check the eligibility criteria or project status.');
@@ -552,6 +541,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   );
 };
 
+// Modal component for project applications
 interface ApplyModalProps {
   show: boolean;
   onClose: () => void;
@@ -559,6 +549,7 @@ interface ApplyModalProps {
 }
 
 const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
+  // Form handling with react-hook-form
   const { register, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
       name: localStorage.getItem("fullName") || "",
@@ -569,15 +560,17 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
     }
   });
   
+  // Submission state management
   const [submitting, setSubmitting] = React.useState(false);
 
-  // Optional: If you want to update form values if localStorage changes
+  // Effect to update form values from localStorage
   useEffect(() => {
     setValue('name', localStorage.getItem("fullName") || localStorage.getItem("companyName") || "");
     setValue('email', localStorage.getItem("email") || "");
     setValue('phoneNumber', localStorage.getItem("phoneNumber") || "");
-  }, [setValue, show]); // Add show to reset when modal opens
+  }, [setValue, show]);
 
+  // Form submission handler
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     console.log(FormData);

@@ -22,6 +22,7 @@ import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
 
+// Define the structure of categories and their subcategories for research fields
 const categories = {
   "Physics": [
     "Classical Mechanics",
@@ -103,7 +104,7 @@ const categories = {
   ],
 } as const;
 
-// Add interfaces for research interests and tags
+// Interface definitions for type safety and data structure
 interface ResearchInterest {
   title: string;
   description: string;
@@ -141,16 +142,20 @@ interface ResearchHighlight {
   status: "ONGOING" | "COMPLETED";
 }
 
+// Main component for editing user profiles
 const EditProfileForm = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [profileData, setProfileData] = useState<any>(null);
-  const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  // State management for form data and UI controls
+  const [isEditing, setIsEditing] = useState(false);          // Controls edit mode
+  const [loading, setLoading] = useState(false);              // Tracks form submission state
+  const [error, setError] = useState<string | null>(null);    // Stores error messages
+  const [profileData, setProfileData] = useState<any>(null);  // Stores user profile data
+  const [profileImage, setProfileImage] = useState<File | null>(null);  // Stores profile image file
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // Stores profile image preview URL
+  const [userId, setUserId] = useState<string | null>(null);  // Stores user ID
+  const [role, setRole] = useState<string | null>(null);      // Stores user role
+  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Selected research category
+  
+  // State for new research interest form
   const [newResearchInterest, setNewResearchInterest] = useState<ResearchInterest>({
     title: '',
     description: '',
@@ -158,9 +163,8 @@ const EditProfileForm = () => {
     imagePreviews: [],
   });
 
-  // Move localStorage access to useEffect
+  // Initialize user data from localStorage on component mount
   useEffect(() => {
-    // Only access localStorage on the client side
     if (typeof window !== "undefined") {
       const storedUserId = localStorage.getItem("userId");
       const storedRole = localStorage.getItem("role");
@@ -169,6 +173,7 @@ const EditProfileForm = () => {
     }
   }, []);
 
+  // Handler for profile image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -200,6 +205,7 @@ const EditProfileForm = () => {
     }
   };
 
+  // Handler for uploading multiple images for research interests
   const handleImageUpload = async (files: File[]) => {
     const formData = new FormData();
     files.forEach((file) => {
@@ -228,6 +234,7 @@ const EditProfileForm = () => {
     }
   };
 
+  // Handler for research interest image uploads
   const handleResearchImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
@@ -262,6 +269,7 @@ const EditProfileForm = () => {
     }));
   };
 
+  // Handlers for managing research interests
   const removeImage = (index: number) => {
     setNewResearchInterest(prev => {
       const newImages = [...(prev.images || [])];
@@ -343,6 +351,7 @@ const EditProfileForm = () => {
     }
   };
 
+  // Handlers for form input changes
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -350,7 +359,7 @@ const EditProfileForm = () => {
     setProfileData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  // Education handlers
+  // Education section handlers
   const addEducation = () => {
     setProfileData((prev: any) => ({
       ...prev,
@@ -377,7 +386,7 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, education: newEducation });
   };
 
-  // Position handlers
+  // Position section handlers
   const addPosition = () => {
     setProfileData((prev: any) => ({
       ...prev,
@@ -410,7 +419,7 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, positions: newPositions });
   };
 
-  // Achievement handlers
+  // Achievement section handlers
   const addAchievement = () => {
     setProfileData((prev: any) => ({
       ...prev,
@@ -437,7 +446,7 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, achievements: newAchievements });
   };
 
-  // Research highlight handlers
+  // Research highlight section handlers
   const addResearchHighlight = () => {
     setProfileData((prev: any) => ({
       ...prev,
@@ -470,7 +479,7 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, researchInterests: newInterests });
   };
 
-  // Add tag handlers
+  // Tag management handlers
   const addTag = (category: string, subcategory: string) => {
     if (category && subcategory) {
       setProfileData((prev: any) => ({
@@ -486,13 +495,14 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, tags: newTags });
   };
 
-  // Modify fetchProfileData to depend on userId and role being set
+  // Fetch user profile data when userId and role are available
   useEffect(() => {
     if (userId && role) {
       fetchProfileData();
     }
   }, [userId, role]);
 
+  // Function to fetch user profile data from API
   const fetchProfileData = async () => {
     try {
       if (typeof window === "undefined") return; // Guard against server-side execution
@@ -517,7 +527,7 @@ const EditProfileForm = () => {
     }
   };
 
-  // components/EditProfileForm.tsx (Client-Side)
+  // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -579,6 +589,7 @@ const EditProfileForm = () => {
     }
   };
 
+  // Helper function to generate year options for dropdowns
   const getYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
@@ -588,9 +599,13 @@ const EditProfileForm = () => {
     return years;
   };
 
+  // Component render method with conditional rendering based on user role
   return (
     <div className="flex flex-col min-h-screen ">
+      {/* Navigation bar */}
       <NavbarWithBg />
+      
+      {/* Main content - conditionally rendered based on userId and role */}
       {userId && role ? (
         <div className="flex justify-center items-start p-0 h-screen">
           <Card className="relative overflow-y-auto h-[80vh] my p-5 bg-white my-4 lg:w-[50vw] w-full">

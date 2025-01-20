@@ -15,16 +15,19 @@ import Image from "next/image";
 import { API_URL } from "@/constants";
 import { FAQ } from "../../../public";
 
+// Define the TypeScript interface for FAQ items
 interface FAQItem {
   question: string;
   answer: string;
 }
 
 const FAQSection = () => {
+  // State management for FAQs data and loading state
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Fetch FAQs data when component mounts
   useEffect(() => {
     const fetchFAQs = async () => {
       try {
@@ -41,6 +44,7 @@ const FAQSection = () => {
     fetchFAQs();
   }, []);
 
+  // Animation variants for the main section
   const sectionVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -52,6 +56,7 @@ const FAQSection = () => {
     },
   };
 
+  // Animation variants for individual FAQ items
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -64,6 +69,7 @@ const FAQSection = () => {
     },
   };
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -73,21 +79,25 @@ const FAQSection = () => {
   }
 
   return (
+    // Main section with animation and gradient background
     <motion.section
       className="py-12 w-full bg-gradient-to-b from-gray-50 to-white relative overflow-hidden"
       initial="hidden"
       animate="visible"
       variants={sectionVariants}
     >
-      {/* Background decoration */}
+      {/* Decorative background elements with gradient blurs */}
       <div className="absolute top-0 left-0 w-full h-full opacity-50 pointer-events-none">
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-100 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-100 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2" />
       </div>
 
       <div className="container mx-auto px-4">
+        {/* Flex container for FAQ content and illustration */}
         <div className="flex flex-col lg:flex-row items-start gap-12 relative z-10">
+          {/* Left side: FAQ content */}
           <div className="flex-1 w-full lg:w-3/5">
+            {/* Animated heading */}
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -97,13 +107,16 @@ const FAQSection = () => {
               Frequently Asked Questions
             </motion.h2>
 
+            {/* FAQ accordion container */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
+              {/* Accordion component displaying first 4 FAQs */}
               <Accordion type="single" collapsible className="w-full space-y-4">
                 {faqs.length>0 && faqs.slice(0, 4).map((item, index) => (
+                  // Individual FAQ item with animations
                   <motion.div
                     key={index}
                     variants={itemVariants}
@@ -123,12 +136,12 @@ const FAQSection = () => {
                 ))}
               </Accordion>
 
+              {/* "View More FAQs" button container */}
               <motion.div
                 variants={itemVariants}
                 className="mt-8 text-center lg:text-left"
               >
-                <div
-                >
+                <div>
                   <Button
                     onClick={() => router.push("/faq")}
                     className="w-full sm:w-auto bg-[#5e17eb] hover:bg-[#8c5fe7] text-white text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3 rounded-full transition-colors duration-300"
@@ -140,13 +153,14 @@ const FAQSection = () => {
             </motion.div>
           </div>
 
-          {/* Image Section */}
+          {/* Right side: Illustration image */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             className="hidden lg:block flex-1 w-full lg:w-24 sticky top-24"
           >
+            {/* Image container with aspect ratio and styling */}
             <div className="relative aspect-square h-96 w-max-md mx-auto">
               <Image
                 src={FAQ}
@@ -156,6 +170,7 @@ const FAQSection = () => {
                 priority
               />
             </div>
+            {/* Decorative gradient overlay for the image */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl filter blur-3xl -z-10" />
           </motion.div>
         </div>

@@ -31,6 +31,7 @@ import CreateProjectForm from "@/components/shared/professorprojectCreationForm"
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
 
+// Type definitions for notifications received by the business
 type Notification = {
   id: string;
   type: "PROJECT_APPLICATION" | "PROJECT_ACCEPTED" | "PROJECT_COMPLETED";
@@ -42,6 +43,7 @@ type Notification = {
   redirectionLink?:string;
 };
 
+// Interface defining the structure of a business profile
 interface Business {
   id: string;
   companyName: string;
@@ -54,6 +56,7 @@ interface Business {
   profileImageUrl?: string;
 }
 
+// Interface for project application details from professors, students, or businesses
 interface ApplicationDetails {
   id: string;
   description: string;
@@ -70,6 +73,7 @@ interface ApplicationDetails {
   createdAt: string;
 }
 
+// Interface defining the structure of a project
 interface Project {
   id: string;
   topic: string;
@@ -94,6 +98,7 @@ interface Project {
   }
 }
 
+// Interface for professors who have applied to projects
 interface AppliedProfessor {
   professorId: string;
   name: string;
@@ -102,23 +107,24 @@ interface AppliedProfessor {
 }
 
 const BusinessProfilePage: React.FC = () => {
+  // State management for business profile data
   const { id } = useParams();
   const router = useRouter();
   const [business, setBusiness] = useState<Business | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [appliedProfessorsMap, setAppliedProfessorsMap] = useState<{
-    [projectId: string]: AppliedProfessor[];
-  }>({});
+  
+  // State for tracking applied professors and authentication status
+  const [appliedProfessorsMap, setAppliedProfessorsMap] = useState<{[projectId: string]: AppliedProfessor[]}>({});
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
 
+  // State for notifications and application tracking
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [applicationDetails, setApplicationDetails] = useState<{
-    [projectId: string]: ApplicationDetails[];
-  }>({});
+  const [applicationDetails, setApplicationDetails] = useState<{[projectId: string]: ApplicationDetails[]}>({});
 
+  // Effect hook to fetch business data and related information on component mount
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
@@ -163,6 +169,7 @@ const BusinessProfilePage: React.FC = () => {
     fetchBusinessData();
   }, [id, isLoggedInUser]);
 
+  // Function to fetch application details for a specific project
   const fetchApplicationDetails = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -218,6 +225,7 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  // Function to handle contact button click and create chat room
   const handleContact = async ()=>{
     try {
       const token = localStorage.getItem("token");
@@ -243,6 +251,7 @@ const BusinessProfilePage: React.FC = () => {
     }
   }
 
+  // Function to mark notifications as read
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -266,6 +275,7 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  // Function to handle project status changes (OPEN, ONGOING, CLOSED)
   const handleChangeProjectStatus = async (
     projectId: string,
     status: "OPEN" | "ONGOING" | "CLOSED",
@@ -322,6 +332,7 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  // Loading and error state handlers
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -341,6 +352,7 @@ const BusinessProfilePage: React.FC = () => {
     return <div>Business not found</div>;
   }
 
+  // Animation configuration for staggered children
   const staggerChildren = {
     animate: {
       transition: {
@@ -349,6 +361,7 @@ const BusinessProfilePage: React.FC = () => {
     },
   };
 
+  // Component render functions
   const renderProjectApplications = (project: Project) => {
     const applications = applicationDetails[project.id] || [];
 
@@ -593,6 +606,7 @@ const BusinessProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  // Main component render
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />

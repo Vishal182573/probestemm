@@ -71,13 +71,14 @@ const FeaturedQuestionsSection: React.FC = () => {
       animate="visible"
       variants={sectionVariants}
     >
-      {/* Background decoration */}
+      {/* Decorative background elements with gradient effects */}
       <div className="absolute top-0 left-0 w-full h-full opacity-50 pointer-events-none">
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-100 rounded-full filter blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-100 rounded-full filter blur-3xl translate-x-1/2 translate-y-1/2" />
       </div>
 
       <div className="container mx-auto px-4 max-w-7xl">
+        {/* Animated section heading */}
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -87,8 +88,11 @@ const FeaturedQuestionsSection: React.FC = () => {
           Featured <span className="text-[#eb5e17]">Discussions</span>
         </motion.h2>
 
+        {/* Main content container with flex layout */}
         <div className="flex flex-col lg:flex-row items-start gap-12 relative z-10">
+          {/* Left side: Featured questions list */}
           <div className="flex-1 w-full lg:w-3/5 space-y-4 sm:space-y-6 md:space-y-8">
+            {/* Map through and render each featured question */}
             {featuredQuestions.map((question) => (
               <motion.div key={question.id} variants={itemVariants}>
                 <Card className="bg-white border border-[#c1502e] hover:border-[#472014] transition-colors duration-300 shadow-md">
@@ -135,6 +139,7 @@ const FeaturedQuestionsSection: React.FC = () => {
               </motion.div>
             ))}
 
+            {/* "View All Discussions" button with animation */}
             <motion.div variants={itemVariants} className="mt-8 sm:mt-10 md:mt-12 text-center">
               <Link href="/discussions">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -146,13 +151,14 @@ const FeaturedQuestionsSection: React.FC = () => {
             </motion.div>
           </div>
 
-          {/* Image Section */}
+          {/* Right side: Illustration image */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             className="hidden lg:block flex-1 w-full lg:w-2/5 sticky top-24"
           >
+            {/* Image container with aspect ratio preservation */}
             <div className="relative aspect-square max-w-md mx-auto">
               <Image
                 src={DISCUSSIONHOME}
@@ -162,6 +168,7 @@ const FeaturedQuestionsSection: React.FC = () => {
                 priority
               />
             </div>
+            {/* Decorative gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl filter blur-3xl -z-10" />
           </motion.div>
         </div>

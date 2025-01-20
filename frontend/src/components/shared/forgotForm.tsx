@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
+// Import necessary dependencies and components
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -19,9 +20,18 @@ import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
 
+// Main component for handling password reset functionality
 const ForgotPasswordForm = () => {
+  // Initialize router for navigation
   const router = useRouter();
-  const [step, setStep] = useState(1); // 1: email/role, 2: OTP verification, 3: new password
+  
+  // State management for multi-step form process
+  // step 1: email/role collection
+  // step 2: OTP verification
+  // step 3: new password setup
+  const [step, setStep] = useState(1);
+  
+  // State variables for form inputs and UI control
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [otp, setOtp] = useState("");
@@ -30,11 +40,13 @@ const ForgotPasswordForm = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
-    const togglePasswordVisibility = () => {
-      setShowPassword((prev) => !prev);
-    };
-  
+  // Toggle password visibility function
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
+  // Handler for sending OTP to user's email
+  // Step 1 submission handler
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !role) {
@@ -59,6 +71,8 @@ const ForgotPasswordForm = () => {
     }
   };
 
+  // Handler for verifying the OTP entered by user
+  // Step 2 submission handler
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp) {
@@ -86,6 +100,8 @@ const ForgotPasswordForm = () => {
     }
   };
 
+  // Handler for setting new password
+  // Step 3 submission handler
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword) {
@@ -115,6 +131,7 @@ const ForgotPasswordForm = () => {
     }
   };
 
+  // Render function for Step 1: Email and Role collection
   const renderStep1 = () => (
     <form onSubmit={handleSendOTP} className="space-y-4 text-black">
       <Select value={role} onValueChange={setRole}>
@@ -150,6 +167,7 @@ const ForgotPasswordForm = () => {
     </form>
   );
 
+  // Render function for Step 2: OTP verification
   const renderStep2 = () => (
     <form onSubmit={handleVerifyOTP} className="space-y-4">
       <Input
@@ -174,6 +192,7 @@ const ForgotPasswordForm = () => {
     </form>
   );
 
+  // Render function for Step 3: New password setup
   const renderStep3 = () => (
     <form onSubmit={handleResetPassword} className="space-y-4">
       <div className="relative">
@@ -208,9 +227,13 @@ const ForgotPasswordForm = () => {
     </form>
   );
 
+  // Main render function for the component
+  // Returns a card component with dynamic content based on current step
   return (
     <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+      {/* Card Header with dynamic title and description based on current step */}
       <CardHeader className="space-y-1 pb-6">
+        {/* Back button appears for steps 2 and 3 */}
         <div className="flex items-center gap-2">
           {step > 1 && (
             <Button
@@ -226,6 +249,7 @@ const ForgotPasswordForm = () => {
             Reset Password
           </CardTitle>
         </div>
+        {/* Dynamic instruction text based on current step */}
         <p className="text-sm text-[#686256]">
           {step === 1 && "Enter your email to receive a verification code"}
           {step === 2 && "Enter the verification code sent to your email"}
@@ -234,10 +258,12 @@ const ForgotPasswordForm = () => {
       </CardHeader>
       
       <CardContent>
+        {/* Render appropriate form based on current step */}
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
         
+        {/* Error message display with animation */}
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
@@ -248,6 +274,7 @@ const ForgotPasswordForm = () => {
           </motion.p>
         )}
         
+        {/* Back to login link */}
         <div className="mt-4 text-center">
           <Link href="/login">
             <Button

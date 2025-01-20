@@ -15,7 +15,13 @@ import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
 type CreateBlogPostProps = unknown;
 
+/**
+ * CreateBlogPost Component
+ * A form component that allows professors and business users to create blog posts
+ * Includes authentication checks, image upload, and form submission handling
+ */
 const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
+  // State management for form inputs and loading state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -23,6 +29,11 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
   const router = useRouter();
   const { toast } = useToast();
 
+  /**
+   * Authentication Check Effect
+   * Runs on component mount to verify user authorization
+   * Redirects to login if user is not authenticated or lacks proper role
+   */
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -38,12 +49,27 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     }
   }, [router, toast]);
 
+  /**
+   * Image Upload Handler
+   * Manages the file input change event for blog post images
+   * @param e - Input change event containing the selected file
+   */
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImage(e.target.files[0]);
     }
   };
 
+  /**
+   * Form Submission Handler
+   * Processes the blog post creation
+   * 1. Prevents default form submission
+   * 2. Validates authentication
+   * 3. Constructs FormData with blog details
+   * 4. Sends POST request to API
+   * 5. Handles success/error responses
+   * @param e - Form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -99,6 +125,14 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     }
   };
 
+  /**
+   * Component UI Render
+   * Structured in a card layout with:
+   * - Navigation bar
+   * - Form inputs for title, content, and image
+   * - Submit button with loading state
+   * - Footer component
+   */
   return (
     <div className="min-h-screen bg-white">
       <NavbarWithBg />

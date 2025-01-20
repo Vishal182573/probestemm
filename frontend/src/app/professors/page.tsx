@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { Search } from "lucide-react";
 
+// Define the Professor interface to type-check the professor data structure
 interface Professor {
   id: string;
   fullName: string;
@@ -30,13 +31,17 @@ interface Professor {
   updatedAt?: string;
 }
 
+// Helper function to fetch professors from the API with optional search query
+// Returns filtered professors based on the search parameters
 async function searchProfessors(query?: string) {
   try {
+    // Create URL search parameters for the query
     const searchParams = new URLSearchParams();
     if (query) {
       searchParams.append('query', query);
     }
 
+    // Make API request to search professors
     const res = await fetch(
       `${API_URL}/professors/search?${searchParams.toString()}`,
       {
@@ -57,12 +62,16 @@ async function searchProfessors(query?: string) {
   }
 }
 
+// Main ProfessorsPage component
 export default function ProfessorsPage() {
-  const [professors, setProfessors] = useState<Professor[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // State management using React hooks
+  const [professors, setProfessors] = useState<Professor[]>([]); // Stores the list of professors
+  const [searchQuery, setSearchQuery] = useState(""); // Manages search input value
+  const [loading, setLoading] = useState(true); // Controls loading state
+  const [error, setError] = useState<string | null>(null); // Handles error messages
 
+  // Debounce utility function to prevent excessive API calls
+  // Waits for specified time before executing the function
   const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
     return (...args: any[]) => {
@@ -71,6 +80,8 @@ export default function ProfessorsPage() {
     };
   };
 
+  // Function to fetch professors data
+  // Updates state based on API response
   const fetchProfessors = async (query: string) => {
     try {
       setLoading(true);
@@ -84,28 +95,37 @@ export default function ProfessorsPage() {
     }
   };
 
+  // Create debounced version of fetchProfessors
+  // Prevents API calls on every keystroke by waiting 500ms
   const debouncedFetch = debounce(fetchProfessors, 500);
 
+  // Effect hook to trigger search when query changes
   useEffect(() => {
     debouncedFetch(searchQuery);
   }, [searchQuery]);
 
   return (
     <div className="bg-white w-full">
+      {/* Navigation component with background */}
       <NavbarWithBg />
+
+      {/* Banner section displaying header information */}
       <Banner
         imageSrc={ALLPROFESSORS}
         altText="project-banner-img"
         title="Our Esteemed Professors"
         subtitle="Connect with world-class experts and explore their impactful contributions to Science and Technology"
       />
+
+      {/* Main content container with animations */}
       <AnimatedContainer>
         <div className="space-y-6 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+          {/* Page heading */}
           <h1 className="text-4xl font-bold mb-6 text-[#472014] font-caveat">
             Professors/Researchers
           </h1>
 
-          {/* Search Bar */}
+          {/* Search input section with icon */}
           <div className="relative max-w-2xl mx-auto">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -118,7 +138,7 @@ export default function ProfessorsPage() {
             </div>
           </div>
 
-          {/* Loading State */}
+          {/* Loading state display */}
           {loading && (
             <div className="flex justify-center items-center py-8">
               <ReloadIcon className="h-6 w-6 animate-spin text-blue-500" />
@@ -126,14 +146,14 @@ export default function ProfessorsPage() {
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error state display */}
           {error && (
             <div className="text-red-500 p-4 rounded-lg bg-red-50">
               Error: {error}
             </div>
           )}
 
-          {/* Results */}
+          {/* Results section - Shows professor list or empty state message */}
           {!loading && !error && (
             <div className="relative">
               <RoleList roles={professors} roleType="professor" />
@@ -146,6 +166,8 @@ export default function ProfessorsPage() {
           )}
         </div>
       </AnimatedContainer>
+
+      {/* Contact form and footer components */}
       <ContactForm />
       <Footer />
     </div>

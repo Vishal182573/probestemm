@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 // import ContactForm from "@/components/shared/Feedback";
 // import FeaturesDemo from "@/components/shared/TextImageComponent";
 
+// Interface definitions for type safety
 interface Author {
   id: string;
   fullName?: string;
@@ -32,10 +33,12 @@ interface Author {
   companyName?: string;
 }
 
+// Tracks user's like/dislike interaction with a blog
 interface UserInteraction {
   isLike: boolean | null;
 }
 
+// Defines structure for blog comments including user types
 interface Comment {
   id: string;
   content: string;
@@ -55,6 +58,7 @@ interface Comment {
   };
 }
 
+// Main blog post interface defining all blog properties
 interface Blog {
   id: string;
   title: string;
@@ -74,22 +78,23 @@ interface Blog {
 }
 
 const BlogsPage: React.FC = () => {
+  // State management using React hooks
   const router = useRouter();
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userInteractions, setUserInteractions] = useState<{
-    [key: string]: UserInteraction;
-  }>({});
-  const { toast } = useToast();
+  const [blogs, setBlogs] = useState<Blog[]>([]); // Stores all blog posts
+  const [loading, setLoading] = useState(true); // Tracks loading state
+  const [error, setError] = useState(""); // Stores error messages
+  const [userRole, setUserRole] = useState<string | null>(null); // Current user's role
+  const [userInteractions, setUserInteractions] = useState<{[key: string]: UserInteraction}>({}); // Stores user's likes/dislikes
+  const { toast } = useToast(); // Toast notifications
 
+  // Initial data fetching on component mount
   useEffect(() => {
     fetchBlogs();
     const role = localStorage.getItem("role");
     setUserRole(role);
   }, []);
 
+  // Fetches all blogs from the API
   const fetchBlogs = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -110,6 +115,7 @@ const BlogsPage: React.FC = () => {
     }
   };
 
+  // Fetches user's previous interactions (likes/dislikes) with blogs
   const fetchUserInteractions = async (blogIds: string[]) => {
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -141,6 +147,7 @@ const BlogsPage: React.FC = () => {
     }
   };
 
+  // Handles like/dislike toggling for blogs
   const handleLikeToggle = async (blogId: string, isLike: boolean) => {
     try {
       const token = localStorage.getItem("token");
@@ -210,6 +217,8 @@ const BlogsPage: React.FC = () => {
       });
     }
   };
+
+  // Helper function to extract and format author information
   const getAuthorInfo = (blog: Blog) => {
     if (blog.professor) {
       return {
@@ -227,6 +236,7 @@ const BlogsPage: React.FC = () => {
     return { name: "Unknown", title: "", affiliation: "" };
   };
 
+  // Loading state UI
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-white">
@@ -242,6 +252,7 @@ const BlogsPage: React.FC = () => {
     );
   }
 
+  // Main render UI
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />

@@ -174,6 +174,7 @@ export const cleanupExpiredVerifications = async () => {
 export const sendWelcomeEmail = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
+    console.log(email);
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }

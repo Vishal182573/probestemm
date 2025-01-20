@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
       <footer className="bg-white text-[#472014] border-t-[1px] border-[#472014]">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-            {/* Contact Information */}
+            {/* Section 1: Contact Information */}
             <div className="space-y-4">
               <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">
                 Contact Us
@@ -61,10 +61,10 @@ export const Footer: React.FC = () => {
               </ul>
             </div>
 
-            {/* Quick Links and Pages Section */}
+            {/* Section 2: Quick Links and Pages */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-8">
-                {/* Quick Links Column */}
+                {/* Quick Links subsection */}
                 <div>
                   <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">
                     Quick Links
@@ -97,7 +97,7 @@ export const Footer: React.FC = () => {
                   </ul>
                 </div>
 
-                {/* Pages Column */}
+                {/* Pages subsection */}
                 <div>
                   <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">
                     Pages
@@ -156,7 +156,7 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Connect With Us */}
+            {/* Section 3: Social Media Connect */}
             <div className="space-y-4">
               <h3 className="font-caveat text-3xl font-bold text-[#eb5e17] mb-6">
                 Connect With Us
@@ -183,7 +183,7 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Logo Section */}
+            {/* Section 4: Logo and Tagline */}
             <div className="space-y-4 flex flex-col items-center lg:items-start">
               <Image
                 src={LOGO}
@@ -199,7 +199,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer Bottom */}
+          {/* Footer Bottom Section */}
           <div className="border-t border-[#c1502e]/20 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-center md:text-left">

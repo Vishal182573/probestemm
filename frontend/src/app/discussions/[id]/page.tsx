@@ -25,6 +25,7 @@ import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
 import FeaturesDemo from "@/components/shared/TextImageComponent";
 
+// Type definitions for Answer and Discussion objects
 interface Answer {
   id: string;
   content: string;
@@ -48,7 +49,15 @@ interface Discussion {
 }
 
 const QuestionDetailPage: React.FC = () => {
-  const router =  useRouter();
+  // State management hooks
+  // router: For navigation between pages
+  // id: Gets the discussion ID from URL parameters
+  // discussion: Stores the current discussion data
+  // newAnswer: Manages the new answer input field
+  // isLoading: Tracks loading state during API calls
+  // error: Stores any error messages
+  // userRole: Tracks the current user's role (professor/business)
+  const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const [discussion, setDiscussion] = useState<Discussion | null>(null);
   const [newAnswer, setNewAnswer] = useState("");
@@ -56,12 +65,15 @@ const QuestionDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
+  // Effect hook to fetch discussion data and user role on component mount or ID change
   useEffect(() => {
     fetchDiscussion();
     const role = localStorage.getItem("role");
     setUserRole(role);
   }, [id]);
 
+  // Fetches discussion details from the API
+  // Requires authentication token, redirects to login if not found
   const fetchDiscussion = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -79,6 +91,9 @@ const QuestionDetailPage: React.FC = () => {
     }
   };
 
+  // Handles posting new answers to discussions
+  // Includes validation for professor approval status
+  // Updates the discussion after successful post
   const handleAddAnswer = async () => {
     if (newAnswer.trim() === "") {
       return;
@@ -138,6 +153,8 @@ const QuestionDetailPage: React.FC = () => {
     }
   };
 
+  // Handles upvoting and downvoting of discussions
+  // Updates vote count after successful vote
   const handleVote = async (voteType: "UPVOTE" | "DOWNVOTE") => {
     try {
       await axios.post("/api/discussions/vote", {
@@ -152,6 +169,7 @@ const QuestionDetailPage: React.FC = () => {
     }
   };
 
+  // Loading state UI
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -163,12 +181,14 @@ const QuestionDetailPage: React.FC = () => {
       </div>
     );
   }
+  // Error state UI
   if (error)
     return (
       <div className="flex justify-center items-center h-screen text-red-500">
         {error}
       </div>
     );
+  // Not found state UI
   if (!discussion)
     return (
       <div className="flex justify-center items-center h-screen text-[#472014]">
@@ -176,21 +196,27 @@ const QuestionDetailPage: React.FC = () => {
       </div>
     );
 
+  // Main render UI structure:
   return (
     <div className="bg-white min-h-screen">
+      {/* Navigation bar component */}
       <NavbarWithBg />
+
+      {/* Banner section with discussion image and title */}
       <Banner
         imageSrc={DISCUSSION}
         altText="discuccions-id-img"
         title="Collaborative Problem-Solving"
         subtitle="Brainstorm solutions to real-world challenges"
       />
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="container mx-auto p-8"
       >
+        {/* Discussion title section with animation */}
         <motion.h1
           initial={{ y: -50 }}
           animate={{ y: 0 }}
@@ -199,6 +225,12 @@ const QuestionDetailPage: React.FC = () => {
           {discussion.title}
         </motion.h1>
 
+        {/* Discussion details card
+            Includes: 
+            - Voting buttons
+            - Description
+            - Author info
+            - Category tags */}
         <Card className="mb-8 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#eb5e17]">
           <CardContent className="p-6">
             <div className="flex items-start space-x-4">
@@ -244,6 +276,10 @@ const QuestionDetailPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Answers section
+            - Shows total answer count
+            - Lists all answers with author info
+            - Includes profile links for answerers */}
         <motion.h2
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -253,6 +289,7 @@ const QuestionDetailPage: React.FC = () => {
           {discussion.answers.length} Answers
         </motion.h2>
 
+        {/* Answer list with animations */}
         {discussion.answers.map((answer, index) => (
           <motion.div
             key={answer.id}
@@ -306,6 +343,11 @@ const QuestionDetailPage: React.FC = () => {
           </motion.div>
         ))}
 
+        {/* Answer input section
+            Only visible to professors and business users
+            Includes:
+            - Text area for new answer
+            - Submit button */}
         {(userRole === "professor" || userRole === "business") && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -332,6 +374,8 @@ const QuestionDetailPage: React.FC = () => {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Additional components */}
       <FeaturesDemo imagePosition="right" />
       <ContactForm />
       <Footer />

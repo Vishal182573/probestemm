@@ -26,6 +26,7 @@ import Banner from "@/components/shared/Banner";
 // import ContactForm from "@/components/shared/Feedback";
 // import FeaturesDemo from "@/components/shared/TextImageComponent";
 
+// Define TypeScript interfaces for data structures
 interface Comment {
   id: string;
   content: string;
@@ -77,7 +78,17 @@ interface RelatedBlog {
   blogImage: string;
 }
 
+// Main BlogPostPage Component
 const BlogPostPage = () => {
+  // State management using React hooks
+  // id: URL parameter for blog post identification
+  // blogPost: Stores the current blog post data
+  // relatedBlogs: Stores related blog posts
+  // newComment: Manages comment input field
+  // loading: Tracks main content loading state
+  // commentLoading: Tracks comment submission loading state
+  // error: Stores error messages
+  // userInteraction: Tracks user's like/dislike status
   const { id } = useParams<{ id: string }>();
   const [blogPost, setBlogPost] = useState<BlogPost | null>(null);
   const [relatedBlogs, setRelatedBlogs] = useState<RelatedBlog[]>([]);
@@ -91,6 +102,7 @@ const BlogPostPage = () => {
   const { toast } = useToast();
   const router = useRouter();
 
+  // Effect hook to fetch initial data when component mounts or ID changes
   useEffect(() => {
     if (id) {
       fetchBlogPost();
@@ -99,6 +111,7 @@ const BlogPostPage = () => {
     }
   }, [id]);
 
+  // Function to fetch the main blog post data
   const fetchBlogPost = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -118,6 +131,7 @@ const BlogPostPage = () => {
     }
   };
 
+  // Function to fetch user's previous interaction (like/dislike) with the blog
   const fetchUserInteraction = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -135,6 +149,7 @@ const BlogPostPage = () => {
     }
   };
 
+  // Function to fetch related blog posts
   const fetchRelatedBlogs = async () => {
     try {
       const response = await axios.get(`${API_URL}/blogs/${id}/related`);
@@ -144,6 +159,7 @@ const BlogPostPage = () => {
     }
   };
 
+  // Handler for like/dislike functionality
   const handleLikeDislike = async (action: "like" | "dislike") => {
     try {
       const token = localStorage.getItem("token");
@@ -179,6 +195,7 @@ const BlogPostPage = () => {
     }
   };
 
+  // Handler for submitting new comments
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -244,6 +261,7 @@ const BlogPostPage = () => {
   //   }
   // };
 
+  // Loading state UI
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#eb5e17] to-[#686256] flex flex-col">
@@ -257,6 +275,7 @@ const BlogPostPage = () => {
     );
   }
 
+  // Error state UI when blog post is not found
   if (!blogPost) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#eb5e17] to-[#686256] text-[#472014] flex flex-col items-center justify-center">
@@ -268,9 +287,13 @@ const BlogPostPage = () => {
     );
   }
 
+  // Main component render
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* Navigation bar component */}
       <NavbarWithBg />
+
+      {/* Banner section with blog header image */}
       <Banner
         imageSrc={BLOG}
         altText="webinar-banner-img"
@@ -280,14 +303,15 @@ const BlogPostPage = () => {
       
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Main Content Section */}
+          {/* Main content section - Takes up 2/3 of the width on large screens */}
           <div className="w-full lg:w-2/3">
+            {/* Blog post article with animation */}
             <motion.article
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white/90 backdrop-blur rounded-xl shadow-xl p-4 sm:p-6 lg:p-8 mb-6 lg:mb-8 border-2 border-[#472014]/20 hover:border-[#472014] transition-all duration-300"
             >
-              {/* Blog Header */}
+              {/* Blog header section with title and author info */}
               <div className="space-y-4">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-caveat font-bold text-[#472014]">
                   {blogPost?.title}
@@ -304,7 +328,7 @@ const BlogPostPage = () => {
                 </div>
               </div>
 
-              {/* Blog Content */}
+              {/* Blog content section with text and image */}
               <div className="my-6 space-y-6">
                 <p className="text-base sm:text-lg text-[#472014] leading-relaxed">
                   {blogPost?.content}
@@ -321,7 +345,7 @@ const BlogPostPage = () => {
                 )}
               </div>
 
-              {/* Interaction Buttons */}
+              {/* User interaction buttons (like, dislike, share) */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 <Button
                   variant="default"
@@ -356,7 +380,7 @@ const BlogPostPage = () => {
               </div>
             </motion.article>
 
-            {/* Comments Section */}
+            {/* Comments section with animation */}
             <motion.section
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -367,7 +391,7 @@ const BlogPostPage = () => {
                 Comments
               </h2>
               
-              {/* Comment Form */}
+              {/* Comment form for new comments */}
               <form onSubmit={handleCommentSubmit} className="flex gap-3 mb-6">
                 <Input
                   type="text"
@@ -389,7 +413,7 @@ const BlogPostPage = () => {
                 </Button>
               </form>
 
-              {/* Comments List */}
+              {/* List of existing comments */}
               <ul className="space-y-6">
                 {blogPost?.comments.map((comment) => (
                   <li
@@ -444,8 +468,9 @@ const BlogPostPage = () => {
             </motion.section>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar section - Takes up 1/3 of the width on large screens */}
           <div className="w-full lg:w-1/3">
+            {/* Related blogs sidebar with animation */}
             <motion.aside
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}

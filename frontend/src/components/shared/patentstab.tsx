@@ -15,29 +15,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Plus, Loader2 } from "lucide-react";
 import axios from "axios";
 
+// Define the props interface for the PatentsTab component
 interface PatentsTabProps {
-  isLoggedInUser: boolean;
-  patents: Array<{
+  isLoggedInUser: boolean; // Boolean to check if current user is logged in
+  patents: Array<{        // Array of patent objects
     id: string;
     title: string;
     description: string;
     imageUrl: string[];
     createdAt: string;
   }>;
-  API_URL: string;
+  API_URL: string;       // API endpoint URL
 }
 
+// Main PatentsTab component definition
 const PatentsTab: React.FC<PatentsTabProps> = ({
   isLoggedInUser,
   patents,
   API_URL,
 }) => {
-  const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);
-  const [isCreatingPatent, setIsCreatingPatent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  // State management for the component
+  const [isPatentDialogOpen, setIsPatentDialogOpen] = useState(false);  // Controls patent creation dialog visibility
+  const [isCreatingPatent, setIsCreatingPatent] = useState(false);      // Tracks patent creation status
+  const [error, setError] = useState<string | null>(null);              // Stores error messages
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);       // Stores selected image files
+  const [imagePreview, setImagePreview] = useState<string[]>([]);       // Stores preview URLs for selected images
 
+  // Handler for image file selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
@@ -81,6 +85,7 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
     setImagePreview(previews);
   };
 
+  // Handler for patent creation form submission
   const handleCreatePatent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsCreatingPatent(true);
@@ -147,6 +152,7 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
     }
   };
 
+  // Utility function to determine grid layout based on number of images
   const getImageGridLayout = (imageCount: number) => {
     switch (imageCount) {
       case 1:
@@ -162,6 +168,7 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
     }
   };
 
+  // Utility function to determine image aspect ratio based on count and position
   const getImageAspectRatio = (imageCount: number, index: number) => {
     if (imageCount === 1) return "aspect-video w-full";
     if (imageCount === 2) return "aspect-square w-full";
@@ -171,8 +178,10 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
     return "aspect-square w-full";
   };
 
+  // Component render section
   return (
     <Card className="border-2 border-[#c1502e]/20 bg-white shadow-md">
+      {/* Header section with title and create button */}
       <CardHeader className="border-b border-[#c1502e]/10">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-2xl font-bold text-[#472014]">
@@ -280,9 +289,14 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
           )}
         </div>
       </CardHeader>
+
+      {/* Main content section */}
       <CardContent className="p-6">
+        {/* Conditional rendering based on patents availability */}
         {patents.length > 0 ? (
+          // Grid layout for displaying patents
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Map through patents array to display individual patent cards */}
             {patents.map((patent) => (
               <Card key={patent.id} className="overflow-hidden">
                 <div
@@ -322,6 +336,7 @@ const PatentsTab: React.FC<PatentsTabProps> = ({
             ))}
           </div>
         ) : (
+          // Display message when no patents are available
           <p className="text-center py-8 text-gray-500">
             No patents available.
           </p>

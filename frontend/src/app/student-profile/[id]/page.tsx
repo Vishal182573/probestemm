@@ -29,7 +29,11 @@ import { PROFESSORPAGE } from "../../../../public";
 import StudentProposalForm from "@/components/shared/studentProposal";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
+
+// Interface definitions for type safety
 interface Student {
+  // Defines the structure of a student's profile data
+  // Including personal info, research highlights, education, achievements, etc.
   id: string;
   fullName: string;
   email: string;
@@ -68,6 +72,8 @@ interface Student {
 }
 
 type Notification = {
+  // Defines the structure of notification objects
+  // Including type, content, read status, and redirection info
   id: string;
   type:
     | "COMMENT"
@@ -84,6 +90,8 @@ type Notification = {
 };
 
 interface AppliedApplicant {
+  // Defines the structure of applicants who have applied to projects
+  // Including their basic info and application details
   id: string;
   businessId:string;
   professorId:string;
@@ -94,22 +102,28 @@ interface AppliedApplicant {
 }
 
 interface ApplicationsResponse {
+  // Defines the structure of the API response for applications
+  // Grouping applications by type (professor, student, business)
   professorApplications: AppliedApplicant[];
   studentApplications: AppliedApplicant[];
   businessApplications: AppliedApplicant[];
 }
 
 const StudentProfilePage: React.FC = () => {
-  const { id } = useParams();
-  const router = useRouter();
-  const [student, setStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  // State management using React hooks
+  const { id } = useParams(); // Get student ID from URL parameters
+  const router = useRouter(); // Next.js router for navigation
+  const [student, setStudent] = useState<Student | null>(null); // Store student data
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error handling
+  const [notifications, setNotifications] = useState<Notification[]>([]); // Store notifications
+  const [unreadCount, setUnreadCount] = useState<number>(0); // Track unread notifications
 
+  // useEffect hook for initial data fetching
   useEffect(() => {
     const fetchData = async () => {
+      // Fetches both student data and notifications on component mount
+      // Handles authentication and API calls
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -143,17 +157,17 @@ const StudentProfilePage: React.FC = () => {
     fetchData();
   }, [id, router]);
 
+  // State and functions for handling project applicants
   const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
     [projectId: string]: AppliedApplicant[];
   }>({});
-
-  // State for loading applicants
   const [isLoadingApplicants, setIsLoadingApplicants] = useState<{
     [projectId: string]: boolean;
   }>({});
 
   // Function to fetch applicants for a specific project
   const fetchAppliedApplicants = async (projectId: string) => {
+    // Handles loading state and API call for fetching project applicants
     setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: true }));
     try {
       const token = localStorage.getItem("token");
@@ -180,6 +194,7 @@ const StudentProfilePage: React.FC = () => {
     }
   };
 
+  // Function to handle contact button click
   const handleContact = async ()=>{
     try {
       const token = localStorage.getItem("token");
@@ -205,8 +220,9 @@ const StudentProfilePage: React.FC = () => {
     }
   }
 
-  // Toggle applicants display
+  // Function to toggle applicants display
   const toggleApplicants = (projectId: string) => {
+    // Toggles visibility of applicants list for a project
     if (appliedApplicantsMap[projectId]) {
       setAppliedApplicantsMap((prevMap) => {
         const newMap = { ...prevMap };
@@ -218,7 +234,9 @@ const StudentProfilePage: React.FC = () => {
     }
   };
 
+  // Function to mark notifications as read
   const handleMarkAsRead = async (notificationId: string) => {
+    // Updates notification read status in backend and local state
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
@@ -241,9 +259,11 @@ const StudentProfilePage: React.FC = () => {
     }
   };
 
+  // Helper variables
   const userId = localStorage.getItem("userId");
   const isOwnProfile = student?.id === userId;
 
+  // Loading and error state handlers
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -265,7 +285,9 @@ const StudentProfilePage: React.FC = () => {
     );
   }
 
+  // Animation configurations
   const staggerChildren = {
+    // Defines animation properties for staggered children elements
     initial: { opacity: 0 },
     animate: {
       opacity: 1,
@@ -275,8 +297,9 @@ const StudentProfilePage: React.FC = () => {
     },
   };
 
-
+  // Tab content rendering functions
   const renderNotificationsTab = () => (
+    // Renders notifications tab content with animations
     <TabsContent value="notifications">
       {isOwnProfile && (
         <motion.div
@@ -345,6 +368,7 @@ const StudentProfilePage: React.FC = () => {
   );
 
   const renderEnrolledProjectsTab = () => (
+    // Renders enrolled projects tab content
     <TabsContent value="enrolled-projects">
       <section className="py-8">
         <div className="container mx-auto px-4">
@@ -358,6 +382,7 @@ const StudentProfilePage: React.FC = () => {
   );
 
   const renderProposalTab = () => (
+    // Renders proposal submission tab content
     <TabsContent value="proposal">
       {isOwnProfile && (
         <motion.div
@@ -372,6 +397,7 @@ const StudentProfilePage: React.FC = () => {
   );
 
   const renderProjectsTab = () => (
+    // Renders projects tab content with applicants management
     <TabsContent value="projects">
       {isOwnProfile && (
         <Card className="border border-[#eb5e17] bg-white">
@@ -481,7 +507,10 @@ const StudentProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  // Main component render
   return (
+    // Main layout structure with navigation, profile sections, and tabs
+    // Includes responsive design and animations
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
       {isOwnProfile && <GlobalChatBox/>

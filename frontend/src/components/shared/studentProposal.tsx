@@ -6,37 +6,47 @@ import axios from "axios";
 import { API_URL } from "@/constants";
 import { toast } from "react-hot-toast";
 
+// Define TypeScript interface for component props
 interface StudentProposalFormProps {
   studentId: string;
 }
 
+// Define TypeScript interface for form data structure
 interface FormDataType {
   topic: string;
   techDescription: string;
   content: string;
 }
 
+// Main component definition with TypeScript typing
 const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
   studentId,
 }) => {
+  // State management using React hooks
+  // formData: stores the form input values
   const [formData, setFormData] = useState<FormDataType>({
     topic: "",
     content: "",
     techDescription: "",
   });
+  // isSubmitting: tracks form submission status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  // isSubmitted: tracks if form has been successfully submitted
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
+  // Handle form submission
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Get authentication token from localStorage
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No authentication token found");
       }
 
+      // Make API call to submit the proposal
       await axios.post(
         `${API_URL}/project/student-proposal`,
         {
@@ -48,7 +58,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         }
       );
 
-      // Reset form and show submitted state
+      // Reset form and show success message
       setFormData({ topic: "", content: "", techDescription: "" });
       setIsSubmitted(true);
       toast.success("Proposal submitted successfully!");
@@ -60,6 +70,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     }
   };
 
+  // Handle input changes for all form fields
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -70,12 +81,15 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     }));
   };
 
+  // Reset the form to allow submitting another proposal
   const handleReset = () => {
     setIsSubmitted(false);
   };
 
+  // Conditional rendering for success state
   if (isSubmitted) {
     return (
+      // Success card showing submission confirmation
       <Card className="border-2 border-green-500/20 shadow-lg bg-white">
         <CardHeader>
           <CardTitle className="flex items-center text-2xl font-extrabold text-green-600 font-caveat">
@@ -100,7 +114,9 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     );
   }
 
+  // Main form render
   return (
+    // Card container for the proposal form
     <Card className="border-2 border-[#eb5e17]/20 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
       <CardHeader>
         <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
@@ -109,7 +125,9 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Form with three main input fields */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Dropdown for selecting proposal type */}
           <div>
             <label
               htmlFor="content"
@@ -134,6 +152,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             </select>
           </div>
 
+          {/* Input field for proposal topic */}
           <div>
             <label
               htmlFor="topic"
@@ -152,6 +171,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             />
           </div>
 
+          {/* Textarea for technical description */}
           <div>
             <label
               htmlFor="techDescription"
@@ -169,6 +189,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             />
           </div>
 
+          {/* Submit button with loading state */}
           <Button
             type="submit"
             disabled={isSubmitting}

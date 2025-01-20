@@ -17,23 +17,29 @@ import {
 } from "@/components/ui/select";
 import { API_URL } from "@/constants";
 
+// Define the possible collaboration types
 type CollaborationType = "students" | "professors" | "";
 
+// Main component that handles project creation
+// Takes businessId as a prop to associate the project with a business
 const CreateProjectForm = ({ businessId }: { businessId: string }) => {
-  const [collaborationType, setCollaborationType] =
-    useState<CollaborationType>("");
-  const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState("");
+  // State management for form
+  const [collaborationType, setCollaborationType] = useState<CollaborationType>("");
+  const [isCreatingProject, setIsCreatingProject] = useState(false); // Controls loading state
+  const [isSuccess, setIsSuccess] = useState(false); // Controls success message display
+  const [error, setError] = useState(""); // Stores error messages
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsCreatingProject(true);
     setError("");
 
+    // Extract form data and create payload
     const formData = new FormData(e.currentTarget);
     const isFunded = formData.get("isFunded");
 
+    // Construct the data object to be sent to the API
     const data = {
       businessId,
       content: formData.get("content"),
@@ -43,19 +49,22 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
         startDate: formData.get("startDate"),
         endDate: formData.get("endDate"),
       },
-      isFunded:isFunded==="true"?true:false,
+      isFunded: isFunded === "true" ? true : false,
       desirable: formData.get("desirable"),
+      // Split tags string into array and trim whitespace
       tags: (formData.get("tags") as string)
         .split(",")
         .map((tag) => tag.trim()),
     };
 
     try {
+      // Determine the API endpoint based on collaboration type
       const endpoint =
         collaborationType === "students"
           ? `${API_URL}/project/internship`
           : `${API_URL}/project/rd-project`;
 
+      // Make API request to create project
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,8 +73,9 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
 
       //   if (!response.ok) throw new Error('Failed to create project');
 
+      // Handle successful project creation
       setIsSuccess(true);
-      // Reset form
+      // Reset form and collaboration type
       e.currentTarget.reset();
       setCollaborationType("");
     } catch (error) {
@@ -75,6 +85,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
     }
   };
 
+  // Render success message if project creation was successful
   if (isSuccess) {
     return (
       <Card className="bg-white text-black border border-gray-200">
@@ -101,18 +112,23 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
     );
   }
 
+  // Main form render
   return (
     <Card className="bg-white text-black border border-gray-200">
       <CardHeader>
         <CardTitle className="text-2xl font-semibold">Create Project</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Display error message if there is one */}
         {error && (
           <Alert variant="destructive" className="mb-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+        
+        {/* Project creation form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Collaboration Type Selection */}
           <div className="space-y-2">
             <Label>Collaboration Type</Label>
             <Select
@@ -133,8 +149,10 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
             </Select>
           </div>
 
+          {/* Conditional form fields - only shown after collaboration type is selected */}
           {collaborationType && (
             <>
+              {/* Project Description Field */}
               <div className="space-y-2">
                 <Label>Description</Label>
                 <Textarea
@@ -145,6 +163,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
+              {/* Project Topic Field */}
               <div className="space-y-2">
                 <Label>Topic</Label>
                 <Input
@@ -155,6 +174,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
+              {/* Tags Input Field */}
               <div className="space-y-2">
                 <Label>Tags (comma separated)</Label>
                 <Input
@@ -164,6 +184,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
+              {/* Eligibility Criteria Field */}
               <div className="space-y-2">
                 <Label>Eligibility Criteria</Label>
                 <Input
@@ -174,6 +195,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
+              {/* Project Duration Fields */}
               <div className="space-y-2">
                 <Label>Start Date</Label>
                 <Input
@@ -194,6 +216,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
+              {/* Funding Status Selection */}
               <div>
                 <Label>Is Funded</Label>
                 <Select name="isFunded" required>
@@ -207,6 +230,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 </Select>
               </div>
 
+              {/* Desirable Skills Field */}
               <div className="space-y-2">
                 <Label>Desirable Skills</Label>
                 <Input
@@ -218,6 +242,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
             </>
           )}
 
+          {/* Submit Button with Loading State */}
           <Button
             type="submit"
             disabled={isCreatingProject}

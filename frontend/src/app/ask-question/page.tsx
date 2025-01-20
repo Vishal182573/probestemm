@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 
+// Object containing category-subcategory mapping for scientific disciplines
+// Each key represents a main category with an array of related subcategories
 const categories: { [key: string]: string[] } = {
   Physics: [
     "Classical Mechanics",
@@ -104,30 +106,39 @@ const categories: { [key: string]: string[] } = {
   ],
 };
 
+// Main component for the Ask Question page
 const AskQuestion: React.FC = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [subcategory, setSubcategory] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // State management using React hooks
+  // Tracks form input values and submission status
+  const [title, setTitle] = useState("");          // Question title
+  const [description, setDescription] = useState(""); // Question description
+  const [category, setCategory] = useState("");    // Selected main category
+  const [subcategory, setSubcategory] = useState(""); // Selected subcategory
+  const [isSubmitting, setIsSubmitting] = useState(false); // Form submission status
+  
+  // Hooks for navigation and toast notifications
   const router = useRouter();
   const { toast } = useToast();
 
+  // Form submission handler
+  // Sends question data to the backend API
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Retrieve authentication token and user ID from localStorage
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No authentication token found");
       }
 
-      const studentId = localStorage.getItem("userId"); // Assuming you store the user's ID in localStorage
+      const studentId = localStorage.getItem("userId");
       if (!studentId) {
         throw new Error("No student ID found");
       }
 
+      // Make API request to create new discussion/question
       await axios.post(
         `${API_URL}/discussion/create`,
         {
@@ -142,6 +153,7 @@ const AskQuestion: React.FC = () => {
         }
       );
 
+      // Show success message and redirect to home page
       toast({
         title: "Success",
         description: "Your question has been submitted successfully.",
@@ -150,6 +162,7 @@ const AskQuestion: React.FC = () => {
 
       router.push("/");
     } catch (error) {
+      // Handle and display error if submission fails
       console.error("Error submitting question:", error);
       toast({
         title: "Error",
@@ -163,7 +176,10 @@ const AskQuestion: React.FC = () => {
 
   return (
     <>
+      {/* Navigation bar component */}
       <NavbarWithBg/>
+      
+      {/* Main container with animation */}
       <div className="min-h-screen bg-white">
         <motion.div
           initial={{ opacity: 0 }}
@@ -171,6 +187,7 @@ const AskQuestion: React.FC = () => {
           exit={{ opacity: 0 }}
           className="container mx-auto p-4 sm:p-6 md:p-8"
         >
+          {/* Animated page title */}
           <motion.h1
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -179,7 +196,9 @@ const AskQuestion: React.FC = () => {
             Ask a Question
           </motion.h1>
 
+          {/* Question submission form */}
           <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto text-black">
+            {/* Title input field */}
             <div>
               <label
                 htmlFor="title"
@@ -197,6 +216,7 @@ const AskQuestion: React.FC = () => {
               />
             </div>
 
+            {/* Description textarea field */}
             <div>
               <label
                 htmlFor="description"
@@ -214,7 +234,9 @@ const AskQuestion: React.FC = () => {
               />
             </div>
 
+            {/* Category and Subcategory selection container */}
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              {/* Category dropdown */}
               <div className="flex-1">
                 <label
                   htmlFor="category"
@@ -243,6 +265,7 @@ const AskQuestion: React.FC = () => {
               </Select>
             </div>
 
+            {/* Subcategory dropdown - enabled only when category is selected */}
             <div className="flex-1">
                 <label
                   htmlFor="subcategory"
@@ -271,6 +294,7 @@ const AskQuestion: React.FC = () => {
             </div>
           </div>
 
+           {/* Submit button - shows loading state during submission */}
            <Button
               type="submit"
               className="w-full bg-[#c1502e] hover:bg-[#472014] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
@@ -281,6 +305,8 @@ const AskQuestion: React.FC = () => {
           </form>
         </motion.div>
       </div>
+      
+      {/* Footer component */}
       <Footer />
     </>
   );

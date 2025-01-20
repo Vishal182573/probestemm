@@ -38,27 +38,32 @@ interface AnimatedSectionProps {
 }
 
 const HomePage = () => {
+  // Main layout component that structures the entire homepage
+  // Uses flex column layout with minimum full height and white background
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
       <main className="flex-grow">
+        {/* Hero section - Main landing area with animated background */}
         <HeroSection />
+        {/* Features section - Displays cards for Students, Academia, and Industry */}
         <FeaturesSection />
-        {/* <WebinarSliderSection /> */}
+        {/* Webinar section with animated heading and features demo */}
         <section className="py-10 md:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-      <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-5xl font-bold text-center mb-6 text-gray-800"
-        >
-          Webinars
-        </motion.h2>
-        {/* <WebinarSlider /> */}
-        <FeaturesDemo imagePosition="right" />
-      </div>
-    </section>
+          <div className="max-w-7xl mx-auto px-4">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl font-bold text-center mb-6 text-gray-800"
+            >
+              Webinars
+            </motion.h2>
+            {/* Features demo component with right-aligned image */}
+            <FeaturesDemo imagePosition="right" />
+          </div>
+        </section>
+        {/* Additional sections for different content types */}
         <FeaturedQuestionsSection />
         <TestimonialsSection />
         <FAQSection />
@@ -69,11 +74,14 @@ const HomePage = () => {
   );
 };
 
+// Array of image paths for the hero section background carousel
 const images = [ "/c5.png","/c2.png","/c3.jpg","/c4.png","/c1.png","/c6.png"];
 
 const HeroSection = () => {
+  // State to manage current image index in the carousel
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Effect to handle automatic image rotation every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
@@ -83,8 +91,10 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Hero section with animated background, overlay, and call-to-action buttons
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      {/* Animated background image carousel */}
       <AnimatePresence initial={false}>
         <motion.div
           key={currentImageIndex}
@@ -96,7 +106,9 @@ const HeroSection = () => {
           style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
         />
       </AnimatePresence>
+      {/* Semi-transparent overlay */}
       <div className="absolute inset-0  bg-[#eb5e17] opacity-60 z-10" />
+      {/* Content container with animated elements */}
       <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -50 }}
@@ -141,6 +153,7 @@ const HeroSection = () => {
           </Link>
         </motion.div>
       </div>
+      {/* Animated scroll indicator */}
       <motion.div
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
         animate={{ y: [0, 10, 0] }}
@@ -152,16 +165,19 @@ const HeroSection = () => {
   );
 };
 
+// Reusable component for animated sections with direction control
 const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   children,
   direction = "left",
 }) => {
+  // Animation controls and intersection observer for scroll-based animations
   const controls = useAnimation();
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
+  // Trigger animation when section comes into view
   useEffect(() => {
     if (inView) {
       controls.start("visible");
@@ -183,8 +199,12 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
     </motion.div>
   );
 };
+
 const FeaturesSection = () => {
+  // Configuration for the three main feature cards
   const features = [
+    // Array of objects containing information for Students, Academia, and Industry cards
+    // Each object includes icon, title, description, benefits, link, and background image
     {
       icon: <UserCircle className="h-16 w-16 text-[#472014]" />,
       title: "Students",
@@ -225,8 +245,10 @@ const FeaturesSection = () => {
     },
   ];
 
+  // Renders the features section with animated cards
   return (
     <section className="py-24 px-4">
+      {/* Animated section title */}
       <motion.h2
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -235,7 +257,10 @@ const FeaturesSection = () => {
       >
         Why Choose Probe STEM?
       </motion.h2>
+      {/* Grid layout for feature cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
+        {/* Map through features array to create animated cards */}
+        {/* Each card includes background image, icon, title, benefits list, and CTA button */}
         {features.map((feature, index) => (
           <motion.div
             key={index}

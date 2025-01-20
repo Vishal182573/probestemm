@@ -19,7 +19,14 @@ import { Socket, io } from 'socket.io-client';
 import { SOCKET_URL } from '@/constants';
 import { Badge } from '../ui/badge';
 
+// Interface definitions for type safety
 interface User {
+  // Defines the structure of a user object with optional fields
+  // id: Unique identifier for the user
+  // fullName, companyName: Optional user details
+  // email: Required email field
+  // imageUrl, photoUrl, profileImageUrl: Optional image URLs
+  // role: Optional user role
   id: string;
   fullName?: string;
   companyName?: string;
@@ -31,6 +38,11 @@ interface User {
 }
 
 interface ChatRoom {
+  // Defines the structure of a chat room between two users
+  // Contains IDs for both users, their types, timestamps
+  // otherUser: Complete user object for the other participant
+  // messages: Optional array of chat messages
+  // unreadCount: Number of unread messages
   id: string;
   userOneId: string;
   userTwoId: string;
@@ -45,6 +57,9 @@ interface ChatRoom {
 }
 
 interface ChatMessage {
+  // Defines the structure of individual chat messages
+  // Contains message content, media details, sender info
+  // Tracks read status and timestamps
   id: string;
   content: string;
   mediaUrls: string[];
@@ -58,28 +73,42 @@ interface ChatMessage {
 }
 
 const GlobalChatBox: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [unreadCounts, setUnreadCounts] = useState<number>(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const messageEndRef = useRef<HTMLDivElement>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({});
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  // State Management
+  // Core UI States
+  const [isOpen, setIsOpen] = useState(false);          // Controls main chat dialog visibility
+  const [message, setMessage] = useState('');           // Current message input
+  const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);  // Currently selected chat
+  const [searchQuery, setSearchQuery] = useState('');   // Search input for filtering chats
+  
+  // Data States
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]); // List of all chat rooms
+  const [unreadCounts, setUnreadCounts] = useState<number>(0); // Total unread messages
+  const [chatRoomUnreadCounts, setChatRoomUnreadCounts] = useState<{[key: string]: number}>({}); // Unread counts per room
+  
+  // UI Control States
+  const [loading, setLoading] = useState(false);        // Loading state for operations
+  const [sending, setSending] = useState(false);        // Message sending state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Mobile sidebar visibility
+  const [isClient, setIsClient] = useState(false);      // Client-side rendering check
+  
+  // Real-time Features States
+  const [socket, setSocket] = useState<Socket | null>(null);  // WebSocket connection
+  const [typingUsers, setTypingUsers] = useState<{[key: string]: boolean}>({}); // Users currently typing
+  const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({}); // Online status tracking
+  
+  // Refs
+  const messageEndRef = useRef<HTMLDivElement>(null);   // For auto-scrolling to latest message
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();    // For debouncing typing indicator
+
+  // User Context
   const [currentUser, setCurrentUser] = useState<{ id: string | null; type: string | null }>({ 
     id: null, 
     type: null 
   });
-  const [isClient, setIsClient] = useState(false);
-  const [chatRoomUnreadCounts, setChatRoomUnreadCounts] = useState<{[key: string]: number}>({});
-  const [onlineUsers, setOnlineUsers] = useState<{[key: string]: boolean}>({});
 
+  // Effects for Data Fetching and Real-time Updates
   useEffect(() => {
+    // Fetches chat rooms and sets up polling for unread counts
     if (currentUser.id) {
       fetchChatRooms();
       // Set up intervals for both total and individual unread counts
@@ -243,6 +272,7 @@ const GlobalChatBox: React.FC = () => {
   }, [currentUser.id, currentUser.type]);
 
   const fetchChatRooms = async () => {
+    // Fetches all chat rooms for the current user
     if (!currentUser.id) return;
     
     try {
@@ -302,6 +332,7 @@ const GlobalChatBox: React.FC = () => {
   };
 
   const sendNewMessage = async () => {
+    // Handles message sending through both WebSocket and REST API
     if (!message.trim() || !selectedChat || sending || !socket || !currentUser.id) {
       console.log('Cannot send message:', { 
         hasMessage: !!message.trim(), 
@@ -345,6 +376,7 @@ const GlobalChatBox: React.FC = () => {
   };
 
   const handleTyping = useCallback((typing: boolean) => {
+    // Manages typing indicator emission through WebSocket
     if (!socket || !selectedChat || !currentUser.id) return;
 
     socket.emit('typing', {
@@ -381,6 +413,7 @@ const GlobalChatBox: React.FC = () => {
   };
 
   const handleChatSelect = async (chat: ChatRoom) => {
+    // Manages chat selection and message loading
     setSelectedChat(chat);
     setIsSidebarOpen(window.innerWidth > 768);
     const messages = await fetchChatMessages(chat.id);
@@ -396,6 +429,7 @@ const GlobalChatBox: React.FC = () => {
   );
 
   const MessageView = ({ msg }: { msg: ChatMessage }) => {
+    // Renders individual message bubbles with read receipts
     const isCurrentUser = msg.senderId === currentUser.id;
     const messageTime = new Date(msg.createdAt).toLocaleTimeString([], {
       hour: '2-digit',
@@ -469,6 +503,7 @@ const GlobalChatBox: React.FC = () => {
   };
 
   const TypingIndicator: React.FC = () => {
+    // Renders typing indicator animation
     const typingCount = Object.values(typingUsers).filter(Boolean).length;
     if (!typingCount) return null;
 

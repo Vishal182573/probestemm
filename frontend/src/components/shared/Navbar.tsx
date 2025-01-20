@@ -6,11 +6,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT, LOGOWHITE } from "../../../public";
 
+// Main Navbar component definition
 export const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  // State management for UI controls and user data
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Controls mobile menu visibility
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Tracks user authentication status
+  const [isScrolled, setIsScrolled] = useState(false); // Tracks page scroll for navbar styling
+  const [showDropdown, setShowDropdown] = useState(false); // Controls profile dropdown visibility
   const [user, setUser] = useState<{
     id?: string;
     fullName?: string;
@@ -23,9 +25,11 @@ export const Navbar: React.FC = () => {
     companyName?:string;
   } | null>(null);
 
+  // Toggle handlers for menu and dropdown
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
+  // Effect hook to check and set user authentication status on component mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userString = localStorage.getItem("user");
@@ -38,6 +42,7 @@ export const Navbar: React.FC = () => {
     }
   }, []);
 
+  // Effect hook to handle navbar style changes on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -46,6 +51,7 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Effect hook to handle clicking outside of profile dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const dropdown = document.getElementById('profile-dropdown');
@@ -63,11 +69,13 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Logout handler to clear local storage and refresh page
   const handleLogout = () => {
     localStorage.clear();
     window.location.reload();
   };
 
+  // Helper function to determine profile image source based on user role
   const getProfileImageSrc = () => {
     if (!user || !user.role) return null;
 
@@ -83,11 +91,13 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  // Dynamic styling variables based on scroll position
   const linkTextColor = isScrolled ? "text-[#472014]" : "text-white";
   const bgColor = isScrolled ? "bg-white shadow-md" : "";
   const dropdownBgColor = isScrolled ? "bg-white" : "bg-[#472014]";
   const dropdownTextColor = isScrolled ? "text-[#472014]" : "text-white";
 
+  // Profile Button component for logged-in users
   const ProfileButton = () => (
     <Button
       id="profile-button"
@@ -112,6 +122,7 @@ export const Navbar: React.FC = () => {
     </Button>
   );
 
+  // Profile Dropdown menu component
   const ProfileDropdown = () => (
     <div
       id="profile-dropdown"
@@ -143,6 +154,7 @@ export const Navbar: React.FC = () => {
     </div>
   );
 
+  // Main render method for Navbar
   return (
     <nav className={`${bgColor} fixed top-0 z-50 w-full transition-colors duration-300`}>
       <div className="container mx-auto px-4">
@@ -285,6 +297,7 @@ export const Navbar: React.FC = () => {
   );
 };
 
+// NavLink component for desktop navigation items
 const NavLink: React.FC<{
   to: string;
   children: React.ReactNode;
@@ -300,6 +313,7 @@ const NavLink: React.FC<{
   </Link>
 );
 
+// MobileNavLink component for mobile navigation items
 const MobileNavLink: React.FC<{
   to: string;
   children: React.ReactNode;

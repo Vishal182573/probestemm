@@ -59,6 +59,7 @@ import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import { Description } from "@radix-ui/react-dialog";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
 
+// Interface definitions for various data types used throughout the component
 interface AppliedApplicant {
   id:string;
   professorId: string;
@@ -188,6 +189,7 @@ interface ResearchInterestsProps {
   };
 }
 
+// Categories object defining the hierarchical structure of academic fields and their subcategories
 const categories = {
   "Physics": [
     "Classical Mechanics",
@@ -270,10 +272,12 @@ const categories = {
 } as const;
 
 
+// Main component for displaying a professor's profile page
 const ProfessorProfilePage: React.FC = () => {
-  const { id } = useParams();
-  const [professor, setProfessor] = useState<Professor | null>(null);
-  const [webinars, setWebinars] = useState<Webinar[]>([]);
+  // State management using React hooks
+  const { id } = useParams(); // Get professor ID from URL parameters
+  const [professor, setProfessor] = useState<Professor | null>(null); // Store professor data
+  const [webinars, setWebinars] = useState<Webinar[]>([]); // Store webinar data
   const [isWebinarDialogOpen, setIsWebinarDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -309,6 +313,7 @@ const ProfessorProfilePage: React.FC = () => {
 
   const router = useRouter();
 
+  // Effect hook to fetch professor data on component mount
   useEffect(() => {
     const fetchProfessorData = async () => {
       try {
@@ -348,6 +353,7 @@ const ProfessorProfilePage: React.FC = () => {
     fetchProfessorData();
   }, [id, isLoggedInUser]);
 
+  // Handler for fetching applicants for a specific project
   const fetchAppliedApplicants = async (projectId: string) => {
     setIsLoadingApplicants((prev) => ({ ...prev, [projectId]: true }));
     try {
@@ -375,6 +381,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Toggle visibility of applicants list for a project
   const toggleApplicants = (projectId: string) => {
     if (appliedApplicantsMap[projectId]) {
       setAppliedApplicantsMap((prevMap) => {
@@ -387,6 +394,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Handler for assigning an applicant to a project
   const handleAssignApplicant = async (
     projectId: string,
     applicantId: string,
@@ -419,6 +427,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Handler for marking a project as complete
   const handleCompleteProject = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -444,6 +453,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Handler for marking notifications as read
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -467,6 +477,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Handler for creating new webinars
   const handleCreateWebinar = async (
     webinarData: any,
     webinarImage: File | null,
@@ -536,6 +547,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
   
+  // Handler for updating webinar status
   const handleUpdateWebinarStatus = async (
     webinarId: string,
     newStatus: "COMPLETED" | "CANCELLED"
@@ -556,6 +568,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
+  // Handler for initiating contact with the professor
   const handleContact = async ()=>{
     try {
       const token = localStorage.getItem("token");
@@ -581,6 +594,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   }
 
+  // Handler for creating new projects
   const handleCreateProject = async (projectData: any) => {
     setIsCreatingProject(true);
     try {
@@ -625,6 +639,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
   // console.log(notifications);
+  // Form submission handler for creating projects
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -661,6 +676,7 @@ const ProfessorProfilePage: React.FC = () => {
     handleCreateProject(projectData);
   };
 
+  // Loading state handler
   if (isLoading) {
     return (
       <div className="text-center flex items-center justify-center h-screen bg-white">
@@ -672,14 +688,17 @@ const ProfessorProfilePage: React.FC = () => {
     );
   }
 
+  // Error state handler
   if (error) {
     return <div>{error}</div>;
   }
 
+  // Handler for when professor data is not found
   if (!professor) {
     return <div>Professor not found</div>;
   }
 
+  // Render functions for different tabs
   const renderNotificationsTab = () => (
     <TabsContent value="notifications">
       {id == localStorage.getItem("userId") && (
@@ -736,6 +755,7 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  // Project categorization logic
   const categorizedProjects = {
     industryCollaboration: [] as Project[],
     professorCollaboration: [] as Project[],
@@ -767,6 +787,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   });
 
+  // Render function for enrolled projects tab
   const renderEnrolledProjectsTab = () => (
     <TabsContent value="enrolled-projects">
       <section className="py-8">
@@ -780,6 +801,7 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  // Render function for projects tab
   const renderProjectsTab = () => (
     <TabsContent value="projects">
       <motion.div
@@ -1601,6 +1623,7 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  // Tab configuration
   const tabItems = [
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     ...(isLoggedInUser
@@ -1618,12 +1641,17 @@ const ProfessorProfilePage: React.FC = () => {
       : []),
   ];
 
+  // Main component render
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
+      {/* Navigation Bar */}
       <NavbarWithBg />
-      {isLoggedInUser && 
-        <GlobalChatBox/>}
+
+      {/* Global Chat Box (only for logged-in users) */}
+      {isLoggedInUser && <GlobalChatBox/>}
+
       <main className="flex-grow">
+        {/* Hero Section with Professor Info */}
         <motion.section
           className="relative text-white py-24"
           initial={{ opacity: 0 }}
@@ -1701,6 +1729,7 @@ const ProfessorProfilePage: React.FC = () => {
           </div>
         </motion.section>
 
+        {/* Main Content Section with Tabs */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <Tabs defaultValue="profile" className="space-y-8">

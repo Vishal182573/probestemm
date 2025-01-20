@@ -17,7 +17,7 @@ const isValidEmail = (email: string): boolean => {
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   const { to, subject,html } = options;
-  const from = "sharmavs9205@gmail.com";
+  const from = "stemprobe@gmail.com";
 
   if (!to || !subject ) {
     throw new Error(
