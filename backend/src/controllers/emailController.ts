@@ -433,13 +433,13 @@ export const sendDailyReminderEmails = async () => {
   }
 };
 
-// Schedule the daily email job to run at 4:00 PM (16:00)
-export const scheduleDailyEmails = () => {
-  cron.schedule('0 18 * * *', async () => {
+export const scheduleWeeklyEmails = () => {
+  // This will run every Monday at 18:00 (6:00 PM)
+  cron.schedule('0 18 * * 1', async () => {
     try {
       await sendDailyReminderEmails();
     } catch (error) {
-      console.error('Failed to send daily emails:', error);
+      console.error('Failed to send weekly emails:', error);
     }
   });
 };
