@@ -1069,9 +1069,9 @@ const ProfessorProfilePage: React.FC = () => {
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
+                      {/* <h4 className="text-lg font-semibold text-[#472014]">
                         {project.techDescription}
-                      </h4>
+                      </h4> */}
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
@@ -1196,7 +1196,7 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {project.content}
                     </p>
                     <Button
                       variant="outline"
@@ -1315,7 +1315,7 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {project.content}
                     </p>
                     <Button
                       variant="outline"
@@ -1423,7 +1423,7 @@ const ProfessorProfilePage: React.FC = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {project.content}
                     </p>
 
                     <Button
@@ -1533,7 +1533,7 @@ const ProfessorProfilePage: React.FC = () => {
                     </div>
 
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content.substring(0, 100)}...
+                      {project.content}
                     </p>
                     <Button
                       variant="outline"

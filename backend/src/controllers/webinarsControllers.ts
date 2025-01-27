@@ -22,7 +22,12 @@ export const getAllWebinars = async (req: Request, res: Response) => {
           in: ["APPROVED", "COMPLETED"],
         },
       },
+      orderBy: {
+        createdAt: 'desc'  // Assumes there's a createdAt field, most common for sorting
+        // Alternative: use updatedAt or startDate if those are more appropriate
+      },
     });
+    
     res.status(200).json(webinars);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch webinars" });

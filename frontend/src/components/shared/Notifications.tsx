@@ -31,6 +31,9 @@ import Image from "next/image";
 import { API_URL } from "@/constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { format } from 'date-fns';
+
+
 
 // Define the Webinar interface to type-check the webinar data structure
 interface Webinar {
@@ -179,11 +182,10 @@ const NotificationsComponent: React.FC = () => {
                             </h3>
                             <Badge
                               variant="outline"
-                              className={`ml-2 ${
-                                webinar.status === "APPROVED"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-[#eb5e17] text-white"
-                              }`}
+                              className={`ml-2 ${webinar.status === "APPROVED"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-[#eb5e17] text-white"
+                                }`}
                             >
                               {webinar.status === "APPROVED"
                                 ? "UPCOMING"
@@ -195,7 +197,7 @@ const NotificationsComponent: React.FC = () => {
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
                               <Calendar className="h-4 w-4 mr-2 text-[#eb5e17]" />
-                              {webinar.date}
+                              {format(new Date(webinar.date), 'MMM dd, yyyy h:mm a')}
                             </div>
                             <div className="flex items-center text-sm text-[#686256]">
                               <MapPin className="h-4 w-4 mr-2 text-[#eb5e17]" />
@@ -208,80 +210,72 @@ const NotificationsComponent: React.FC = () => {
                           </div>
 
                           {/* Topic and action buttons section */}
-                          <div className="bg-gray-50 p-4 rounded-lg">
+                          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
                             {/* Topic information and action buttons with tooltips */}
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-sm font-medium text-[#472014]">
-                                  Topic
-                                </p>
-                                <p className="text-sm text-[#686256]">
-                                  {webinar.topic}
-                                </p>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                              {/* Topic section */}
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-700">Topic</p>
+                                <p className="text-base text-gray-600">{webinar.topic}</p>
                               </div>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Link
-                                      href={`/professor-profile/${webinar.professorId}`}
-                                    >
-                                      <Button
-                                        variant="outline"
-                                        className="bg-[#5e17eb] text-white group flex items-center gap-2"
-                                      >
-                                        View Professor
-                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-                                      </Button>
-                                    </Link>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      View professor full profile and other
-                                      webinars
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
 
-                                {webinar.meetingLink && (
+                              {/* Action buttons group */}
+                              <div className="flex items-center gap-3">
+                                <TooltipProvider>
+                                  {/* Professor Profile Button */}
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Link href={`/professor-profile/${webinar.professorId}`}>
+                                        <Button
+                                          variant="outline"
+                                          className="bg-[#eb5e17] hover:bg-[#d45415] text-white group flex items-center gap-2 transition-colors duration-200"
+                                        >
+                                          View Professor
+                                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                        </Button>
+                                      </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>View professor full profile</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+
+                                  {/* Meeting Link Button - Only shown if link exists */}
+                                  {webinar.meetingLink && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          onClick={() => window.open(webinar.meetingLink, "_blank")}
+                                          variant="outline"
+                                          className="bg-[#eb5e17] hover:bg-[#d45415] text-white group flex items-center gap-2 transition-colors duration-200"
+                                        >
+                                          Meet Link
+                                          <LinkIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Join the webinar meeting</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+
+                                  {/* Download Button */}
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
-                                        onClick={() => {
-                                          window.open(webinar.meetingLink, "_blank");
-                                        }}
+                                        onClick={() => window.open(webinar.webinarDocument, "_blank")}
                                         variant="outline"
-                                        className="bg-green-600 text-white hover:bg-green-700 group flex items-center gap-2 mx-2"
+                                        className="bg-[#eb5e17] hover:bg-[#d45415] text-white group flex items-center gap-2 p-2 transition-colors duration-200"
                                       >
-                                        Meet Link
-                                        <LinkIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                                        <Download className="h-4 w-4 group-hover:translate-y-1 transition-transform duration-200" />
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p>Join the webinar meeting</p>
+                                      <p>Download to view the webinar document</p>
                                     </TooltipContent>
                                   </Tooltip>
-                                )}
-
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      onClick={() => {
-                                        window.open(
-                                          webinar.webinarDocument,
-                                          "_blank"
-                                        );
-                                      }}
-                                      variant="outline"
-                                      className="bg-[#eb5e17] text-white hover:bg-[#472014] group flex items-center gap-2"
-                                    >
-                                      <Download className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Download to view the webinar document</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                                </TooltipProvider>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -303,11 +297,10 @@ const NotificationsComponent: React.FC = () => {
                 key={i}
                 onClick={() => paginate(i + 1)}
                 variant={currentPage === i + 1 ? "default" : "outline"}
-                className={`mx-1 ${
-                  currentPage === i + 1
-                    ? "bg-[#eb5e17] text-white"
-                    : "text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
-                }`}
+                className={`mx-1 ${currentPage === i + 1
+                  ? "bg-[#eb5e17] text-white"
+                  : "text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
+                  }`}
               >
                 {i + 1}
               </Button>

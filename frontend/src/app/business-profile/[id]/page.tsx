@@ -472,7 +472,7 @@ const BusinessProfilePage: React.FC = () => {
               </div>
 
               <p className="text-gray-700 mb-4">
-                {project.content.substring(0, 100)}...
+                {project.content}
               </p>
 
               <div className="flex justify-between items-center mb-4">
