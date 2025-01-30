@@ -604,7 +604,7 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
   };
 
   return (
-    <Modal show={show} onClose={onClose} title={`Apply for ${project.topic}`}>
+    <Modal show={show} onClose={onClose} title={`Apply`}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-4">
           <div>
@@ -640,9 +640,12 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
             />
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-2">
-              Upload supporting documents (Optional)
-            </p>
+          <p className="text-lg font-medium text-gray-700 mb-2">
+            Select your image
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            PNG, JPG, JPEG (max. 2 MB) (Optional)
+          </p>
             <Input
               type="file"
               multiple
