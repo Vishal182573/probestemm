@@ -31,6 +31,7 @@ import TestimonialsSection from "@/components/shared/Testimonials";
 import FAQSection from "@/components/shared/Faq";
 import Image from "next/image";
 import { INDUSTRY, PROFESSOR, STUDENT } from "../../public";
+import { RecentProjects } from "@/components/shared/RecentProjects";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -57,10 +58,10 @@ const HomePage = () => {
               viewport={{ once: true }}
               className="text-5xl font-bold text-center mb-6 text-gray-800"
             >
-              Webinars
+              Projects
             </motion.h2>
             {/* Features demo component with right-aligned image */}
-            <FeaturesDemo imagePosition="right" />
+            <RecentProjects />
           </div>
         </section>
         {/* Additional sections for different content types */}

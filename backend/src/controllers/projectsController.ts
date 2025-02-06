@@ -413,6 +413,33 @@ export const getProjectsByType = async (req: Request, res: Response) => {
   }
 };
 
+// Get last 3 recent project
+export const getRecentProjects = async (req: Request, res: Response) => {
+  try {
+      const recentProjects = await prisma.project.findMany({
+          take: 3, // Limit to 3 projects
+          include: {
+              professor: {
+                  select: {
+                      fullName: true,
+                      email: true,
+                      phoneNumber: true,
+                      university: true,
+                      department: true,
+                  },
+              },
+          },
+          orderBy: {
+              createdAt: 'desc' // Get the most recent projects first
+          }
+      });
+
+      res.status(200).json(recentProjects);
+  } catch (error) {
+      console.error("Error fetching recent projects:", error);
+      res.status(500).json({ error: "Failed to fetch recent projects" });
+  }
+};
 
 // Apply for a project
 export const applyForProject = async (req: Request, res: Response) => {

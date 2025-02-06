@@ -181,18 +181,22 @@ const ProjectsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   // for category filter
   const [selectedCategory, setSelectedCategory] = useState('all'); // Currently selected category
+  const [selectedOpportunity, setSelectedOpportunity] = useState('all');
 
   // Combined filtering effect
   useEffect(() => {
     filterProjects();
   }, [searchQuery, selectedCategory]);
 
+  useEffect(() => {
+    filterProjects();
+  }, [searchQuery, selectedCategory, selectedOpportunity]);
+  
   const filterProjects = () => {
     let filtered = projects;
-
+  
     // Filter by category
     if (selectedCategory !== 'all') {
-      // Special handling for student-related categories
       if(activeTab === 'professors') {
         if (selectedCategory === 'students') {
           filtered = filtered.filter(project => 
@@ -218,7 +222,12 @@ const ProjectsPage: React.FC = () => {
         }
       }
     }
-
+  
+    // Filter by opportunity type
+    if (selectedCategory === 'students' && selectedOpportunity !== 'all') {
+      filtered = filtered.filter(project => project.category === selectedOpportunity);
+    }
+  
     // Filter by search query
     if (searchQuery.trim()) {
       const searchTerms = searchQuery.toLowerCase().split(',').map(term => term.trim());
@@ -231,9 +240,10 @@ const ProjectsPage: React.FC = () => {
         )
       );
     }
-
+  
     setFilteredProjects(filtered);
   };
+
 
   // Modal control functions
   const openApplyModal = (project: Project) => {
@@ -276,6 +286,7 @@ const ProjectsPage: React.FC = () => {
             onValueChange={(value) => {
               setActiveTab(value);
               setSelectedCategory('all');
+              setSelectedOpportunity('all');
               setActiveCategory(null);
             }}
           >
@@ -316,7 +327,7 @@ const ProjectsPage: React.FC = () => {
 
               <div className="space-y-2 w-52 lg:w-72">
                 <label className="text-sm font-medium text-white ml-2">
-                  Project for
+                  Collaboration type
                 </label>
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-52 lg:w-72 text-white h-10">
@@ -330,6 +341,24 @@ const ProjectsPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {activeTab === 'professors' && selectedCategory === 'students' && <div className="space-y-2 w-52 lg:w-72">
+                <label className="text-sm font-medium text-white ml-2">
+                  Opportunity type
+                </label>
+                <Select value={selectedOpportunity} onValueChange={setSelectedOpportunity}>
+                  <SelectTrigger className="w-52 lg:w-72 text-white h-10">
+                    <SelectValue placeholder="Select opportunity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Opportunities</SelectItem>
+                    <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                    <SelectItem value="PHD_POSITION">PhD Position</SelectItem>
+                    <SelectItem value="RND_PROJECT">R&D Project</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>}
+
             </div>
 
             <ProjectsList

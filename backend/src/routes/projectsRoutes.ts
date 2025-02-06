@@ -67,6 +67,9 @@ router.get(
   projectController.getEnrolledProjectsForBusiness
 );
 
+// Get last 3 recent project
+router.get("/recent", projectController.getRecentProjects);
+
 router.delete("/:projectId", authMiddleware, projectController.deleteProject);
 
 export default router;

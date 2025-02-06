@@ -58,6 +58,8 @@ import { PROFESSORPAGE } from "../../../../public";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import { Description } from "@radix-ui/react-dialog";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
+import { FaSpinner } from "react-icons/fa";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 // Interface definitions for various data types used throughout the component
 interface AppliedApplicant {
@@ -300,6 +302,7 @@ const ProfessorProfilePage: React.FC = () => {
   const [selectedTitle, setSelectedTitle] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
+  const [webinarCreationLoading, setWebinarCreationLoading] = useState(false);
 
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage(imageUrl);
@@ -488,6 +491,7 @@ const ProfessorProfilePage: React.FC = () => {
       if (!token) {
         throw new Error("No authentication token found");
       }
+      setWebinarCreationLoading(true);
   
       // First check professor's approval status
       const professorResponse = await axios.get(
@@ -501,6 +505,8 @@ const ProfessorProfilePage: React.FC = () => {
         alert("Your profile has not been approved by admin yet. Please wait for approval before creating webinars.");
         // Clear the form - you'll need to pass setFormData as a prop or use a ref
         // setFormData(initialFormState);
+        setWebinarCreationLoading(false);
+        setIsWebinarDialogOpen(false);
         return;
       }
   
@@ -536,6 +542,7 @@ const ProfessorProfilePage: React.FC = () => {
   
       setWebinars((prevWebinars) => [...prevWebinars, response.data]);
       setIsWebinarDialogOpen(false);
+      setWebinarCreationLoading(false);
     } catch (error) {
       console.error("Error creating webinar:", error);
       if (axios.isAxiosError(error)) {
@@ -2301,7 +2308,13 @@ const ProfessorProfilePage: React.FC = () => {
                                       </p>
                                     </div>
 
-                                    <Button type="submit">Submit for Approval</Button>
+                                    {/* add spinner when I press submit */}
+                                    {webinarCreationLoading ?
+                                      <div className="flex justify-center items-center py-4">
+                                        <ReloadIcon className="h-6 w-6 animate-spin" />
+                                        <span className="ml-2">Creating a Webinar...</span>
+                                      </div>
+                                    : <Button type="submit">Submit for Approval</Button>}
                                   </form>
                                 </DialogContent>
                               </Dialog>
