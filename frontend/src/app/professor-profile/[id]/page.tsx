@@ -139,10 +139,8 @@ interface Project {
     university: string;
     department: string;
   };
-  duration?: {
-    startDate: string;
-    endDate: string;
-  };
+  deadline?: string;
+  duration?: string;
 }
 
 type Notification = {
@@ -300,6 +298,8 @@ const ProfessorProfilePage: React.FC = () => {
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
 
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage(imageUrl);
@@ -638,6 +638,50 @@ const ProfessorProfilePage: React.FC = () => {
       setIsCreatingProject(false);
     }
   };
+
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = `${API_URL}/project/${projectId}`;
+  
+      await axios.delete(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setProjects((prevProjects) =>
+        prevProjects.filter((project) => project.id !== projectId)
+      );
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError("Failed to delete project. Please try again.");
+    }
+  };
+  
+  const ConfirmationModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-8 rounded-lg text-center max-w-sm w-full">
+          <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this project?</h3>
+          <div className="flex justify-evenly">
+            <Button
+              onClick={() => handleDeleteProject(projectIDToDelete)} 
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Yes
+            </Button>
+            <Button
+              onClick={() => setIsModalOpen(false)} 
+              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+            >
+              No
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   // console.log(notifications);
   // Form submission handler for creating projects
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -653,10 +697,8 @@ const ProfessorProfilePage: React.FC = () => {
         ?.toString()
         .split(",")
         .map((tag) => tag.trim()),
-      duration: {
-        startDate: formData.get("durationStartDate") as string,
-        endDate: formData.get("durationEndDate") as string,
-      }
+      deadline: formData.get("deadline"),
+      duration: formData.get("duration")
     };
     console.log(category);
     console.log(subcategory);
@@ -950,6 +992,17 @@ const ProfessorProfilePage: React.FC = () => {
                   />
                 </div>
 
+                <div>
+                    <Label htmlFor="deadline">Deadline</Label>
+                    <Input
+                      id="deadline"
+                      name="deadline"
+                      type="date"
+                      required
+                      className="bg-white text-black"
+                    />
+                  </div>
+
                 {collaborationType === "students" && (
                   <>
                     <div>
@@ -963,25 +1016,15 @@ const ProfessorProfilePage: React.FC = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="durationStartDate">Start Date</Label>
+                      <Label htmlFor="duration">Duration</Label>
                       <Input
-                        id="durationStartDate"
-                        name="durationStartDate"
-                        type="date"
-                        required
+                        id="duration"
+                        name="duration"
+                        placeholder="Enter project duration"
                         className="bg-white text-black"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="durationEndDate">End Date</Label>
-                      <Input
-                        id="durationEndDate"
-                        name="durationEndDate"
-                        type="date"
-                        required
-                        className="bg-white text-black"
-                      />
-                    </div>
+
                     <div>
                       <Label>Is Funded</Label>
                       <Select name="isFunded" required>
@@ -1091,6 +1134,17 @@ const ProfessorProfilePage: React.FC = () => {
                     >
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
+                    </Button>
+                    {/* delete project button */}
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
                     </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
@@ -1206,6 +1260,17 @@ const ProfessorProfilePage: React.FC = () => {
                     >
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
+                    </Button>
+                    {/* delete project button */}
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
                     </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
@@ -1326,6 +1391,17 @@ const ProfessorProfilePage: React.FC = () => {
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
                     </Button>
+                    {/* delete project button */}
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
+                    </Button>
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
                         <h5 className="text-md font-semibold mb-2 text-black">
@@ -1435,6 +1511,17 @@ const ProfessorProfilePage: React.FC = () => {
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
                     </Button>
+                    {/* delete project button */}
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
+                    </Button>
 
                     {appliedApplicantsMap[project.id] && (
                       <div className="mt-4">
@@ -1543,6 +1630,17 @@ const ProfessorProfilePage: React.FC = () => {
                     >
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
+                    </Button>
+                    {/* delete project button */}
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
                     </Button>
 
                     {appliedApplicantsMap[project.id] && (
@@ -2329,6 +2427,7 @@ const ProfessorProfilePage: React.FC = () => {
                   {renderProjectsTab()}
                   {renderNotificationsTab()}
                   {renderEnrolledProjectsTab()}
+                  {isModalOpen && ConfirmationModal()}
                 </>
               )}
             </Tabs>

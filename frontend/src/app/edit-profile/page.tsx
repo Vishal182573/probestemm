@@ -447,31 +447,31 @@ const EditProfileForm = () => {
   };
 
   // Research highlight section handlers
-  const addResearchHighlight = () => {
-    setProfileData((prev: any) => ({
-      ...prev,
-      researchHighlights: [
-        ...(prev.researchHighlights || []),
-        { title: "", status: "ONGOING" },
-      ],
-    }));
-  };
+  // const addResearchHighlight = () => {
+  //   setProfileData((prev: any) => ({
+  //     ...prev,
+  //     researchHighlights: [
+  //       ...(prev.researchHighlights || []),
+  //       { title: "", status: "ONGOING" },
+  //     ],
+  //   }));
+  // };
 
-  const updateResearchHighlight = (
-    index: number,
-    field: keyof ResearchHighlight,
-    value: string
-  ) => {
-    const newHighlights = [...profileData.researchHighlights];
-    newHighlights[index][field] = value;
-    setProfileData({ ...profileData, researchHighlights: newHighlights });
-  };
+  // const updateResearchHighlight = (
+  //   index: number,
+  //   field: keyof ResearchHighlight,
+  //   value: string
+  // ) => {
+  //   const newHighlights = [...profileData.researchHighlights];
+  //   newHighlights[index][field] = value;
+  //   setProfileData({ ...profileData, researchHighlights: newHighlights });
+  // };
 
-  const removeResearchHighlight = (index: number) => {
-    const newHighlights = [...profileData.researchHighlights];
-    newHighlights.splice(index, 1);
-    setProfileData({ ...profileData, researchHighlights: newHighlights });
-  };
+  // const removeResearchHighlight = (index: number) => {
+  //   const newHighlights = [...profileData.researchHighlights];
+  //   newHighlights.splice(index, 1);
+  //   setProfileData({ ...profileData, researchHighlights: newHighlights });
+  // };
 
   const removeResearchInterest = (index: number) => {
     const newInterests = [...profileData.researchInterests];
@@ -810,7 +810,7 @@ const EditProfileForm = () => {
                     </div>
 
                     {/* Research Highlights */}
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Label>Research Highlights</Label>
                       {profileData?.researchHighlights?.map(
                         (highlight: ResearchHighlight, index: number) => (
@@ -867,6 +867,52 @@ const EditProfileForm = () => {
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Research
                           Highlight
+                        </Button>
+                      )}
+                    </div> */}
+                    
+                    {/* Skills  */}
+                    <div className="space-y-2">
+                      <Label>Skills</Label>
+                      {profileData?.skills?.map((skill: string, index: number) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            placeholder="Enter skill"
+                            value={skill}
+                            onChange={(e) => {
+                              const updatedSkills = [...profileData.skills];
+                              updatedSkills[index] = e.target.value;
+                              setProfileData({ ...profileData, skills: updatedSkills });
+                            }}
+                            disabled={!isEditing}
+                            className="flex-1 text-black bg-white"
+                          />
+                          {isEditing && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => {
+                                const updatedSkills = profileData.skills.filter((_, i) => i !== index);
+                                setProfileData({ ...profileData, skills: updatedSkills });
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      {isEditing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const updatedSkills = [...(profileData.skills || []), ""];
+                            setProfileData({ ...profileData, skills: updatedSkills });
+                          }}
+                          className="bg-white text-black hover:text-white"
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> Add Skill
                         </Button>
                       )}
                     </div>
@@ -1292,7 +1338,7 @@ const EditProfileForm = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="website">Company Website</Label>
+                      <Label htmlFor="website">Company Website/ Social Media</Label>
                       <Input
                         id="website"
                         name="website"

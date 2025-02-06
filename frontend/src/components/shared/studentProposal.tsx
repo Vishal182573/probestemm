@@ -16,6 +16,7 @@ interface FormDataType {
   topic: string;
   techDescription: string;
   content: string;
+  proposalFor: string;
 }
 
 // Main component definition with TypeScript typing
@@ -28,6 +29,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     topic: "",
     content: "",
     techDescription: "",
+    proposalFor: "",
   });
   // isSubmitting: tracks form submission status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -59,7 +61,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
       );
 
       // Reset form and show success message
-      setFormData({ topic: "", content: "", techDescription: "" });
+      setFormData({ topic: "", content: "", techDescription: "" , proposalFor: ""});
       setIsSubmitted(true);
       toast.success("Proposal submitted successfully!");
     } catch (error) {
@@ -150,6 +152,30 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
               <option value="Project">Project</option>
               <option value="PhD Position">PhD Position</option>
             </select>
+          </div>
+
+          {/* Dropdown for selecting 'proposal for' */}
+          <div>
+            <label
+              htmlFor="proposalFor"
+              className="block text-[#472014] font-semibold mb-2"
+            >
+              Proposal for
+            </label>
+            <select
+              id="proposalFor"
+              name="proposalFor"
+              value={formData.proposalFor}
+              onChange={handleChange}
+              required
+              className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
+            >
+              <option value="" disabled>
+                Select your option
+              </option>
+              <option value="Professor">Professor</option>
+              <option value="Industry">Industry</option>
+            </select> 
           </div>
 
           {/* Input field for proposal topic */}

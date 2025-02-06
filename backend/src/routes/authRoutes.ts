@@ -109,7 +109,7 @@ router.post(
   "/business/signup",
   upload.fields([
     { name: "profileImage", maxCount: 1 },
-    { name: "idCard", maxCount: 1 },
+    // { name: "idCard", maxCount: 1 },
   ]),
   async (req, res) => {
     try {

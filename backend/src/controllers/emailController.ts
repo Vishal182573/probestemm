@@ -21,6 +21,7 @@ try {
   }
 
   const code = generateCode();
+  console.log('Generated code:', code);
   const html = `
   <!DOCTYPE html>
   <html lang="en">

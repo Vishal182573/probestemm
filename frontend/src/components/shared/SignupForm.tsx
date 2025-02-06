@@ -293,7 +293,7 @@ export const SignupForm: React.FC = () => {
           console.log(idCardUrl)
         } catch (error) {
           if(userData.role=="student" || userData.role=="professor") setUploadError('Failed to upload research paper');
-          else setUploadError('Failed to upload company brochure image');
+          // else setUploadError('Failed to upload company brochure image');
           setIsUploading(false);
           return;
         }
@@ -965,7 +965,7 @@ export const SignupForm: React.FC = () => {
         />
       </div>
       <div className="space-y-2">
-      <Label htmlFor="idCard">Upload your research paper image (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
+      <Label htmlFor="idCard">Upload your ID card (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
           id="idCard"
@@ -1085,7 +1085,7 @@ export const SignupForm: React.FC = () => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="website">Company Website <span className="text-red-500">*</span></Label>
+        <Label htmlFor="website">Company Website/ Social Media <span className="text-red-500">*</span></Label>
         <Input
           id="website"
           type="text"
@@ -1101,7 +1101,7 @@ export const SignupForm: React.FC = () => {
           className="text-black bg-white"
         />
       </div>
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
       <Label htmlFor="idCard">Upload your company brochure image (2mb jpg/jpeg/png)<span className="text-red-500">*</span></Label>
       <div className="flex items-center gap-2">
         <Input
@@ -1133,7 +1133,7 @@ export const SignupForm: React.FC = () => {
       {uploadError && (
         <p className="text-sm text-red-500">{uploadError}</p>
       )}
-    </div>
+    </div> */}
 
     <Button 
       type="submit" 

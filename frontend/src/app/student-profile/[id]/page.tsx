@@ -33,7 +33,7 @@ import GlobalChatBox from "@/components/shared/GlobalChatBox";
 // Interface definitions for type safety
 interface Student {
   // Defines the structure of a student's profile data
-  // Including personal info, research highlights, education, achievements, etc.
+  // Including personal info, skills, education, achievements, etc.
   id: string;
   fullName: string;
   email: string;
@@ -42,7 +42,7 @@ interface Student {
   imageUrl: string | null;
   university: string | null;
   course: string | null;
-  researchHighlights: Array<{ id: string; title: string; status: string }>;
+  skills: Array<string>;
   experience: string | null;
   education: Array<{
     id: string;
@@ -118,6 +118,8 @@ const StudentProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null); // Error handling
   const [notifications, setNotifications] = useState<Notification[]>([]); // Store notifications
   const [unreadCount, setUnreadCount] = useState<number>(0); // Track unread notifications
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
 
   // useEffect hook for initial data fetching
   useEffect(() => {
@@ -396,6 +398,57 @@ const StudentProfilePage: React.FC = () => {
     </TabsContent>
   );
 
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = `${API_URL}/project/${projectId}`;
+
+      console.log("Deleting project with ID:", projectId);
+  
+      await axios.delete(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setStudent((prevStudent) => {
+        if (!prevStudent) {
+          return null;
+        }
+        return {
+          ...prevStudent,
+          projects: prevStudent.projects.filter((project) => project.id !== projectId)
+        } as Student;
+      });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError("Failed to delete project. Please try again.");
+    }
+  };
+  
+  const ConfirmationModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-8 rounded-lg text-center max-w-sm w-full">
+          <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this project?</h3>
+          <div className="flex justify-evenly">
+            <Button
+              onClick={() => handleDeleteProject(projectIDToDelete)} 
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Yes
+            </Button>
+            <Button
+              onClick={() => setIsModalOpen(false)} 
+              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+            >
+              No
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderProjectsTab = () => (
     // Renders projects tab content with applicants management
     <TabsContent value="projects">
@@ -444,6 +497,16 @@ const StudentProfilePage: React.FC = () => {
                     >
                       {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
                       Applicants
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setProjectIDToDelete(project.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="m-2 text-white bg-red-600 hover:bg-red-500"
+                    >
+                      Delete
                     </Button>
 
                     {appliedApplicantsMap[project.id] && (
@@ -592,12 +655,12 @@ const StudentProfilePage: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-2xl font-extrabold text-[#eb5e17] font-caveat">
                     <Star className="mr-2" />
-                    Research Highlights
+                    Skills
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-[#472014]">
                   <ul className="space-y-2">
-                    {student.researchHighlights.map((highlight) => (
+                    {/* {student.researchHighlights.map((highlight) => (
                       <li key={highlight.id} className="flex items-center">
                         <Badge
                           variant="secondary"
@@ -606,6 +669,11 @@ const StudentProfilePage: React.FC = () => {
                           {highlight.status}
                         </Badge>
                         <span className="font-medium">{highlight.title}</span>
+                      </li>
+                    ))} */}
+                    {student.skills && student.skills.map((skill) => (
+                      <li key={skill} className="flex items-center">
+                        <span className="font-medium">{skill}</span>
                       </li>
                     ))}
                   </ul>
@@ -731,6 +799,7 @@ const StudentProfilePage: React.FC = () => {
               {renderProjectsTab()}
               {renderProposalTab()}
               {renderEnrolledProjectsTab()}
+              {isModalOpen && ConfirmationModal()}
             </Tabs>
           </div>
         </section>

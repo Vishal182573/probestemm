@@ -69,7 +69,7 @@ export const updateStudent = async (
     // Parse nested arrays
     const education = safeJSONParse(userData.education);
     const achievements = safeJSONParse(userData.achievements);
-    const researchHighlights = safeJSONParse(userData.researchHighlights);
+    // const researchHighlights = safeJSONParse(userData.researchHighlights);
 
     const updatedStudent = await prisma.student.update({
       where: { id },
@@ -97,19 +97,20 @@ export const updateStudent = async (
             year: achievement.year,
           })),
         },
-        researchHighlights: {
-          deleteMany: {},
-          create: researchHighlights.map((highlight: any) => ({
-            title: highlight.title,
-            description: highlight.description,
-            status: highlight.status,
-          })),
-        },
+        // researchHighlights: {
+        //   deleteMany: {},
+        //   create: researchHighlights.map((highlight: any) => ({
+        //     title: highlight.title,
+        //     description: highlight.description,
+        //     status: highlight.status,
+        //   })),
+        // },
+        skills: Array.isArray(userData.skills) ? userData.skills : JSON.parse(userData.skills)
       },
       include: {
         education: true,
         achievements: true,
-        researchHighlights: true,
+        // researchHighlights: true,
       },
     });
 

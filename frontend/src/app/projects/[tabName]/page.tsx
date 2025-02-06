@@ -28,6 +28,13 @@ import {
   Calendar,
   Briefcase,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import Banner from "@/components/shared/Banner";
@@ -70,10 +77,9 @@ interface Project {
   tags: string[];
   eligibility?: string;
   timeline?: string;
-  duration?: {
-    startDate: string;
-    endDate: string;
-  } | null;
+  deadline?: string;
+  duration?: string;
+  proposalFor?: string;
   isFunded?: boolean;
   fundDetails?: string;
   desirable?: string;
@@ -99,7 +105,7 @@ interface Project {
 // Main component for the Projects page
 const ProjectsPage: React.FC = () => {
   // State management for projects and UI controls
-  const [, setProjects] = useState<Project[]>([]); // Stores all projects
+  const [projects, setProjects] = useState<Project[]>([]); // Stores all projects
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]); // Stores filtered projects
   const [loading, setLoading] = useState(true); // Loading state indicator
   const [, setError] = useState<string | null>(null); // Error state management
@@ -171,6 +177,64 @@ const ProjectsPage: React.FC = () => {
     fetchProjects();
   }, [activeTab, activeCategory]);
 
+  // Effect hook to filter projects based on search query
+  const [searchQuery, setSearchQuery] = useState('');
+  // for category filter
+  const [selectedCategory, setSelectedCategory] = useState('all'); // Currently selected category
+
+  // Combined filtering effect
+  useEffect(() => {
+    filterProjects();
+  }, [searchQuery, selectedCategory]);
+
+  const filterProjects = () => {
+    let filtered = projects;
+
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      // Special handling for student-related categories
+      if(activeTab === 'professors') {
+        if (selectedCategory === 'students') {
+          filtered = filtered.filter(project => 
+            ['RND_PROJECT', 'INTERNSHIP', 'PHD_POSITION'].includes(project.category)
+          );
+        } else {
+          filtered = filtered.filter(project => project.category === selectedCategory);
+        }
+      }
+      else if(activeTab === 'industry') {
+        if (selectedCategory === 'PROFESSOR_COLLABORATION') {
+          filtered = filtered.filter(project => project.category === "RND_PROJECT");
+        } else {
+          filtered = filtered.filter(project => project.category === "INTERNSHIP");
+        }
+      }
+      else if(activeTab === 'students') {
+        if(selectedCategory === 'PROFESSOR_COLLABORATION') {
+          filtered = filtered.filter(project => project.proposalFor === "Professor");
+        }
+        else {
+          filtered = filtered.filter(project => project.proposalFor === "Industry");
+        }
+      }
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const searchTerms = searchQuery.toLowerCase().split(',').map(term => term.trim());
+      
+      filtered = filtered.filter(project => 
+        searchTerms.some(term => 
+          project.tags.some(tag => 
+            tag.toLowerCase().includes(term)
+          )
+        )
+      );
+    }
+
+    setFilteredProjects(filtered);
+  };
+
   // Modal control functions
   const openApplyModal = (project: Project) => {
     setSelectedProject(project);
@@ -211,6 +275,7 @@ const ProjectsPage: React.FC = () => {
             value={activeTab}
             onValueChange={(value) => {
               setActiveTab(value);
+              setSelectedCategory('all');
               setActiveCategory(null);
             }}
           >
@@ -228,6 +293,44 @@ const ProjectsPage: React.FC = () => {
                 Student Proposals
               </TabsTrigger>
             </TabsList>
+
+            <div className={`flex gap-10 lg:gap-20 ${activeTab === "students" ? "justify-end" : "justify-between"}`}>
+              {activeTab !== "students" && (
+                <div className="space-y-2 w-full">
+                  <label htmlFor="search" className="text-sm font-medium text-white">
+                    Search Projects
+                  </label>
+                  <Input
+                    id="search"
+                    type="text"
+                    placeholder="Enter tags (e.g., AI, Machine Learning)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full text-white"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Separate multiple tags with commas
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2 w-52 lg:w-72">
+                <label className="text-sm font-medium text-white ml-2">
+                  Project for
+                </label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-52 lg:w-72 text-white h-10">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    {(activeTab !== "students") && <SelectItem value="students">Students</SelectItem>}
+                    <SelectItem value="PROFESSOR_COLLABORATION">Professor</SelectItem>
+                    {(activeTab !== "industry") && <SelectItem value="INDUSTRY_COLLABORATION">Industry</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
             <ProjectsList
               projects={filteredProjects}
@@ -309,7 +412,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PROFESSOR_COLLABORATION:
         return (
           <>
-            {/* Optional: Add specific details for Professor Collaboration if needed */}
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
+              </div>
+            )}
           </>
         );
       case ProposalCategory.INDUSTRY_COLLABORATION:
@@ -323,6 +433,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <h4 className="font-semibold">Technical Description:</h4>
               <p>{project.techDescription || 'No technical description provided'}</p>
             </div>
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
+              </div>
+            )}
           </>
         );
       case ProposalCategory.PROJECT:
@@ -332,10 +450,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <h4 className="font-semibold">Topic:</h4>
               <p>{project.topic}</p>
             </div>
+            {/* proposal for  */}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Proposal For:</h4>
+              <p>{project.proposalFor}</p>
+            </div>
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold ">TechDescription:</h4>
+              <p>{project.techDescription}</p>
+            </div>
+            {project.deadline && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold ">TechDescription:</h4>
-                <p>{project.techDescription}</p>
+                <h4 className="font-semibold">Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
               </div>
+            )}
           </>
         );
       case ProposalCategory.STUDENT_OPPORTUNITY:
@@ -360,12 +491,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 <p>{project.desirable}</p>
               </div>
             )}
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
+              </div>
+            )}
             {project.duration && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Duration:</h4>
                 <p>
-                  {new Date(project.duration.startDate).toLocaleDateString()} -{" "}
-                  {new Date(project.duration.endDate).toLocaleDateString()}
+                  {project.duration}
                 </p>
               </div>
             )}

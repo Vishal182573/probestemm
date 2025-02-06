@@ -50,7 +50,8 @@ export interface StudentFields extends CommonFields {
   experience?: string;
   education: Education[];
   achievements?: Achievement[];
-  researchHighlights?: ResearchHighlight[];
+  // researchHighlights?: ResearchHighlight[];
+  skills: string[];
   photoUrl?: string;
 }
 
@@ -87,7 +88,8 @@ export interface StudentData extends UserData {
   location: string;
   university: string;
   course: string;
-  researchHighlights: ResearchHighlight[];
+  // researchHighlights: ResearchHighlight[];
+  skills: string[];
   experience: string;
   education: Education[];
   achievements: Achievement[];
@@ -127,11 +129,11 @@ export interface ApiResponse<T> {
 export interface UpdateStudentFormData
   extends Omit<
     StudentFields,
-    "education" | "achievements" | "researchHighlights"
+    "education" | "achievements" | "skills"
   > {
   education?: string; // JSON string
   achievements?: string; // JSON string
-  researchHighlights?: string; // JSON string
+  skills?: string[]; // JSON string
   profileImage?: File;
 }
 

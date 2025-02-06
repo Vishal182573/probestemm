@@ -3,6 +3,7 @@
 import express from "express";
 import multer from "multer";
 import * as projectController from "../controllers/projectsController";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
@@ -65,4 +66,7 @@ router.get(
   "/enrolled/business/:businessId",
   projectController.getEnrolledProjectsForBusiness
 );
+
+router.delete("/:projectId", authMiddleware, projectController.deleteProject);
+
 export default router;

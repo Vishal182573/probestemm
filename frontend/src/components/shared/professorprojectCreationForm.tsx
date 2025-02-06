@@ -45,10 +45,8 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
       content: formData.get("content"),
       topic: formData.get("topic"),
       eligibility: formData.get("eligibility"),
-      duration: {
-        startDate: formData.get("startDate"),
-        endDate: formData.get("endDate"),
-      },
+      deadline: formData.get("deadline"),
+      duration: formData.get("duration"),
       isFunded: isFunded === "true" ? true : false,
       desirable: formData.get("desirable"),
       // Split tags string into array and trim whitespace
@@ -195,22 +193,23 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
                 />
               </div>
 
-              {/* Project Duration Fields */}
+              {/* deadline field */}
               <div className="space-y-2">
-                <Label>Start Date</Label>
+                <Label>Deadline</Label>
                 <Input
                   type="date"
-                  name="startDate"
+                  name="deadline"
                   required
                   className="bg-white"
                 />
               </div>
 
+              {/* Duration Fields */}
               <div className="space-y-2">
-                <Label>End Date</Label>
+                <Label>Duration</Label>
                 <Input
-                  type="date"
-                  name="endDate"
+                  name="duration"
+                  placeholder="Enter project duration"
                   required
                   className="bg-white"
                 />

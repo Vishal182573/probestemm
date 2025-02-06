@@ -25,7 +25,8 @@ export interface StudentData extends UserData {
   university: string;
   course: string;
   idCard?: string;
-  researchHighlights: ResearchHighlight[];
+  // researchHighlights: ResearchHighlight[];
+  skills: string[];
   experience: string;
   education: Education[];
   achievements: Achievement[];
@@ -58,7 +59,7 @@ export interface BusinessData extends UserData {
   industry: string;
   description: string;
   website?: string;
-  idCard?: string;
+  // idCard?: string;
 }
 
 export interface AdminData extends UserData {}

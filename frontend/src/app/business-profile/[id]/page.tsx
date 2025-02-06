@@ -123,6 +123,8 @@ const BusinessProfilePage: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [applicationDetails, setApplicationDetails] = useState<{[projectId: string]: ApplicationDetails[]}>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
 
   // Effect hook to fetch business data and related information on component mount
   useEffect(() => {
@@ -332,6 +334,51 @@ const BusinessProfilePage: React.FC = () => {
     }
   };
 
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = `${API_URL}/project/${projectId}`;
+
+      console.log("Deleting project with ID:", projectId);
+  
+      await axios.delete(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setProjects((prevProjects) =>
+        prevProjects.filter((project) => project.id !== projectId)
+      );
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError("Failed to delete project. Please try again.");
+    }
+  };
+  
+  const ConfirmationModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-8 rounded-lg text-center max-w-sm w-full">
+          <h3 className="text-lg text-black font-semibold mb-4">Are you sure you want to delete this project?</h3>
+          <div className="flex justify-evenly">
+            <Button
+              onClick={() => handleDeleteProject(projectIDToDelete)} 
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+            >
+              Yes
+            </Button>
+            <Button
+              onClick={() => setIsModalOpen(false)} 
+              className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
+            >
+              No
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Loading and error state handlers
   if (isLoading) {
     return (
@@ -487,6 +534,16 @@ const BusinessProfilePage: React.FC = () => {
                 >
                   {project.status}
                 </Badge>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setProjectIDToDelete(project.id);
+                    setIsModalOpen(true);
+                  }}
+                  className="m-2 text-white bg-red-600 hover:bg-red-500"
+                >
+                  Delete
+                </Button>
               </div>
 
               {project.status === "OPEN" && (
@@ -693,7 +750,7 @@ const BusinessProfilePage: React.FC = () => {
                   <ul className="space-y-4">
                     <li className="flex items-center text-black">
                       
-                        Website : <a href={business.website || ""} className="text-blue-500 underline">{business.website || "N/A"}
+                        Website/ Social Media : <a href={business.website || ""} className="text-blue-500 underline">{business.website || "N/A"}
                       </a>
                     </li>
                     <li>
@@ -734,6 +791,7 @@ const BusinessProfilePage: React.FC = () => {
                 )}
               </TabsList>
               {renderNotificationsTab()}
+              {isModalOpen && ConfirmationModal()}
             </Tabs>
           </div>
         </section>

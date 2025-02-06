@@ -11,70 +11,71 @@ datasource db {
 }
 
 model Publisher {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
 }
 
 model Student {
-  id                String              @id @default(cuid())
-  fullName          String
-  email             String              @unique
-  password          String
-  phoneNumber       String?
-  location          String?
-  imageUrl          String?
-  university        String?
-  course            String?
-  researchHighlights ResearchHighlight[]
-  experience        String?
-  idCard            String?
-  education         Education[]
-  achievements      Achievement[]
-  
-  discussions       Discussion[]
-  comments          Comment[]
-  projects          Project[]
-  notifications     Notification[]
-  
-  superAdmin        SuperAdmin?         @relation(fields: [superAdminId], references: [id])
-  superAdminId      String?
+  id                 String              @id @default(cuid())
+  fullName           String
+  email              String              @unique
+  password           String
+  phoneNumber        String?
+  location           String?
+  imageUrl           String?
+  university         String?
+  course             String?
+  // researchHighlights ResearchHighlight[]
+  skills             String[]
+  experience         String?
+  idCard             String?
+  education          Education[]
+  achievements       Achievement[]
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  discussions   Discussion[]
+  comments      Comment[]
+  projects      Project[]
+  notifications Notification[]
+
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ResearchHighlight {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   title     String
   status    String
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  // student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId String
 }
 
 model Education {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   degree      String
   institution String
   passingYear String
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId   String
 }
 
 model Achievement {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   year        String
   description String
-  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student     Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId   String?
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: Cascade)
   professorId String?
 }
 
 model Professor {
-  id                String    @id @default(cuid())
+  id                String             @id @default(cuid())
   fullName          String
-  email             String    @unique
+  email             String             @unique
   password          String
   phoneNumber       String?
   location          String?
@@ -87,10 +88,10 @@ model Professor {
   position          String?
   bio               String?
   googleScholar     String?
-  isApproved        Boolean   @default(false)  
+  isApproved        Boolean            @default(false)
   idCard            String?
-  researchInterests ResearchInterest[] 
-  tags              ProfessorTag[]      
+  researchInterests ResearchInterest[]
+  tags              ProfessorTag[]
   positions         Position[]
   achievements      Achievement[]
   answers           Answer[]
@@ -100,12 +101,12 @@ model Professor {
   webinars          Webinar[]
   notifications     Notification[]
   patents           Patent[]
-  
-  superAdmin        SuperAdmin? @relation(fields: [superAdminId], references: [id])
-  superAdminId      String?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ResearchInterest {
@@ -118,12 +119,12 @@ model ResearchInterest {
 }
 
 model ProfessorTag {
-  id           String    @id @default(cuid())
-  category     String
-  subcategory  String
-  professor    Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  professorId  String
-  notifications     Notification[]
+  id            String         @id @default(cuid())
+  category      String
+  subcategory   String
+  professor     Professor      @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId   String
+  notifications Notification[]
 
   @@unique([professorId, category, subcategory])
 }
@@ -140,59 +141,59 @@ model Position {
 }
 
 model Business {
-  id          String @id @default(cuid())
-  companyName String
-  email       String @unique
-  password    String
-  phoneNumber String?
-  location    String?
-  industry    String?
-  description String?
-  website     String?
+  id              String  @id @default(cuid())
+  companyName     String
+  email           String  @unique
+  password        String
+  phoneNumber     String?
+  location        String?
+  industry        String?
+  description     String?
+  website         String?
   profileImageUrl String?
-  idCard    String?
-  
-  projects    Project[]
-  answers     Answer[]
-  blogs       Blog[]
-  comments    Comment[]
-  notifications     Notification[]
-  
-  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
-  superAdminId String?
+  // idCard          String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Discussion {
-  id           String    @id @default(cuid())
-  title        String
-  description  String
-  category     String
-  subcategory  String
-  status       DiscussionStatus @default(UNANSWERED)
-  
-  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId    String
-
-  upvotes      Int       @default(0)
-  downvotes    Int       @default(0)
-  answers      Answer[]
-  answerCount  Int       @default(0)
-  
-  votes        Vote[]
-   notifications     Notification[]
+  projects      Project[]
+  answers       Answer[]
+  blogs         Blog[]
+  comments      Comment[]
+  notifications Notification[]
 
   superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Discussion {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  category    String
+  subcategory String
+  status      DiscussionStatus @default(UNANSWERED)
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+
+  upvotes     Int      @default(0)
+  downvotes   Int      @default(0)
+  answers     Answer[]
+  answerCount Int      @default(0)
+
+  votes         Vote[]
+  notifications Notification[]
+
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  superAdminId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Vote {
-  id           String    @id @default(cuid())
+  id           String     @id @default(cuid())
   discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
   discussionId String
   userId       String
@@ -208,79 +209,79 @@ enum VoteType {
 }
 
 model Answer {
-  id           String     @id @default(cuid())
-  content      String
-  
+  id      String @id @default(cuid())
+  content String
+
   discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
   discussionId String
 
-  professor    Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
-  professorId  String?
-  
-  business     Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
-  businessId   String?
+  professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
+  professorId String?
 
-  upvotes      Int        @default(0)
-  downvotes    Int        @default(0)
-  
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  businessId String?
+
+  upvotes   Int @default(0)
+  downvotes Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Blog {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
   content     String
-  likes       Int       @default(0)
-  dislikes    Int       @default(0)
+  likes       Int             @default(0)
+  dislikes    Int             @default(0)
   comments    Comment[]
   authorType  BlogAuthorType?
-  professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
+  professor   Professor?      @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
-  business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  business    Business?       @relation(fields: [businessId], references: [id], onDelete: SetNull)
   businessId  String?
   blogImage   String?
-  
-  blogLikes   BlogLike[]
-   notifications     Notification[]
 
-  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  blogLikes     BlogLike[]
+  notifications Notification[]
+
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Comment {
-  id          String    @id @default(cuid())
-  content     String
-  blog        Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  blogId      String
-  userType    UserType
-  
-  student     Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  id       String   @id @default(cuid())
+  content  String
+  blog     Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId   String
+  userType UserType
+
+  student     Student?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
   studentId   String?
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
   business    Business?  @relation(fields: [businessId], references: [id], onDelete: SetNull)
   businessId  String?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model BlogLike {
-  id        String  @id @default(cuid())
-  blog      Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  blogId    String
-  userId    String
-  isLike    Boolean
+  id     String  @id @default(cuid())
+  blog   Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogId String
+  userId String
+  isLike Boolean
 
   @@unique([blogId, userId])
 }
 
 enum ProjectType {
-BUSINESS_PROJECT  
+  BUSINESS_PROJECT
   PROFESSOR_PROJECT
   STUDENT_PROPOSAL
 }
@@ -290,35 +291,37 @@ enum ProposalCategory {
   INTERNSHIP
   PHD_POSITION
   PROFESSOR_COLLABORATION
-  STUDENT_OPPORTUNITY 
-  INDUSTRY_COLLABORATION 
+  STUDENT_OPPORTUNITY
+  INDUSTRY_COLLABORATION
   TECHNOLOGY_SOLUTION
-  RND_PROJECT 
+  RND_PROJECT
 }
 
 model Project {
-  id          String    @id @default(cuid())
-  topic       String? 
-  content     String?    // Main description field
-  type        ProjectType
-  category    ProposalCategory @default(PROJECT)
-  status      Status
-  
+  id       String           @id @default(cuid())
+  topic    String?
+  content  String? // Main description field
+  type     ProjectType
+  category ProposalCategory @default(PROJECT)
+  status   Status
+
   // Common fields
-  timeline    DateTime?
-  tags        String[]
-  
+  timeline DateTime?
+  tags     String[]
+
   // Fields for academic opportunities
-  eligibility String?
-  duration    Duration?
-  isFunded    Boolean?
-  fundDetails String?
-  desirable   String?
+  eligibility           String?
+  duration              String?
+  deadline              DateTime?
+  isFunded              Boolean?
+  fundDetails           String?
+  desirable             String?
   selectedApplicationId String?
   // Fields for technology/industry projects
-  techDescription String?
-  requirements    String?
-  
+  techDescription       String?
+  requirements          String?
+  proposalFor           String?
+
   // Relations to users
   professor   Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   professorId String?
@@ -331,22 +334,22 @@ model Project {
   professorApplications ProfessorApplication[]
   studentApplications   StudentApplication[]
   businessApplications  BusinessApplication[]
-  
-  notifications     Notification[]
 
-  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  notifications Notification[]
+
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Duration {
   id        String   @id @default(cuid())
   startDate DateTime
   endDate   DateTime
-  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String   @unique
+  //Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // projectId String   @unique
 }
 
 // Updated application models to include descriptions and images
@@ -358,7 +361,7 @@ model ProfessorApplication {
   name        String
   email       String?
   phoneNumber String?
-  description String   // Added field for response description
+  description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
 
@@ -373,7 +376,7 @@ model StudentApplication {
   name        String
   email       String?
   phoneNumber String?
-  description String   // Added field for response description
+  description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
 
@@ -388,7 +391,7 @@ model BusinessApplication {
   name        String
   email       String?
   phoneNumber String?
-  description String   // Added field for response description
+  description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
 
@@ -407,47 +410,47 @@ enum BlogAuthorType {
 }
 
 model Webinar {
-  id          String    @id @default(cuid())
-  title       String
-  topic       String
-  place       String
-  date        DateTime
-  status      WebinarStatus @default(PENDING)
-  
+  id     String        @id @default(cuid())
+  title  String
+  topic  String
+  place  String
+  date   DateTime
+  status WebinarStatus @default(PENDING)
+
   professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
   professorId String
 
-  maxAttendees Int?
-  duration    Int?
-  isOnline    Boolean   @default(true)
-  meetingLink String?
-  webinarImage String?
-  webinarDocument String? 
-  notifications     Notification[]
-  
-  superAdmin  SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  maxAttendees    Int?
+  duration        Int?
+  isOnline        Boolean        @default(true)
+  meetingLink     String?
+  webinarImage    String?
+  webinarDocument String?
+  notifications   Notification[]
+
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   superAdminId String?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SuperAdmin {
-  id              String @id @default(cuid())
-  email           String @unique
-  password        String
-  name            String
-  
-  managedStudents Student[]
-  managedProfessors Professor[]
-  managedBusinesses Business[]
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  name     String
+
+  managedStudents    Student[]
+  managedProfessors  Professor[]
+  managedBusinesses  Business[]
   managedDiscussions Discussion[]
-  managedBlogs    Blog[]
-  managedProjects Project[]
-  managedWebinars Webinar[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  managedBlogs       Blog[]
+  managedProjects    Project[]
+  managedWebinars    Webinar[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum DiscussionStatus {
@@ -469,17 +472,14 @@ enum WebinarStatus {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  email     String
-  fullName  String
-  subject   String
+  id          String   @id @default(cuid())
+  email       String
+  fullName    String
+  subject     String
   phoneNumber String?
-  message   String
-  createdAt DateTime @default(now())
+  message     String
+  createdAt   DateTime @default(now())
 }
-
-
-
 
 enum NotificationType {
   COMMENT
@@ -496,39 +496,37 @@ enum NotificationType {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  type      NotificationType
-  content   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id              String           @id @default(cuid())
+  type            NotificationType
+  content         String
+  isRead          Boolean          @default(false)
+  createdAt       DateTime         @default(now())
   redirectionLink String?
 
   // Recipients
-  student   Student? @relation(fields: [studentId], references: [id])
-  studentId String?
-  professor Professor? @relation(fields: [professorId], references: [id])
+  student     Student?   @relation(fields: [studentId], references: [id])
+  studentId   String?
+  professor   Professor? @relation(fields: [professorId], references: [id])
   professorId String?
-  business  Business? @relation(fields: [businessId], references: [id])
-  businessId String?
+  business    Business?  @relation(fields: [businessId], references: [id])
+  businessId  String?
 
   // Related entities
-  blog      Blog?    @relation(fields: [blogId], references: [id])
-  blogId    String?
-  webinar   Webinar? @relation(fields: [webinarId], references: [id])
-  webinarId String?
-  discussion Discussion? @relation(fields: [discussionId], references: [id])
+  blog         Blog?       @relation(fields: [blogId], references: [id])
+  blogId       String?
+  webinar      Webinar?    @relation(fields: [webinarId], references: [id])
+  webinarId    String?
+  discussion   Discussion? @relation(fields: [discussionId], references: [id])
   discussionId String?
-  project   Project? @relation(fields: [projectId], references: [id])
-  projectId String?
-  patent    Patent?  @relation(fields: [patentId], references: [id])
+  project      Project?    @relation(fields: [projectId], references: [id])
+  projectId    String?
+  patent       Patent?     @relation(fields: [patentId], references: [id])
 
-  patentId  String?
+  patentId String?
 
-  professorTag ProfessorTag? @relation(fields: [professorTagId], references: [id])
+  professorTag   ProfessorTag? @relation(fields: [professorTagId], references: [id])
   professorTagId String?
-
 }
-
 
 model FAQ {
   id        String   @id @default(cuid())
@@ -541,16 +539,15 @@ model FAQ {
 }
 
 model Patent {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  imageUrl    String[]
-  professor   Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
-  professorId String
-  notifications     Notification[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  imageUrl      String[]
+  professor     Professor      @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professorId   String
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model EmailVerification {
@@ -577,7 +574,7 @@ model ChatRoom {
   // Define user types and IDs
   userOneId   String
   userOneType UserRole
-  userTwoId   String 
+  userTwoId   String
   userTwoType UserRole
 
   messages Message[]
@@ -588,14 +585,14 @@ model ChatRoom {
 // Individual messages in a chat
 model Message {
   id        String   @id @default(cuid())
-  content   String   // Text content
+  content   String // Text content
   mediaUrls String[] // Array of media URLs (images, documents)
-  mediaType String?  // Type of media (image, document, etc.)
-  
-  senderId  String   // ID of the sender
+  mediaType String? // Type of media (image, document, etc.)
+
+  senderId   String // ID of the sender
   senderType UserRole // Type of the sender (STUDENT, PROFESSOR, BUSINESS)
-  
-  chatRoom  ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
   chatRoomId String
 
   isRead    Boolean  @default(false)

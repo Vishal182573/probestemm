@@ -12,6 +12,7 @@ import { createNotification } from "./notificationController";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
 import streamifier from "streamifier";
+import { addDays, isAfter } from 'date-fns'
 
 // Configure Cloudinary
 cloudinary.config({
@@ -38,7 +39,7 @@ function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { cat, subcategory, professorId, topic, content, timeline, tags } = req.body;
+    const { cat, subcategory, professorId, topic, content, timeline, tags, deadline } = req.body;
 
     // First verify the creating professor exists
     const creatingProfessor = await prisma.professor.findUnique({
@@ -67,6 +68,7 @@ export const createProfessorProject = async (req: Request, res: Response) => {
         timeline: timeline ? new Date(timeline) : null,
         tags,
         professorId,
+        deadline: new Date(deadline),
       },
     });
 
@@ -124,6 +126,7 @@ export const createStudentProject = async (req: Request, res: Response) => {
       timeline,
       tags,
       eligibility,
+      deadline,
       duration,
       isFunded,
       fundDetails,
@@ -153,20 +156,11 @@ export const createStudentProject = async (req: Request, res: Response) => {
         tags,
         professorId,
         eligibility,
+        deadline: new Date(deadline),
         isFunded,
         fundDetails,
         desirable,
-        duration: duration
-          ? {
-              create: {
-                startDate: new Date(duration.startDate),
-                endDate: new Date(duration.endDate),
-              },
-            }
-          : undefined,
-      },
-      include: {
-        duration: true,
+        duration,
       },
     });
 
@@ -208,6 +202,7 @@ export const createIndustryProject = async (req: Request, res: Response) => {
       tags,
       techDescription,
       requirements,
+      deadline
     } = req.body;
 
     // Get professor details for notification
@@ -234,6 +229,7 @@ export const createIndustryProject = async (req: Request, res: Response) => {
         professorId,
         techDescription,
         requirements,
+        deadline: new Date(deadline),
       },
     });
 
@@ -282,7 +278,6 @@ export const getProjectsByType = async (req: Request, res: Response) => {
                      department: true,
                  },
              },
-             duration: true,
          },
          orderBy: {
              createdAt: 'desc' // This will return the collections in reverse order
@@ -616,6 +611,7 @@ export const createRDProject = async (req: Request, res: Response) => {
       timeline,
       tags,
       eligibility,
+      deadline,
       duration,
       isFunded,
       fundDetails,
@@ -647,17 +643,8 @@ export const createRDProject = async (req: Request, res: Response) => {
         isFunded,
         fundDetails,
         desirable,
-        duration: duration
-          ? {
-              create: {
-                startDate: new Date(duration.startDate),
-                endDate: new Date(duration.endDate),
-              },
-            }
-          : undefined,
-      },
-      include: {
-        duration: true,
+        deadline: new Date(deadline),
+        duration,
       },
     });
 
@@ -699,6 +686,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
       timeline,
       tags,
       eligibility,
+      deadline,
       duration,
       isFunded,
       fundDetails,
@@ -729,17 +717,8 @@ export const createInternshipProject = async (req: Request, res: Response) => {
         isFunded,
         fundDetails,
         desirable,
-        duration: duration
-          ? {
-              create: {
-                startDate: new Date(duration.startDate),
-                endDate: new Date(duration.endDate),
-              },
-            }
-          : undefined,
-      },
-      include: {
-        duration: true,
+        deadline: new Date(deadline),
+        duration,
       },
     });
 
@@ -772,7 +751,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
 // Create student proposal
 export const createStudentProposal = async (req: Request, res: Response) => {
   try {
-    const { studentId, topic, content, techDescription } = req.body;
+    const { studentId, topic, content, proposalFor, techDescription } = req.body;
 
     const creatingStudent = await prisma.student.findUnique({
       where: { id: studentId },
@@ -789,6 +768,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
       data: {
         topic,
         content,
+        proposalFor,
         type: ProjectType.STUDENT_PROPOSAL,
         techDescription,
         status: Status.OPEN,
@@ -1315,7 +1295,6 @@ export const getEnrolledProjectsForProfessor = async (
         professor: true,
         business: true,
         student: true,
-        duration: true,
       },
     });
 
@@ -1358,7 +1337,6 @@ export const getEnrolledProjectsForStudent = async (
         professor: true,
         business: true,
         student: true,
-        duration: true,
       },
     });
 
@@ -1401,7 +1379,6 @@ export const getEnrolledProjectsForBusiness = async (
         professor: true,
         business: true,
         student: true,
-        duration: true,
       },
     });
 
@@ -1411,3 +1388,64 @@ export const getEnrolledProjectsForBusiness = async (
     res.status(500).json({ error: "Failed to fetch enrolled projects" });
   }
 };
+
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId }
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found or unauthorized" });
+    }
+
+    // Delete the project
+    await prisma.project.delete({
+      where: { id: projectId }
+    });
+
+    res.status(200).json({ message: "Project deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting internship project:", error);
+    res.status(500).json({ error: "Failed to delete internship project" });
+  }
+};
+
+export const deleteExpiredProjects = async () => {
+  try {
+    const currentDate = new Date();
+
+    const expiredProjects = await prisma.project.findMany({
+      where: {
+        deadline: {
+          lt: currentDate,
+        },
+      },
+    });
+
+    const deletionResult = await prisma.project.deleteMany({
+      where: {
+        deadline: {
+          lt: currentDate,
+        },
+      },
+    });
+
+    console.log(`Deleted ${deletionResult.count} expired projects`);
+    return expiredProjects;
+  } catch (error) {
+    console.error('Error deleting expired projects:', error);
+    throw error;
+  }
+};
+
+// Scheduled task using node-cron or similar
+export const scheduleProjectCleanup = () => {
+  // Daily cleanup at midnight
+  const cron = require('node-cron');
+  cron.schedule('0 0 * * *', () => {
+    deleteExpiredProjects();
+  })
+}

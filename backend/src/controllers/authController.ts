@@ -423,17 +423,17 @@ export const businessSignup = async (req: Request, res: Response) => {
       profileImageUrl = result.secure_url;
     }
 
-    let idCard = "";
-    if (userData.idCard) {
-      const result = await cloudinary.uploader.upload(userData.idCard);
-      idCard = result.secure_url;
-    }
+    // let idCard = "";
+    // if (userData.idCard) {
+    //   const result = await cloudinary.uploader.upload(userData.idCard);
+    //   idCard = result.secure_url;
+    // }
 
     const user = await prisma.business.create({
       data: {
         companyName: userData.companyName,
         email: userData.email,
-        idCard,
+        // idCard,
         password: hashedPassword,
         phoneNumber: userData.phoneNumber,
         location: userData.location,

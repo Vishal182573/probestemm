@@ -31,6 +31,7 @@ import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
 import emailRoutes from "./routes/emailRoutes";
 import chatRoutes from "./routes/chatRoutes"
+import { scheduleProjectCleanup } from "./controllers/projectsController";
 
 dotenv.config();
 
@@ -435,6 +436,10 @@ const setupAdminPanel = async () => {
                       );
                     }
 
+                    // make red blinking dot next to webinar in navbar for students
+                    io.emit('webinarStatusChanged', { webinarId, status: 'APPROVED' });
+                    
+
                     // Send notifications to all professors
                     for (const professor of professors) {
                       await createNotification(
@@ -713,6 +718,8 @@ const startApp = async () => {
 startApp().catch((error) => {
   console.error("Failed to start the application:", error);
 });
+
+scheduleProjectCleanup();
 
 export default app;
 
