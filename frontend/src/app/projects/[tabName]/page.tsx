@@ -578,22 +578,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       return false;
       case ProposalCategory.RND_PROJECT:
         const roleOfUserRND = userRole;
-        const timeFrameRND = !project.duration || new Date(project.duration.startDate) >= currentDate;
-        if(project.type=="PROFESSOR_PROJECT" && roleOfUserRND=="student" && timeFrameRND) return isProjectOpen;
-        else if(project.type=="BUSINESS_PROJECT" && roleOfUserRND=="professor" && timeFrameRND) return isProjectOpen;
+        if(project.type=="PROFESSOR_PROJECT" && roleOfUserRND=="student") return isProjectOpen;
+        else if(project.type=="BUSINESS_PROJECT" && roleOfUserRND=="professor") return isProjectOpen;
        return false 
       case ProposalCategory.INTERNSHIP:
         const roleOfUser = userRole;
-        const timeFrame = !project.duration || new Date(project.duration.startDate) >= currentDate;
-        if(project.type=="PROFESSOR_PROJECT" && roleOfUser=="student" && timeFrame) return isProjectOpen;
-        else if(project.type=="BUSINESS_PROJECT" && roleOfUser=="student" && timeFrame) return isProjectOpen;
+        if(project.type=="PROFESSOR_PROJECT" && roleOfUser=="student") return isProjectOpen;
+        else if(project.type=="BUSINESS_PROJECT" && roleOfUser=="student") return isProjectOpen;
        return false 
       case ProposalCategory.PHD_POSITION:
         // Original student application logic
         const isStudent = userRole === 'student';
-        const isWithinValidTimeframe = !project.duration || new Date(project.duration.startDate) >= currentDate;
         
-        return isStudent && isProjectOpen && isWithinValidTimeframe;
+        return isStudent && isProjectOpen;
 
       default:
         return false;

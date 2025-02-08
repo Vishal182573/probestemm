@@ -364,6 +364,7 @@ model ProfessorApplication {
   description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
+  status      ApplicationStatus @default(PENDING)
 
   @@unique([projectId, professorId])
 }
@@ -379,6 +380,7 @@ model StudentApplication {
   description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
+  status      ApplicationStatus @default(PENDING)
 
   @@unique([projectId, studentId])
 }
@@ -394,6 +396,7 @@ model BusinessApplication {
   description String // Added field for response description
   images      String[] // Added field for attached images
   createdAt   DateTime @default(now())
+  status      ApplicationStatus @default(PENDING)
 
   @@unique([projectId, businessId])
 }
@@ -604,4 +607,11 @@ enum UserRole {
   student
   professor
   business
+}
+
+enum ApplicationStatus {
+  PENDING
+  IN_REVIEW
+  REJECTED
+  ACCEPTED
 }
