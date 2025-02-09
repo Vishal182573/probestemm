@@ -157,15 +157,24 @@ const QuestionDetailPage: React.FC = () => {
   // Updates vote count after successful vote
   const handleVote = async (voteType: "UPVOTE" | "DOWNVOTE") => {
     try {
-      await axios.post("/api/discussions/vote", {
+      const userString = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+  
+      if (!userString || !token) {
+        setError("User not found in localStorage");
+        return;
+      }
+      const user = JSON.parse(userString);
+      await axios.post(`${API_URL}/discussion/vote`, {
         discussionId: id,
-        userId: "current-user-id", // Replace with actual user ID
-        userType: "STUDENT", // Replace with actual user type
+        userId: user.id, // Replace with actual user ID
+        userType: role?.toUpperCase(), // Replace with actual user type
         voteType,
       });
       fetchDiscussion(); // Refetch to update the vote count
     } catch {
-      setError("Failed to vote");
+      console.error("Failed to vote on discussion:", error);
     }
   };
 

@@ -63,10 +63,10 @@ interface Education {
   passingYear: string;
 }
 
-interface ResearchHighlight {
-  title: string;
-  status: "ONGOING" | "COMPLETED";
-}
+// interface ResearchHighlight {
+//   title: string;
+//   status: "ONGOING" | "COMPLETED";
+// }
 
 interface ResearchInterest {
   title: string;

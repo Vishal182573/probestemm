@@ -11,7 +11,7 @@ import {
 } from "../ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "../ui/button";
-import router, { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 // Enums defining the types of projects and proposal categories
 enum ProjectType {
