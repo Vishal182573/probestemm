@@ -873,8 +873,9 @@ export const assignParticipant = async (req: Request, res: Response) => {
 
     switch (applicationType) {
       case "professor":
-        application = await prisma.professorApplication.findUnique({
+        application = await prisma.professorApplication.update({ // Changed from findUnique to update
           where: { id: applicationId },
+          data: { status: "ACCEPTED" },
           include: { project: true },
         });
         applicantId = application?.professorId;
@@ -890,8 +891,9 @@ export const assignParticipant = async (req: Request, res: Response) => {
         });
         break;
       case "student":
-        application = await prisma.studentApplication.findUnique({
+        application = await prisma.studentApplication.update({ // Changed from findUnique to update
           where: { id: applicationId },
+          data: { status: "ACCEPTED" },
           include: { project: true },
         });
         applicantId = application?.studentId;
@@ -907,8 +909,9 @@ export const assignParticipant = async (req: Request, res: Response) => {
         });
         break;
       case "business":
-        application = await prisma.businessApplication.findUnique({
+        application = await prisma.businessApplication.update({ // Changed from findUnique to update
           where: { id: applicationId },
+          data: { status: "ACCEPTED" },
           include: { project: true },
         });
         applicantId = application?.businessId;
@@ -1022,6 +1025,180 @@ export const assignParticipant = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error assigning participant:", error);
     res.status(500).json({ error: "Failed to assign participant" });
+  }
+};
+
+// Reject participant application
+export const rejectApplication = async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+    const { applicationId, applicationType } = req.body;
+
+    // Verify project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Get application details based on type
+    let application;
+    let applicantId;
+    let applicantType: "professor" | "student" | "business";
+
+    switch (applicationType) {
+      case "professor":
+        application = await prisma.professorApplication.update({
+          where: { id: applicationId },
+          data: { status: "REJECTED" },
+          include: { project: true },
+        });
+        applicantId = application?.professorId;
+        applicantType = "professor";
+        break;
+      case "student":
+        application = await prisma.studentApplication.update({
+          where: { id: applicationId },
+          data: { status: "REJECTED" },
+          include: { project: true },
+        });
+        applicantId = application?.studentId;
+        applicantType = "student";
+        break;
+      case "business":
+        application = await prisma.businessApplication.update({
+          where: { id: applicationId },
+          data: { status: "REJECTED" },
+          include: { project: true },
+        });
+        applicantId = application?.businessId;
+        applicantType = "business";
+        break;
+      default:
+        console.error("Invalid application type");
+        return res.status(400).json({ error: "Invalid application type" });
+    }
+
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    // Create rejection notification for the applicant
+    const rejectionContent = `
+      Your application for project has been rejected.
+      Thank you for your interest.
+    `.trim();
+
+    if (applicantId) {
+      await createNotification(
+        NotificationType.PROJECT_APPLICATION,
+        rejectionContent,
+        applicantId,
+        applicantType,
+        `/${applicantType}-profile/${applicantId}`,
+        projectId,
+        "project"
+      );
+    }
+
+    res.status(200).json(application);
+  } catch (error) {
+    console.error("Error rejecting application:", error);
+    res.status(500).json({ error: "Failed to reject application" });
+  }
+};
+
+// Set application to review
+export const setApplicationInReview = async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+    const { applicationId, applicationType } = req.body;
+
+    // Verify project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        professor: true,
+        business: true,
+        student: true,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Get application details based on type
+    let application;
+    let applicantId;
+    let applicantType: "professor" | "student" | "business";
+
+    switch (applicationType) {
+      case "professor":
+        application = await prisma.professorApplication.update({
+          where: { id: applicationId },
+          data: { status: "IN_REVIEW" },
+          include: { project: true },
+        });
+        applicantId = application?.professorId;
+        applicantType = "professor";
+        break;
+      case "student":
+        application = await prisma.studentApplication.update({
+          where: { id: applicationId },
+          data: { status: "IN_REVIEW" },
+          include: { project: true },
+        });
+        applicantId = application?.studentId;
+        applicantType = "student";
+        break;
+      case "business":
+        application = await prisma.businessApplication.update({
+          where: { id: applicationId },
+          data: { status: "IN_REVIEW" },
+          include: { project: true },
+        });
+        applicantId = application?.businessId;
+        applicantType = "business";
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid application type" });
+    }
+
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    // Create in-review notification for the applicant
+    const reviewContent = `
+      Congratulations you are one step ahead!
+      Your application for project is now under review.
+      We will notify you of any updates.
+    `.trim();
+
+    if (applicantId) {
+      await createNotification(
+        NotificationType.PROJECT_APPLICATION,
+        reviewContent,
+        applicantId,
+        applicantType,
+        `/${applicantType}-profile/${applicantId}`,
+        projectId,
+        "project"
+      );
+    }
+
+    res.status(200).json(application);
+  } catch (error) {
+    console.error("Error setting application to review:", error);
+    res.status(500).json({ error: "Failed to set application to review" });
   }
 };
 

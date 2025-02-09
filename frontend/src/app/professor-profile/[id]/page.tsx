@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
-import axios from "axios";
+import axios, { all } from "axios";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ interface AppliedApplicant {
   email: string;
   description: string;
   images: string[];
+  status: "PENDING" | "REJECTED" | "ACCEPTED" | "IN_REVIEW";
 }
 
 interface ApplicationsResponse {
@@ -143,6 +144,14 @@ interface Project {
   };
   deadline?: string;
   duration?: string;
+}
+
+interface ProjectCategories {
+  industryCollaboration: Project[];
+  professorCollaboration: Project[];
+  internship: Project[];
+  rndProject: Project[];
+  phdPosition: Project[];
 }
 
 type Notification = {
@@ -304,6 +313,14 @@ const ProfessorProfilePage: React.FC = () => {
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
   const [webinarCreationLoading, setWebinarCreationLoading] = useState(false);
 
+  const [categorizedProjects, setCategorizedProjects] = useState<ProjectCategories>({
+    industryCollaboration: [],
+    professorCollaboration: [],
+    internship: [],
+    rndProject: [],
+    phdPosition: [],
+  });
+
   const openModal = (imageUrl: string, title: string) => {
     setSelectedImage(imageUrl);
     setSelectedTitle(title);
@@ -355,6 +372,45 @@ const ProfessorProfilePage: React.FC = () => {
 
     fetchProfessorData();
   }, [id, isLoggedInUser]);
+
+  // Effect hook to categorize projects based on their category
+  useEffect(() => {
+    const handleCategorization = () => {
+      const newCategories: ProjectCategories = {
+        industryCollaboration: [],
+        professorCollaboration: [],
+        internship: [],
+        rndProject: [],
+        phdPosition: [],
+      };
+    
+      console.log(professor);
+      professor?.projects?.forEach((project: Project) => {
+        switch (project.category) {
+          case "INDUSTRY_COLLABORATION":
+            newCategories.industryCollaboration.push(project);
+            break;
+          case "PROFESSOR_COLLABORATION":
+            newCategories.professorCollaboration.push(project);
+            break;
+          case "INTERNSHIP":
+            newCategories.internship.push(project);
+            break;
+          case "RND_PROJECT":
+            newCategories.rndProject.push(project);
+            break;
+          case "PHD_POSITION":
+            newCategories.phdPosition.push(project);
+            break;
+          default:
+            break;
+        }
+      });
+    
+      setCategorizedProjects(newCategories);
+    };
+  handleCategorization();
+  }, [professor]);
 
   // Handler for fetching applicants for a specific project
   const fetchAppliedApplicants = async (projectId: string) => {
@@ -413,6 +469,17 @@ const ProfessorProfilePage: React.FC = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      // Update the UI state
+      setAppliedApplicantsMap(prevMap => ({
+        ...prevMap,
+        [projectId]: prevMap[projectId].map(applicant => 
+          applicant.id === applicantId 
+            ? { ...applicant, status: 'ACCEPTED' }
+            : applicant
+        )
+      }));
+
       setProfessor((prevProfessor) => {
         if (!prevProfessor) return prevProfessor;
         return {
@@ -429,6 +496,72 @@ const ProfessorProfilePage: React.FC = () => {
       setError("Failed to assign applicant. Please try again.");
     }
   };
+
+  // Handler for rejecting an applicant
+const handleRejectApplicant = async (
+  projectId: string,
+  applicantId: string,
+  applicantType: string
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${API_URL}/project/${projectId}/reject`,
+      {
+        applicationId: applicantId,
+        applicationType: applicantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Update the UI state
+    setAppliedApplicantsMap(prevMap => ({
+      ...prevMap,
+      [projectId]: prevMap[projectId].map(applicant => 
+        applicant.id === applicantId 
+          ? { ...applicant, status: 'REJECTED' }
+          : applicant
+      )
+    }));
+
+  } catch (error) {
+    console.error("Error rejecting applicant:", error);
+    setError("Failed to reject applicant. Please try again.");
+  }
+};
+
+// Handler for setting application status to in review
+const handleSetInReview = async (
+  projectId: string,
+  applicantId: string,
+  applicantType: string
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${API_URL}/project/${projectId}/review`,
+      {
+        applicationId: applicantId,
+        applicationType: applicantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Update the UI state
+    setAppliedApplicantsMap(prevMap => ({
+      ...prevMap,
+      [projectId]: prevMap[projectId].map(applicant => 
+        applicant.id === applicantId 
+          ? { ...applicant, status: 'IN_REVIEW' }
+          : applicant
+      )
+    }));
+
+  } catch (error) {
+    console.error("Error setting application to review:", error);
+    setError("Failed to set application to review. Please try again.");
+  }
+};
 
   // Handler for marking a project as complete
   const handleCompleteProject = async (projectId: string) => {
@@ -636,7 +769,14 @@ const ProfessorProfilePage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setProjects([...projects, response.data]);
+      // Update professor state to trigger the useEffect
+      setProfessor(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          projects: [...prev.projects, response.data]
+        };
+      });
       setIsProjectDialogOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -649,7 +789,7 @@ const ProfessorProfilePage: React.FC = () => {
   const handleDeleteProject = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `${API_URL}/project/${projectId}`;
+      const endpoint = `${API_URL}/project/${projectId}/delete`;
   
       await axios.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -658,6 +798,17 @@ const ProfessorProfilePage: React.FC = () => {
       setProjects((prevProjects) =>
         prevProjects.filter((project) => project.id !== projectId)
       );
+      // Update categorizedProjects by removing the deleted project
+      setCategorizedProjects(prev => {
+        const newCategories = { ...prev };
+        Object.keys(newCategories).forEach(key => {
+          newCategories[key] = newCategories[key].filter(
+            project => project.id !== projectId
+          );
+        });
+        return newCategories;
+      });
+
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error deleting project:", error);
@@ -672,7 +823,7 @@ const ProfessorProfilePage: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this project?</h3>
           <div className="flex justify-evenly">
             <Button
-              onClick={() => handleDeleteProject(projectIDToDelete)} 
+              onClick={() => handleDeleteProject(projectIDToDelete as string)} 
               className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
             >
               Yes
@@ -804,37 +955,37 @@ const ProfessorProfilePage: React.FC = () => {
     </TabsContent>
   );
 
-  // Project categorization logic
-  const categorizedProjects = {
-    industryCollaboration: [] as Project[],
-    professorCollaboration: [] as Project[],
-    internship: [] as Project[],
-    rndProject: [] as Project[],
-    phdPosition: [] as Project[],
-  };
+  // // Project categorization logic
+  // const categorizedProjects = {
+  //   industryCollaboration: [] as Project[],
+  //   professorCollaboration: [] as Project[],
+  //   internship: [] as Project[],
+  //   rndProject: [] as Project[],
+  //   phdPosition: [] as Project[],
+  // };
 
-  professor.projects.forEach((project) => {
-    // console.log(project)
-    switch (project.category) {
-      case "INDUSTRY_COLLABORATION":
-        categorizedProjects.industryCollaboration.push(project);
-        break;
-      case "PROFESSOR_COLLABORATION":
-        categorizedProjects.professorCollaboration.push(project);
-        break;
-      case "INTERNSHIP":
-        categorizedProjects.internship.push(project);
-        break;
-      case "RND_PROJECT":
-        categorizedProjects.rndProject.push(project);
-        break;
-      case "PHD_POSITION":
-        categorizedProjects.phdPosition.push(project);
-        break;
-      default:
-        break;
-    }
-  });
+  // professor.projects.forEach((project) => {
+  //   // console.log(project)
+  //   switch (project.category) {
+  //     case "INDUSTRY_COLLABORATION":
+  //       categorizedProjects.industryCollaboration.push(project);
+  //       break;
+  //     case "PROFESSOR_COLLABORATION":
+  //       categorizedProjects.professorCollaboration.push(project);
+  //       break;
+  //     case "INTERNSHIP":
+  //       categorizedProjects.internship.push(project);
+  //       break;
+  //     case "RND_PROJECT":
+  //       categorizedProjects.rndProject.push(project);
+  //       break;
+  //     case "PHD_POSITION":
+  //       categorizedProjects.phdPosition.push(project);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // });
 
   // Render function for enrolled projects tab
   const renderEnrolledProjectsTab = () => (
@@ -1187,19 +1338,89 @@ const ProfessorProfilePage: React.FC = () => {
                                       height={100}
                                     />
                                   </div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAssignApplicant(
-                                        project.id,
-                                        applicant.id,
-                                        "business"
-                                      )
-                                    }
-                                    className="bg-[#eb5e17] text-white"
-                                  >
-                                    Assign
-                                  </Button>
+
+                                  {/* Show all buttons when status is PENDING */}
+                                  {applicant.status === 'PENDING' && (
+                                  <div className="flex items-center space-x-4">
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleAssignApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "business"
+                                        )
+                                      }
+                                      className="bg-[#eb5e17] text-white"
+                                    >
+                                      Assign
+                                    </Button>
+                                    {/* Reject Button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRejectApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "business"
+                                        )
+                                      }
+                                      className="bg-red-600 text-white"
+                                    >
+                                      Reject
+                                    </Button>
+                                    {/* In Review button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetInReview(
+                                          project.id,
+                                          applicant.id,
+                                          "business"
+                                        )
+                                      }
+                                      className="bg-yellow-600 text-white"
+                                    >
+                                      Set In Review
+                                    </Button>
+                                  </div>
+                                  )}
+
+                                  {/* Show "Rejected" text when status is REJECTED */}
+                                  {applicant.status === 'REJECTED' && (
+                                    <div className="text-red-600 font-medium">
+                                      Rejected
+                                    </div>
+                                  )}
+
+                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
+                                  {applicant.status === 'IN_REVIEW' && (
+                                    <div className="flex items-center space-x-4">
+                                      <div className="text-yellow-600 font-medium">
+                                        In Review
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAssignApplicant(
+                                            project.id,
+                                            applicant.id,
+                                            "business"
+                                          )
+                                        }
+                                        className="bg-[#eb5e17] text-white"
+                                      >
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {/* Show "Assigned" text when status is ACCEPTED */}
+                                  {applicant.status === 'ACCEPTED' && (
+                                    <div className="text-green-600 font-medium">
+                                      Assigned
+                                    </div>
+                                  )}
                                 </li>
                               )
                             )}
@@ -1246,9 +1467,9 @@ const ProfessorProfilePage: React.FC = () => {
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
+                      {/* <h4 className="text-lg font-semibold text-[#472014]">
                         {project.topic}
-                      </h4>
+                      </h4> */}
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
@@ -1313,19 +1534,90 @@ const ProfessorProfilePage: React.FC = () => {
                                       height={100}
                                     />
                                   </div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAssignApplicant(
-                                        project.id,
-                                        applicant.id,
-                                        "professor"
-                                      )
-                                    }
-                                    className="bg-[#eb5e17] text-white"
-                                  >
-                                    Assign
-                                  </Button>
+                                  
+                                  {/* Show all buttons when status is PENDING */}
+                                  {applicant.status === 'PENDING' && (
+                                  <div className="flex items-center space-x-4">
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleAssignApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "professor"
+                                        )
+                                      }
+                                      className="bg-[#eb5e17] text-white"
+                                    >
+                                      Assign
+                                    </Button>
+                                    {/* Reject Button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRejectApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "professor"
+                                        )
+                                      }
+                                      className="bg-red-600 text-white"
+                                    >
+                                      Reject
+                                    </Button>
+                                    {/* In Review button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetInReview(
+                                          project.id,
+                                          applicant.id,
+                                          "professor"
+                                        )
+                                      }
+                                      className="bg-yellow-600 text-white"
+                                    >
+                                      Set In Review
+                                    </Button>
+                                  </div>
+                                  )}
+
+                                  {/* Show "Rejected" text when status is REJECTED */}
+                                  {applicant.status === 'REJECTED' && (
+                                    <div className="text-red-600 font-medium">
+                                      Rejected
+                                    </div>
+                                  )}
+
+                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
+                                  {applicant.status === 'IN_REVIEW' && (
+                                    <div className="flex items-center space-x-4">
+                                      <div className="text-yellow-600 font-medium">
+                                        In Review
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAssignApplicant(
+                                            project.id,
+                                            applicant.id,
+                                            "professor"
+                                          )
+                                        }
+                                        className="bg-[#eb5e17] text-white"
+                                      >
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {/* Show "Assigned" text when status is ACCEPTED */}
+                                  {applicant.status === 'ACCEPTED' && (
+                                    <div className="text-green-600 font-medium">
+                                      Assigned
+                                    </div>
+                                  )}
+
                                 </li>
                               )
                             )}
@@ -1376,9 +1668,9 @@ const ProfessorProfilePage: React.FC = () => {
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
+                      {/* <h4 className="text-lg font-semibold text-[#472014]">
                         {project.topic}
-                      </h4>
+                      </h4> */}
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
@@ -1443,19 +1735,90 @@ const ProfessorProfilePage: React.FC = () => {
                                       height={100}
                                     />
                                   </div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAssignApplicant(
-                                        project.id,
-                                        applicant.id,
-                                        "student"
-                                      )
-                                    }
-                                    className="bg-[#eb5e17] text-white"
-                                  >
-                                    Assign
-                                  </Button>
+                                  
+                                  {/* Show all buttons when status is PENDING */}
+                                  {applicant.status === 'PENDING' && (
+                                  <div className="flex items-center space-x-4">
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleAssignApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-[#eb5e17] text-white"
+                                    >
+                                      Assign
+                                    </Button>
+                                    {/* Reject Button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRejectApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-red-600 text-white"
+                                    >
+                                      Reject
+                                    </Button>
+                                    {/* In Review button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetInReview(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-yellow-600 text-white"
+                                    >
+                                      Set In Review
+                                    </Button>
+                                  </div>
+                                  )}
+
+                                  {/* Show "Rejected" text when status is REJECTED */}
+                                  {applicant.status === 'REJECTED' && (
+                                    <div className="text-red-600 font-medium">
+                                      Rejected
+                                    </div>
+                                  )}
+
+                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
+                                  {applicant.status === 'IN_REVIEW' && (
+                                    <div className="flex items-center space-x-4">
+                                      <div className="text-yellow-600 font-medium">
+                                        In Review
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAssignApplicant(
+                                            project.id,
+                                            applicant.id,
+                                            "student"
+                                          )
+                                        }
+                                        className="bg-[#eb5e17] text-white"
+                                      >
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {/* Show "Assigned" text when status is ACCEPTED */}
+                                  {applicant.status === 'ACCEPTED' && (
+                                    <div className="text-green-600 font-medium">
+                                      Assigned
+                                    </div>
+                                  )}
+
                                 </li>
                               )
                             )}
@@ -1495,9 +1858,9 @@ const ProfessorProfilePage: React.FC = () => {
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
+                      {/* <h4 className="text-lg font-semibold text-[#472014]">
                         {project.topic}
-                      </h4>
+                      </h4> */}
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
@@ -1562,19 +1925,90 @@ const ProfessorProfilePage: React.FC = () => {
                                       height={100}
                                     />
                                   </div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAssignApplicant(
-                                        project.id,
-                                        applicant.id,
-                                        "student"
-                                      )
-                                    }
-                                    className="bg-[#eb5e17] text-white"
-                                  >
-                                    Assign
-                                  </Button>
+                                  
+                                  {/* Show all buttons when status is PENDING */}
+                                  {applicant.status === 'PENDING' && (
+                                  <div className="flex items-center space-x-4">
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleAssignApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-[#eb5e17] text-white"
+                                    >
+                                      Assign
+                                    </Button>
+                                    {/* Reject Button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRejectApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-red-600 text-white"
+                                    >
+                                      Reject
+                                    </Button>
+                                    {/* In Review button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetInReview(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-yellow-600 text-white"
+                                    >
+                                      Set In Review
+                                    </Button>
+                                  </div>
+                                  )}
+
+                                  {/* Show "Rejected" text when status is REJECTED */}
+                                  {applicant.status === 'REJECTED' && (
+                                    <div className="text-red-600 font-medium">
+                                      Rejected
+                                    </div>
+                                  )}
+
+                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
+                                  {applicant.status === 'IN_REVIEW' && (
+                                    <div className="flex items-center space-x-4">
+                                      <div className="text-yellow-600 font-medium">
+                                        In Review
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAssignApplicant(
+                                            project.id,
+                                            applicant.id,
+                                            "student"
+                                          )
+                                        }
+                                        className="bg-[#eb5e17] text-white"
+                                      >
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {/* Show "Assigned" text when status is ACCEPTED */}
+                                  {applicant.status === 'ACCEPTED' && (
+                                    <div className="text-green-600 font-medium">
+                                      Assigned
+                                    </div>
+                                  )}
+
                                 </li>
                               )
                             )}
@@ -1615,9 +2049,9 @@ const ProfessorProfilePage: React.FC = () => {
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-semibold text-[#472014]">
+                      {/* <h4 className="text-lg font-semibold text-[#472014]">
                         {project.topic}
-                      </h4>
+                      </h4> */}
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
@@ -1682,19 +2116,90 @@ const ProfessorProfilePage: React.FC = () => {
                                       height={100}
                                     />
                                   </div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAssignApplicant(
-                                        project.id,
-                                        applicant.id,
-                                        "student"
-                                      )
-                                    }
-                                    className="bg-[#eb5e17] text-white"
-                                  >
-                                    Assign
-                                  </Button>
+                                  
+                                  {/* Show all buttons when status is PENDING */}
+                                  {applicant.status === 'PENDING' && (
+                                  <div className="flex items-center space-x-4">
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleAssignApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-[#eb5e17] text-white"
+                                    >
+                                      Assign
+                                    </Button>
+                                    {/* Reject Button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRejectApplicant(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-red-600 text-white"
+                                    >
+                                      Reject
+                                    </Button>
+                                    {/* In Review button */}
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleSetInReview(
+                                          project.id,
+                                          applicant.id,
+                                          "student"
+                                        )
+                                      }
+                                      className="bg-yellow-600 text-white"
+                                    >
+                                      Set In Review
+                                    </Button>
+                                  </div>
+                                  )}
+
+                                  {/* Show "Rejected" text when status is REJECTED */}
+                                  {applicant.status === 'REJECTED' && (
+                                    <div className="text-red-600 font-medium">
+                                      Rejected
+                                    </div>
+                                  )}
+
+                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
+                                  {applicant.status === 'IN_REVIEW' && (
+                                    <div className="flex items-center space-x-4">
+                                      <div className="text-yellow-600 font-medium">
+                                        In Review
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleAssignApplicant(
+                                            project.id,
+                                            applicant.id,
+                                            "student"
+                                          )
+                                        }
+                                        className="bg-[#eb5e17] text-white"
+                                      >
+                                        Assign
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {/* Show "Assigned" text when status is ACCEPTED */}
+                                  {applicant.status === 'ACCEPTED' && (
+                                    <div className="text-green-600 font-medium">
+                                      Assigned
+                                    </div>
+                                  )}
+
                                 </li>
                               )
                             )}

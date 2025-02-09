@@ -42,6 +42,9 @@ router.post(
 //status routes for projects
 
 router.post("/:projectId/assign", projectController.assignParticipant);
+router.post("/:projectId/reject", projectController.rejectApplication);
+router.post("/:projectId/review", projectController.setApplicationInReview);
+
 router.post("/:projectId/complete", projectController.completeProject);
 router.get(
   "/:userType/:userId/projects",
@@ -70,6 +73,6 @@ router.get(
 // Get last 3 recent project
 router.get("/recent", projectController.getRecentProjects);
 
-router.delete("/:projectId", authMiddleware, projectController.deleteProject);
+router.delete("/:projectId/delete", projectController.deleteProject);
 
 export default router;

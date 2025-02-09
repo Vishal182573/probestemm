@@ -58,7 +58,15 @@ const HomePage = () => {
               viewport={{ once: true }}
               className="text-5xl font-bold text-center mb-6 text-gray-800"
             >
-              Projects
+              Cutting-edge STEM Projects
+            </motion.h2>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-2xl text-center mb-6 text-gray-800"
+            >
+              Explore groundbreaking projects and collaborate with leading experts
             </motion.h2>
             {/* Features demo component with right-aligned image */}
             <RecentProjects />
