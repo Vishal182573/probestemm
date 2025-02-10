@@ -112,7 +112,8 @@ const ProjectsPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<ProposalCategory | null>(null); // Currently selected category
   const [showModal, setShowModal] = useState(false); // Controls application modal visibility
   const [selectedProject, setSelectedProject] = useState<Project | null>(null); // Currently selected project
-  
+  const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
+
   // Navigation and routing hooks
   const params = useParams();
   const router = useRouter();
@@ -176,6 +177,28 @@ const ProjectsPage: React.FC = () => {
 
     fetchProjects();
   }, [activeTab, activeCategory]);
+
+  // Add new effect to fetch applied projects
+  useEffect(() => {
+    const fetchAppliedProjects = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const userType = localStorage.getItem("role");
+        
+        if (!userId || !userType) return;
+    
+        const response = await axios.get(
+          `${API_URL}/project/applied/${userId}?userType=${userType}`
+        );
+        
+        setAppliedProjects(new Set(response.data));
+      } catch (error) {
+        console.error("Error fetching applied projects:", error);
+      }
+    };
+
+    fetchAppliedProjects();
+  }, []);
 
   // Effect hook to filter projects based on search query
   const [searchQuery, setSearchQuery] = useState('');
@@ -256,6 +279,10 @@ const ProjectsPage: React.FC = () => {
     setSelectedProject(null);
   };
 
+  const handleApplicationSuccess = (projectId: string) => {
+    setAppliedProjects(prev => new Set([...prev, projectId]));
+  };
+
   // Loading state UI
   if (loading) {
     return (
@@ -306,24 +333,23 @@ const ProjectsPage: React.FC = () => {
             </TabsList>
 
             <div className={`flex gap-10 lg:gap-20 ${activeTab === "students" ? "justify-end" : "justify-between"}`}>
-              {activeTab !== "students" && (
-                <div className="space-y-2 w-full">
-                  <label htmlFor="search" className="text-sm font-medium text-white">
-                    Search Projects
-                  </label>
-                  <Input
-                    id="search"
-                    type="text"
-                    placeholder="Enter tags (e.g., AI, Machine Learning)"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full text-white"
-                  />
-                  <p className="text-sm text-gray-500">
-                    Separate multiple tags with commas
-                  </p>
-                </div>
-              )}
+              
+              <div className="space-y-2 w-full">
+                <label htmlFor="search" className="text-sm font-medium text-white">
+                  Search Projects
+                </label>
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="Enter tags (e.g., AI, Machine Learning)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full text-white"
+                />
+                <p className="text-sm text-gray-500">
+                  Separate multiple tags with commas
+                </p>
+              </div>
 
               <div className="space-y-2 w-52 lg:w-72">
                 <label className="text-sm font-medium text-white ml-2">
@@ -364,6 +390,7 @@ const ProjectsPage: React.FC = () => {
             <ProjectsList
               projects={filteredProjects}
               onApply={openApplyModal}
+              appliedProjects={appliedProjects}
             />
           </Tabs>
         </div>
@@ -375,6 +402,7 @@ const ProjectsPage: React.FC = () => {
           show={showModal}
           onClose={closeApplyModal}
           project={selectedProject}
+          onSuccess={handleApplicationSuccess}
         />
       )}
     </div>
@@ -385,9 +413,10 @@ const ProjectsPage: React.FC = () => {
 interface ProjectsListProps {
   projects: Project[];
   onApply: (project: Project) => void;
+  appliedProjects: Set<string>;
 }
 
-const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply }) => {
+const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply, appliedProjects }) => {
   return (
     <section className="py-20">
       {projects.length > 0 ? (
@@ -398,6 +427,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply }) => {
               project={project}
               index={index}
               onApply={onApply}
+              isApplied={appliedProjects.has(project.id)}
             />
           ))}
         </div>
@@ -413,12 +443,14 @@ interface ProjectCardProps {
   project: Project;
   index: number;
   onApply: (project: Project) => void;
+  isApplied: boolean;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   index,
   onApply,
+  isApplied,
 }) => {
   // Router hook for navigation
   const router = useRouter();
@@ -443,12 +475,28 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <>
             {project.deadline && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold">Deadline:</h4>
+                <h4 className="font-semibold">Application Deadline:</h4>
                 <p>
                   {new Date(project.deadline).toLocaleDateString()}
                 </p>
               </div>
             )}
+            {project.duration && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Project Duration:</h4>
+                <p>
+                  {project.duration}
+                </p>
+              </div>
+            )}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription || 'No technical description provided'}</p>
+            </div>
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
+            </div>
           </>
         );
       case ProposalCategory.INDUSTRY_COLLABORATION:
@@ -464,12 +512,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
             {project.deadline && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold">Deadline:</h4>
+                <h4 className="font-semibold">Application Deadline:</h4>
                 <p>
                   {new Date(project.deadline).toLocaleDateString()}
                 </p>
               </div>
             )}
+            {project.duration && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Project Duration:</h4>
+                <p>
+                  {project.duration}
+                </p>
+              </div>
+            )}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
+            </div>
           </>
         );
       case ProposalCategory.PROJECT:
@@ -485,17 +545,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <p>{project.proposalFor}</p>
             </div>
             <div className="mb-2 text-black">
-              <h4 className="font-semibold ">TechDescription:</h4>
+              <h4 className="font-semibold ">Technical Description:</h4>
               <p>{project.techDescription}</p>
             </div>
             {project.deadline && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold">Deadline:</h4>
+                <h4 className="font-semibold">Application Deadline:</h4>
                 <p>
                   {new Date(project.deadline).toLocaleDateString()}
                 </p>
               </div>
             )}
+            {project.duration && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Project Duration:</h4>
+                <p>
+                  {project.duration}
+                </p>
+              </div>
+            )}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Funding:</h4>
+              <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
+            </div>
           </>
         );
       case ProposalCategory.STUDENT_OPPORTUNITY:
@@ -522,7 +594,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
             {project.deadline && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold">Deadline:</h4>
+                <h4 className="font-semibold">Application Deadline:</h4>
                 <p>
                   {new Date(project.deadline).toLocaleDateString()}
                 </p>
@@ -530,16 +602,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
             {project.duration && (
               <div className="mb-2 text-black">
-                <h4 className="font-semibold">Duration:</h4>
+                <h4 className="font-semibold">Project Duration:</h4>
                 <p>
                   {project.duration}
                 </p>
               </div>
             )}
             <div className="mb-2 text-black">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription || 'No technical description provided'}</p>
+            </div>
+            <div className="mb-2 text-black">
               <h4 className="font-semibold">Funding:</h4>
               <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
-              {/* <p>{project.fundDetails && project.fundDetails}</p> */}
             </div>
           </>
         );
@@ -599,7 +674,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 
   // Handler functions for user interactions
   const handleApply = () => {
-    if (!canApply) {
+    if (!canApply || isApplied) {
       alert('You are not eligible to apply for this project. Please check the eligibility criteria or project status.');
       return;
     }
@@ -688,15 +763,21 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     </Button>
             <Button
               onClick={handleApply}
-              disabled={!canApply}
+              disabled={!canApply || isApplied}
               className={`
                 flex-1 
-                ${canApply 
-                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
-                  : 'bg-gray-400 cursor-not-allowed'}
+                ${isApplied 
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : canApply 
+                    ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
+                    : 'bg-gray-400 cursor-not-allowed'}
               `}
             >
-              {canApply ? `${application_button}` : 'Cannot Apply'}
+              {isApplied 
+                ? 'Applied' 
+                : canApply 
+                  ? `${application_button}` 
+                  : 'Cannot Apply'}
             </Button>
           </div>
         </CardFooter>
@@ -710,9 +791,10 @@ interface ApplyModalProps {
   show: boolean;
   onClose: () => void;
   project: Project;
+  onSuccess?: (projectId: string) => void;
 }
 
-const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
+const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSuccess }) => {
   // Form handling with react-hook-form
   const { register, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
@@ -757,7 +839,14 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project }) => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
+      // Update local storage to track this application
+      const appliedProjectsStr = localStorage.getItem('appliedProjects') || '[]';
+      const appliedProjects = JSON.parse(appliedProjectsStr);
+      appliedProjects.push(project.id);
+      localStorage.setItem('appliedProjects', JSON.stringify(appliedProjects));
+
       reset();
+      onSuccess?.(project.id); // Call onSuccess with project ID
       onClose();
     } catch (error) {
       console.error("Error submitting application:", error);

@@ -401,7 +401,7 @@ const StudentProfilePage: React.FC = () => {
   const handleDeleteProject = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `${API_URL}/project/${projectId}`;
+      const endpoint = `${API_URL}/project/${projectId}/delete`;
 
       console.log("Deleting project with ID:", projectId);
   
@@ -628,9 +628,11 @@ const StudentProfilePage: React.FC = () => {
                   <p className="text-lg text-black">{student.university}</p>
                 </div>
               </div>
-              <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-                    Send Message
-              </Button>
+              {!isOwnProfile && (
+                <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                  Send Message
+                </Button>
+              )}
 
               {isOwnProfile && (
                 <Link href={"/edit-profile"}>

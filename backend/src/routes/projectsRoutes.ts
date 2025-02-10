@@ -75,4 +75,6 @@ router.get("/recent", projectController.getRecentProjects);
 
 router.delete("/:projectId/delete", projectController.deleteProject);
 
+router.get('/applied/:userId', projectController.getAppliedProjects);
+
 export default router;

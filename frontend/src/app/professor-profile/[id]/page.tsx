@@ -856,7 +856,9 @@ const handleSetInReview = async (
         .split(",")
         .map((tag) => tag.trim()),
       deadline: formData.get("deadline"),
-      duration: formData.get("duration")
+      duration: formData.get("duration"),
+      isFunded: formData.get("isFunded") === "true",
+      techDescription: formData.get("techDescription"),
     };
     console.log(category);
     console.log(subcategory);
@@ -865,11 +867,9 @@ const handleSetInReview = async (
     // Add additional fields based on collaboration type
     if (collaborationType === "students") {
       projectData.eligibility = formData.get("eligibility");
-      projectData.isFunded = formData.get("isFunded") === "true";
       projectData.fundDetails = formData.get("fundDetails");
       projectData.desirable = formData.get("desirable");
     } else if (collaborationType === "industries") {
-      projectData.techDescription = formData.get("techDescription");
       projectData.requirements = formData.get("requirements");
     }
     // console.log(projectData)
@@ -1118,28 +1118,6 @@ const handleSetInReview = async (
                   </div>
                 )}
 
-                {/* {collaborationType === "students"  && (
-                <div>
-                  <Label htmlFor="project-topic">Topic</Label>
-                  <Input
-                    id="project-topic"
-                    name="topic"
-                    placeholder="Enter project topic"
-                    required
-                  />
-                </div> )} */}
-                {collaborationType !== "industries" && (
-                  <div>
-                    <Label htmlFor="project-content">Description</Label>
-                    <Textarea
-                      id="project-content"
-                      name="content"
-                      placeholder="Enter project content"
-                      required
-                    />
-                  </div>
-                )}
-
                 <div>
                   <Label htmlFor="project-tags">Tags (comma separated)</Label>
                   <Input
@@ -1151,7 +1129,9 @@ const handleSetInReview = async (
                 </div>
 
                 <div>
-                    <Label htmlFor="deadline">Deadline</Label>
+                    <Label htmlFor="deadline">Application Deadline 
+                      <br />
+                      (Project will be deleted 10 days after the deadline)</Label>
                     <Input
                       id="deadline"
                       name="deadline"
@@ -1172,29 +1152,6 @@ const handleSetInReview = async (
                         className="bg-white text-black"
                       />
                     </div>
-
-                    <div>
-                      <Label htmlFor="duration">Duration</Label>
-                      <Input
-                        id="duration"
-                        name="duration"
-                        placeholder="Enter project duration"
-                        className="bg-white text-black"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Is Funded</Label>
-                      <Select name="isFunded" required>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select funding status" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-black">
-                          <SelectItem value="true">Yes</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                     <div>
                       <Label htmlFor="project-desirable">
                         Desirable Skills
@@ -1209,31 +1166,52 @@ const handleSetInReview = async (
                   </>
                 )}
 
-                {collaborationType === "industries" && (
-                  <>
-                    <div>
-                      <Label htmlFor="project-tech-description">
-                        Technology Description
-                      </Label>
-                      <Input
-                        id="project-tech-description"
-                        name="techDescription"
-                        placeholder="Enter technology description"
-                        className="bg-white text-black"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="project-requirements">
-                        What i looking for ?
-                      </Label>
-                      <Textarea
-                        id="project-requirements"
-                        name="requirements"
-                        placeholder="Enter project requirements"
-                      />
-                    </div>
-                  </>
+                <div>
+                  <Label htmlFor="project-tech-description">
+                  Technical Description
+                  </Label>
+                  <Input
+                    id="project-tech-description"
+                    name="techDescription"
+                    placeholder="Enter technology description"
+                    className="bg-white text-black"
+                  />
+                </div>
+
+                {collaborationType === "industry" && (
+                <div>
+                  <Label htmlFor="project-requirements">
+                    What I am looking for ?
+                  </Label>
+                  <Textarea
+                    id="project-requirements"
+                    name="requirements"
+                    placeholder="Enter project requirements"
+                  />
+                </div>
                 )}
+
+                <div>
+                  <Label htmlFor="duration">Project Duration</Label>
+                  <Input
+                    id="duration"
+                    name="duration"
+                    placeholder="Enter project duration"
+                    className="bg-white text-black"
+                  />
+                </div>
+                <div>
+                  <Label>Is Funded</Label>
+                  <Select name="isFunded" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select funding status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white text-black">
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Button
                   type="submit"
@@ -2324,9 +2302,11 @@ const handleSetInReview = async (
                   <Globe className="mr-2 h-4 w-4 text-black" />
                   Google Scholar
                 </a>
-                <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-                Send Message
-                </Button>
+                {!isLoggedInUser && (
+                  <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                    Send Message
+                  </Button>
+                )}
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>
                     <Button className="bg-[#eb5e17] hover:bg-[#472014] text-white flex flex-end">

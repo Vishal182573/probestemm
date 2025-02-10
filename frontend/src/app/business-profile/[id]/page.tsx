@@ -337,7 +337,7 @@ const BusinessProfilePage: React.FC = () => {
   const handleDeleteProject = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `${API_URL}/project/${projectId}`;
+      const endpoint = `${API_URL}/project/${projectId}/delete`;
 
       console.log("Deleting project with ID:", projectId);
   
@@ -715,9 +715,11 @@ const BusinessProfilePage: React.FC = () => {
                   <p className="text-xl text-black">{business.location}</p>
                 </div>
               </div>
-              <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
-              Send Message
-              </Button>
+              {!isLoggedInUser && (
+                <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                  Send Message
+                </Button>
+              )}
               <div className="flex items-center space-x-2">
                 {isLoggedInUser && (
                   <Link href={"/edit-profile"}>

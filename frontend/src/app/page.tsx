@@ -49,7 +49,7 @@ const HomePage = () => {
         <HeroSection />
         {/* Features section - Displays cards for Students, Academia, and Industry */}
         <FeaturesSection />
-        {/* Webinar section with animated heading and features demo */}
+        {/* Project Sectionn */}
         <section className="py-10 md:py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <motion.h2 
@@ -70,6 +70,18 @@ const HomePage = () => {
             </motion.h2>
             {/* Features demo component with right-aligned image */}
             <RecentProjects />
+
+            {/* find more button redirecting to projects page */}
+            <div className="flex justify-center">
+              <Link href="/projects/:tabName">
+                <Button
+                  className="bg-[#5e17eb] hover:bg-[#472014] text-white hover:text-white"
+                >
+                  Find More Projects <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
+            </div>
+
           </div>
         </section>
         {/* Additional sections for different content types */}

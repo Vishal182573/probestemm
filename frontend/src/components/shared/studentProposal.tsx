@@ -5,6 +5,14 @@ import { Loader2, Send, CheckCircle } from "lucide-react";
 import axios from "axios";
 import { API_URL } from "@/constants";
 import { toast } from "react-hot-toast";
+import { Label } from "@radix-ui/react-label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Define TypeScript interface for component props
 interface StudentProposalFormProps {
@@ -17,6 +25,8 @@ interface FormDataType {
   techDescription: string;
   content: string;
   proposalFor: string;
+  tags: string[];
+  isFunded: boolean;
 }
 
 // Main component definition with TypeScript typing
@@ -30,6 +40,8 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     content: "",
     techDescription: "",
     proposalFor: "",
+    tags: [],
+    isFunded: false,
   });
   // isSubmitting: tracks form submission status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -61,7 +73,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
       );
 
       // Reset form and show success message
-      setFormData({ topic: "", content: "", techDescription: "" , proposalFor: ""});
+      setFormData({ topic: "", content: "", techDescription: "" , proposalFor: "", tags: [], isFunded: false });
       setIsSubmitted(true);
       toast.success("Proposal submitted successfully!");
     } catch (error) {
@@ -77,10 +89,22 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    if (name === "tags") {
+      // Allow typing commas and spaces by not immediately converting to array
+      setFormData((prev) => ({
+        ...prev,
+        tags: value.includes(",") 
+          ? value.split(",").map(tag => tag.trim()).filter(tag => tag !== "") 
+          : [value.trim()]
+      }));
+    }
+    else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // Reset the form to allow submitting another proposal
@@ -197,6 +221,26 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             />
           </div>
 
+          {/* add tags here comma separated */}
+          <div>
+            <Label
+              htmlFor="tags"
+              className="block text-[#472014] font-semibold mb-2"
+            >
+              Tags (comma separated)
+            </Label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              // value={formData.tags.join(",")}  // Remove the extra space after comma
+              onChange={handleChange}
+              required
+              placeholder="Enter tags separated by commas"
+              className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
+            />
+          </div>
+
           {/* Textarea for technical description */}
           <div>
             <label
@@ -213,6 +257,29 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
               required
               className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
             />
+          </div>
+
+          {/* Dropdown for selecting funding status */}
+          <div>
+            <Label className="block text-[#472014] font-semibold mb-2">Is Funded</Label>
+            <Select 
+              name="isFunded" 
+              value={formData.isFunded.toString()} 
+              onValueChange={(value) => {
+                setFormData(prev => ({
+                  ...prev,
+                  isFunded: value === "true"
+                }))
+              }}
+            >
+              <SelectTrigger className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent">
+                <SelectValue placeholder="Select funding status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white text-black">
+                <SelectItem value="true">Yes</SelectItem>
+                <SelectItem value="false">No</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Submit button with loading state */}

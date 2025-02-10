@@ -152,7 +152,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
             <>
               {/* Project Description Field */}
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>Technical Description</Label>
                 <Textarea
                   name="content"
                   placeholder="Enter project description"
@@ -195,7 +195,9 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
 
               {/* deadline field */}
               <div className="space-y-2">
-                <Label>Deadline</Label>
+                <Label>Application Deadline
+                  <br /> (Project will be deleted 10 days after the deadline)
+                </Label>
                 <Input
                   type="date"
                   name="deadline"
@@ -206,7 +208,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
 
               {/* Duration Fields */}
               <div className="space-y-2">
-                <Label>Duration</Label>
+                <Label>Project Duration</Label>
                 <Input
                   name="duration"
                   placeholder="Enter project duration"

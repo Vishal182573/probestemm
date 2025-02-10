@@ -305,7 +305,7 @@ const generateDailyEmailHTML = (userType: 'STUDENT' | 'PROFESSOR' | 'BUSINESS', 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Gentle Reminder from Probe STEM ⭐</title>
+    <title>A Notification Reminder from Probe STEM ⭐</title>
     <style>
       body {
         font-family: 'Arial', sans-serif;
@@ -385,7 +385,7 @@ export const sendDailyReminderEmails = async () => {
     const studentEmails = students.map(student =>
       sendEmail({
         to: student.email,
-        subject: 'A Gentle Reminder from Probe STEM 🌟',
+        subject: 'A Notification Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('STUDENT', student.fullName)
       })
     );
@@ -394,7 +394,7 @@ export const sendDailyReminderEmails = async () => {
     const professorEmails = professors.map(professor =>
       sendEmail({
         to: professor.email,
-        subject: 'A Gentle Reminder from Probe STEM 🌟',
+        subject: 'A Notification Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('PROFESSOR', professor.fullName)
       })
     );
@@ -403,7 +403,7 @@ export const sendDailyReminderEmails = async () => {
     const businessEmails = businesses.map(business =>
       sendEmail({
         to: business.email,
-        subject: 'A Gentle Reminder from Probe STEM 🌟',
+        subject: 'A Notification Reminder from Probe STEM 🌟',
         html: generateDailyEmailHTML('BUSINESS', business.companyName)
       })
     );

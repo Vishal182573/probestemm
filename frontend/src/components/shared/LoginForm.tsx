@@ -177,7 +177,7 @@ export const LoginForm: React.FC = () => {
             </SelectTrigger>
             <SelectContent className="bg-white text-[#472014]">
               <SelectItem value="student">Student</SelectItem>
-              <SelectItem value="professor">Professor/Researcher</SelectItem>
+              <SelectItem value="professor">Professor/Scientist</SelectItem>
               <SelectItem value="business">Industry</SelectItem>
             </SelectContent>
           </Select>

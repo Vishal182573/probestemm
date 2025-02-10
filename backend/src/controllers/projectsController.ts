@@ -12,7 +12,7 @@ import { createNotification } from "./notificationController";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
 import streamifier from "streamifier";
-import { addDays, isAfter } from 'date-fns'
+import { addDays, isAfter, subDays } from 'date-fns'
 
 // Configure Cloudinary
 cloudinary.config({
@@ -39,7 +39,7 @@ function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { cat, subcategory, professorId, topic, content, timeline, tags, deadline } = req.body;
+    const { cat, subcategory, professorId, topic, content, timeline, tags, deadline, isFunded, duration } = req.body;
 
     // First verify the creating professor exists
     const creatingProfessor = await prisma.professor.findUnique({
@@ -69,6 +69,8 @@ export const createProfessorProject = async (req: Request, res: Response) => {
         tags,
         professorId,
         deadline: new Date(deadline),
+        isFunded,
+        duration,
       },
     });
 
@@ -202,7 +204,9 @@ export const createIndustryProject = async (req: Request, res: Response) => {
       tags,
       techDescription,
       requirements,
-      deadline
+      deadline,
+      isFunded,
+      duration,
     } = req.body;
 
     // Get professor details for notification
@@ -230,6 +234,8 @@ export const createIndustryProject = async (req: Request, res: Response) => {
         techDescription,
         requirements,
         deadline: new Date(deadline),
+        isFunded,
+        duration,
       },
     });
 
@@ -778,7 +784,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
 // Create student proposal
 export const createStudentProposal = async (req: Request, res: Response) => {
   try {
-    const { studentId, topic, content, proposalFor, techDescription } = req.body;
+    const { studentId, topic, content, proposalFor, techDescription, tags, isFunded } = req.body;
 
     const creatingStudent = await prisma.student.findUnique({
       where: { id: studentId },
@@ -800,6 +806,8 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         techDescription,
         status: Status.OPEN,
         studentId,
+        tags,
+        isFunded,
       },
     });
 
@@ -1620,11 +1628,12 @@ export const deleteProject = async (req: Request, res: Response) => {
 export const deleteExpiredProjects = async () => {
   try {
     const currentDate = new Date();
+    const deadlinePlusTenDays = subDays(currentDate, 10);
 
     const expiredProjects = await prisma.project.findMany({
       where: {
         deadline: {
-          lt: currentDate,
+          lt: deadlinePlusTenDays,
         },
       },
     });
@@ -1632,7 +1641,7 @@ export const deleteExpiredProjects = async () => {
     const deletionResult = await prisma.project.deleteMany({
       where: {
         deadline: {
-          lt: currentDate,
+          lt: deadlinePlusTenDays,
         },
       },
     });
@@ -1645,7 +1654,6 @@ export const deleteExpiredProjects = async () => {
   }
 };
 
-// Scheduled task using node-cron or similar
 export const scheduleProjectCleanup = () => {
   // Daily cleanup at midnight
   const cron = require('node-cron');
@@ -1653,3 +1661,49 @@ export const scheduleProjectCleanup = () => {
     deleteExpiredProjects();
   })
 }
+
+// Add this new controller function
+export const getAppliedProjects = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const userType = req.query.userType as string;
+
+    if (!userId || !userType) {
+      return res.status(400).json({ error: "User ID and type are required" });
+    }
+
+    let applications;
+    
+    // Get applications based on user type
+    switch (userType) {
+      case 'student':
+        applications = await prisma.studentApplication.findMany({
+          where: { studentId: userId },
+          select: { projectId: true }
+        });
+        break;
+      case 'professor':
+        applications = await prisma.professorApplication.findMany({
+          where: { professorId: userId },
+          select: { projectId: true }
+        });
+        break;
+      case 'business':
+        applications = await prisma.businessApplication.findMany({
+          where: { businessId: userId },
+          select: { projectId: true }
+        });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid user type" });
+    }
+
+    // Extract project IDs from applications
+    const projectIds = applications.map(app => app.projectId);
+
+    res.status(200).json(projectIds);
+  } catch (error) {
+    console.error("Error fetching applied projects:", error);
+    res.status(500).json({ error: "Failed to fetch applied projects" });
+  }
+};

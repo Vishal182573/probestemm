@@ -1031,7 +1031,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
               </div>
 
               <div>
-                <Label htmlFor="website">Company Website/ Social Media</Label>
+                <Label htmlFor="website">Company Website / Social Media</Label>
                 <Input
                   id="website"
                   name="website"

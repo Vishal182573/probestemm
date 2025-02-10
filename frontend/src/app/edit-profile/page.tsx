@@ -1338,7 +1338,7 @@ const EditProfileForm = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="website">Company Website/ Social Media</Label>
+                      <Label htmlFor="website">Company Website / Social Media</Label>
                       <Input
                         id="website"
                         name="website"

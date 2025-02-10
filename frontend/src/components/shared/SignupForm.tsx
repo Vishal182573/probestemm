@@ -123,7 +123,9 @@ interface Education {
 }
 
 interface UserData {
-  fullName: string;
+  firstName: string;  // Add this
+  lastName: string;   // Add this
+  fullName: string;   // Keep this
   email: string;
   password: string;
   role: UserRole;
@@ -193,6 +195,8 @@ export const SignupForm: React.FC = () => {
 
   // State management for basic user data
   const [userData, setUserData] = useState<UserData>({
+    firstName: "",      // Add this
+    lastName: "",       // Add this
     fullName: "",
     email: "",
     password: "",
@@ -201,6 +205,8 @@ export const SignupForm: React.FC = () => {
 
   // State management for role-specific data
   const [roleSpecificData, setRoleSpecificData] = useState<RoleSpecificData>({
+    firstName: "",      // Add this
+    lastName: "",       // Add this
     fullName: "",
     email: "",
     password: "",
@@ -530,13 +536,8 @@ export const SignupForm: React.FC = () => {
   };
 
   // Function to validate full name format
-  const validateTwoWords = (value:string) => {
-    const words = value.trim().split(/\s+/);
-    if (words.length !== 2) {
-      setError('Please enter exactly two words (first and last name)');
-      return false;
-    }
-    if (words[0].length === 0 || words[1].length === 0) {
+  const validateNames = (firstName: string, lastName: string) => {
+    if (!firstName.trim() || !lastName.trim()) {
       setError('Both first and last name are required');
       return false;
     }
@@ -545,14 +546,20 @@ export const SignupForm: React.FC = () => {
   };
 
   // Event handlers for form inputs
-  const handleChange = (e:any) => {
-    const value = e.target.value;
-    setUserData({ ...userData, fullName: value });
-    validateTwoWords(value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUserData(prev => {
+      const updates = { ...prev, [name]: value };
+      // Combine first and last name into fullName whenever either changes
+      if (name === 'firstName' || name === 'lastName') {
+        updates.fullName = `${name === 'firstName' ? value : prev.firstName} ${name === 'lastName' ? value : prev.lastName}`.trim();
+      }
+      return updates;
+    });
   };
 
   const handleBlur = () => {
-    validateTwoWords(userData.fullName);
+    validateNames(userData.firstName, userData.lastName);
   };
 
   // Function to handle initial form submission
@@ -568,9 +575,13 @@ export const SignupForm: React.FC = () => {
       return;
     }
 
+    if (!validateNames(userData.firstName, userData.lastName)) {
+      return;
+    }
+
     setRoleSpecificData({
       ...roleSpecificData,
-      fullName: userData.fullName,
+      fullName: userData.fullName, // This will already be combined
       email: userData.email,
       password: userData.password,
       role: userData.role,
@@ -581,17 +592,29 @@ export const SignupForm: React.FC = () => {
   // Render functions for different form sections
   const renderInitialForm = () => (
     <form className="space-y-4 text-black bg-white" onSubmit={handleInitialSubmit}>
-      <div className="flex flex-col gap-2">
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={userData.fullName}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          required
-          className="px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-describedby="nameError"
-        />
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First Name"
+            value={userData.firstName}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex-1">
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            value={userData.lastName}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border rounded text-black bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
       </div>
       
       <div className="space-y-2">
@@ -683,7 +706,7 @@ export const SignupForm: React.FC = () => {
         </SelectTrigger>
         <SelectContent className="text-black bg-white">
           <SelectItem value="student">Student</SelectItem>
-          <SelectItem value="professor">Professor/Researcher</SelectItem>
+          <SelectItem value="professor">Professor/Scientist</SelectItem>
           <SelectItem value="business">Industry</SelectItem>
         </SelectContent>
       </Select>
@@ -1085,7 +1108,7 @@ export const SignupForm: React.FC = () => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="website">Company Website/ Social Media <span className="text-red-500">*</span></Label>
+        <Label htmlFor="website">Company Website / Social Media <span className="text-red-500">*</span></Label>
         <Input
           id="website"
           type="text"
