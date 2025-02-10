@@ -5,8 +5,8 @@ import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT, LOGOWHITE } from "../../../public";
-import { io, Socket } from "socket.io-client";
-import { API_URL, SOCKET_URL } from "@/constants";
+import { io } from "socket.io-client";
+import {  SOCKET_URL } from "@/constants";
 
 // Main Navbar component definition
 export const Navbar: React.FC = () => {

@@ -224,8 +224,8 @@ const DiscussionForum: React.FC = () => {
     try {
       await axios.post(`${API_URL}/discussion/vote`, {
         discussionId,
-        userId: localStorage.getItem("userId"), // Replace with actual user ID
-        userType: "STUDENT", // Replace with actual user type
+        userId: localStorage.getItem("userId"),
+        userType: localStorage.getItem("role")?.toUpperCase(),
         voteType,
       });
       fetchDiscussions(); // Refresh discussions after voting
