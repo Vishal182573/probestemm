@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageCircle, Send, X, Search, Loader2, CheckCheck } from 'lucide-react';
+import { MessageCircle, Send, X, Search, Loader2, CheckCheck, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -84,6 +84,7 @@ const GlobalChatBox: React.FC = () => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]); // List of all chat rooms
   const [unreadCounts, setUnreadCounts] = useState<number>(0); // Total unread messages
   const [chatRoomUnreadCounts, setChatRoomUnreadCounts] = useState<{[key: string]: number}>({}); // Unread counts per room
+  const [blockedUsers, setBlockedUsers] = useState<string[]>([]); // List of blocked users
   
   // UI Control States
   const [loading, setLoading] = useState(false);        // Loading state for operations
@@ -111,6 +112,7 @@ const GlobalChatBox: React.FC = () => {
     // Fetches chat rooms and sets up polling for unread counts
     if (currentUser.id) {
       fetchChatRooms();
+      fetchBlockedUsers();
       // Set up intervals for both total and individual unread counts
       const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
       const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
@@ -285,6 +287,48 @@ const GlobalChatBox: React.FC = () => {
       console.error('Failed to fetch chat rooms:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Add this function with the other API functions
+  const deleteChat = async (chatId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/chat/rooms/${chatId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to delete chat');
+      return true;
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
+      return false;
+    }
+  };
+
+  const toggleBlockUser = async (userId: string, action: 'block' | 'unblock') => {
+    try {
+      const response = await fetch(`${API_URL}/chat/users/${userId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockerId: currentUser.id })
+      });
+      if (!response.ok) throw new Error(`Failed to ${action} user`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to ${action} user:`, error);
+      return false;
+    }
+  };
+
+  const fetchBlockedUsers = async () => {
+    if (!currentUser.id) return;
+    try {
+      const response = await fetch(`${API_URL}/chat/users/blocked/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch blocked users');
+      const data = await response.json();
+      setBlockedUsers(data.blockedUsers || []);
+    } catch (error) {
+      console.error('Failed to fetch blocked users:', error);
     }
   };
 
@@ -672,6 +716,59 @@ const GlobalChatBox: React.FC = () => {
                         </p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "text-sm",
+                          blockedUsers.includes(selectedChat.otherUser.id)
+                            ? "text-green-600 hover:text-green-700 hover:bg-green-50"
+                            : "text-red-500 hover:text-red-600 hover:bg-red-50"
+                        )}
+                        onClick={async () => {
+                          const action = blockedUsers.includes(selectedChat.otherUser.id)
+                            ? 'unblock'
+                            : 'block';
+                          const message = action === 'block'
+                            ? 'Are you sure you want to block this user? They won\'t be able to send you messages.'
+                            : 'Unblock this user?';
+                            
+                          if (window.confirm(message)) {
+                            const success = await toggleBlockUser(
+                              selectedChat.otherUser.id,
+                              action
+                            );
+                            if (success) {
+                              fetchBlockedUsers();
+                              if (action === 'block') {
+                                setSelectedChat(null);
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        {blockedUsers.includes(selectedChat.otherUser.id)
+                          ? "Unblock User"
+                          : "Block User"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={async () => {
+                          if (window.confirm('Are you sure you want to delete this chat? This action cannot be undone.')) {
+                            const success = await deleteChat(selectedChat.id);
+                            if (success) {
+                              setSelectedChat(null);
+                              fetchChatRooms();
+                            }
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
 
                   <ScrollArea className="flex-1 px-6 py-4">
@@ -686,31 +783,39 @@ const GlobalChatBox: React.FC = () => {
 
                   <div className="p-4 border-t bg-white shadow-lg">
                     <div className="flex items-center gap-2 max-w-4xl mx-auto">
-                      <Input
-                        placeholder="Type a message..."
-                        value={message}
-                        onChange={handleMessageInput}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            sendNewMessage();
-                          }
-                        }}
-                        className="flex-1 text-gray-900 bg-white focus:ring-[#eb5e17]/20 border-gray-200"
-                        disabled={sending}
-                        autoComplete="off"
-                      />
-                      <Button
-                        onClick={sendNewMessage}
-                        className="bg-[#eb5e17] hover:bg-[#eb5e17]/90 text-white px-4 h-10"
-                        disabled={sending}
-                      >
-                        {sending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
+                      {blockedUsers.includes(selectedChat.otherUser.id) ? (
+                        <div className="flex-1 text-center text-sm text-gray-500 py-2 bg-gray-50 rounded-lg">
+                          You have blocked this user. Unblock to send messages.
+                        </div>
+                      ) : (
+                        <>
+                          <Input
+                            placeholder="Type a message..."
+                            value={message}
+                            onChange={handleMessageInput}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                sendNewMessage();
+                              }
+                            }}
+                            className="flex-1 text-gray-900 bg-white focus:ring-[#eb5e17]/20 border-gray-200"
+                            disabled={sending}
+                            autoComplete="off"
+                          />
+                          <Button
+                            onClick={sendNewMessage}
+                            className="bg-[#eb5e17] hover:bg-[#eb5e17]/90 text-white px-4 h-10"
+                            disabled={sending}
+                          >
+                            {sending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </>

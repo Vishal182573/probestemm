@@ -32,10 +32,60 @@ export const createOrGetChatRoom = async (req: Request, res: Response) => {
   }
 };
 
+// export const sendMessage = async (req: Request, res: Response) => {
+//   try {
+//     const { chatRoomId, content, senderId, senderType, mediaUrls, mediaType } = req.body;
+
+//     const message = await prisma.message.create({
+//       data: {
+//         chatRoomId,
+//         content,
+//         senderId,
+//         senderType,
+//         mediaUrls,
+//         mediaType
+//       }
+//     });
+
+//     res.json(message);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to send message' });
+//   }
+// };
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { chatRoomId, content, senderId, senderType, mediaUrls, mediaType } = req.body;
 
+    // First get the chat room to identify both users
+    const chatRoom = await prisma.chatRoom.findUnique({
+      where: { id: chatRoomId }
+    });
+
+    if (!chatRoom) {
+      return res.status(404).json({ error: 'Chat room not found' });
+    }
+
+    // Check if either user has blocked the other
+    const blockExists = await prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          {
+            blockerUserId: chatRoom.userOneId,
+            blockedUserId: chatRoom.userTwoId
+          },
+          {
+            blockerUserId: chatRoom.userTwoId,
+            blockedUserId: chatRoom.userOneId
+          }
+        ]
+      }
+    });
+
+    if (blockExists) {
+      return res.status(403).json({ error: 'Cannot send message: one of the users has blocked the other' });
+    }
+
+    // If no blocks exist, proceed with creating the message
     const message = await prisma.message.create({
       data: {
         chatRoomId,
@@ -49,6 +99,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     res.json(message);
   } catch (error) {
+    console.error('Error sending message:', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
 };
@@ -83,7 +134,6 @@ export const getChatMessages = async (req: Request, res: Response) => {
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
     });
-    console.log(messages);
 
     // Respond with the messages
     res.json({ messages });
@@ -222,5 +272,116 @@ export const getUnreadMessageCount = async (req: Request, res: Response) => {
     res.json({ unreadCount });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get unread message count' });
+  }
+};
+
+export const deleteChatRoom = async (req: Request, res: Response) => {
+  try {
+    const { chatId } = req.params;
+
+    // Check if the chat room exists
+    const chatRoom = await prisma.chatRoom.findUnique({
+      where: {
+        id: chatId
+      }
+    });
+
+    if (!chatRoom) {
+      return res.status(404).json({ error: 'Chat room not found' });
+    }
+
+    // Delete all messages in the chat room first
+    await prisma.message.deleteMany({
+      where: {
+        chatRoomId: chatId
+      }
+    });
+
+    // Delete the chat room
+    await prisma.chatRoom.delete({
+      where: {
+        id: chatId
+      }
+    });
+
+    res.json({ success: true, message: 'Chat room and messages deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting chat room:', error);
+    res.status(500).json({ error: 'Failed to delete chat room' });
+  }
+};
+
+// Add these functions after the existing exports
+
+export const blockUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { blockerId } = req.body;
+
+    // Check if the block already exists
+    const existingBlock = await prisma.userBlock.findFirst({
+      where: {
+        blockedUserId: userId,
+        blockerUserId: blockerId,
+      },
+    });
+
+    if (existingBlock) {
+      return res.status(400).json({ error: 'User is already blocked' });
+    }
+
+    // Create new block record
+    const block = await prisma.userBlock.create({
+      data: {
+        blockedUserId: userId,
+        blockerUserId: blockerId,
+      },
+    });
+
+    res.json({ success: true, block });
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    res.status(500).json({ error: 'Failed to block user' });
+  }
+};
+
+export const unblockUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { blockerId } = req.body;
+
+    // Delete the block record
+    await prisma.userBlock.deleteMany({
+      where: {
+        blockedUserId: userId,
+        blockerUserId: blockerId,
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error unblocking user:', error);
+    res.status(500).json({ error: 'Failed to unblock user' });
+  }
+};
+
+export const getBlockedUsers = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const blocks = await prisma.userBlock.findMany({
+      where: {
+        blockerUserId: userId,
+      },
+      select: {
+        blockedUserId: true,
+      },
+    });
+
+    const blockedUsers = blocks.map(block => block.blockedUserId);
+    res.json({ blockedUsers });
+  } catch (error) {
+    console.error('Error fetching blocked users:', error);
+    res.status(500).json({ error: 'Failed to get blocked users' });
   }
 };

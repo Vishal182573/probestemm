@@ -6,7 +6,11 @@ import {
   getChatMessages,
   markMessagesAsRead,
   getUnreadMessageCount,
-  getUserChats
+  getUserChats,
+  deleteChatRoom,
+  blockUser,
+  unblockUser,
+  getBlockedUsers
 } from '../controllers/chatController';
 import { authMiddleware } from '../middleware/authMiddleware';
 
@@ -19,5 +23,9 @@ router.get('/messages', getChatMessages);
 router.get('/rooms/:userId', getUserChats);
 router.post('/messages/read', markMessagesAsRead);
 router.get('/messages/unread/:userId', getUnreadMessageCount);
+router.delete('/rooms/:chatId', deleteChatRoom);
+router.post('/users/:userId/block', blockUser);
+router.post('/users/:userId/unblock', unblockUser);
+router.get('/users/blocked/:userId', getBlockedUsers);
 
 export default router;
