@@ -31,7 +31,7 @@ import userRoutes from "./routes/userRoutes";
 import patentRoutes from "./routes/patentRoutes";
 import emailRoutes from "./routes/emailRoutes";
 import chatRoutes from "./routes/chatRoutes"
-import { scheduleProjectCleanup } from "./controllers/projectsController";
+// import { scheduleProjectCleanup } from "./controllers/projectsController";
 
 dotenv.config();
 
@@ -719,7 +719,7 @@ startApp().catch((error) => {
   console.error("Failed to start the application:", error);
 });
 
-scheduleProjectCleanup();
+// scheduleProjectCleanup();
 
 export default app;
 

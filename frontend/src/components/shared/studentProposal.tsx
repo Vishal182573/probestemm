@@ -282,6 +282,8 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             </Select>
           </div>
 
+          <p className=" text-[#472014] font-semibold mb-2">The project will be deleted after 10 days of creation</p>
+
           {/* Submit button with loading state */}
           <Button
             type="submit"

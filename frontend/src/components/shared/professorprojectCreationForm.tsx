@@ -42,7 +42,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
     // Construct the data object to be sent to the API
     const data = {
       businessId,
-      content: formData.get("content"),
+      techDescription: formData.get("techDescription"),
       topic: formData.get("topic"),
       eligibility: formData.get("eligibility"),
       deadline: formData.get("deadline"),
@@ -154,7 +154,7 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
               <div className="space-y-2">
                 <Label>Technical Description</Label>
                 <Textarea
-                  name="content"
+                  name="techDescription"
                   placeholder="Enter project description"
                   required
                   className="bg-white"

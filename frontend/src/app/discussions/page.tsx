@@ -41,6 +41,7 @@ import { DISCUSSION } from "../../../public";
 // import FeaturesDemo from "@/components/shared/TextImageComponent";
 // import ContactForm from "@/components/shared/Feedback";
 import { Footer } from "@/components/shared/Footer";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
 // Interface definitions for Discussion and Pagination data structures
 interface Discussion {
@@ -65,91 +66,7 @@ interface PaginationInfo {
 }
 
 // Category and subcategory mapping object - defines the hierarchical structure of academic subjects
-const categories: { [key: string]: string[] } = {
-  Physics: [
-    "Classical Mechanics",
-    "Electromagnetism",
-    "Thermodynamics",
-    "Quantum Mechanics",
-    "Relativity",
-  ],
-  Chemistry: [
-    "Organic Chemistry",
-    "Inorganic Chemistry",
-    "Physical Chemistry",
-    "Analytical Chemistry",
-  ],
-  Biology: [
-    "Molecular Biology",
-    "Cell Biology",
-    "Ecology",
-    "Evolutionary Biology",
-  ],
-  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
-  "Space Science": [
-    "Astronomy",
-    "Astrophysics",
-    "Planetary Science",
-    "Space Exploration",
-    "Astrobiology",
-    "Space Weather",
-    "Space Policy and Law",
-  ],
-  "Computer Science": [
-    "Algorithms and Data Structures",
-    "Software Engineering",
-    "Data Science",
-    "Cybersecurity",
-    "Human-Computer Interaction",
-  ],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
-  "Pure Mathematics": [
-    "Algebra",
-    "Calculus",
-    "Geometry",
-    "Number Theory",
-  ],
-  "Applied Mathematics": [
-    "Statistics",
-    "Operations Research",
-    "Mathematical Modeling",
-    "Data Analysis",
-    "Mathematical Economics",
-  ],
-  "Data Engineering": [
-    "Data Pipeline Development",
-    "Data Storage and Management",
-  ],
-  Robotics: [
-    "Robot Design and Control",
-    "Human-Robot Interaction",
-    "Artificial Intelligence in Robotics",
-  ],
-  Biotechnology: [
-    "Genetic Engineering",
-    "Biochemical Engineering",
-    "Biomedical Engineering",
-    "Biomanufacturing",
-  ],
-  "Environmental Technology": [
-    "Renewable Energy Technologies",
-    "Environmental Monitoring and Management",
-  ],
-  "Space Technology": [
-    "Satellite Technology",
-    "Space Propulsion",
-    "Space Systems and Instruments",
-  ],
-  "Pharmaceutical Engineering": [
-    "Drug Formulation",
-    "Process Engineering for Drug Production",
-  ],
-};
+const categories = ProjectCategories;
 
 // Main Discussion Forum Component
 const DiscussionForum: React.FC = () => {

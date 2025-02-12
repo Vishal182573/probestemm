@@ -60,7 +60,7 @@ interface Business {
 interface ApplicationDetails {
   id: string;
   description: string;
-  imageUrls: string[];
+  resume: string;
   applicationType: "professor" | "student" | "business";
   applicantDetails: {
     id: string;
@@ -96,6 +96,7 @@ interface Project {
     description: string;
     images: string[]
   }
+  createdAt: string | Date;
 }
 
 // Interface for professors who have applied to projects
@@ -204,7 +205,7 @@ const BusinessProfilePage: React.FC = () => {
       ].map((app: any) => ({
         id: app.id,
         description: app.description,
-        imageUrls: app.images || [],
+        resume: app.resume || '',
         applicationType: app.applicationType,
         applicantDetails: {
           id: app.professorId || app.studentId || app.businessId || "",
@@ -449,7 +450,7 @@ const BusinessProfilePage: React.FC = () => {
               <p className="text-gray-700">{application.description}</p>
             </div>
 
-            {application.imageUrls && application.imageUrls.length > 0 && (
+            {/* {application.imageUrls && application.imageUrls.length > 0 && (
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {application.imageUrls.map((url, index) => (
                   <div key={index} className="relative h-32">
@@ -463,7 +464,20 @@ const BusinessProfilePage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            )}
+            )} */}
+            {application.resume && (
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white text-blue-600 hover:text-blue-800"
+                onClick={() => window.open(application.resume, '_blank')}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                View Resume
+              </Button>
+            </div>
+          )}
 
             {project.status === "OPEN" && (
               <div className="mt-4 flex justify-end">
@@ -503,12 +517,12 @@ const BusinessProfilePage: React.FC = () => {
               key={project.id}
               className="border-b-2 border-[#eb5e17]/20 pb-6 last:border-b-0"
             >
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex gap-2 items-center mb-4">
                 <h3 className="text-xl font-bold text-[#472014]">
                   {project.topic}
                 </h3>
                 <Badge
-                  className={`px-4 py-2 rounded-full ${
+                  className={`px-4 py-1 rounded-full ${
                     project.category === "RND_PROJECT"
                       ? "bg-purple-500"
                       : "bg-blue-500"
@@ -516,6 +530,14 @@ const BusinessProfilePage: React.FC = () => {
                 >
                   {project.category === "RND_PROJECT" ? "R&D" : "Internship"}
                 </Badge>
+                {/* project creation date */}
+                <p className="text-sm text-gray-600">
+                  {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'Date not available'}
+                </p>
               </div>
 
               <p className="text-gray-700 mb-4">
@@ -524,7 +546,7 @@ const BusinessProfilePage: React.FC = () => {
 
               <div className="flex justify-between items-center mb-4">
                 <Badge
-                  className={`px-4 py-2 rounded-full ${
+                  className={`px-4 py-1 rounded-full ${
                     project.status === "OPEN"
                       ? "bg-green-500"
                       : project.status === "ONGOING"

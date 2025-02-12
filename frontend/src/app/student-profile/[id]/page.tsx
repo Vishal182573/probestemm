@@ -17,6 +17,7 @@ import {
   Bell,
   Folder,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { Footer } from "@/components/shared/Footer";
 import { API_URL } from "@/constants";
@@ -98,7 +99,7 @@ interface AppliedApplicant {
   name: string;
   email: string;
   description: string;
-  images: string[];
+  resume: string;
 }
 
 interface ApplicationsResponse {
@@ -467,7 +468,7 @@ const StudentProfilePage: React.FC = () => {
                     key={project.id} 
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <h4 className="text-lg font-semibold text-[#472014]">
                         {project.topic || "Untitled Project"}
                       </h4>
@@ -477,6 +478,14 @@ const StudentProfilePage: React.FC = () => {
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
                     
                     <p className="text-sm text-[#686256] mb-2">
@@ -520,6 +529,7 @@ const StudentProfilePage: React.FC = () => {
                           <ul className="space-y-2">
                             {appliedApplicantsMap[project.id].map(
                               (applicant) => (
+                                <div>
                                 <li
                                   key={applicant.id}
                                   className="flex items-center space-x-4 cursor-pointer"
@@ -540,16 +550,18 @@ const StudentProfilePage: React.FC = () => {
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    {applicant.images && applicant.images[0] && (
-                                      <Image
-                                        src={applicant.images[0]}
-                                        alt="Resume"
-                                        width={100}
-                                        height={100}
-                                      />
-                                    )}
                                   </div>
                                 </li>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                  onClick={() => window.open(applicant.resume, '_blank')}
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  View Resume
+                                </Button>
+                                </div>
                               )
                             )}
                           </ul>

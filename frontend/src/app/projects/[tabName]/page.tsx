@@ -100,6 +100,7 @@ interface Project {
     fullName: string;
     major?: string;
   };
+  createdAt: string | Date;
 }
 
 // Main component for the Projects page
@@ -473,14 +474,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PROFESSOR_COLLABORATION:
         return (
           <>
-            {project.deadline && (
-              <div className="mb-2 text-black">
-                <h4 className="font-semibold">Application Deadline:</h4>
-                <p>
-                  {new Date(project.deadline).toLocaleDateString()}
-                </p>
-              </div>
-            )}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription || 'No technical description provided'}</p>
+            </div>
             {project.duration && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Project Duration:</h4>
@@ -489,10 +486,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 </p>
               </div>
             )}
-            <div className="mb-2 text-black">
-              <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription || 'No technical description provided'}</p>
-            </div>
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Application Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
+              </div>
+            )}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Funding:</h4>
               <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
@@ -503,26 +504,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         return (
           <>
             <div className="mb-2 text-black">
-              <h4 className="font-semibold">What professor is looking for :</h4>
-              <p>{project.requirements || 'No specific requirements mentioned'}</p>
-            </div>
-            <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
               <p>{project.techDescription || 'No technical description provided'}</p>
             </div>
-            {project.deadline && (
-              <div className="mb-2 text-black">
-                <h4 className="font-semibold">Application Deadline:</h4>
-                <p>
-                  {new Date(project.deadline).toLocaleDateString()}
-                </p>
-              </div>
-            )}
             {project.duration && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Project Duration:</h4>
                 <p>
                   {project.duration}
+                </p>
+              </div>
+            )}
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Application Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
                 </p>
               </div>
             )}
@@ -548,19 +545,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               <h4 className="font-semibold ">Technical Description:</h4>
               <p>{project.techDescription}</p>
             </div>
-            {project.deadline && (
-              <div className="mb-2 text-black">
-                <h4 className="font-semibold">Application Deadline:</h4>
-                <p>
-                  {new Date(project.deadline).toLocaleDateString()}
-                </p>
-              </div>
-            )}
             {project.duration && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Project Duration:</h4>
                 <p>
                   {project.duration}
+                </p>
+              </div>
+            )}
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Application Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
                 </p>
               </div>
             )}
@@ -576,28 +573,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PHD_POSITION:
         return (
           <>
-            <div className="mb-2 text-black">
-              <h4 className="font-semibold">Eligibility:</h4>
-              <p>{project.eligibility}</p>
-            </div>
             {project.topic && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Topic:</h4>
                 <p>{project.topic}</p>
               </div>
             )}
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Technical Description:</h4>
+              <p>{project.techDescription || 'No technical description provided'}</p>
+            </div>
+            <div className="mb-2 text-black">
+              <h4 className="font-semibold">Eligibility:</h4>
+              <p>{project.eligibility}</p>
+            </div>
             {project.desirable && (
               <div className="mb-2 text-black">
                 <h4 className="font-semibold">Desirable Skills:</h4>
                 <p>{project.desirable}</p>
-              </div>
-            )}
-            {project.deadline && (
-              <div className="mb-2 text-black">
-                <h4 className="font-semibold">Application Deadline:</h4>
-                <p>
-                  {new Date(project.deadline).toLocaleDateString()}
-                </p>
               </div>
             )}
             {project.duration && (
@@ -608,10 +601,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 </p>
               </div>
             )}
-            <div className="mb-2 text-black">
-              <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription || 'No technical description provided'}</p>
-            </div>
+            {project.deadline && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Application Deadline:</h4>
+                <p>
+                  {new Date(project.deadline).toLocaleDateString()}
+                </p>
+              </div>
+            )}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Funding:</h4>
               <p>{!project.fundDetails && (project.isFunded   ? `Yes - ${project.fundDetails || 'Funded'}` : "No")}</p>
@@ -628,45 +625,54 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     const userRole = localStorage.getItem('role');
     const currentDate = new Date();
     
-    // Check project status first (common for all)
+    // Check project status and deadline first (common for all)
     const isProjectOpen = project.status === 'OPEN';
-
+    const isDeadlinePassed = project.deadline ? new Date(project.deadline) < currentDate : false;
+  
+    // If deadline has passed or project is not open, user cannot apply
+    if (isDeadlinePassed || !isProjectOpen) {
+      return false;
+    }
+  
     // Special handling for different roles and categories
     switch (project.category) {
       case ProposalCategory.PROFESSOR_COLLABORATION:
         // For professor, only check status
         if (userRole === 'professor') {
-          return isProjectOpen;
+          return true;
         }
-        return false
-
+        return false;
+  
       case ProposalCategory.INDUSTRY_COLLABORATION:
         // Only allow business role for industry collaboration
         if (userRole === 'business') {
-          return isProjectOpen;
+          return true;
         }
         return false;
+  
       case ProposalCategory.PROJECT:
-        if(userRole!='student'){
-          return isProjectOpen;
+        if (userRole !== 'student') {
+          return true;
         }
-      return false;
+        return false;
+  
       case ProposalCategory.RND_PROJECT:
         const roleOfUserRND = userRole;
-        if(project.type=="PROFESSOR_PROJECT" && roleOfUserRND=="student") return isProjectOpen;
-        else if(project.type=="BUSINESS_PROJECT" && roleOfUserRND=="professor") return isProjectOpen;
-       return false 
+        if (project.type === "PROFESSOR_PROJECT" && roleOfUserRND === "student") return true;
+        else if (project.type === "BUSINESS_PROJECT" && roleOfUserRND === "professor") return true;
+        return false;
+  
       case ProposalCategory.INTERNSHIP:
         const roleOfUser = userRole;
-        if(project.type=="PROFESSOR_PROJECT" && roleOfUser=="student") return isProjectOpen;
-        else if(project.type=="BUSINESS_PROJECT" && roleOfUser=="student") return isProjectOpen;
-       return false 
+        if (project.type === "PROFESSOR_PROJECT" && roleOfUser === "student") return true;
+        else if (project.type === "BUSINESS_PROJECT" && roleOfUser === "student") return true;
+        return false;
+  
       case ProposalCategory.PHD_POSITION:
         // Original student application logic
         const isStudent = userRole === 'student';
-        
-        return isStudent && isProjectOpen;
-
+        return isStudent;
+  
       default:
         return false;
     }
@@ -710,6 +716,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
+  function getRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+    const intervals = {
+      year: 31536000,
+      month: 2592000,
+      week: 604800,
+      day: 86400,
+      hour: 3600,
+      minute: 60
+    };
+  
+    for (const [unit, seconds] of Object.entries(intervals)) {
+      const interval = Math.floor(diffInSeconds / seconds);
+      if (interval >= 1) {
+        return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+      }
+    }
+  
+    return 'just now';
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -717,15 +746,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
       <Card className="h-full flex flex-col bg-white">
-        <CardHeader>
+        <CardHeader className="pb-0">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 mt-2">
-                <Badge className="bg-[#eb5e17] text-white">
-                  {project.category === "RND_PROJECT" ? "R&D PROJECT" :project.category.replace(/_/g, " ")}
-                </Badge>
+            <div className="w-full flex justify-between mt-2 gap-2">
+              <Badge className="bg-[#eb5e17] text-white h-fit">
+                {project.category === "RND_PROJECT" ? "R&D PROJECT" :project.category.replace(/_/g, " ")}
+              </Badge>
+              <div className="flex flex-col justify-center items-end gap-2">
                 <Badge 
-                  className={`
+                  className={`w-fit
                     ${project.status === 'OPEN' 
                       ? 'bg-green-500 text-black' 
                       : 'bg-red-500 text-black'}
@@ -733,10 +762,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                 >
                   {project.status}
                 </Badge>
+                {project.createdAt && (
+                  <span className="text-xs text-gray-500">
+                    {getRelativeTime(new Date(project.createdAt))}
+                  </span>
+                )}
               </div>
             </div>
           </div>
-          <CardDescription className="mt-2">{project.content}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
           {renderDetails()}
@@ -761,24 +794,26 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     >
       {getButtonLabel()}
     </Button>
-            <Button
-              onClick={handleApply}
-              disabled={!canApply || isApplied}
-              className={`
-                flex-1 
-                ${isApplied 
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : canApply 
-                    ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
-                    : 'bg-gray-400 cursor-not-allowed'}
-              `}
-            >
-              {isApplied 
-                ? 'Applied' 
+          <Button
+            onClick={handleApply}
+            disabled={!canApply || isApplied}
+            className={`
+              flex-1 
+              ${isApplied 
+                ? 'bg-gray-400 cursor-not-allowed'
+                : canApply 
+                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
+                  : 'bg-gray-400 cursor-not-allowed'}
+            `}
+          >
+            {isApplied 
+              ? 'Applied' 
+              : project.deadline && new Date(project.deadline) < new Date()
+                ? 'Deadline Passed'
                 : canApply 
                   ? `${application_button}` 
                   : 'Cannot Apply'}
-            </Button>
+          </Button>
           </div>
         </CardFooter>
       </Card>
@@ -802,7 +837,7 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSucce
       email: localStorage.getItem("email") || "",
       phoneNumber: localStorage.getItem("phoneNumber") || "",
       description: "",
-      images: null
+      resume: null
     }
   });
   
@@ -819,38 +854,39 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSucce
   // Form submission handler
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    console.log(FormData);
     try {
-      const formData = new FormData();
-      formData.append("applicantId", localStorage.getItem("userId") || "");
-      formData.append("applicantType", localStorage.getItem("role") || "");
-      formData.append("name", data.name);
-      formData.append("email", data.email);
-      formData.append("phoneNumber", data.phoneNumber || "");
-      formData.append("description", data.description);
+      // Create regular JSON payload instead of FormData
+      const payload = {
+        applicantId: localStorage.getItem("userId") || "",
+        applicantType: localStorage.getItem("role") || "",
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber || "",
+        description: data.description,
+        resume: data.resume || "" // Send resume link as string
+      };
       
-      if (data.images && data.images.length > 0) {
-        Array.from(data.images).forEach((file) => {
-          formData.append("images", file as File);
-        });
-      }
-      
-      await axios.post(`${API_URL}/project/${project.id}/apply`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Make POST request with JSON content type
+      await axios.post(`${API_URL}/project/${project.id}/apply`, payload, {
+        headers: { "Content-Type": "application/json" },
       });
       
-      // Update local storage to track this application
+      // ...rest of the success handling code remains same
       const appliedProjectsStr = localStorage.getItem('appliedProjects') || '[]';
       const appliedProjects = JSON.parse(appliedProjectsStr);
       appliedProjects.push(project.id);
       localStorage.setItem('appliedProjects', JSON.stringify(appliedProjects));
 
       reset();
-      onSuccess?.(project.id); // Call onSuccess with project ID
+      onSuccess?.(project.id);
       onClose();
     } catch (error) {
-      console.error("Error submitting application:", error);
-      alert("you already applied to this collection");
+      if (axios.isAxiosError(error)) {
+        // Enhanced error handling
+        const errorMessage = error.response?.data?.message || 'An unknown error occurred';
+        alert(`Application failed: ${errorMessage}`);
+        console.error("Application error:", error.response?.data);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -892,19 +928,25 @@ const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSucce
               className="w-full min-h-[150px]"
             />
           </div>
-          <div>
-          <p className="text-lg font-medium text-gray-700 mb-2">
-            Select your image
-          </p>
-          <p className="text-sm text-gray-500 mb-4">
-            PNG, JPG, JPEG (max. 2 MB) (Optional)
-          </p>
+          {/* <div>
+            <p className="text-lg font-medium text-gray-700 mb-2">
+              Select your resume
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              PDF format only (max. 2 MB) (optional)
+            </p>
             <Input
               type="file"
-              multiple
-              accept="image/*,.pdf,.doc,.docx"
-              {...register("images")}
+              accept=".pdf"
+              {...register("resume")}
               className="w-full bg-white text-black"
+            />
+          </div> */}
+          <div>
+            <Input
+              placeholder="resume drive link"
+              {...register("resume")}
+              className="w-full text-black bg-white focus-visible:ring-0"
             />
           </div>
         </div>

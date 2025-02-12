@@ -60,6 +60,7 @@ import { Description } from "@radix-ui/react-dialog";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
 import { FaSpinner } from "react-icons/fa";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
 // Interface definitions for various data types used throughout the component
 interface AppliedApplicant {
@@ -70,8 +71,8 @@ interface AppliedApplicant {
   name: string;
   email: string;
   description: string;
-  images: string[];
-  status: "PENDING" | "REJECTED" | "ACCEPTED" | "IN_REVIEW";
+  resume: string;
+  status: "PENDING" | "ACCEPTED" | "IN_REVIEW";
 }
 
 interface ApplicationsResponse {
@@ -119,6 +120,7 @@ interface Professor {
 }
 
 interface Project {
+  createdAt: string | number | Date;
   id: string;
   topic: string;
   content: string;
@@ -198,88 +200,7 @@ interface ResearchInterestsProps {
   };
 }
 
-// Categories object defining the hierarchical structure of academic fields and their subcategories
-const categories = {
-  "Physics": [
-    "Classical Mechanics",
-    "Electromagnetism",
-    "Thermodynamics",
-    "Quantum Mechanics",
-    "Relativity",
-  ],
-  "Chemistry": [
-    "Organic Chemistry",
-    "Inorganic Chemistry",
-    "Physical Chemistry",
-    "Analytical Chemistry",
-  ],
-  "Biology": [
-    "Molecular Biology",
-    "Cell Biology",
-    "Ecology",
-    "Evolutionary Biology",
-  ],
-  "Earth Sciences": [
-    "Geology",
-    "Meteorology",
-    "Oceanography",
-    "Natural Hazards and Risk Assessment",
-    "Hydrology",
-  ],
-  "Space Science": [
-    "Astronomy",
-    "Astrophysics",
-    "Planetary Science",
-    "Space Exploration",
-    "Astrobiology",
-    "Space Weather",
-    "Space Policy and Law",
-  ],
-  "Technology": [
-    "Artificial Intelligence & Machine Learning",
-    "Robotics & Automation",
-    "Cybersecurity",
-    "Information Technology",
-    "Communication Technology",
-    "Biotechnology",
-    "Nanotechnology",
-    "Energy Technology",
-  ],
-  "Engineering": [
-    "Mechanical Engineering",
-    "Electrical & Electronics Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-    "Computer Science Engineering",
-    "Biomedical Engineering",
-    "Industrial & Manufacturing Engineering",
-    "Aerospace Engineering",
-    "Environmental Engineering",
-    "Agricultural Engineering",
-    "Marine & Ocean Engineering",
-    "Data Science Engineering",
-  ],
-  "Pure Mathematics": [
-    "Algebra",
-    "Calculus",
-    "Geometry",
-    "Number Theory",
-    "Analysis",
-    "Topology",
-    "Graph Theory",
-  ],
-  "Applied Mathematics": [
-    "Probability and Statistics",
-    "Operations Research",
-    "Numerical Analysis",
-    "Mathematical Modelling",
-    "Data Science",
-    "Economics and Computation",
-    "Financial Mathematics",
-    "Game Theory",
-  ],
-} as const;
-
+const categories = ProjectCategories;
 
 // Main component for displaying a professor's profile page
 const ProfessorProfilePage: React.FC = () => {
@@ -497,7 +418,7 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
-  // Handler for rejecting an applicant
+// Handler for rejecting an applicant
 const handleRejectApplicant = async (
   projectId: string,
   applicantId: string,
@@ -514,15 +435,15 @@ const handleRejectApplicant = async (
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    // Update the UI state
-    setAppliedApplicantsMap(prevMap => ({
-      ...prevMap,
-      [projectId]: prevMap[projectId].map(applicant => 
-        applicant.id === applicantId 
-          ? { ...applicant, status: 'REJECTED' }
-          : applicant
-      )
-    }));
+    // Remove the rejected applicant from the UI
+    setAppliedApplicantsMap(prevMap => {
+      const updatedMap = { ...prevMap };
+      // Filter out the rejected applicant
+      updatedMap[projectId] = prevMap[projectId].filter(
+        applicant => applicant.id !== applicantId
+      );
+      return updatedMap;
+    });
 
   } catch (error) {
     console.error("Error rejecting applicant:", error);
@@ -1119,11 +1040,33 @@ const handleSetInReview = async (
                 )}
 
                 <div>
+                  <Label htmlFor="project-tech-description">
+                  Technical Description
+                  </Label>
+                  <Input
+                    id="project-tech-description"
+                    name="techDescription"
+                    placeholder="Enter technology description"
+                    className="bg-white text-black"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="project-tags">Tags (comma separated)</Label>
                   <Input
                     id="project-tags"
                     name="tags"
                     placeholder="e.g., AI, Machine Learning, Data Science"
+                    className="bg-white text-black"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="duration">Project Duration</Label>
+                  <Input
+                    id="duration"
+                    name="duration"
+                    placeholder="Enter project duration"
                     className="bg-white text-black"
                   />
                 </div>
@@ -1139,7 +1082,7 @@ const handleSetInReview = async (
                       required
                       className="bg-white text-black"
                     />
-                  </div>
+                </div>
 
                 {collaborationType === "students" && (
                   <>
@@ -1166,18 +1109,6 @@ const handleSetInReview = async (
                   </>
                 )}
 
-                <div>
-                  <Label htmlFor="project-tech-description">
-                  Technical Description
-                  </Label>
-                  <Input
-                    id="project-tech-description"
-                    name="techDescription"
-                    placeholder="Enter technology description"
-                    className="bg-white text-black"
-                  />
-                </div>
-
                 {collaborationType === "industry" && (
                 <div>
                   <Label htmlFor="project-requirements">
@@ -1190,16 +1121,6 @@ const handleSetInReview = async (
                   />
                 </div>
                 )}
-
-                <div>
-                  <Label htmlFor="duration">Project Duration</Label>
-                  <Input
-                    id="duration"
-                    name="duration"
-                    placeholder="Enter project duration"
-                    className="bg-white text-black"
-                  />
-                </div>
                 <div>
                   <Label>Is Funded</Label>
                   <Select name="isFunded" required>
@@ -1247,20 +1168,26 @@ const handleSetInReview = async (
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.techDescription}
-                      </h4> */}
+                    <div className="flex items-center justify-between mb-2 max-w-60">
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
-                    <h4 className="text-sm  text-[#472014]">
-                      {project.requirements}
-                    </h4>
+
+                    <p className="text-sm text-[#686256] mb-2">
+                      {project.techDescription}
+                    </p>
 
                     <Button
                       variant="outline"
@@ -1309,12 +1236,15 @@ const handleSetInReview = async (
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    <Image
-                                      src={applicant.images[0]}
-                                      alt="Resume"
-                                      width={100}
-                                      height={100}
-                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View Resume
+                                    </Button>
                                   </div>
 
                                   {/* Show all buttons when status is PENDING */}
@@ -1362,13 +1292,6 @@ const handleSetInReview = async (
                                       Set In Review
                                     </Button>
                                   </div>
-                                  )}
-
-                                  {/* Show "Rejected" text when status is REJECTED */}
-                                  {applicant.status === 'REJECTED' && (
-                                    <div className="text-red-600 font-medium">
-                                      Rejected
-                                    </div>
                                   )}
 
                                   {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
@@ -1444,19 +1367,25 @@ const handleSetInReview = async (
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4> */}
+                    <div className="flex items-center justify-between mb-2 max-w-60">
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
+
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content}
+                      {project.techDescription}
                     </p>
                     <Button
                       variant="outline"
@@ -1505,12 +1434,15 @@ const handleSetInReview = async (
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    <Image
-                                      src={applicant.images[0]}
-                                      alt="Resume"
-                                      width={100}
-                                      height={100}
-                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View Resume
+                                    </Button>
                                   </div>
                                   
                                   {/* Show all buttons when status is PENDING */}
@@ -1558,13 +1490,6 @@ const handleSetInReview = async (
                                       Set In Review
                                     </Button>
                                   </div>
-                                  )}
-
-                                  {/* Show "Rejected" text when status is REJECTED */}
-                                  {applicant.status === 'REJECTED' && (
-                                    <div className="text-red-600 font-medium">
-                                      Rejected
-                                    </div>
                                   )}
 
                                   {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
@@ -1645,19 +1570,25 @@ const handleSetInReview = async (
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4> */}
+                    <div className="flex items-center justify-between mb-2 max-w-60">
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
+
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content}
+                      {project.techDescription}
                     </p>
                     <Button
                       variant="outline"
@@ -1706,12 +1637,15 @@ const handleSetInReview = async (
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    <Image
-                                      src={applicant.images[0]}
-                                      alt="Resume"
-                                      width={100}
-                                      height={100}
-                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View Resume
+                                    </Button>
                                   </div>
                                   
                                   {/* Show all buttons when status is PENDING */}
@@ -1759,13 +1693,6 @@ const handleSetInReview = async (
                                       Set In Review
                                     </Button>
                                   </div>
-                                  )}
-
-                                  {/* Show "Rejected" text when status is REJECTED */}
-                                  {applicant.status === 'REJECTED' && (
-                                    <div className="text-red-600 font-medium">
-                                      Rejected
-                                    </div>
                                   )}
 
                                   {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
@@ -1835,19 +1762,25 @@ const handleSetInReview = async (
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4> */}
+                    <div className="flex items-center justify-between mb-2 max-w-60">
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
+
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content}
+                      {project.techDescription}
                     </p>
 
                     <Button
@@ -1896,12 +1829,15 @@ const handleSetInReview = async (
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    <Image
-                                      src={applicant.images[0]}
-                                      alt="Resume"
-                                      width={100}
-                                      height={100}
-                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View Resume
+                                    </Button>
                                   </div>
                                   
                                   {/* Show all buttons when status is PENDING */}
@@ -1949,13 +1885,6 @@ const handleSetInReview = async (
                                       Set In Review
                                     </Button>
                                   </div>
-                                  )}
-
-                                  {/* Show "Rejected" text when status is REJECTED */}
-                                  {applicant.status === 'REJECTED' && (
-                                    <div className="text-red-600 font-medium">
-                                      Rejected
-                                    </div>
                                   )}
 
                                   {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
@@ -2026,20 +1955,25 @@ const handleSetInReview = async (
                     key={project.id}
                     className="border-b border-[#eb5e17] pb-4 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      {/* <h4 className="text-lg font-semibold text-[#472014]">
-                        {project.topic}
-                      </h4> */}
+                    <div className="flex items-center justify-between mb-2 max-w-60">
                       <Badge
                         variant="secondary"
                         className="bg-[#686256] text-white"
                       >
                         {project.status}
                       </Badge>
+                      {/* project creation date */}
+                      <p className="text-sm text-gray-600">
+                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Date not available'}
+                      </p>
                     </div>
 
                     <p className="text-sm text-[#686256] mb-2">
-                      {project.content}
+                      {project.techDescription}
                     </p>
                     <Button
                       variant="outline"
@@ -2087,12 +2021,15 @@ const handleSetInReview = async (
                                     <p className="text-sm text-gray-600">
                                       {applicant.description}
                                     </p>
-                                    <Image
-                                      src={applicant.images[0]}
-                                      alt="Resume"
-                                      width={100}
-                                      height={100}
-                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      View Resume
+                                    </Button>
                                   </div>
                                   
                                   {/* Show all buttons when status is PENDING */}
@@ -2140,13 +2077,6 @@ const handleSetInReview = async (
                                       Set In Review
                                     </Button>
                                   </div>
-                                  )}
-
-                                  {/* Show "Rejected" text when status is REJECTED */}
-                                  {applicant.status === 'REJECTED' && (
-                                    <div className="text-red-600 font-medium">
-                                      Rejected
-                                    </div>
                                   )}
 
                                   {/* Show "In Review" text and Assign button when status is IN_REVIEW */}

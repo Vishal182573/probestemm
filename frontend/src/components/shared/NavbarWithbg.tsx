@@ -5,6 +5,8 @@ import { Menu, X, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT } from "../../../public";
+import { io } from "socket.io-client";
+import {  SOCKET_URL } from "@/constants";
 
 // Main navigation component with background
 export const NavbarWithBg: React.FC = () => {
@@ -29,6 +31,37 @@ export const NavbarWithBg: React.FC = () => {
   // Toggle handlers for menu and dropdown
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleDropdown = () => setShowDropdown(!showDropdown);
+  const [hasNewWebinar, setHasNewWebinar] = useState(false);
+
+  useEffect(() => {
+    const newSocket = io(`${SOCKET_URL}`, {
+      auth: {
+        userId: true,
+        userType: true
+      },
+      path: '/api/socket.io',
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+  
+    newSocket.on('connect', () => {
+      console.log('Connected to socket server with ID:', newSocket.id);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    newSocket.on("webinarStatusChanged", (data) => {
+      if (data.status === "APPROVED") {
+        setHasNewWebinar(true);
+      }
+    });
+    
+  }, []);
 
   // Effect hook to check authentication status on component mount
   useEffect(() => {
@@ -187,9 +220,17 @@ export const NavbarWithBg: React.FC = () => {
             <NavLink to="/discussions" className={linkTextColor}>
               DISCUSSION FORUM
             </NavLink>
-            <NavLink to="/webinars" className={linkTextColor}>
-              WEBINARS
-            </NavLink>
+              <div onClick={() => setHasNewWebinar(false)}>
+                <NavLink 
+                  to="/webinars" 
+                  className={linkTextColor}
+                >
+                  WEBINARS
+                  {hasNewWebinar && (
+                    <span className="ml-1 text-xs font-bold text-red-600 bg-white rounded-md px-1 animate-pulse">NEW</span>
+                  )}
+                </NavLink>
+              </div>
             <NavLink to="/blogs" className={linkTextColor}>
               RESEARCH CORNER
             </NavLink>
@@ -230,9 +271,14 @@ export const NavbarWithBg: React.FC = () => {
               <MobileNavLink to="/discussions" className={linkTextColor}>
                 DISCUSSION FORUM
               </MobileNavLink>
-              <MobileNavLink to="/webinars" className={linkTextColor}>
-                WEBINARS
-              </MobileNavLink>
+              <div onClick={() => setHasNewWebinar(false)}>
+                <MobileNavLink to="/webinars" className={linkTextColor}>
+                    WEBINARS
+                    {hasNewWebinar && (
+                      <span className="ml-1 text-xs font-bold text-red-600 animate-pulse">NEW</span>
+                    )}
+                </MobileNavLink>
+              </div>
               <MobileNavLink to="/blogs" className={linkTextColor}>
                 RESEARCH CORNER
               </MobileNavLink>

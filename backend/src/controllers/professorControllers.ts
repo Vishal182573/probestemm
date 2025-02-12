@@ -170,11 +170,11 @@ export const getProfessorById = async (req: Request, res: Response) => {
             id: true,
             topic: true,
             category: true,
-
             content: true,
             requirements:true,
             techDescription:true,
             status: true,
+            createdAt: true,
           },
         },
         webinars: {

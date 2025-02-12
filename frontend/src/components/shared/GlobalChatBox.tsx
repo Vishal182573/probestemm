@@ -624,9 +624,18 @@ const GlobalChatBox: React.FC = () => {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[900px] h-[80vh] max-h-[800px] flex flex-col p-0 focus:ring-0 focus:ring-offset-0 focus:outline-none gap-0 text-black">
           <DialogHeader className="p-4 border-b bg-white ">
-            <DialogTitle className="flex justify-between items-center text-lg font-semibold">
-              <span>Messages</span>
-            </DialogTitle>
+          <DialogTitle className="flex gap-2 items-center text-lg font-semibold">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={JSON.parse(localStorage.getItem("user") || "{}")?.photoUrl || 
+                              JSON.parse(localStorage.getItem("user") || "{}")?.photoImageUrl || 
+                              JSON.parse(localStorage.getItem("user") || "{}")?.imageUrl} />
+              <AvatarFallback className="bg-[#eb5e17] text-white">
+                {localStorage.getItem("fullName")?.[0]?.toUpperCase() || 
+                localStorage.getItem("companyName")?.[0]?.toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+            <span>Messages</span>
+          </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-1 overflow-hidden text-black">

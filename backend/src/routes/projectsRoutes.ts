@@ -1,15 +1,9 @@
 // routes/projectRoutes.ts
 
 import express from "express";
-import multer from "multer";
 import * as projectController from "../controllers/projectsController";
-import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = express.Router();
-
-// Configure multer to use memory storage
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 // Professor project creation routes
 router.post(
@@ -34,11 +28,8 @@ router.get(
 );
 
 // Apply for project route
-router.post(
-  "/:projectId/apply",
-  upload.array("images", 5),
-  projectController.applyForProject
-);
+router.post('/:projectId/apply', projectController.applyForProject);
+
 //status routes for projects
 
 router.post("/:projectId/assign", projectController.assignParticipant);

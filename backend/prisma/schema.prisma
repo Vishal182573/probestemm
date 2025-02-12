@@ -362,7 +362,7 @@ model ProfessorApplication {
   email       String?
   phoneNumber String?
   description String // Added field for response description
-  images      String[] // Added field for attached images
+  resume      String? // Added field for attached resume
   createdAt   DateTime @default(now())
   status      ApplicationStatus @default(PENDING)
 
@@ -378,7 +378,7 @@ model StudentApplication {
   email       String?
   phoneNumber String?
   description String // Added field for response description
-  images      String[] // Added field for attached images
+  resume      String? // Added field for attached resume
   createdAt   DateTime @default(now())
   status      ApplicationStatus @default(PENDING)
 
@@ -394,7 +394,7 @@ model BusinessApplication {
   email       String?
   phoneNumber String?
   description String // Added field for response description
-  images      String[] // Added field for attached images
+  resume      String? // Added field for attached resume
   createdAt   DateTime @default(now())
   status      ApplicationStatus @default(PENDING)
 

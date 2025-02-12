@@ -39,7 +39,7 @@ function uploadToCloudinary(fileBuffer: Buffer): Promise<UploadApiResponse> {
 // Create professor collaboration project
 export const createProfessorProject = async (req: Request, res: Response) => {
   try {
-    const { cat, subcategory, professorId, topic, content, timeline, tags, deadline, isFunded, duration } = req.body;
+    const { cat, subcategory, professorId, topic, techDescription, timeline, tags, deadline, isFunded, duration } = req.body;
 
     // First verify the creating professor exists
     const creatingProfessor = await prisma.professor.findUnique({
@@ -61,7 +61,7 @@ export const createProfessorProject = async (req: Request, res: Response) => {
     const project = await prisma.project.create({
       data: {
         topic,
-        content,
+        techDescription,
         type: ProjectType.PROFESSOR_PROJECT,
         category: ProposalCategory.PROFESSOR_COLLABORATION,
         status: Status.OPEN,
@@ -123,7 +123,7 @@ export const createStudentProject = async (req: Request, res: Response) => {
     const {
       professorId,
       topic,
-      content,
+      techDescription,
       category,
       timeline,
       tags,
@@ -150,7 +150,7 @@ export const createStudentProject = async (req: Request, res: Response) => {
     const project = await prisma.project.create({
       data: {
         topic,
-        content,
+        techDescription,
         type: ProjectType.PROFESSOR_PROJECT,
         category,
         status: Status.OPEN,
@@ -268,33 +268,51 @@ export const createIndustryProject = async (req: Request, res: Response) => {
 // Get projects by type
 export const getProjectsByType = async (req: Request, res: Response) => {
   try {
-     const { type, category } = req.query;
-     const projects = await prisma.project.findMany({
-         where: {
-             type: type as ProjectType,
-             category: category as ProposalCategory
-         },
-         include: {
-             professor: {
-                 select: {
-                     fullName: true,
-                     email: true,
-                     phoneNumber: true,
-                     university: true,
-                     department: true,
-                 },
-             },
-         },
-         orderBy: {
-             createdAt: 'desc' // This will return the collections in reverse order
-         }
-     });
-     res.status(200).json(projects);
+      const { type, category } = req.query;
+      const currentDate = new Date();
+      const tenDaysAgo = subDays(currentDate, 10);
+
+      let whereClause: any = {
+          type: type as ProjectType,
+          category: category as ProposalCategory
+      };
+
+      // Add date filtering based on project type
+      if (type === ProjectType.STUDENT_PROPOSAL) {
+          // For student proposals, filter based on creation date
+          whereClause.createdAt = {
+              gte: tenDaysAgo
+          };
+      } else {
+          // For other project types, filter based on deadline
+          whereClause.deadline = {
+              gte: tenDaysAgo
+          };
+      }
+
+      const projects = await prisma.project.findMany({
+          where: whereClause,
+          include: {
+              professor: {
+                  select: {
+                      fullName: true,
+                      email: true,
+                      phoneNumber: true,
+                      university: true,
+                      department: true,
+                  },
+              },
+          },
+          orderBy: {
+              createdAt: 'desc'
+          }
+      });
+      res.status(200).json(projects);
   } catch (error) {
-     console.error("Error fetching projects:", error);
-     res.status(500).json({ error: "Failed to fetch projects" });
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ error: "Failed to fetch projects" });
   }
- };
+};
 
  export const getProjectsByUserId = async (req: Request, res: Response) => {
   try {
@@ -315,7 +333,7 @@ export const getProjectsByType = async (req: Request, res: Response) => {
             email: true,
             phoneNumber: true,
             description: true,
-            images: true,
+            resume: true,
           },
         },
         studentApplications: {
@@ -326,7 +344,7 @@ export const getProjectsByType = async (req: Request, res: Response) => {
             email: true,
             phoneNumber: true,
             description: true,
-            images: true,
+            resume: true,
           },
         },
         businessApplications: {
@@ -337,7 +355,7 @@ export const getProjectsByType = async (req: Request, res: Response) => {
             email: true,
             phoneNumber: true,
             description: true,
-            images: true,
+            resume: true,
           },
         },
       },
@@ -456,23 +474,9 @@ export const applyForProject = async (req: Request, res: Response) => {
       applicantType,
       name,
       email,
-      phoneNumber,
       description,
+      resume,
     } = req.body;
-
-    // Handle images upload
-    const images: string[] = [];
-    if (req.files && Array.isArray(req.files)) {
-      for (const file of req.files as Express.Multer.File[]) {
-        try {
-          const result = await uploadToCloudinary(file.buffer);
-          images.push(result.secure_url);
-        } catch (error) {
-          console.error("Cloudinary upload error:", error);
-          return res.status(500).json({ error: "Failed to upload images" });
-        }
-      }
-    }
 
     // Get project details
     const project = await prisma.project.findUnique({
@@ -486,67 +490,40 @@ export const applyForProject = async (req: Request, res: Response) => {
     let application;
     let applicantDetails;
 
-    // Get applicant details and create application
     switch (applicantType) {
       case "professor":
-        applicantDetails = await prisma.professor.findUnique({
-          where: { id: applicantId },
-          select: {
-            fullName: true,
-            university: true,
-            department: true,
-          },
-        });
         application = await prisma.professorApplication.create({
           data: {
             projectId,
             professorId: applicantId,
             name,
             email,
-            phoneNumber,
             description,
-            images,
+            resume,
           },
         });
         break;
       case "student":
-        applicantDetails = await prisma.student.findUnique({
-          where: { id: applicantId },
-          select: {
-            fullName: true,
-            university: true,
-            course: true,
-          },
-        });
         application = await prisma.studentApplication.create({
           data: {
             projectId,
             studentId: applicantId,
             name,
             email,
-            phoneNumber,
             description,
-            images,
+            resume,
           },
         });
         break;
       case "business":
-        applicantDetails = await prisma.business.findUnique({
-          where: { id: applicantId },
-          select: {
-            companyName: true,
-            industry: true,
-          },
-        });
         application = await prisma.businessApplication.create({
           data: {
             projectId,
             businessId: applicantId,
             name,
             email,
-            phoneNumber,
             description,
-            images,
+            resume,
           },
         });
         break;
@@ -640,7 +617,7 @@ export const createRDProject = async (req: Request, res: Response) => {
     const {
       businessId,
       topic,
-      content,
+      techDescription,
       timeline,
       tags,
       eligibility,
@@ -665,7 +642,7 @@ export const createRDProject = async (req: Request, res: Response) => {
     const project = await prisma.project.create({
       data: {
         topic,
-        content,
+        techDescription,
         type: ProjectType.BUSINESS_PROJECT,
         category: ProposalCategory.RND_PROJECT,
         status: Status.OPEN,
@@ -715,7 +692,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
     const {
       businessId,
       topic,
-      content,
+      techDescription,
       timeline,
       tags,
       eligibility,
@@ -739,7 +716,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
     const project = await prisma.project.create({
       data: {
         topic,
-        content,
+        techDescription,
         type: ProjectType.BUSINESS_PROJECT,
         category: ProposalCategory.INTERNSHIP,
         status: Status.OPEN,
@@ -1056,34 +1033,31 @@ export const rejectApplication = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    // Get application details based on type
+    // Get application details based on type and delete it
     let application;
     let applicantId;
     let applicantType: "professor" | "student" | "business";
 
     switch (applicationType) {
       case "professor":
-        application = await prisma.professorApplication.update({
+        application = await prisma.professorApplication.delete({
           where: { id: applicationId },
-          data: { status: "REJECTED" },
           include: { project: true },
         });
         applicantId = application?.professorId;
         applicantType = "professor";
         break;
       case "student":
-        application = await prisma.studentApplication.update({
+        application = await prisma.studentApplication.delete({
           where: { id: applicationId },
-          data: { status: "REJECTED" },
           include: { project: true },
         });
         applicantId = application?.studentId;
         applicantType = "student";
         break;
       case "business":
-        application = await prisma.businessApplication.update({
+        application = await prisma.businessApplication.delete({
           where: { id: applicationId },
-          data: { status: "REJECTED" },
           include: { project: true },
         });
         applicantId = application?.businessId;
@@ -1116,7 +1090,7 @@ export const rejectApplication = async (req: Request, res: Response) => {
       );
     }
 
-    res.status(200).json(application);
+    res.status(200).json({ message: "Application rejected and deleted successfully" });
   } catch (error) {
     console.error("Error rejecting application:", error);
     res.status(500).json({ error: "Failed to reject application" });
@@ -1601,6 +1575,7 @@ export const getEnrolledProjectsForBusiness = async (
   }
 };
 
+// Delete projects by ID
 export const deleteProject = async (req: Request, res: Response) => {
   try {
     const { projectId } = req.params;
@@ -1625,44 +1600,46 @@ export const deleteProject = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteExpiredProjects = async () => {
-  try {
-    const currentDate = new Date();
-    const deadlinePlusTenDays = subDays(currentDate, 10);
+// Delete expired projects
+// export const deleteExpiredProjects = async () => {
+//   try {
+//     const currentDate = new Date();
+//     const deadlinePlusTenDays = subDays(currentDate, 10);
 
-    const expiredProjects = await prisma.project.findMany({
-      where: {
-        deadline: {
-          lt: deadlinePlusTenDays,
-        },
-      },
-    });
+//     const expiredProjects = await prisma.project.findMany({
+//       where: {
+//         deadline: {
+//           lt: deadlinePlusTenDays,
+//         },
+//       },
+//     });
 
-    const deletionResult = await prisma.project.deleteMany({
-      where: {
-        deadline: {
-          lt: deadlinePlusTenDays,
-        },
-      },
-    });
+//     const deletionResult = await prisma.project.deleteMany({
+//       where: {
+//         deadline: {
+//           lt: deadlinePlusTenDays,
+//         },
+//       },
+//     });
 
-    console.log(`Deleted ${deletionResult.count} expired projects`);
-    return expiredProjects;
-  } catch (error) {
-    console.error('Error deleting expired projects:', error);
-    throw error;
-  }
-};
+//     console.log(`Deleted ${deletionResult.count} expired projects`);
+//     return expiredProjects;
+//   } catch (error) {
+//     console.error('Error deleting expired projects:', error);
+//     throw error;
+//   }
+// };
 
-export const scheduleProjectCleanup = () => {
-  // Daily cleanup at midnight
-  const cron = require('node-cron');
-  cron.schedule('0 0 * * *', () => {
-    deleteExpiredProjects();
-  })
-}
+// Schedule daily project cleanup
+// export const scheduleProjectCleanup = () => {
+//   // Daily cleanup at midnight
+//   const cron = require('node-cron');
+//   cron.schedule('0 0 * * *', () => {
+//     deleteExpiredProjects();
+//   })
+// }
 
-// Add this new controller function
+// Get applied project details by ID
 export const getAppliedProjects = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;

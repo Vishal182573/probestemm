@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { API_URL } from "@/constants";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
 // Define the base URL for authentication API calls
 const authApi = axios.create({
@@ -31,86 +32,7 @@ const authApi = axios.create({
 });
 
 // Define available categories and subcategories for user selection
-const categories = {
-  "Physics": [
-    "Classical Mechanics",
-    "Electromagnetism",
-    "Thermodynamics",
-    "Quantum Mechanics",
-    "Relativity",
-  ],
-  "Chemistry": [
-    "Organic Chemistry",
-    "Inorganic Chemistry",
-    "Physical Chemistry",
-    "Analytical Chemistry",
-  ],
-  "Biology": [
-    "Molecular Biology",
-    "Cell Biology",
-    "Ecology",
-    "Evolutionary Biology",
-  ],
-  "Earth Sciences": [
-    "Geology",
-    "Meteorology",
-    "Oceanography",
-    "Natural Hazards and Risk Assessment",
-    "Hydrology",
-  ],
-  "Space Science": [
-    "Astronomy",
-    "Astrophysics",
-    "Planetary Science",
-    "Space Exploration",
-    "Astrobiology",
-    "Space Weather",
-    "Space Policy and Law",
-  ],
-  "Technology": [
-    "Artificial Intelligence & Machine Learning",
-    "Robotics & Automation",
-    "Cybersecurity",
-    "Information Technology",
-    "Communication Technology",
-    "Biotechnology",
-    "Nanotechnology",
-    "Energy Technology",
-  ],
-  "Engineering": [
-    "Mechanical Engineering",
-    "Electrical & Electronics Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-    "Computer Science Engineering",
-    "Biomedical Engineering",
-    "Industrial & Manufacturing Engineering",
-    "Aerospace Engineering",
-    "Environmental Engineering",
-    "Agricultural Engineering",
-    "Marine & Ocean Engineering",
-    "Data Science Engineering",
-  ],
-  "Pure Mathematics": [
-    "Algebra",
-    "Calculus",
-    "Geometry",
-    "Number Theory",
-    "Analysis",
-    "Topology",
-    "Graph Theory",
-  ],
-  "Applied Mathematics": [
-    "Probability and Statistics",
-    "Operations Research",
-    "Numerical Analysis",
-    "Mathematical Modelling",
-    "Data Science",
-    "Economics and Computation",
-    "Financial Mathematics",
-    "Game Theory",
-  ],
-} as const;
+const categories = ProjectCategories;
 
 // Type definitions for different aspects of user data
 type UserRole = "student" | "professor" | "business";

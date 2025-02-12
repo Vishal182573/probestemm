@@ -240,7 +240,7 @@ export const Navbar: React.FC = () => {
               >
                 WEBINARS
                 {hasNewWebinar && (
-                  <span className="w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+                  <span className="ml-1 text-xs font-bold text-red-600 bg-white rounded-md px-1 animate-pulse">NEW</span>
                 )}
               </NavLink>
             </div>
@@ -286,7 +286,7 @@ export const Navbar: React.FC = () => {
                 <MobileNavLink to="/webinars" className={linkTextColor}>
                     WEBINARS
                     {hasNewWebinar && (
-                      <span className="w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+                      <span className="ml-1 text-xs font-bold text-red-600 animate-pulse">NEW</span>
                     )}
                 </MobileNavLink>
               </div>
