@@ -69,7 +69,7 @@ const NotificationsComponent: React.FC = () => {
         const token = localStorage.getItem("token");
         const response = await axios.get(`${API_URL}/webinars`);
         setWebinars(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch webinars:", error);
       }

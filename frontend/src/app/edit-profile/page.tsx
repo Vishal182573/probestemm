@@ -21,88 +21,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { Footer } from "@/components/shared/Footer";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
 // Define the structure of categories and their subcategories for research fields
-const categories = {
-  "Physics": [
-    "Classical Mechanics",
-    "Electromagnetism",
-    "Thermodynamics",
-    "Quantum Mechanics",
-    "Relativity",
-  ],
-  "Chemistry": [
-    "Organic Chemistry",
-    "Inorganic Chemistry",
-    "Physical Chemistry",
-    "Analytical Chemistry",
-  ],
-  "Biology": [
-    "Molecular Biology",
-    "Cell Biology",
-    "Ecology",
-    "Evolutionary Biology",
-  ],
-  "Earth Sciences": [
-    "Geology",
-    "Meteorology",
-    "Oceanography",
-    "Natural Hazards and Risk Assessment",
-    "Hydrology",
-  ],
-  "Space Science": [
-    "Astronomy",
-    "Astrophysics",
-    "Planetary Science",
-    "Space Exploration",
-    "Astrobiology",
-    "Space Weather",
-    "Space Policy and Law",
-  ],
-  "Technology": [
-    "Artificial Intelligence & Machine Learning",
-    "Robotics & Automation",
-    "Cybersecurity",
-    "Information Technology",
-    "Communication Technology",
-    "Biotechnology",
-    "Nanotechnology",
-    "Energy Technology",
-  ],
-  "Engineering": [
-    "Mechanical Engineering",
-    "Electrical & Electronics Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-    "Computer Science Engineering",
-    "Biomedical Engineering",
-    "Industrial & Manufacturing Engineering",
-    "Aerospace Engineering",
-    "Environmental Engineering",
-    "Agricultural Engineering",
-    "Marine & Ocean Engineering",
-    "Data Science Engineering",
-  ],
-  "Pure Mathematics": [
-    "Algebra",
-    "Calculus",
-    "Geometry",
-    "Number Theory",
-    "Analysis",
-    "Topology",
-    "Graph Theory",
-  ],
-  "Applied Mathematics": [
-    "Probability and Statistics",
-    "Operations Research",
-    "Numerical Analysis",
-    "Mathematical Modelling",
-    "Data Science",
-    "Economics and Computation",
-    "Financial Mathematics",
-    "Game Theory",
-  ],
-} as const;
+const categories = ProjectCategories;
 
 // Interface definitions for type safety and data structure
 interface ResearchInterest {
@@ -802,74 +724,12 @@ const EditProfileForm = () => {
                           type="button"
                           variant="outline"
                           onClick={addEducation}
-                          className="bg-white text-black hover:text-white"
+                          className="bg-white text-black hover:text-white m-2"
                         >
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Education
+                          <PlusCircle className="h-4 w-4" /> Add Education
                         </Button>
                       )}
                     </div>
-
-                    {/* Research Highlights */}
-                    {/* <div className="space-y-2">
-                      <Label>Research Highlights</Label>
-                      {profileData?.researchHighlights?.map(
-                        (highlight: ResearchHighlight, index: number) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              placeholder="Research Title"
-                              value={highlight.title}
-                              onChange={(e) =>
-                                updateResearchHighlight(
-                                  index,
-                                  "title",
-                                  e.target.value
-                                )
-                              }
-                              disabled={!isEditing}
-                              className="flex-1 text-black bg-white"
-                            />
-                            <Select
-                              value={highlight.status}
-                              onValueChange={(value) =>
-                                updateResearchHighlight(index, "status", value)
-                              }
-                              disabled={!isEditing}
-                            >
-                              <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="Status" />
-                              </SelectTrigger>
-                              <SelectContent className="text-black bg-white">
-                                <SelectItem value="ONGOING">Ongoing</SelectItem>
-                                <SelectItem value="COMPLETED">
-                                  Completed
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {isEditing && (
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => removeResearchHighlight(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        )
-                      )}
-                      {isEditing && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={addResearchHighlight}
-                          className="bg-white text-black hover:text-white"
-                        >
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Research
-                          Highlight
-                        </Button>
-                      )}
-                    </div> */}
                     
                     {/* Skills  */}
                     <div className="space-y-2">
@@ -893,7 +753,7 @@ const EditProfileForm = () => {
                               variant="destructive"
                               size="icon"
                               onClick={() => {
-                                const updatedSkills = profileData.skills.filter((_, i) => i !== index);
+                                const updatedSkills = profileData.skills.filter((_: any, i: number) => i !== index);
                                 setProfileData({ ...profileData, skills: updatedSkills });
                               }}
                             >
@@ -910,9 +770,9 @@ const EditProfileForm = () => {
                             const updatedSkills = [...(profileData.skills || []), ""];
                             setProfileData({ ...profileData, skills: updatedSkills });
                           }}
-                          className="bg-white text-black hover:text-white"
+                          className="bg-white text-black hover:text-white m-2"
                         >
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Skill
+                          <PlusCircle className="h-4 w-4" /> Add Skill
                         </Button>
                       )}
                     </div>
@@ -1002,7 +862,7 @@ const EditProfileForm = () => {
                             accept="image/*"
                             multiple
                             onChange={handleResearchImageChange}
-                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-black bg-white"
+                            className="h-fit file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-black bg-white"
                           />
                         </div>
 
@@ -1274,10 +1134,10 @@ const EditProfileForm = () => {
                             <Button
                               type="button"
                               variant="outline"
-                              className="text-black bg-white"
+                              className="text-black bg-white m-2"
                               onClick={addPosition}
                             >
-                              <PlusCircle className="mr-2 h-4 w-4" /> Add Position
+                              <PlusCircle className="h-4 w-4" /> Add Position
                             </Button>
                           )}
                         </div>
@@ -1403,9 +1263,9 @@ const EditProfileForm = () => {
                         type="button"
                         variant="outline"
                         onClick={addAchievement}
-                        className="text-black bg-white"
+                        className="text-black bg-white m-2"
                       >
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Achievement
+                        <PlusCircle className="h-4 w-4" /> Add Achievement
                       </Button>
                     )}
                   </div>

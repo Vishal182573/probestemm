@@ -13,10 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "../ui/input";
 
 // Define TypeScript interface for component props
 interface StudentProposalFormProps {
   studentId: string;
+  onProposalSubmitted: (newProject: any) => void;
 }
 
 // Define TypeScript interface for form data structure
@@ -27,11 +29,13 @@ interface FormDataType {
   proposalFor: string;
   tags: string[];
   isFunded: boolean;
+  deadline: Date | null;
 }
 
 // Main component definition with TypeScript typing
 const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
   studentId,
+  onProposalSubmitted,
 }) => {
   // State management using React hooks
   // formData: stores the form input values
@@ -42,6 +46,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
     proposalFor: "",
     tags: [],
     isFunded: false,
+    deadline: null,
   });
   // isSubmitting: tracks form submission status
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -61,7 +66,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
       }
 
       // Make API call to submit the proposal
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/project/student-proposal`,
         {
           studentId,
@@ -72,8 +77,11 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         }
       );
 
+      // Call the callback with the new project data
+      onProposalSubmitted(response.data);
+
       // Reset form and show success message
-      setFormData({ topic: "", content: "", techDescription: "" , proposalFor: "", tags: [], isFunded: false });
+      setFormData({ topic: "", content: "", techDescription: "" , proposalFor: "", tags: [], isFunded: false, deadline: null });
       setIsSubmitted(true);
       toast.success("Proposal submitted successfully!");
     } catch (error) {
@@ -97,6 +105,12 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         tags: value.includes(",") 
           ? value.split(",").map(tag => tag.trim()).filter(tag => tag !== "") 
           : [value.trim()]
+      }));
+    }
+    else if (name === "deadline") {
+      setFormData((prev) => ({
+        ...prev,
+        deadline: new Date(value)
       }));
     }
     else {
@@ -259,6 +273,22 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
             />
           </div>
 
+          <div>
+            <label htmlFor="deadline" 
+            className="block text-[#472014] font-semibold mb-2">Application Deadline 
+              <br />
+              (Project will be deleted 10 days after the deadline)</label>
+              <Input
+                id="deadline"
+                name="deadline"
+                type="date"
+                value={formData.deadline ? formData.deadline.toISOString().split('T')[0] : ''}
+                onChange={handleChange}
+                required
+                className="w-full p-2 text-black bg-white border-2 border-[#eb5e17]/20 rounded-md focus:outline-none focus:ring-2 focus:ring-[#eb5e17] focus:border-transparent"
+              />
+        </div>
+
           {/* Dropdown for selecting funding status */}
           <div>
             <Label className="block text-[#472014] font-semibold mb-2">Is Funded</Label>
@@ -281,8 +311,6 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
               </SelectContent>
             </Select>
           </div>
-
-          <p className=" text-[#472014] font-semibold mb-2">The project will be deleted after 10 days of creation</p>
 
           {/* Submit button with loading state */}
           <Button

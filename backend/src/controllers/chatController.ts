@@ -311,8 +311,6 @@ export const deleteChatRoom = async (req: Request, res: Response) => {
   }
 };
 
-// Add these functions after the existing exports
-
 export const blockUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;

@@ -61,6 +61,10 @@ import GlobalChatBox from "@/components/shared/GlobalChatBox";
 import { FaSpinner } from "react-icons/fa";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { ProjectCategories } from "@/lib/pre-define-data";
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import ProjectList from "@/components/ProfessorProjectsTab/ProjectList";
 
 // Interface definitions for various data types used throughout the component
 interface AppliedApplicant {
@@ -233,6 +237,7 @@ const ProfessorProfilePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
   const [webinarCreationLoading, setWebinarCreationLoading] = useState(false);
+  const { toast } = useToast();
 
   const [categorizedProjects, setCategorizedProjects] = useState<ProjectCategories>({
     industryCollaboration: [],
@@ -305,7 +310,6 @@ const ProfessorProfilePage: React.FC = () => {
         phdPosition: [],
       };
     
-      console.log(professor);
       professor?.projects?.forEach((project: Project) => {
         switch (project.category) {
           case "INDUSTRY_COLLABORATION":
@@ -557,8 +561,6 @@ const handleSetInReview = async (
   
       if (!professorResponse.data.isApproved) {
         alert("Your profile has not been approved by admin yet. Please wait for approval before creating webinars.");
-        // Clear the form - you'll need to pass setFormData as a prop or use a ref
-        // setFormData(initialFormState);
         setWebinarCreationLoading(false);
         setIsWebinarDialogOpen(false);
         return;
@@ -581,9 +583,9 @@ const handleSetInReview = async (
         formData.append("webinarDocument", webinarDocument);
       }
   
-      console.log("Sending webinar data:", webinarData);
-      console.log("Sending webinar image:", webinarImage);
-      console.log("Sending webinar document:", webinarDocument);
+      // console.log("Sending webinar data:", webinarData);
+      // console.log("Sending webinar image:", webinarImage);
+      // console.log("Sending webinar document:", webinarDocument);
   
       const response = await axios.post(`${API_URL}/webinars`, formData, {
         headers: {
@@ -592,7 +594,7 @@ const handleSetInReview = async (
         },
       });
   
-      console.log("Server response:", response.data);
+      // console.log("Server response:", response.data);
   
       setWebinars((prevWebinars) => [...prevWebinars, response.data]);
       setIsWebinarDialogOpen(false);
@@ -662,7 +664,7 @@ const handleSetInReview = async (
       const token = localStorage.getItem("token");
       let endpoint = `${API_URL}/project`;
       let data = {};
-
+  
       if (collaborationType === "professors") {
         endpoint += "/professor-collaboration";
         data = {
@@ -685,12 +687,12 @@ const handleSetInReview = async (
       } else {
         throw new Error("Invalid collaboration type selected.");
       }
-
+  
       const response = await axios.post(endpoint, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Update professor state to trigger the useEffect
+  
+      // Update professor state with the new project
       setProfessor(prev => {
         if (!prev) return prev;
         return {
@@ -698,42 +700,115 @@ const handleSetInReview = async (
           projects: [...prev.projects, response.data]
         };
       });
+  
+      // Update categorizedProjects based on the new project's category
+      setCategorizedProjects(prev => {
+        const newCategories = { ...prev };
+        const category = response.data.category.toLowerCase();
+        
+        // Map the API category to our state category
+        const categoryMap: { [key: string]: keyof ProjectCategories } = {
+          'industry_collaboration': 'industryCollaboration',
+          'professor_collaboration': 'professorCollaboration',
+          'internship': 'internship',
+          'rnd_project': 'rndProject',
+          'phd_position': 'phdPosition'
+        };
+  
+        const stateCategory = categoryMap[category];
+        if (stateCategory) {
+          newCategories[stateCategory] = [...newCategories[stateCategory], response.data];
+        }
+  
+        return newCategories;
+      });
+  
+      // Show success toast
+      toast({
+        title: "Project Created Successfully!",
+        description: "Your project has been posted and is now visible to others.",
+        variant: "default",
+        duration: 5000,
+        className: "bg-[#eb5e17] text-white",
+      });
+  
+      // Reset form and close dialog
       setIsProjectDialogOpen(false);
+      setCollaborationType("");
+      setStudentOpportunityType("");
+      setCategory("");
+      setSubcategory("");
+  
     } catch (error) {
       console.error("Error creating project:", error);
-      setError("Failed to create project. Please try again.");
+      toast({
+        title: "Error Creating Project",
+        description: "Failed to create project. Please try again.",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
     } finally {
       setIsCreatingProject(false);
     }
   };
 
+  // handler for deleting the project
   const handleDeleteProject = async (projectId: string) => {
     try {
       const token = localStorage.getItem("token");
       const endpoint = `${API_URL}/project/${projectId}/delete`;
-  
+
       await axios.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
-      setProjects((prevProjects) =>
-        prevProjects.filter((project) => project.id !== projectId)
-      );
-      // Update categorizedProjects by removing the deleted project
+
+      // Update professor state by removing the deleted project
+      setProfessor(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          projects: prev.projects.filter(project => project.id !== projectId)
+        };
+      });
+
+      // Update categorizedProjects state
       setCategorizedProjects(prev => {
         const newCategories = { ...prev };
         Object.keys(newCategories).forEach(key => {
-          newCategories[key] = newCategories[key].filter(
-            project => project.id !== projectId
-          );
+          newCategories[key as keyof ProjectCategories] = newCategories[key as keyof ProjectCategories]
+            .filter(project => project.id !== projectId);
         });
         return newCategories;
       });
 
+      // Clear the project from appliedApplicantsMap if it exists
+      setAppliedApplicantsMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[projectId];
+        return newMap;
+      });
+
+      // Close the modal
       setIsModalOpen(false);
+      setProjectIDToDelete(null);
+
+      // Show success toast
+      toast({
+        title: "Project Deleted Successfully",
+        description: "The project has been permanently removed.",
+        variant: "default",
+        duration: 3000,
+        className: "bg-[#eb5e17] text-white",
+      });
+
     } catch (error) {
       console.error("Error deleting project:", error);
-      setError("Failed to delete project. Please try again.");
+      toast({
+        title: "Error Deleting Project",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
     }
   };
   
@@ -761,12 +836,11 @@ const handleSetInReview = async (
     );
   };
   
-  // console.log(notifications);
   // Form submission handler for creating projects
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    console.log("formdata", formData)
+    // console.log("formdata", formData)
     const projectData: any = {
       topic: formData.get("topic"),
       content: formData.get("content"),
@@ -781,8 +855,8 @@ const handleSetInReview = async (
       isFunded: formData.get("isFunded") === "true",
       techDescription: formData.get("techDescription"),
     };
-    console.log(category);
-    console.log(subcategory);
+    // console.log(category);
+    // console.log(subcategory);
     projectData.cat = category;
     projectData.subcategory = subcategory;
     // Add additional fields based on collaboration type
@@ -793,7 +867,6 @@ const handleSetInReview = async (
     } else if (collaborationType === "industries") {
       projectData.requirements = formData.get("requirements");
     }
-    // console.log(projectData)
     handleCreateProject(projectData);
   };
 
@@ -875,38 +948,6 @@ const handleSetInReview = async (
       )}
     </TabsContent>
   );
-
-  // // Project categorization logic
-  // const categorizedProjects = {
-  //   industryCollaboration: [] as Project[],
-  //   professorCollaboration: [] as Project[],
-  //   internship: [] as Project[],
-  //   rndProject: [] as Project[],
-  //   phdPosition: [] as Project[],
-  // };
-
-  // professor.projects.forEach((project) => {
-  //   // console.log(project)
-  //   switch (project.category) {
-  //     case "INDUSTRY_COLLABORATION":
-  //       categorizedProjects.industryCollaboration.push(project);
-  //       break;
-  //     case "PROFESSOR_COLLABORATION":
-  //       categorizedProjects.professorCollaboration.push(project);
-  //       break;
-  //     case "INTERNSHIP":
-  //       categorizedProjects.internship.push(project);
-  //       break;
-  //     case "RND_PROJECT":
-  //       categorizedProjects.rndProject.push(project);
-  //       break;
-  //     case "PHD_POSITION":
-  //       categorizedProjects.phdPosition.push(project);
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // });
 
   // Render function for enrolled projects tab
   const renderEnrolledProjectsTab = () => (
@@ -1152,6 +1193,7 @@ const handleSetInReview = async (
             </div>
           </DialogContent>
         </Dialog>
+
         {/* Industry Collaboration Projects */}
         <Card className="border border-[#eb5e17] bg-white">
           <CardHeader>
@@ -1161,193 +1203,23 @@ const handleSetInReview = async (
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {categorizedProjects.industryCollaboration.length > 0 ? (
-              <ul className="space-y-4">
-                {categorizedProjects.industryCollaboration.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2 max-w-60">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                      {/* project creation date */}
-                      <p className="text-sm text-gray-600">
-                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date not available'}
-                      </p>
-                    </div>
-
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.techDescription}
-                    </p>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => toggleApplicants(project.id)}
-                    >
-                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
-                      Applicants
-                    </Button>
-                    {/* delete project button */}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setProjectIDToDelete(project.id);
-                        setIsModalOpen(true);
-                      }}
-                      className="m-2 text-white bg-red-600 hover:bg-red-500"
-                    >
-                      Delete
-                    </Button>
-                    {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2 text-black">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <li
-                                  key={applicant.id}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <div>
-                                  <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
-    window.location.href = `/business-profile/${applicant.businessId}`;
-  }}>
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                      onClick={() => window.open(applicant.resume, '_blank')}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      View Resume
-                                    </Button>
-                                  </div>
-
-                                  {/* Show all buttons when status is PENDING */}
-                                  {applicant.status === 'PENDING' && (
-                                  <div className="flex items-center space-x-4">
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAssignApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "business"
-                                        )
-                                      }
-                                      className="bg-[#eb5e17] text-white"
-                                    >
-                                      Assign
-                                    </Button>
-                                    {/* Reject Button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRejectApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "business"
-                                        )
-                                      }
-                                      className="bg-red-600 text-white"
-                                    >
-                                      Reject
-                                    </Button>
-                                    {/* In Review button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetInReview(
-                                          project.id,
-                                          applicant.id,
-                                          "business"
-                                        )
-                                      }
-                                      className="bg-yellow-600 text-white"
-                                    >
-                                      Set In Review
-                                    </Button>
-                                  </div>
-                                  )}
-
-                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
-                                  {applicant.status === 'IN_REVIEW' && (
-                                    <div className="flex items-center space-x-4">
-                                      <div className="text-yellow-600 font-medium">
-                                        In Review
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleAssignApplicant(
-                                            project.id,
-                                            applicant.id,
-                                            "business"
-                                          )
-                                        }
-                                        className="bg-[#eb5e17] text-white"
-                                      >
-                                        Assign
-                                      </Button>
-                                    </div>
-                                  )}
-
-                                  {/* Show "Assigned" text when status is ACCEPTED */}
-                                  {applicant.status === 'ACCEPTED' && (
-                                    <div className="text-green-600 font-medium">
-                                      Assigned
-                                    </div>
-                                  )}
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
-                    {project.status === "ONGOING" && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteProject(project.id)}
-                        className="mt-2 bg-[#eb5e17] text-white"
-                      >
-                        Complete Project
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No projects available.
-              </p>
-            )}
+            <ProjectList
+              projects={categorizedProjects.industryCollaboration}
+              appliedApplicantsMap={appliedApplicantsMap}
+              isLoadingApplicants={isLoadingApplicants}
+              onToggleApplicants={toggleApplicants}
+              onDeleteProject={(projectId) => {
+                setProjectIDToDelete(projectId);
+                setIsModalOpen(true);
+              }}
+              onHandleAssignApplicant={(projectId, applicantId, applicantType) => 
+                handleAssignApplicant(projectId, applicantId, applicantType)}
+              onHandleRejectApplicant={(projectId, applicantId, applicantType) => 
+                handleRejectApplicant(projectId, applicantId, applicantType)}
+              onHandleSetInReview={(projectId, applicantId, applicantType) => 
+                handleSetInReview(projectId, applicantId, applicantType)}
+              onHandleCompleteProject={handleCompleteProject}
+            />
           </CardContent>
         </Card>
 
@@ -1360,193 +1232,20 @@ const handleSetInReview = async (
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {categorizedProjects.professorCollaboration.length > 0 ? (
-              <ul className="space-y-4">
-                {categorizedProjects.professorCollaboration.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2 max-w-60">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                      {/* project creation date */}
-                      <p className="text-sm text-gray-600">
-                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date not available'}
-                      </p>
-                    </div>
-
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.techDescription}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => toggleApplicants(project.id)}
-                    >
-                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
-                      Applicants
-                    </Button>
-                    {/* delete project button */}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setProjectIDToDelete(project.id);
-                        setIsModalOpen(true);
-                      }}
-                      className="m-2 text-white bg-red-600 hover:bg-red-500"
-                    >
-                      Delete
-                    </Button>
-                    {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2 text-black">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <li
-                                  key={applicant.id}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <div>
-                                    <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
-    window.location.href = `/professor-profile/${applicant.professorId}`;
-  }}>
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                      onClick={() => window.open(applicant.resume, '_blank')}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      View Resume
-                                    </Button>
-                                  </div>
-                                  
-                                  {/* Show all buttons when status is PENDING */}
-                                  {applicant.status === 'PENDING' && (
-                                  <div className="flex items-center space-x-4">
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAssignApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "professor"
-                                        )
-                                      }
-                                      className="bg-[#eb5e17] text-white"
-                                    >
-                                      Assign
-                                    </Button>
-                                    {/* Reject Button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRejectApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "professor"
-                                        )
-                                      }
-                                      className="bg-red-600 text-white"
-                                    >
-                                      Reject
-                                    </Button>
-                                    {/* In Review button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetInReview(
-                                          project.id,
-                                          applicant.id,
-                                          "professor"
-                                        )
-                                      }
-                                      className="bg-yellow-600 text-white"
-                                    >
-                                      Set In Review
-                                    </Button>
-                                  </div>
-                                  )}
-
-                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
-                                  {applicant.status === 'IN_REVIEW' && (
-                                    <div className="flex items-center space-x-4">
-                                      <div className="text-yellow-600 font-medium">
-                                        In Review
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleAssignApplicant(
-                                            project.id,
-                                            applicant.id,
-                                            "professor"
-                                          )
-                                        }
-                                        className="bg-[#eb5e17] text-white"
-                                      >
-                                        Assign
-                                      </Button>
-                                    </div>
-                                  )}
-
-                                  {/* Show "Assigned" text when status is ACCEPTED */}
-                                  {applicant.status === 'ACCEPTED' && (
-                                    <div className="text-green-600 font-medium">
-                                      Assigned
-                                    </div>
-                                  )}
-
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
-                    {project.status === "ONGOING" && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteProject(project.id)}
-                        className="mt-2 bg-[#eb5e17] text-white"
-                      >
-                        Complete Project
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No projects available.
-              </p>
-            )}
+            <ProjectList
+              projects={categorizedProjects.professorCollaboration}
+              appliedApplicantsMap={appliedApplicantsMap}
+              isLoadingApplicants={isLoadingApplicants}
+              onToggleApplicants={toggleApplicants}
+              onDeleteProject={(projectId) => {
+                setProjectIDToDelete(projectId);
+                setIsModalOpen(true);
+              }}
+              onHandleAssignApplicant={handleAssignApplicant}
+              onHandleRejectApplicant={handleRejectApplicant}
+              onHandleSetInReview={handleSetInReview}
+              onHandleCompleteProject={handleCompleteProject}
+            />
           </CardContent>
         </Card>
 
@@ -1559,582 +1258,56 @@ const handleSetInReview = async (
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Internship Projects */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              Internships
-            </h3>
-            {categorizedProjects.internship.length > 0 ? (
-              <ul className="space-y-4">
-                {categorizedProjects.internship.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2 max-w-60">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                      {/* project creation date */}
-                      <p className="text-sm text-gray-600">
-                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date not available'}
-                      </p>
-                    </div>
+            {/* Internships */}
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">Internships</h3>
+            <ProjectList
+              projects={categorizedProjects.internship}
+              appliedApplicantsMap={appliedApplicantsMap}
+              isLoadingApplicants={isLoadingApplicants}
+              onToggleApplicants={toggleApplicants}
+              onDeleteProject={(projectId) => {
+                setProjectIDToDelete(projectId);
+                setIsModalOpen(true);
+              }}
+              onHandleAssignApplicant={handleAssignApplicant}
+              onHandleRejectApplicant={handleRejectApplicant}
+              onHandleSetInReview={handleSetInReview}
+              onHandleCompleteProject={handleCompleteProject}
+            />
 
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.techDescription}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => toggleApplicants(project.id)}
-                    >
-                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
-                      Applicants
-                    </Button>
-                    {/* delete project button */}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setProjectIDToDelete(project.id);
-                        setIsModalOpen(true);
-                      }}
-                      className="m-2 text-white bg-red-600 hover:bg-red-500"
-                    >
-                      Delete
-                    </Button>
-                    {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2 text-black">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <li
-                                  key={applicant.id}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <div>
-                                  <p className="font-semibold  text-gray-600 cursor-pointer" onClick={() => {
-    window.location.href = `/student-profile/${applicant.studentId}`;
-  }}>
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                      onClick={() => window.open(applicant.resume, '_blank')}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      View Resume
-                                    </Button>
-                                  </div>
-                                  
-                                  {/* Show all buttons when status is PENDING */}
-                                  {applicant.status === 'PENDING' && (
-                                  <div className="flex items-center space-x-4">
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAssignApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-[#eb5e17] text-white"
-                                    >
-                                      Assign
-                                    </Button>
-                                    {/* Reject Button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRejectApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-red-600 text-white"
-                                    >
-                                      Reject
-                                    </Button>
-                                    {/* In Review button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetInReview(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-yellow-600 text-white"
-                                    >
-                                      Set In Review
-                                    </Button>
-                                  </div>
-                                  )}
-
-                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
-                                  {applicant.status === 'IN_REVIEW' && (
-                                    <div className="flex items-center space-x-4">
-                                      <div className="text-yellow-600 font-medium">
-                                        In Review
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleAssignApplicant(
-                                            project.id,
-                                            applicant.id,
-                                            "student"
-                                          )
-                                        }
-                                        className="bg-[#eb5e17] text-white"
-                                      >
-                                        Assign
-                                      </Button>
-                                    </div>
-                                  )}
-
-                                  {/* Show "Assigned" text when status is ACCEPTED */}
-                                  {applicant.status === 'ACCEPTED' && (
-                                    <div className="text-green-600 font-medium">
-                                      Assigned
-                                    </div>
-                                  )}
-
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
-                    {project.status === "ONGOING" && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteProject(project.id)}
-                        className="mt-2 bg-[#eb5e17] text-white"
-                      >
-                        Complete Project
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No internships available.
-              </p>
-            )}
-
-            {/* R&D Projects */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              Research Projects
-            </h3>
-            {categorizedProjects.rndProject.length > 0 ? (
-              <ul className="space-y-4">
-                {categorizedProjects.rndProject.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2 max-w-60">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                      {/* project creation date */}
-                      <p className="text-sm text-gray-600">
-                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date not available'}
-                      </p>
-                    </div>
-
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.techDescription}
-                    </p>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => toggleApplicants(project.id)}
-                    >
-                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
-                      Applicants
-                    </Button>
-                    {/* delete project button */}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setProjectIDToDelete(project.id);
-                        setIsModalOpen(true);
-                      }}
-                      className="m-2 text-white bg-red-600 hover:bg-red-500"
-                    >
-                      Delete
-                    </Button>
-
-                    {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2 text-black">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <li
-                                  key={applicant.id}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <div>
-                                    <p className="font-semibold  text-gray-600">
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                      onClick={() => window.open(applicant.resume, '_blank')}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      View Resume
-                                    </Button>
-                                  </div>
-                                  
-                                  {/* Show all buttons when status is PENDING */}
-                                  {applicant.status === 'PENDING' && (
-                                  <div className="flex items-center space-x-4">
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAssignApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-[#eb5e17] text-white"
-                                    >
-                                      Assign
-                                    </Button>
-                                    {/* Reject Button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRejectApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-red-600 text-white"
-                                    >
-                                      Reject
-                                    </Button>
-                                    {/* In Review button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetInReview(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-yellow-600 text-white"
-                                    >
-                                      Set In Review
-                                    </Button>
-                                  </div>
-                                  )}
-
-                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
-                                  {applicant.status === 'IN_REVIEW' && (
-                                    <div className="flex items-center space-x-4">
-                                      <div className="text-yellow-600 font-medium">
-                                        In Review
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleAssignApplicant(
-                                            project.id,
-                                            applicant.id,
-                                            "student"
-                                          )
-                                        }
-                                        className="bg-[#eb5e17] text-white"
-                                      >
-                                        Assign
-                                      </Button>
-                                    </div>
-                                  )}
-
-                                  {/* Show "Assigned" text when status is ACCEPTED */}
-                                  {applicant.status === 'ACCEPTED' && (
-                                    <div className="text-green-600 font-medium">
-                                      Assigned
-                                    </div>
-                                  )}
-
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
-
-                    {project.status === "ONGOING" && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteProject(project.id)}
-                        className="mt-2 bg-[#eb5e17] text-white"
-                      >
-                        Complete Project
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No research projects available.
-              </p>
-            )}
+            {/* Research Projects */}
+            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">Research Projects</h3>
+            <ProjectList
+              projects={categorizedProjects.rndProject}
+              appliedApplicantsMap={appliedApplicantsMap}
+              isLoadingApplicants={isLoadingApplicants}
+              onToggleApplicants={toggleApplicants}
+              onDeleteProject={(projectId) => {
+                setProjectIDToDelete(projectId);
+                setIsModalOpen(true);
+              }}
+              onHandleAssignApplicant={handleAssignApplicant}
+              onHandleRejectApplicant={handleRejectApplicant}
+              onHandleSetInReview={handleSetInReview}
+              onHandleCompleteProject={handleCompleteProject}
+            />
 
             {/* PhD Positions */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
-              PhD Positions
-            </h3>
-            {categorizedProjects.phdPosition.length > 0 ? (
-              <ul className="space-y-4">
-                {categorizedProjects.phdPosition.map((project) => (
-                  <li
-                    key={project.id}
-                    className="border-b border-[#eb5e17] pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-center justify-between mb-2 max-w-60">
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#686256] text-white"
-                      >
-                        {project.status}
-                      </Badge>
-                      {/* project creation date */}
-                      <p className="text-sm text-gray-600">
-                        {project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date not available'}
-                      </p>
-                    </div>
-
-                    <p className="text-sm text-[#686256] mb-2">
-                      {project.techDescription}
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => toggleApplicants(project.id)}
-                    >
-                      {appliedApplicantsMap[project.id] ? "Hide" : "View"}{" "}
-                      Applicants
-                    </Button>
-                    {/* delete project button */}
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setProjectIDToDelete(project.id);
-                        setIsModalOpen(true);
-                      }}
-                      className="m-2 text-white bg-red-600 hover:bg-red-500"
-                    >
-                      Delete
-                    </Button>
-
-                    {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4 text-black">
-                        <h5 className="text-md font-semibold mb-2">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <li
-                                  key={applicant.id}
-                                  className="flex items-center space-x-4"
-                                >
-                                  <div>
-                                    <p className="font-semibold  text-gray-600">
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                      onClick={() => window.open(applicant.resume, '_blank')}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                      View Resume
-                                    </Button>
-                                  </div>
-                                  
-                                  {/* Show all buttons when status is PENDING */}
-                                  {applicant.status === 'PENDING' && (
-                                  <div className="flex items-center space-x-4">
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleAssignApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-[#eb5e17] text-white"
-                                    >
-                                      Assign
-                                    </Button>
-                                    {/* Reject Button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleRejectApplicant(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-red-600 text-white"
-                                    >
-                                      Reject
-                                    </Button>
-                                    {/* In Review button */}
-                                    <Button
-                                      size="sm"
-                                      onClick={() =>
-                                        handleSetInReview(
-                                          project.id,
-                                          applicant.id,
-                                          "student"
-                                        )
-                                      }
-                                      className="bg-yellow-600 text-white"
-                                    >
-                                      Set In Review
-                                    </Button>
-                                  </div>
-                                  )}
-
-                                  {/* Show "In Review" text and Assign button when status is IN_REVIEW */}
-                                  {applicant.status === 'IN_REVIEW' && (
-                                    <div className="flex items-center space-x-4">
-                                      <div className="text-yellow-600 font-medium">
-                                        In Review
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleAssignApplicant(
-                                            project.id,
-                                            applicant.id,
-                                            "student"
-                                          )
-                                        }
-                                        className="bg-[#eb5e17] text-white"
-                                      >
-                                        Assign
-                                      </Button>
-                                    </div>
-                                  )}
-
-                                  {/* Show "Assigned" text when status is ACCEPTED */}
-                                  {applicant.status === 'ACCEPTED' && (
-                                    <div className="text-green-600 font-medium">
-                                      Assigned
-                                    </div>
-                                  )}
-
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
-
-                    {project.status === "ONGOING" && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCompleteProject(project.id)}
-                        className="mt-2 bg-[#eb5e17] text-white"
-                      >
-                        Complete Project
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-[#686256]">
-                No PhD positions available.
-              </p>
-            )}
+            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">PhD Positions</h3>
+            <ProjectList
+              projects={categorizedProjects.phdPosition}
+              appliedApplicantsMap={appliedApplicantsMap}
+              isLoadingApplicants={isLoadingApplicants}
+              onToggleApplicants={toggleApplicants}
+              onDeleteProject={(projectId) => {
+                setProjectIDToDelete(projectId);
+                setIsModalOpen(true);
+              }}
+              onHandleAssignApplicant={handleAssignApplicant}
+              onHandleRejectApplicant={handleRejectApplicant}
+              onHandleSetInReview={handleSetInReview}
+              onHandleCompleteProject={handleCompleteProject}
+            />
           </CardContent>
         </Card>
       </motion.div>
@@ -2863,6 +2036,7 @@ const handleSetInReview = async (
         </section>
       </main>
       <Footer />
+      <Toaster/>
     </div>
   );
 };

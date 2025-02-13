@@ -19,10 +19,17 @@ import { API_URL } from "@/constants";
 
 // Define the possible collaboration types
 type CollaborationType = "students" | "professors" | "";
+interface CreateProjectFormProps {
+  businessId: string;
+  onProjectCreated?: (project: any) => void;
+}
 
 // Main component that handles project creation
 // Takes businessId as a prop to associate the project with a business
-const CreateProjectForm = ({ businessId }: { businessId: string }) => {
+const CreateProjectForm: React.FC<CreateProjectFormProps> = ({ 
+  businessId, 
+  onProjectCreated 
+}) => {
   // State management for form
   const [collaborationType, setCollaborationType] = useState<CollaborationType>("");
   const [isCreatingProject, setIsCreatingProject] = useState(false); // Controls loading state
@@ -35,12 +42,10 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
     setIsCreatingProject(true);
     setError("");
 
-    // Extract form data and create payload
     const formData = new FormData(e.currentTarget);
     const isFunded = formData.get("isFunded");
 
-    // Construct the data object to be sent to the API
-    const data = {
+    const projectData = {
       businessId,
       techDescription: formData.get("techDescription"),
       topic: formData.get("topic"),
@@ -49,35 +54,56 @@ const CreateProjectForm = ({ businessId }: { businessId: string }) => {
       duration: formData.get("duration"),
       isFunded: isFunded === "true" ? true : false,
       desirable: formData.get("desirable"),
-      // Split tags string into array and trim whitespace
       tags: (formData.get("tags") as string)
         .split(",")
         .map((tag) => tag.trim()),
     };
 
     try {
-      // Determine the API endpoint based on collaboration type
-      const endpoint =
-        collaborationType === "students"
-          ? `${API_URL}/project/internship`
-          : `${API_URL}/project/rd-project`;
+      const endpoint = collaborationType === "students"
+        ? `${API_URL}/project/internship`
+        : `${API_URL}/project/rd-project`;
 
-      // Make API request to create project
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify(projectData),
       });
 
-      //   if (!response.ok) throw new Error('Failed to create project');
+      const newProject = await response.json();
 
-      // Handle successful project creation
+      // Format the project data to match the expected structure
+      const formattedProject = {
+        ...newProject,
+        id: newProject.id,
+        topic: newProject.topic,
+        content: newProject.techDescription,
+        difficulty: "INTERMEDIATE",
+        timeline: newProject.duration,
+        status: "OPEN",
+        type: collaborationType === "students" ? "INTERNSHIP" : "RD_PROJECT",
+        category: collaborationType === "students" ? "INTERNSHIP" : "RND_PROJECT",
+        business: {
+          id: businessId,
+          companyName: localStorage.getItem("companyName") || "",
+        },
+        createdAt: new Date().toISOString(),
+        applications: [],
+      };
+
+      if (onProjectCreated) {
+        onProjectCreated(formattedProject);
+      }
+
       setIsSuccess(true);
-      // Reset form and collaboration type
       e.currentTarget.reset();
       setCollaborationType("");
     } catch (error) {
       console.error("Error creating project:", error);
+      setError("Failed to create project. Please try again.");
     } finally {
       setIsCreatingProject(false);
     }

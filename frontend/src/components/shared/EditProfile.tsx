@@ -17,32 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { API_URL } from "@/constants";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
-const categories = {
-  Science: [
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Earth Sciences",
-    "Space Science",
-  ],
-  Technology: ["Computer Science", "Engineering"],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
-  Mathematics: ["Pure Mathematics", "Applied Mathematics"],
-  "Engineering Technology": [
-    "Data Engineering",
-    "Robotics",
-    "Biotechnology",
-    "Environmental Technology",
-    "Space Technology",
-    "Pharmaceutical Engineering",
-  ],
-} as const;
+const categories = ProjectCategories;
 
 interface Position {
   title: string;
@@ -115,7 +92,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
         researchInterests: data.researchInterests || [],
         tags: data.tags || [],
       });
-      console.log(data);
+      // console.log(data);
       setImagePreview(data.photoUrl || data.profileImageUrl);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {

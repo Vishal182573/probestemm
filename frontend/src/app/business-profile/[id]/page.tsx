@@ -30,6 +30,9 @@ import { PROFESSORPAGE } from "../../../../public";
 import CreateProjectForm from "@/components/shared/professorprojectCreationForm";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 // Type definitions for notifications received by the business
 type Notification = {
@@ -126,6 +129,7 @@ const BusinessProfilePage: React.FC = () => {
   const [applicationDetails, setApplicationDetails] = useState<{[projectId: string]: ApplicationDetails[]}>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Effect hook to fetch business data and related information on component mount
   useEffect(() => {
@@ -144,7 +148,7 @@ const BusinessProfilePage: React.FC = () => {
         });
 
         setProjects(projectsResponse.data);
-        console.log(projectsResponse.data);
+        // console.log(projectsResponse.data);
 
         if (isLoggedInUser && token) {
           // Fetch notifications
@@ -340,7 +344,7 @@ const BusinessProfilePage: React.FC = () => {
       const token = localStorage.getItem("token");
       const endpoint = `${API_URL}/project/${projectId}/delete`;
 
-      console.log("Deleting project with ID:", projectId);
+      // console.log("Deleting project with ID:", projectId);
   
       await axios.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -350,9 +354,23 @@ const BusinessProfilePage: React.FC = () => {
         prevProjects.filter((project) => project.id !== projectId)
       );
       setIsModalOpen(false);
+      // Show success toast
+      toast({
+        title: "Project Deleted Successfully",
+        description: "The project has been permanently removed.",
+        variant: "default",
+        duration: 3000,
+        className: "bg-[#eb5e17] text-white",
+      });
+
     } catch (error) {
       console.error("Error deleting project:", error);
-      setError("Failed to delete project. Please try again.");
+      toast({
+        title: "Error Deleting Project",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
     }
   };
   
@@ -450,21 +468,6 @@ const BusinessProfilePage: React.FC = () => {
               <p className="text-gray-700">{application.description}</p>
             </div>
 
-            {/* {application.imageUrls && application.imageUrls.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {application.imageUrls.map((url, index) => (
-                  <div key={index} className="relative h-32">
-                    <Image
-                      src={url}
-                      alt={`Application attachment ${index + 1}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            )} */}
             {application.resume && (
             <div className="mt-4">
               <Button
@@ -788,7 +791,18 @@ const BusinessProfilePage: React.FC = () => {
 
               {isLoggedInUser && (
                 <>
-                  <CreateProjectForm businessId={business.id} />
+                  <CreateProjectForm 
+                    businessId={business.id} 
+                    onProjectCreated={(newProject) => {
+                      setProjects(prevProjects => {
+                        const updatedProjects = [...prevProjects, newProject];
+                        // Sort projects by creation date, newest first
+                        return updatedProjects.sort((a, b) => 
+                          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                        );
+                      });
+                    }}
+                  />
                 </>
               )}
             </motion.div>
@@ -822,6 +836,7 @@ const BusinessProfilePage: React.FC = () => {
       </main>
 
       <Footer />
+      <Toaster/>
     </div>
   );
 };

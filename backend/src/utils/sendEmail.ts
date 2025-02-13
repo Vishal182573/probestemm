@@ -33,7 +33,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
   const msg = { to, from, subject, html };
 
   try {
-    console.log("Sending email with payload:", msg);
+    // console.log("Sending email with payload:", msg);
     await sgMail.send(msg);
     console.log("Email sent successfully");
   } catch (error) {

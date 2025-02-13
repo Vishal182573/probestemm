@@ -218,7 +218,7 @@ export const SignupForm: React.FC = () => {
       if (idCardFile) {
         try {
           idCardUrl = await uploadFile(idCardFile);
-          console.log(idCardUrl)
+          // console.log(idCardUrl)
         } catch (error) {
           if(userData.role=="student" || userData.role=="professor") setUploadError('Failed to upload research paper');
           // else setUploadError('Failed to upload company brochure image');

@@ -270,25 +270,16 @@ export const getProjectsByType = async (req: Request, res: Response) => {
   try {
       const { type, category } = req.query;
       const currentDate = new Date();
-      const tenDaysAgo = subDays(currentDate, 10);
+      const tenDaysAgo = subDays(currentDate, 30);
 
       let whereClause: any = {
           type: type as ProjectType,
           category: category as ProposalCategory
       };
 
-      // Add date filtering based on project type
-      if (type === ProjectType.STUDENT_PROPOSAL) {
-          // For student proposals, filter based on creation date
-          whereClause.createdAt = {
-              gte: tenDaysAgo
-          };
-      } else {
-          // For other project types, filter based on deadline
-          whereClause.deadline = {
-              gte: tenDaysAgo
-          };
-      }
+      whereClause.deadline = {
+          gte: tenDaysAgo
+      };
 
       const projects = await prisma.project.findMany({
           where: whereClause,
@@ -761,7 +752,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
 // Create student proposal
 export const createStudentProposal = async (req: Request, res: Response) => {
   try {
-    const { studentId, topic, content, proposalFor, techDescription, tags, isFunded } = req.body;
+    const { studentId, topic, content, proposalFor, techDescription, tags, isFunded, deadline } = req.body;
 
     const creatingStudent = await prisma.student.findUnique({
       where: { id: studentId },
@@ -785,6 +776,7 @@ export const createStudentProposal = async (req: Request, res: Response) => {
         studentId,
         tags,
         isFunded,
+        deadline,
       },
     });
 
@@ -1599,45 +1591,6 @@ export const deleteProject = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete internship project" });
   }
 };
-
-// Delete expired projects
-// export const deleteExpiredProjects = async () => {
-//   try {
-//     const currentDate = new Date();
-//     const deadlinePlusTenDays = subDays(currentDate, 10);
-
-//     const expiredProjects = await prisma.project.findMany({
-//       where: {
-//         deadline: {
-//           lt: deadlinePlusTenDays,
-//         },
-//       },
-//     });
-
-//     const deletionResult = await prisma.project.deleteMany({
-//       where: {
-//         deadline: {
-//           lt: deadlinePlusTenDays,
-//         },
-//       },
-//     });
-
-//     console.log(`Deleted ${deletionResult.count} expired projects`);
-//     return expiredProjects;
-//   } catch (error) {
-//     console.error('Error deleting expired projects:', error);
-//     throw error;
-//   }
-// };
-
-// Schedule daily project cleanup
-// export const scheduleProjectCleanup = () => {
-//   // Daily cleanup at midnight
-//   const cron = require('node-cron');
-//   cron.schedule('0 0 * * *', () => {
-//     deleteExpiredProjects();
-//   })
-// }
 
 // Get applied project details by ID
 export const getAppliedProjects = async (req: Request, res: Response) => {

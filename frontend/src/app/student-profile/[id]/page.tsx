@@ -30,6 +30,9 @@ import { PROFESSORPAGE } from "../../../../public";
 import StudentProposalForm from "@/components/shared/studentProposal";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 // Interface definitions for type safety
 interface Student {
@@ -121,6 +124,7 @@ const StudentProfilePage: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0); // Track unread notifications
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // useEffect hook for initial data fetching
   useEffect(() => {
@@ -393,7 +397,15 @@ const StudentProfilePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <StudentProposalForm studentId={student.id} />
+          <StudentProposalForm 
+          studentId={student.id} 
+          onProposalSubmitted={(newProject) => {
+            setStudent(prev => ({
+              ...prev!,
+              projects: [...(prev?.projects || []), newProject]
+            }));
+          }}
+        />
         </motion.div>
       )}
     </TabsContent>
@@ -404,7 +416,7 @@ const StudentProfilePage: React.FC = () => {
       const token = localStorage.getItem("token");
       const endpoint = `${API_URL}/project/${projectId}/delete`;
 
-      console.log("Deleting project with ID:", projectId);
+      // console.log("Deleting project with ID:", projectId);
   
       await axios.delete(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -419,10 +431,23 @@ const StudentProfilePage: React.FC = () => {
           projects: prevStudent.projects.filter((project) => project.id !== projectId)
         } as Student;
       });
-      setIsModalOpen(false);
+      setIsModalOpen(false);// Show success toast
+      toast({
+        title: "Project Deleted Successfully",
+        description: "The project has been permanently removed.",
+        variant: "default",
+        duration: 3000,
+        className: "bg-[#eb5e17] text-white",
+      });
+
     } catch (error) {
       console.error("Error deleting project:", error);
-      setError("Failed to delete project. Please try again.");
+      toast({
+        title: "Error Deleting Project",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
     }
   };
   
@@ -820,6 +845,7 @@ const StudentProfilePage: React.FC = () => {
       </main>
 
       <Footer />
+      <Toaster/>
     </div>
   );
 };

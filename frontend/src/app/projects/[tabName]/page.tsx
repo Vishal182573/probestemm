@@ -417,7 +417,7 @@ interface ProjectsListProps {
   appliedProjects: Set<string>;
 }
 
-const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply, appliedProjects }) => {
+export const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply, appliedProjects }) => {
   return (
     <section className="py-20">
       {projects.length > 0 ? (
@@ -829,7 +829,7 @@ interface ApplyModalProps {
   onSuccess?: (projectId: string) => void;
 }
 
-const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSuccess }) => {
+export const ApplyModal: React.FC<ApplyModalProps> = ({ show, onClose, project, onSuccess }) => {
   // Form handling with react-hook-form
   const { register, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
