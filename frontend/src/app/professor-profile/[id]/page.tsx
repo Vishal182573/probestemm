@@ -726,7 +726,7 @@ const handleSetInReview = async (
       // Show success toast
       toast({
         title: "Project Created Successfully!",
-        description: "Your project has been posted and is now visible to others.",
+        description: "Your project has been posted and is now visible on project opennings page.",
         variant: "default",
         duration: 5000,
         className: "bg-[#eb5e17] text-white",

@@ -291,7 +291,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
 
           {/* Dropdown for selecting funding status */}
           <div>
-            <Label className="block text-[#472014] font-semibold mb-2">Is Funded</Label>
+            <Label className="block text-[#472014] font-semibold mb-2">Funding Condition</Label>
             <Select 
               name="isFunded" 
               value={formData.isFunded.toString()} 
@@ -306,8 +306,8 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
                 <SelectValue placeholder="Select funding status" />
               </SelectTrigger>
               <SelectContent className="bg-white text-black">
-                <SelectItem value="true">Yes</SelectItem>
-                <SelectItem value="false">No</SelectItem>
+                <SelectItem value="true">Mandetory</SelectItem>
+                <SelectItem value="false">Not Mandetory</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -113,7 +113,7 @@ export default function ProfessorsPage() {
       <Banner
         imageSrc={ALLPROFESSORS}
         altText="project-banner-img"
-        title="Our Esteemed Professors"
+        title="Associated Faculty"
         subtitle="Connect with world-class experts and explore their impactful contributions to Science and Technology"
       />
 
