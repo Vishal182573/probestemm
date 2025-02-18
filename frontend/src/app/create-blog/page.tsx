@@ -96,7 +96,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
         },
       });
 
-      // console.log("Blog created:", response.data);
+      console.log("Blog created:", response.data);
       toast({
         title: "Success",
         description: "Your blog post has been created successfully.",

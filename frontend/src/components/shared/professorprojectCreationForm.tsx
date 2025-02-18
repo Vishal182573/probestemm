@@ -17,11 +17,51 @@ import {
 } from "@/components/ui/select";
 import { API_URL } from "@/constants";
 
+interface ApplicationDetails {
+  id: string;
+  description: string;
+  resume: string;
+  applicationType: "professor" | "student" | "business";
+  applicantDetails: {
+    id: string;
+    name: string;
+    email: string;
+    phoneNumber: string; 
+    institution?: string;
+    department?: string;
+  };
+  createdAt: string;
+}
+interface Project {
+  id: string;
+  topic: string;
+  content: string;
+  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+  timeline: string;
+  status: "OPEN" | "ONGOING" | "CLOSED";
+  type: "RD_PROJECT" | "INTERNSHIP";
+  category: string;
+  business?: { id: string; companyName: string };
+  professor?: { id: string; fullName: string };
+  applications?: ApplicationDetails[];
+  selectedApplicant: {
+    id:string;
+    type: string;
+    userId: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    description: string;
+    images: string[]
+  }
+  createdAt: string | Date;
+}
+
 // Define the possible collaboration types
 type CollaborationType = "students" | "professors" | "";
 interface CreateProjectFormProps {
   businessId: string;
-  onProjectCreated?: (project: any) => void;
+  onProjectCreated?: (project: Array<Project>) => void;
 }
 
 // Main component that handles project creation

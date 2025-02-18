@@ -15,10 +15,50 @@ import {
 } from "@/components/ui/select";
 import { Input } from "../ui/input";
 
+interface ApplicationDetails {
+  id: string;
+  description: string;
+  resume: string;
+  applicationType: "professor" | "student" | "business";
+  applicantDetails: {
+    id: string;
+    name: string;
+    email: string;
+    phoneNumber: string; 
+    institution?: string;
+    department?: string;
+  };
+  createdAt: string;
+}
+interface Project {
+  id: string;
+  topic: string;
+  content: string;
+  difficulty: "EASY" | "INTERMEDIATE" | "HARD";
+  timeline: string;
+  status: "OPEN" | "ONGOING" | "CLOSED";
+  type: "RD_PROJECT" | "INTERNSHIP";
+  category: string;
+  business?: { id: string; companyName: string };
+  professor?: { id: string; fullName: string };
+  applications?: ApplicationDetails[];
+  selectedApplicant: {
+    id:string;
+    type: string;
+    userId: string;
+    name: string;
+    email: string;
+    phoneNumber: string;
+    description: string;
+    images: string[]
+  }
+  createdAt: string | Date;
+}
+
 // Define TypeScript interface for component props
 interface StudentProposalFormProps {
   studentId: string;
-  onProposalSubmitted: (newProject: any) => void;
+  onProposalSubmitted: (newProject: Array<Project>) => void;
 }
 
 // Define TypeScript interface for form data structure

@@ -72,7 +72,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({
     <div className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-xl">
       {/* Conditional rendering based on whether the media is a GIF or regular image */}
       {isGif ? (
-        <img
+        <Image
           src={mediaUrl}
           alt={mediaAlt}
           className="w-full h-full object-cover"

@@ -66,7 +66,7 @@ interface PaginationInfo {
 }
 
 // Category and subcategory mapping object - defines the hierarchical structure of academic subjects
-const categories = ProjectCategories;
+const categories = ProjectCategories as Record<string, string[]>;
 
 // Main Discussion Forum Component
 const DiscussionForum: React.FC = () => {

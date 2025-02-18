@@ -615,7 +615,7 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
                         variant="destructive"
                         size="icon"
                         onClick={() => {
-                          const updatedSkills = profileData.skills.filter((_, i) => i !== index);
+                          const updatedSkills = profileData.skills.filter((_: any, i: number) => i !== index);
                           setProfileData({ ...profileData, skills: updatedSkills });
                         }}
                       >

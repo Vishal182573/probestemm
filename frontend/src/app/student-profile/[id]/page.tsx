@@ -400,10 +400,13 @@ const StudentProfilePage: React.FC = () => {
           <StudentProposalForm 
           studentId={student.id} 
           onProposalSubmitted={(newProject) => {
-            setStudent(prev => ({
-              ...prev!,
-              projects: [...(prev?.projects || []), newProject]
-            }));
+            setStudent(prev => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                projects: [...prev.projects, newProject]
+              } as Student;
+            });
           }}
         />
         </motion.div>
@@ -458,7 +461,7 @@ const StudentProfilePage: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this project?</h3>
           <div className="flex justify-evenly">
             <Button
-              onClick={() => handleDeleteProject(projectIDToDelete)} 
+              onClick={() => projectIDToDelete && handleDeleteProject(projectIDToDelete)} 
               className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
             >
               Yes
@@ -554,9 +557,8 @@ const StudentProfilePage: React.FC = () => {
                           <ul className="space-y-2">
                             {appliedApplicantsMap[project.id].map(
                               (applicant) => (
-                                <div>
+                                <div key={applicant.id}>
                                 <li
-                                  key={applicant.id}
                                   className="flex items-center space-x-4 cursor-pointer"
                                   onClick={() => {
                                     const route = applicant.professorId
