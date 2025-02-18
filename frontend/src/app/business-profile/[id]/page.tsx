@@ -797,7 +797,7 @@ const BusinessProfilePage: React.FC = () => {
                     businessId={business.id} 
                     onProjectCreated={(newProject) => {
                       setProjects(prevProjects => {
-                        const updatedProjects = [...prevProjects, newProject];
+                        const updatedProjects = [...prevProjects, newProject] as Project[];
                         // Sort projects by creation date, newest first
                         return updatedProjects.sort((a, b) => 
                           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

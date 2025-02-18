@@ -1,7 +1,8 @@
 import { API_URL } from "@/constants";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { ApplyModal, ProjectsList } from "@/app/projects/[tabName]/page";
+import { ProjectsList } from "../Projects/ProjectList";
+import { ApplyModal } from "../Projects/ApplyModal";
 
 // Enums defining the types of projects and proposal categories
 enum ProjectType {
