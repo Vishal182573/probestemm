@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send, CheckCircle } from "lucide-react";
@@ -346,8 +346,8 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
                 <SelectValue placeholder="Select funding status" />
               </SelectTrigger>
               <SelectContent className="bg-white text-black">
-                <SelectItem value="true">Mandetory</SelectItem>
-                <SelectItem value="false">Not Mandetory</SelectItem>
+                <SelectItem value="true">Mandatory</SelectItem>
+                <SelectItem value="false">Not Mandatory</SelectItem>
               </SelectContent>
             </Select>
           </div>

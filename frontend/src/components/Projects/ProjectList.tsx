@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -90,6 +90,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   // State for dynamic application button text
   const [application_button, setapplication_button] = useState<string>("APPLY NOW");
   
+  // Add state for text expansion
+  const [showModal, setShowModal] = useState(false);
+  
   // Effect to set button text based on user role
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -99,6 +102,82 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   }
   }, []);
 
+  // Modal component for technical description
+  const DescriptionModal = ({ description, onClose }: { description?: string, onClose: () => void }) => {
+    if (!description) return null;
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Technical Description</h3>
+            <button 
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="mt-2">
+            <p className="text-sm text-gray-800">{description}</p>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="text-sm px-3 py-1 bg-[#eb5e17] text-white rounded hover:bg-[#472014] focus:outline-none"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Helper function to render technical description with view more button
+  const renderTechnicalDescription = (description?: string) => {
+    if (!description) return 'No technical description provided';
+    
+    // Create a ref to check the actual height of the text
+    const [showViewMore, setShowViewMore] = useState(false);
+    const textRef = useRef<HTMLParagraphElement>(null);
+    
+    // Check if text is overflowing after component mounts
+    useEffect(() => {
+      if (textRef.current) {
+        const lineHeight = parseInt(window.getComputedStyle(textRef.current).lineHeight);
+        const paragraphHeight = textRef.current.clientHeight;
+        // If height is more than a line, show the view more button
+        setShowViewMore(paragraphHeight > lineHeight);
+      }
+    }, [description]);
+    
+    return (
+      <div>
+        <p ref={textRef} className="line-clamp-2">
+          {description}
+        </p>
+        {showViewMore && (
+          <button 
+            onClick={() => setShowModal(true)} 
+            className="text-[#eb5e17] text-sm font-medium hover:text-[#472014] mt-1 focus:outline-none"
+          >
+            View More
+          </button>
+        )}
+        
+        {showModal && (
+          <DescriptionModal 
+            description={description} 
+            onClose={() => setShowModal(false)} 
+          />
+        )}
+      </div>
+    );
+  };
+
   // Function to render different details based on project category
   const renderDetails = () => {
     switch (project.category) {
@@ -107,7 +186,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <>
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription || 'No technical description provided'}</p>
+              {renderTechnicalDescription(project.techDescription)}
             </div>
             {project.duration && (
               <div className="mb-2 text-black">
@@ -136,7 +215,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <>
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription || 'No technical description provided'}</p>
+              {renderTechnicalDescription(project.techDescription)}
             </div>
             {project.duration && (
               <div className="mb-2 text-black">
@@ -174,7 +253,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
             <div className="mb-2 text-black">
               <h4 className="font-semibold ">Technical Description:</h4>
-              <p>{project.techDescription}</p>
+              {renderTechnicalDescription(project.techDescription)}
             </div>
             {project.duration && (
               <div className="mb-2 text-black">
@@ -212,7 +291,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
-              <p>{project.techDescription || 'No technical description provided'}</p>
+              {renderTechnicalDescription(project.techDescription)}
             </div>
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Eligibility:</h4>
@@ -381,7 +460,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <div className="flex justify-between items-start">
             <div className="w-full flex justify-between mt-2 gap-2">
               <Badge className="bg-[#eb5e17] text-white h-fit">
-                {project.category === "RND_PROJECT" ? "R&D PROJECT" :project.category.replace(/_/g, " ")}
+                {project.type!=="STUDENT_PROPOSAL" ? (project.category === "RND_PROJECT" ? "R&D PROJECT" :project.category.replace(/_/g, " "))
+                : project.content.toUpperCase()}
+
               </Badge>
               <div className="flex flex-col justify-center items-end gap-2">
                 <Badge 
@@ -419,12 +500,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <CardFooter className="flex flex-col gap-2">
           <div className="flex w-full gap-2">
           <Button
-      onClick={handleRedirect}
-      variant="outline"
-      className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17]"
-    >
-      {getButtonLabel()}
-    </Button>
+            onClick={handleRedirect}
+            variant="outline"
+            className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17]"
+          >
+            {getButtonLabel()}
+          </Button>
           <Button
             onClick={handleApply}
             disabled={!canApply || isApplied}
@@ -468,7 +549,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({ projects, onApply, a
           ))}
         </div>
       ) : (
-        <p className="text-center text-xl">No projects available.</p>
+        <p className="text-center text-xl text-red-600">No projects available.</p>
       )}
     </section>
   );

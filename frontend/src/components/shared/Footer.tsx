@@ -18,8 +18,7 @@ import Link from "next/link";
 const socialLinks = {
   twitter: "https://x.com/StemProbe",
   instagram: "https://www.instagram.com/probestem?igsh=MW9sOTdoMHdwY2xmZw%3D%3D",
-  facebook:
-    "https://www.facebook.com/profile.php?id=61571787416598&sfnsn=wiwspwa&mibextid=RUbZ1f",
+  facebook: "https://www.facebook.com/profile.php?id=61573531766943",
   linkedin: "https://www.linkedin.com/in/probe-stem-36b7bb345/",
   youtube: "https://www.youtube.com/channel/UCOxc4PcOaUUY3eN18gcvYpw",
   google: "mailto:probestem2024@gmail.com",

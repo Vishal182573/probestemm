@@ -385,7 +385,6 @@ const QuestionDetailPage: React.FC = () => {
       </motion.div>
 
       {/* Additional components */}
-      <FeaturesDemo imagePosition="right" />
       <ContactForm />
       <Footer />
     </div>

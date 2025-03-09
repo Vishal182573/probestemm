@@ -13,6 +13,7 @@ import {
   GraduationCap,
   UserCircle,
   Building,
+  Search,
 } from "lucide-react";
 import {
   Select,
@@ -99,6 +100,7 @@ const ProjectsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false); // Controls application modal visibility
   const [selectedProject, setSelectedProject] = useState<Project | null>(null); // Currently selected project
   const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
+  const [tempSearch, setTempSearch] = useState(''); // Temporary search query state
 
   // Navigation and routing hooks
   const params = useParams();
@@ -233,8 +235,13 @@ const ProjectsPage: React.FC = () => {
     }
   
     // Filter by opportunity type
-    if (selectedCategory === 'students' && selectedOpportunity !== 'all') {
-      filtered = filtered.filter(project => project.category === selectedOpportunity);
+    if (selectedCategory === 'students' && activeTab === 'professors') {
+      if (selectedOpportunity !== 'all') {
+        filtered = filtered.filter(project => project.category === selectedOpportunity);
+      }
+    }
+    if(activeTab === 'students' && selectedOpportunity !== 'all') {
+      filtered = filtered.filter(project => project.content === selectedOpportunity);
     }
   
     // Filter by search query
@@ -320,22 +327,37 @@ const ProjectsPage: React.FC = () => {
 
             <div className={`flex gap-10 lg:gap-20 ${activeTab === "students" ? "justify-end" : "justify-between"}`}>
               
-              <div className="space-y-2 w-full">
-                <label htmlFor="search" className="text-sm font-medium text-white">
-                  Search Projects
-                </label>
+            <div className="space-y-2 w-full">
+              <label htmlFor="search" className="text-sm font-medium text-white">
+                Search Projects
+              </label>
+              <div className="relative">
                 <Input
                   id="search"
                   type="text"
                   placeholder="Enter tags (e.g., AI, Machine Learning)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-white"
+                  value={tempSearch}
+                  onChange={(e) => setTempSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setSearchQuery(tempSearch);
+                    }
+                  }}
+                  className="w-full pl-8 text-white"
                 />
-                <p className="text-sm text-gray-500">
-                  Separate multiple tags with commas
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery(tempSearch)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <Search className="text-white h-5 w-5" />
+                </button>
               </div>
+              <p className="text-sm text-gray-500">
+                Separate multiple tags with commas
+              </p>
+            </div>
 
               <div className="space-y-2 w-52 lg:w-72">
                 <label className="text-sm font-medium text-white ml-2">
@@ -354,7 +376,9 @@ const ProjectsPage: React.FC = () => {
                 </Select>
               </div>
 
-              {activeTab === 'professors' && selectedCategory === 'students' && <div className="space-y-2 w-52 lg:w-72">
+              {((activeTab === 'professors' && selectedCategory === 'students') || 
+              activeTab === 'students') && 
+              <div className="space-y-2 w-52 lg:w-72">
                 <label className="text-sm font-medium text-white ml-2">
                   Opportunity type
                 </label>
@@ -364,12 +388,23 @@ const ProjectsPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Opportunities</SelectItem>
-                    <SelectItem value="INTERNSHIP">Internship</SelectItem>
-                    <SelectItem value="PHD_POSITION">PhD Position</SelectItem>
-                    <SelectItem value="RND_PROJECT">R&D Project</SelectItem>
+                    {activeTab === 'students' ? (
+                      <>
+                        <SelectItem value="Internship">Internship</SelectItem>
+                        <SelectItem value="Project">Project</SelectItem>
+                        <SelectItem value="PhD Position">PhD Position</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="INTERNSHIP">Internship</SelectItem>
+                        <SelectItem value="PHD_POSITION">PhD Position</SelectItem>
+                        <SelectItem value="RND_PROJECT">R&D Project</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
-              </div>}
+              </div>
+            }
 
             </div>
 

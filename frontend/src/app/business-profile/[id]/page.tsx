@@ -704,16 +704,14 @@ const BusinessProfilePage: React.FC = () => {
           transition={{ duration: 0.8 }}
         >
           {/* Background Image */}
-          <div className="absolute inset-0 -z-10">
-            <Image
-              src={PROFESSORPAGE}
-              alt="Background"
-              layout="fill"
-              objectFit="cover"
-              quality={100}
-              priority
-            />
-          </div>
+          <Image
+            src={PROFESSORPAGE}
+            alt="Background"
+            layout="fill"
+            objectFit="cover"
+            quality={100}
+            priority
+          />
           <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">

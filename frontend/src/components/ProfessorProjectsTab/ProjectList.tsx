@@ -1,5 +1,5 @@
 // Components/ProjectsTab/ProjectList.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ApplicantsList from '@/components/ProfessorProjectsTab/ApplicantsList';
@@ -72,6 +72,17 @@ const ProjectList: React.FC<ProjectListProps> = ({
   onHandleSetInReview,
   onHandleCompleteProject,
 }) => {
+  // Add state to track expanded descriptions
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  
+  // Toggle description expansion
+  const toggleDescription = (projectId: string) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
+
   return (
     <ul className="space-y-4">
       {projects.map((project) => (
@@ -89,9 +100,23 @@ const ProjectList: React.FC<ProjectListProps> = ({
             </p>
           </div>
 
-          <p className="text-sm text-[#686256] mb-2">
-            {project.techDescription}
-          </p>
+          <div className="mb-2">
+            <p className="text-sm text-[#686256]">
+              {expandedDescriptions[project.id] 
+                ? project.techDescription
+                : project.techDescription?.length > 50 
+                  ? `${project.techDescription.substring(0, 50)}...` 
+                  : project.techDescription}
+            {project.techDescription?.length > 50 && (
+              <span 
+                onClick={() => toggleDescription(project.id)}
+                className="text-xs text-[#eb5e17] hover:underline hover:cursor-pointer mx-2"
+              >
+                {expandedDescriptions[project.id] ? 'View less' : 'View more'}
+              </span>
+            )}
+            </p>
+          </div>
 
           <div className="flex gap-2">
             <Button

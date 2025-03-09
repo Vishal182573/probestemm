@@ -49,7 +49,7 @@ const ApplicantCard: React.FC<ApplicantCardProps> = ({
     <>
       <div>
         <p 
-          className="font-semibold text-gray-600 cursor-pointer" 
+          className="font-semibold text-gray-600 cursor-pointer hover:text-blue-600" 
           onClick={() => window.location.href = getProfileLink()}
         >
           {applicant.name}
@@ -59,7 +59,7 @@ const ApplicantCard: React.FC<ApplicantCardProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="mt-2 bg-white text-blue-600 hover:text-blue-800"
+          className="mt-2 bg-white text-blue-600 hover:text-white"
           onClick={() => window.open(applicant.resume, '_blank')}
         >
           <FileText className="h-4 w-4" />
