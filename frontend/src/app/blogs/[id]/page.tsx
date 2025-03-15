@@ -14,6 +14,7 @@ import {
   Loader,
   ChevronRight,
   Share2,
+  Trash2,
 } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
@@ -101,6 +102,9 @@ const BlogPostPage = () => {
   >(null);
   const { toast } = useToast();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editedCommentContent, setEditedCommentContent] = useState("");
 
   // Effect hook to fetch initial data when component mounts or ID changes
   useEffect(() => {
@@ -110,6 +114,27 @@ const BlogPostPage = () => {
       fetchRelatedBlogs();
     }
   }, [id]);
+
+  // Fetch current user info on component mount
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        const response = await axios.get(`${API_URL}/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        console.log("Current user info:", response.data);
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+    
+    fetchCurrentUser();
+  }, []);
 
   // Function to fetch the main blog post data
   const fetchBlogPost = async () => {
@@ -121,6 +146,7 @@ const BlogPostPage = () => {
       }
       setLoading(true);
       const response = await axios.get(`${API_URL}/blogs/${id}`);
+      console.log(response.data);
       setBlogPost(response.data);
       setError("");
     } catch (error) {
@@ -159,6 +185,41 @@ const BlogPostPage = () => {
     }
   };
 
+  // Function to check if the current user is the author of the blog
+  const isUserBlogAuthor = () => {
+    if (!currentUser || !blogPost) return false;
+    
+    if (blogPost.authorType === "PROFESSOR" && currentUser.id === blogPost.professor?.id) {
+      return true;
+    }
+    
+    if (blogPost.authorType === "BUSINESS" && currentUser.id === blogPost.business?.id) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Function to check if the comment belongs to the current user
+  const isUserComment = (comment: Comment) => {
+    console.log(comment.userType, currentUser?.id, comment.student?.id);
+    if (!currentUser) return false;
+    
+    if (comment.userType === "STUDENT" && currentUser.id === comment.student?.id) {
+      return true;
+    }
+    
+    if (comment.userType === "PROFESSOR" && currentUser.id === comment.professor?.id) {
+      return true;
+    }
+    
+    if (comment.userType === "BUSINESS" && currentUser.id === comment.business?.id) {
+      return true;
+    }
+    
+    return false;
+  };
+
   // Handler for like/dislike functionality
   const handleLikeDislike = async (action: "like" | "dislike") => {
     try {
@@ -167,6 +228,7 @@ const BlogPostPage = () => {
         toast({
           title: "Please log in to interact with blogs",
           variant: "destructive",
+          duration: 5000,
         });
         return;
       }
@@ -202,7 +264,7 @@ const BlogPostPage = () => {
       setCommentLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
-        toast({ title: "Please log in to comment", variant: "destructive" });
+        toast({ title: "Please log in to comment", variant: "destructive", duration: 5000});
         return;
       }
 
@@ -229,37 +291,126 @@ const BlogPostPage = () => {
     }
   };
 
-  // const handleDeleteComment = async (commentId: string) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     if (!token) {
-  //       toast({
-  //         title: "Please log in to delete comments",
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
+  // Function to handle blog deletion
+  const handleDeleteBlog = async () => {
+    if (!window.confirm("Are you sure you want to delete this blog post? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please log in to delete this blog",
+          variant: "destructive",
+          duration: 5000,
+        });
+        return;
+      }
+  
+      await axios.delete(`${API_URL}/blogs/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      toast({ title: "Blog deleted successfully", duration: 5000, });
+      router.push("/blogs"); // Redirect to blogs list
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      toast({ 
+        title: "Failed to delete blog", 
+        description: "You can only delete blogs that you created.",
+        variant: "destructive" ,
+        duration: 5000,
+      });
+    }
+  };
 
-  //     await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
+  // Update the handleDeleteComment function to include confirmation
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please log in to delete comments",
+          variant: "destructive",
+          duration: 5000,
+        });
+        return;
+      }
+  
+      await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setBlogPost((prevPost) =>
+        prevPost
+          ? {
+              ...prevPost,
+              comments: prevPost.comments.filter(
+                (comment) => comment.id !== commentId
+              ),
+            }
+          : null
+      );
+      toast({ title: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({ 
+        title: "Failed to delete comment", 
+        description: "You can only delete your own comments.",
+        variant: "destructive" 
+      });
+    }
+  };
 
-  //     setBlogPost((prevPost) =>
-  //       prevPost
-  //         ? {
-  //             ...prevPost,
-  //             comments: prevPost.comments.filter(
-  //               (comment) => comment.id !== commentId
-  //             ),
-  //           }
-  //         : null
-  //     );
-  //     toast({ title: "Comment deleted successfully" });
-  //   } catch (error) {
-  //     console.error("Error deleting comment:", error);
-  //     toast({ title: "Failed to delete comment", variant: "destructive" });
-  //   }
-  // };
+  const handleEditComment = async (commentId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please log in to edit comments",
+          variant: "destructive",
+          duration: 5000,
+        });
+        return;
+      }
+
+      await axios.put(
+        `${API_URL}/blogs/${id}/comments/${commentId}`,
+        { content: editedCommentContent },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setBlogPost((prevPost) =>
+        prevPost
+          ? {
+              ...prevPost,
+              comments: prevPost.comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, content: editedCommentContent }
+                  : comment
+              ),
+            }
+          : null
+      );
+      setEditingCommentId(null);
+      setEditedCommentContent("");
+      toast({ title: "Comment updated successfully" });
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      toast({ 
+        title: "Failed to update comment", 
+        description: "You can only edit your own comments.",
+        variant: "destructive" 
+      });
+    }
+  };
 
   // Loading state UI
   if (loading) {
@@ -373,10 +524,54 @@ const BlogPostPage = () => {
                 </Button>
                 <Button
                   className="text-[#eb5e17] hover:text-white bg-white hover:bg-[#eb5e17] rounded-full transition-all duration-300 text-sm sm:text-base"
+                  onClick={() => {
+                    // Create the full URL to the current blog post
+                    const blogUrl = `${window.location.origin}/blogs/${id}`;
+                    
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(blogUrl)
+                      .then(() => {
+                        toast({
+                          title: "Link copied to clipboard",
+                          description: "You can now share this blog with others.",
+                          duration: 5000,
+                        });
+                      })
+                      .catch((err) => {
+                        console.error("Failed to copy: ", err);
+                        toast({
+                          title: "Failed to copy link",
+                          variant: "destructive",
+                          duration: 5000,
+                        });
+                      });
+                  }}
                 >
                   <Share2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Share
                 </Button>
+                {/* Add delete blog button that only shows for the blog author */}
+                {isUserBlogAuthor() && (
+                  <div className="ml-auto flex gap-2">
+                    <Button
+                      onClick={() => router.push(`/create-blog?edit=${blogPost.id}`)}
+                      className="text-white bg-[#472014] hover:bg-[#472014]/80 rounded-full transition-all duration-300 text-sm sm:text-base flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={handleDeleteBlog}
+                      className="text-white bg-red-500 hover:bg-red-700 rounded-full transition-all duration-300 text-sm sm:text-base"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      Delete
+                    </Button>
+                  </div>
+                  )}
               </div>
             </motion.article>
 
@@ -421,7 +616,7 @@ const BlogPostPage = () => {
                     className="border-b border-[#eb5e17]/20 pb-6 hover:bg-[#472014]/5 p-4 rounded-lg transition-colors duration-300"
                   >
                     <div className="flex flex-col sm:flex-row justify-between gap-4">
-                      <div className="space-y-3">
+                      <div className="space-y-3 w-full">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-semibold text-[#eb5e17] text-base sm:text-lg">
                             {comment.student?.fullName ||
@@ -436,8 +631,42 @@ const BlogPostPage = () => {
                               : "(Business)"}
                           </span>
                         </div>
-                        <p className="text-base text-[#472014]">{comment.content}</p>
-                        <div className="flex items-center gap-4">
+                        {/* Show edit form if this comment is being edited */}
+                        {editingCommentId === comment.id ? (
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            handleEditComment(comment.id);
+                          }} className="flex gap-3">
+                            <Input
+                              type="text"
+                              value={editedCommentContent}
+                              onChange={(e) => setEditedCommentContent(e.target.value)}
+                              className="flex-grow p-3 rounded-lg border-2 text-base bg-white text-[#472014]"
+                              autoFocus
+                            />
+                            <Button
+                              type="submit"
+                              variant="outline"
+                              className="bg-[#eb5e17] hover:bg-[#472014] text-white font-medium px-4 transition-all duration-300"
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditedCommentContent("");
+                              }}
+                              variant="outline"
+                              className="bg-[#eb5e17] hover:bg-[#472014] text-white font-medium px-4 transition-all duration-300"
+                            >
+                              Cancel
+                            </Button>
+                          </form>
+                        ) : (
+                          <p className="text-base text-[#472014]">{comment.content}</p>
+                        )}
+                        <div className="flex items-center gap-4 flex-wrap">
                           <Link
                             href={
                               comment.student
@@ -459,6 +688,37 @@ const BlogPostPage = () => {
                           <p className="text-sm text-[#686256]">
                             {new Date(comment.createdAt).toLocaleString()}
                           </p>
+                          {/* Add edit and delete buttons that show only for user's own comments */}
+                          {isUserComment(comment) && (
+                            <div className="ml-auto flex gap-2">
+                              {/* {editingCommentId !== comment.id && ( */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingCommentId(comment.id);
+                                    setEditedCommentContent(comment.content);
+                                  }}
+                                  className="bg-[#472014]/10 hover:bg-[#472014] text-[#472014] hover:text-white rounded-full transition-all duration-300 text-sm"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                  </svg>
+                                  Edit
+                                </Button>
+                              {/* )} */}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded-full transition-all duration-300 text-sm"
+                              >
+                                <Trash2 size={16} className="mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -482,7 +742,7 @@ const BlogPostPage = () => {
               </h2>
               <div className="grid gap-4">
                 {relatedBlogs.map((blog) => (
-                  <Link href={`/blog/${blog.id}`} key={blog.id}>
+                  <Link href={`/blogs/${blog.id}`} key={blog.id}>
                     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-[#eb5e17]/10 transition-all duration-300">
                       <div className="relative w-20 h-20 flex-shrink-0">
                         <Image

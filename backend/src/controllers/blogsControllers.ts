@@ -155,15 +155,16 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
 
     const isapproved = req.user?.isapproved;
 
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     let blogImage = "";
     if (file) {
       const result = await cloudinary.uploader.upload(file.path);
       blogImage = result.secure_url;
     }
 
-    // if (!userId) {
-    //   return res.status(401).json({ error: "User not authenticated" });
-    // }
 
     if (userRole !== "professor" && userRole !== "business") {
       return res
@@ -213,16 +214,6 @@ const createBlog = async (req: AuthenticatedRequest, res: Response) => {
       },
     });
 
-    // await createNotification(
-    //   NotificationType.COMMENT,
-    //   `New comment on your blog: ${blog.title}`,
-    //   userId,
-    //   blogAuthorType as "professor" | "business",
-    //   `/blogs/${blog.id}`,
-    //   blog.id,
-    //   "blog"
-    // );
-
     return res.status(201).json(blog);
   } catch (error) {
     console.error("Error in createBlog:", error);
@@ -239,6 +230,7 @@ const updateBlog = async (req: AuthenticatedRequest, res: Response) => {
     const validatedData = BlogSchema.partial().parse(req.body);
     const userId = req.user?.id;
     const userRole = req.user?.role;
+    const file = req.file;
 
     if (!userId || (userRole !== "professor" && userRole !== "business")) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -257,6 +249,12 @@ const updateBlog = async (req: AuthenticatedRequest, res: Response) => {
       return res
         .status(403)
         .json({ error: "Not authorized to update this blog" });
+    }
+
+    // Handle file upload if present
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path);
+      validatedData.blogImage = result.secure_url;
     }
 
     const updatedBlog = await prisma.blog.update({
@@ -339,7 +337,8 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
     let commentData: any = {
       ...validatedData,
       blogId,
-      userType: userRole === "student" ? UserType.STUDENT : UserType.PROFESSOR,
+      userType: userRole === "student" ? UserType.STUDENT : 
+        userRole === "professor" ? UserType.PROFESSOR : UserType.BUSINESS,
     };
 
     if (userRole === "student") {
@@ -348,7 +347,7 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
       commentData.professorId = userId;
     } else if (userRole === "business") {
       commentData.businessId = userId;
-      commentData.userType = UserType.PROFESSOR; // Use PROFESSOR for business as well
+      commentData.userType = UserType.BUSINESS; // Use PROFESSOR for business as well
     }
 
     if (userRole === "professor" && isapproved === false) {
@@ -396,21 +395,6 @@ const createComment = async (req: AuthenticatedRequest, res: Response) => {
     if (!blogAuthorId) {
       return res.status(404).json({ error: "Blog author not found" });
     }
-
-    await createNotification(
-      NotificationType.COMMENT,
-      `New comment on your blog: ${blog.title} by ${
-        comment.student?.fullName ||
-        comment.professor?.fullName ||
-        comment.business?.companyName ||
-        "Anonymous"
-      }`,
-      blogAuthorId,
-      blogAuthorType as "professor" | "business",
-      `/blogs/${blog.id}`,
-      blog.id,
-      "blog"
-    );
 
     return res.status(201).json(comment);
   } catch (error) {

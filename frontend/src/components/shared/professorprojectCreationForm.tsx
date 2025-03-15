@@ -161,7 +161,7 @@ const CreateProjectForm: React.FC<CreateProjectFormProps> = ({
                 Project Created Successfully!
               </h3>
               <p className="text-gray-600">
-                Your project has been submitted and is now ready for review.
+                Your project has been submitted & It is live on Project Openings page.
               </p>
             </div>
             <Button

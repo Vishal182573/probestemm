@@ -49,7 +49,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Footer } from "@/components/shared/Footer";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
@@ -184,6 +184,7 @@ interface Webinar {
   duration: number;
   isOnline: boolean;
   meetingLink?: string;
+  address?: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
   webinarImage?: string;
   webinarDocument?: string;
@@ -231,9 +232,11 @@ const ProfessorProfilePage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
+  const [place, setPlace] = useState("");
+  const searchParams = useSearchParams();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedTitle, setSelectedTitle] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
   const [webinarCreationLoading, setWebinarCreationLoading] = useState(false);
@@ -247,14 +250,12 @@ const ProfessorProfilePage: React.FC = () => {
     phdPosition: [],
   });
 
-  const openModal = (imageUrl: string, title: string) => {
+  const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
-    setSelectedTitle(title);
   };
 
   const closeModal = () => {
     setSelectedImage(null);
-    setSelectedTitle('');
   };
 
   const router = useRouter();
@@ -336,6 +337,13 @@ const ProfessorProfilePage: React.FC = () => {
     };
   handleCategorization();
   }, [professor]);
+
+  useEffect(() => {
+    const openChat = searchParams.get('openChat');
+    if (openChat === 'true') {
+      setIsChatOpen(true);
+    }
+  }, [searchParams]);
 
   // Handler for fetching applicants for a specific project
   const fetchAppliedApplicants = async (projectId: string) => {
@@ -583,10 +591,6 @@ const handleSetInReview = async (
         formData.append("webinarDocument", webinarDocument);
       }
   
-      // console.log("Sending webinar data:", webinarData);
-      // console.log("Sending webinar image:", webinarImage);
-      // console.log("Sending webinar document:", webinarDocument);
-  
       const response = await axios.post(`${API_URL}/webinars`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -648,7 +652,7 @@ const handleSetInReview = async (
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if(response.status == 200){
-        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}?openChat=true`)
       }
 
     } catch (error:any) {
@@ -797,7 +801,7 @@ const handleSetInReview = async (
         title: "Project Deleted Successfully",
         description: "The project has been permanently removed.",
         variant: "default",
-        duration: 3000,
+        duration: 5000,
         className: "bg-[#eb5e17] text-white",
       });
 
@@ -1081,6 +1085,16 @@ const handleSetInReview = async (
                 )}
 
                 <div>
+                  <Label htmlFor="project-topic">Topic</Label>
+                  <Input
+                    id="project-topic"
+                    name="topic"
+                    placeholder="Enter project topic"
+                    className="bg-white text-black"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="project-tech-description">
                   Technical Description
                   </Label>
@@ -1339,7 +1353,7 @@ const handleSetInReview = async (
       <NavbarWithBg />
 
       {/* Global Chat Box (only for logged-in users) */}
-      {isLoggedInUser && <GlobalChatBox/>}
+      {isLoggedInUser && <GlobalChatBox isChatOpen={isChatOpen}/>}
 
       <main className="flex-grow">
         {/* Hero Section with Professor Info */}
@@ -1517,7 +1531,7 @@ const handleSetInReview = async (
                                         height={100}
                                         width={100}
                                         className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => openModal(url, research.title)}
+                                        onClick={() => openModal(url)}
                                       />
                                     ))}
                                   </div>
@@ -1574,7 +1588,7 @@ const handleSetInReview = async (
                     <CardHeader>
                       <CardTitle className="flex items-center text-2xl font-bold ">
                         <Award className="mr-2" />
-                        Achievements
+                        Teaching Interests
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1585,18 +1599,14 @@ const handleSetInReview = async (
                               key={achievement.id}
                               className="flex items-center"
                             >
-                              <Badge
-                                variant="outline"
-                                className="mr-2 text-black"
-                              >
-                                {achievement.year}
-                              </Badge>
+                              <div className="mr-2 w-2 h-2 bg-[#472014] rounded-full">
+                              </div>
                               {achievement.description}
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p>No achievements listed yet.</p>
+                        <p>No teaching interests listed yet.</p>
                       )}
                     </CardContent>
                   </Card>
@@ -1611,7 +1621,7 @@ const handleSetInReview = async (
                       <div className="relative max-w-4xl w-full aspect-video bg-white rounded-lg p-2">
                         <Image
                           src={selectedImage}
-                          alt={selectedTitle}
+                          alt='NA'
                           fill
                           className="object-contain rounded"
                         />
@@ -1621,9 +1631,6 @@ const handleSetInReview = async (
                         >
                           <X className="h-6 w-6" />
                         </button>
-                        <div className="absolute bottom-4 left-4 bg-white px-3 py-1 rounded-full">
-                          <p className="text-sm font-medium">{selectedTitle}</p>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -1781,6 +1788,7 @@ const handleSetInReview = async (
                                         duration: parseInt(formData.get("duration") as string),
                                         isOnline: formData.get("place") === "online",
                                         meetingLink: formData.get("meetingLink") as string,
+                                        address: formData.get("address") as string,
                                       };
 
                                       const webinarImage = formData.get("webinarImage") as File;
@@ -1800,18 +1808,22 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-topic">Topic</Label>
+                                      <Label htmlFor="webinar-topic">Abstract</Label>
                                       <Input
                                         id="webinar-topic"
                                         name="topic"
-                                        placeholder="Enter webinar topic"
+                                        placeholder="Enter webinar abstract"
                                         required
                                         className="text-black bg-white"
                                       />
                                     </div>
                                     <div>
                                       <Label htmlFor="webinar-place">Place</Label>
-                                      <Select name="place" required>
+                                      <Select 
+                                        name="place" 
+                                        required 
+                                        onValueChange={(value) => setPlace(value)}
+                                      >
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select a place" />
                                         </SelectTrigger>
@@ -1822,6 +1834,37 @@ const handleSetInReview = async (
                                         </SelectContent>
                                       </Select>
                                     </div>
+
+                                    {/* Show address field for in-person or hybrid */}
+                                    {(place === "in-person" || place === "hybrid") && (
+                                      <div>
+                                        <Label htmlFor="webinar-address">Address</Label>
+                                        <Input
+                                          id="webinar-address"
+                                          name="address"
+                                          type="text"
+                                          placeholder="123 Event St, City, State, Zip"
+                                          className="text-black bg-white"
+                                        />
+                                      </div>
+                                    )}
+
+                                    {/* Show meeting link field for online or hybrid */}
+                                    {(place === "online" || place === "hybrid") && (
+                                      <div>
+                                        <Label htmlFor="webinar-meeting-link">
+                                          Meeting Link
+                                        </Label>
+                                        <Input
+                                          id="webinar-meeting-link"
+                                          name="meetingLink"
+                                          type="url"
+                                          placeholder="https://example.com/meeting"
+                                          className="text-black bg-white"
+                                        />
+                                      </div>
+                                    )}
+
                                     <div>
                                       <Label htmlFor="webinar-date">Date</Label>
                                       <Input
@@ -1851,18 +1894,6 @@ const handleSetInReview = async (
                                         type="number"
                                         min="1"
                                         required
-                                        className="text-black bg-white"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor="webinar-meeting-link">
-                                        Meeting Link (if online)
-                                      </Label>
-                                      <Input
-                                        id="webinar-meeting-link"
-                                        name="meetingLink"
-                                        type="url"
-                                        placeholder="https://example.com/meeting"
                                         className="text-black bg-white"
                                       />
                                     </div>

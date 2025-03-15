@@ -4,6 +4,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import axios from "axios";
+import { API_URL } from "@/constants";
 
 // Enums defining the types of projects and proposal categories
 enum ProjectType {
@@ -76,6 +79,18 @@ interface ProjectCardProps {
   index: number;
   onApply: (project: Project) => void;
   isApplied: boolean;
+}
+
+// Add these interface definitions for the user data
+interface UserProfile {
+  id: string;
+  fullName?: string;
+  companyName?: string;
+  photoUrl?: string;
+  imageUrl?: string;
+  profileImageUrl?: string;
+  title?: string;
+  location?: string;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -184,6 +199,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PROFESSOR_COLLABORATION:
         return (
           <>
+            {project.topic && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Topic:</h4>
+                <p>{project.topic}</p>
+              </div>
+            )}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
               {renderTechnicalDescription(project.techDescription)}
@@ -213,6 +234,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.INDUSTRY_COLLABORATION:
         return (
           <>
+            {project.topic && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Topic:</h4>
+                <p>{project.topic}</p>
+              </div>
+            )}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Technical Description:</h4>
               {renderTechnicalDescription(project.techDescription)}
@@ -242,10 +269,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       case ProposalCategory.PROJECT:
         return (
           <>
-            <div className="mb-2 text-black">
-              <h4 className="font-semibold">Topic:</h4>
-              <p>{project.topic}</p>
-            </div>
+            {project.topic && (
+              <div className="mb-2 text-black">
+                <h4 className="font-semibold">Topic:</h4>
+                <p>{project.topic}</p>
+              </div>
+            )}
             {/* proposal for  */}
             <div className="mb-2 text-black">
               <h4 className="font-semibold">Proposal For:</h4>
@@ -449,6 +478,112 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     return 'just now';
   }
 
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Fetch user data based on project type
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsLoading(true);
+      try {
+        let userId;
+        let response;
+
+        switch (project.type) {
+          case 'STUDENT_PROPOSAL':
+            userId = project.studentId;
+            response = await axios.get(`${API_URL}/students/${userId}`)
+            break;
+          case 'PROFESSOR_PROJECT':
+            userId = project.professorId;
+            response = await axios.get(`${API_URL}/professors/${userId}`)
+            break;
+          case 'BUSINESS_PROJECT':
+            userId = project.businessId;
+            response = await axios.get(`${API_URL}/businesss/${userId}`)
+            break;
+          default:
+            console.error('Unknown project type');
+            return;
+        }
+        
+        if (!response) throw new Error('Failed to fetch user data');
+        setUserData(response.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, [project]);
+
+  // Replace the "View Professor/Student/Industry" button with the profile card
+  const renderProfileCard = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center w-full py-2 border border-[#eb5e17] rounded-md">
+          <span className="text-[#eb5e17]">Loading...</span>
+        </div>
+      );
+    }
+    
+    if (!userData) {
+      return (
+        <Button
+          onClick={handleRedirect}
+          variant="outline"
+          className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17] hover:text-white"
+        >
+          {getButtonLabel()}
+        </Button>
+      );
+    }
+    
+    // Get the name based on project type
+    const name = project.type === 'BUSINESS_PROJECT' 
+      ? userData.companyName 
+      : userData.fullName;
+    
+    return (
+      <div 
+        onClick={handleRedirect}
+        className="flex items-center text-wrap max-w-[50%] gap-2 -ml-2 cursor-pointer transition-colors w-full"
+      >
+        <div className="flex-shrink-0 h-10 w-10 relative rounded-full overflow-hidden border border-gray-200">
+          {userData ? (
+            <Image 
+              src={
+                project.type === 'PROFESSOR_PROJECT' ? userData.photoUrl || '' :
+                project.type === 'BUSINESS_PROJECT' ? userData.profileImageUrl || '' :
+                project.type === 'STUDENT_PROPOSAL' ? userData.imageUrl || '' : 
+                ''
+              }
+              alt={name || "Profile"} 
+              fill 
+              className="object-cover"
+            />
+          ) : (
+            <div className="bg-[#eb5e17] text-white h-full w-full flex items-center justify-center">
+              {name ? name[0].toUpperCase() : '?'}
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <p className="font-medium text-sm text-[#333] truncate">{name || "Unknown"}</p>
+          <div className="flex text-xs text-gray-500 gap-1">
+            {userData.title && (
+              <span className="truncate">{userData.title}</span>
+            )}
+            {userData.title && userData.location && <span>•</span>}
+            {userData.location && <span>{userData.location}</span>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -499,33 +634,27 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
           <div className="flex w-full gap-2">
-          <Button
-            onClick={handleRedirect}
-            variant="outline"
-            className="flex-1 border-[#eb5e17] text-[#eb5e17] hover:bg-[#eb5e17]"
-          >
-            {getButtonLabel()}
-          </Button>
-          <Button
-            onClick={handleApply}
-            disabled={!canApply || isApplied}
-            className={`
-              flex-1 
-              ${isApplied 
-                ? 'bg-gray-400 cursor-not-allowed'
-                : canApply 
-                  ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
-                  : 'bg-gray-400 cursor-not-allowed'}
-            `}
-          >
-            {isApplied 
-              ? 'Applied' 
-              : project.deadline && new Date(project.deadline) < new Date()
-                ? 'Deadline Passed'
-                : canApply 
-                  ? `${application_button}` 
-                  : 'Cannot Apply'}
-          </Button>
+            {renderProfileCard()}
+            <Button
+              onClick={handleApply}
+              disabled={!canApply || isApplied}
+              className={`
+                flex-1 
+                ${isApplied 
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : canApply 
+                    ? 'bg-[#eb5e17] hover:bg-[#472014] text-white' 
+                    : 'bg-gray-400 cursor-not-allowed'}
+              `}
+            >
+              {isApplied 
+                ? 'Applied' 
+                : project.deadline && new Date(project.deadline) < new Date()
+                  ? 'Deadline Passed'
+                  : canApply 
+                    ? `${application_button}` 
+                    : 'Cannot Apply'}
+            </Button>
           </div>
         </CardFooter>
       </Card>

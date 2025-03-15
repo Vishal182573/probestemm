@@ -68,7 +68,6 @@ export const createNotification = async (
             where: { id: relatedEntityId }
           }) !== null;
           break;
-        // Add other entity checks as needed
       }
 
       if (!entityExists) {

@@ -48,6 +48,7 @@ interface Webinar {
   webinarImage?: string;
   webinarDocument?: string;
   meetingLink?: string;
+  address?: string;
 }
 
 // Main NotificationsComponent - Displays a list of webinars with filtering and pagination
@@ -197,7 +198,7 @@ const NotificationsComponent: React.FC = () => {
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
                               <Calendar className="h-4 w-4 mr-2 text-[#eb5e17]" />
-                              {format(new Date(webinar.date), 'MMM dd, yyyy h:mm a')}
+                              {format(new Date(webinar.date), 'MMM dd, yyyy h:mm a')} IST
                             </div>
                             <div className="flex items-center text-sm text-[#686256]">
                               <MapPin className="h-4 w-4 mr-2 text-[#eb5e17]" />
@@ -240,8 +241,8 @@ const NotificationsComponent: React.FC = () => {
                                     </TooltipContent>
                                   </Tooltip>
 
-                                  {/* Meeting Link Button - Only shown if link exists */}
-                                  {webinar.meetingLink && (
+                                  {/* Meeting Link Button - Only shown if webinar is online */}
+                                  {(webinar.place === "online" || webinar.place === "hybrid") && webinar.meetingLink && (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <Button
@@ -255,6 +256,25 @@ const NotificationsComponent: React.FC = () => {
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         <p>Join the webinar meeting</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                  
+                                  {/* Address Link Button - Only shown if webinar is in-person or hybrid */}
+                                  {(webinar.place === "in-person" || webinar.place === "hybrid") && webinar.address && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(webinar.address || '')}`, "_blank")}
+                                          variant="outline"
+                                          className="bg-[#eb5e17] hover:bg-[#d45415] text-white group flex items-center gap-2 transition-colors duration-200"
+                                        >
+                                          View Location
+                                          <MapPin className="h-4 w-4 group-hover:translate-y-1 transition-transform duration-200" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>View the webinar location on map</p>
                                       </TooltipContent>
                                     </Tooltip>
                                   )}

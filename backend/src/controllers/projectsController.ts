@@ -921,11 +921,16 @@ export const assignParticipant = async (req: Request, res: Response) => {
 
     // Create notification for the selected participant
     let notificationContent = `
-      Congratulations! You have been selected for the project go to ongoing projects
+      Congratulations! You have been selected for the project "${project.topic}" go to ongoing projects
     `.trim();
+    
     if(project.category=="PROFESSOR_COLLABORATION"){
-      notificationContent = `Congratulation! You have found a collaborator`.trim();
+      notificationContent = `Congratulation! You have found a collaborator for the project "${project.topic}"`.trim();
     }
+    else if(project.category=="PROJECT"){
+      notificationContent = `Congratulation! Student has considered your response`.trim();
+    }
+
     if (applicantId) {
       await createNotification(
         NotificationType.PROJECT_APPLICATION,
@@ -941,7 +946,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
     // Notify other applicants they weren't selected
     const notifyOtherApplicants = async () => {
       const rejectionContent = `
-        Update regarding project "${project.content}":
+        Update regarding project "${project.topic}":
         Another participant has been selected for this project.
         Thank you for your interest.
       `.trim();
@@ -1065,10 +1070,17 @@ export const rejectApplication = async (req: Request, res: Response) => {
     }
 
     // Create rejection notification for the applicant
-    const rejectionContent = `
-      Your application for project has been rejected.
+    let rejectionContent = `
+      Your application for project ${project.topic} has been rejected.
       Thank you for your interest.
     `.trim();
+
+    if(project.category === "PROFESSOR_COLLABORATION"){
+      rejectionContent = `Unfortunately, your collaboration request for "${project.topic}" was not accepted at this time.`.trim();
+    }
+    else if(project.category === "PROJECT"){
+      rejectionContent = `The student has decided not to proceed with your response for "${project.topic}".`.trim();
+    }
 
     if (applicantId) {
       await createNotification(
@@ -1151,11 +1163,18 @@ export const setApplicationInReview = async (req: Request, res: Response) => {
     }
 
     // Create in-review notification for the applicant
-    const reviewContent = `
+    let reviewContent = `
       Congratulations you are one step ahead!
-      Your application for project is now under review.
+      Your application for project ${project.topic} is now under review.
       We will notify you of any updates.
     `.trim();
+
+    if(project.category === "PROFESSOR_COLLABORATION"){
+      reviewContent = `Your collaboration request for "${project.topic}" is being reviewed. We'll update you soon.`.trim();
+    }
+    else if(project.category === "PROJECT"){
+      reviewContent = `The student is currently reviewing your response to "${project.topic}".`.trim();
+    }
 
     if (applicantId) {
       await createNotification(
@@ -1212,10 +1231,19 @@ export const completeProject = async (req: Request, res: Response) => {
     });
 
     // Create completion notification content
-    const completionContent = `
-      Project "${project.content}" has been marked as completed.
+    let completionContent = `
+      Project "${project.topic}" has been marked as completed.
       ${completionNotes ? `\nCompletion Notes: ${completionNotes}` : ""}
     `.trim();
+
+    if(project.category === "PROFESSOR_COLLABORATION"){
+      completionContent = `Your collaboration on "${project.topic}" has been successfully completed.
+      ${completionNotes ? `\nCompletion Notes: ${completionNotes}` : ""}`.trim();
+    }
+    else if(project.category === "PROJECT"){
+      completionContent = `The project "${project.topic}" has been completed successfully.
+      ${completionNotes ? `\nCompletion Notes: ${completionNotes}` : ""}`.trim();
+    }
 
     // Notify all involved parties
     const notifyParties = async () => {

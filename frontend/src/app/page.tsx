@@ -130,49 +130,119 @@ const HeroSection = () => {
       {/* Semi-transparent overlay */}
       <div className="absolute inset-0  bg-[#eb5e17] opacity-60 z-10" />
       {/* Content container with animated elements */}
-      <div className="relative z-20 text-center px-4 max-w-6xl mx-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-5xl sm:text-6xl lg:text-[150px] font-extrabold mb-6 text-[#472014] font-caveat"
-        >
-          Revolutionize <span className="">your STEM</span>{" "}
-          <span className="bg-clip-text ">Research</span>
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
-        >
-          Connecting global thinkers to inspire impactful collaborations
-        </motion.p>
+      <div className="relative z-20 text-center px-4 max-w-6xl mx-auto flex justify-center items-center">
+        {/* Vertical buttons on the left */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="hidden md:flex flex-col items-start space-y-10 md:mr-8 mb-6 md:mb-0"
         >
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-[#5e17eb] hover:bg-[#3c246b] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
+          <Button
+            size="lg"
+            className="bg-[#5e17eb] hover:bg-[#3c246b] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
+          >
+            CURRENT OPENINGS
+          </Button>
+          <Link href="/projects/faculty">
+            <Button 
+              variant="outline" 
+              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
             >
-              Get Started
-              <Rocket className="ml-2 h-6 w-6" />
+              <div className="flex flex-col items-start">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>PhD/Research positions openings</span>
+                </div>
+                <div className="flex items-center mt-2">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>Faculty proposals available for industries</span>
+                </div>
+              </div>
             </Button>
           </Link>
-          <Link href="/about">
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-full transition-all duration-300 hover:bg-white hover:text-[#0056b3] text-lg w-full sm:w-auto"
+          <Link href="/projects/students">
+            <Button 
+              variant="outline" 
+              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
             >
-              Learn More
+              <div className="flex flex-col items-start">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>Students available for Internship</span>
+                </div>
+                <div className="flex items-center mt-2">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>Students available for PhD/Research positions</span>
+                </div>
+              </div>
+            </Button>
+          </Link>
+          <Link href="/projects/industry">
+            <Button 
+              variant="outline" 
+              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
+            >
+              <div className="flex flex-col items-start">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>Internship opportunities for students</span>
+                </div>
+                <div className="flex items-center mt-2">
+                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
+                  <span>R&D Projects/Consultancy opportunities for faculty</span>
+                </div>
+              </div>
             </Button>
           </Link>
         </motion.div>
+        <div className="flex flex-col md:flex-row justify-end items-center">
+          {/* Hero text */}
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-5xl sm:text-6xl lg:text-[150px] font-extrabold mb-6 text-[#472014] font-caveat"
+            >
+              Revolutionize <br /><span className="">STEM</span>{" "}
+              <span className="bg-clip-text ">Research</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-lg sm:text-xl md:text-4xl mb-10 text-black max-w-5xl mx-auto "
+            >
+              Connecting global researchers to inspire impactful collaborations
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+            >
+              <Link href="/signup">
+                <Button
+                  size="lg"
+                  className="bg-[#5e17eb] hover:bg-[#3c246b] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 text-lg shadow-lg hover:shadow-xl w-full sm:w-auto"
+                >
+                  Get Started
+                  <Rocket className="ml-2 h-6 w-6" />
+                </Button>
+              </Link>
+              <Link href="/about">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent border-2 border-white text-white font-bold py-4 px-8 rounded-full transition-all duration-300 hover:bg-white hover:text-[#0056b3] text-lg w-full sm:w-auto"
+                >
+                  Learn More
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
       </div>
       {/* Animated scroll indicator */}
       <motion.div
@@ -228,9 +298,9 @@ const FeaturesSection = () => {
     // Each object includes icon, title, description, benefits, link, and background image
     {
       icon: <UserCircle className="h-16 w-16 text-[#472014]" />,
-      title: "Students",
+      title: "Student",
       description:
-        "Connect with academia and industry experts for",
+        "Connect with faculty/scientist and industry experts for",
       benefits: [
         "Research/PhD positions",
         "Industry internships",
@@ -241,7 +311,7 @@ const FeaturesSection = () => {
     },
     {
       icon: <GraduationCap className="h-16 w-16 text-[#472014]" />,
-      title: "Academia",
+      title: "Faculty/Scientist",
       description:
         "Build connections with students and industry for",
       benefits: [
@@ -255,11 +325,11 @@ const FeaturesSection = () => {
       icon: <Briefcase className="h-16 w-16 text-[#472014]" />,
       title: "Industry",
       description:
-        "Connect with students and academia for",
+        "Connect with faculty and students for ",
       benefits: [
-        "Grand challenges",
-        "R&D projects",
-        "Technology solutions",
+        "Hiring students for internships",
+        "Contracting faculty/scientist for R&D projects",
+        "Technological solutions",
       ],
       link: "/businesses",
       bgImage: INDUSTRY

@@ -17,94 +17,11 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
+import { ProjectCategories } from "@/lib/pre-define-data";
 
 // Object containing category-subcategory mapping for scientific disciplines
 // Each key represents a main category with an array of related subcategories
-const categories: { [key: string]: string[] } = {
-  Physics: [
-    "Classical Mechanics",
-    "Electromagnetism",
-    "Thermodynamics",
-    "Quantum Mechanics",
-    "Relativity",
-  ],
-  Chemistry: [
-    "Organic Chemistry",
-    "Inorganic Chemistry",
-    "Physical Chemistry",
-    "Analytical Chemistry",
-  ],
-  Biology: [
-    "Molecular Biology",
-    "Cell Biology",
-    "Ecology",
-    "Evolutionary Biology",
-  ],
-  "Earth Sciences": ["Geology", "Meteorology", "Oceanography"],
-  "Space Science": [
-    "Astronomy",
-    "Astrophysics",
-    "Planetary Science",
-    "Space Exploration",
-    "Astrobiology",
-    "Space Weather",
-    "Space Policy and Law",
-  ],
-  "Computer Science": [
-    "Algorithms and Data Structures",
-    "Software Engineering",
-    "Data Science",
-    "Cybersecurity",
-    "Human-Computer Interaction",
-  ],
-  Engineering: [
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-  ],
-  "Pure Mathematics": [
-    "Algebra",
-    "Calculus",
-    "Geometry",
-    "Number Theory",
-  ],
-  "Applied Mathematics": [
-    "Statistics",
-    "Operations Research",
-    "Mathematical Modeling",
-    "Data Analysis",
-    "Mathematical Economics",
-  ],
-  "Data Engineering": [
-    "Data Pipeline Development",
-    "Data Storage and Management",
-  ],
-  Robotics: [
-    "Robot Design and Control",
-    "Human-Robot Interaction",
-    "Artificial Intelligence in Robotics",
-  ],
-  Biotechnology: [
-    "Genetic Engineering",
-    "Biochemical Engineering",
-    "Biomedical Engineering",
-    "Biomanufacturing",
-  ],
-  "Environmental Technology": [
-    "Renewable Energy Technologies",
-    "Environmental Monitoring and Management",
-  ],
-  "Space Technology": [
-    "Satellite Technology",
-    "Space Propulsion",
-    "Space Systems and Instruments",
-  ],
-  "Pharmaceutical Engineering": [
-    "Drug Formulation",
-    "Process Engineering for Drug Production",
-  ],
-};
+const categories = ProjectCategories as Record<string, string[]>;
 
 // Main component for the Ask Question page
 const AskQuestion: React.FC = () => {

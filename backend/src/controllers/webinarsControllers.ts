@@ -92,6 +92,7 @@ export const requestWebinar = async (req: Request, res: Response) => {
       duration,
       isOnline,
       meetingLink,
+      address,
     } = req.body;
 
     const professor = await prisma.professor.findUnique({
@@ -157,6 +158,7 @@ export const requestWebinar = async (req: Request, res: Response) => {
         duration: parseInt(duration),
         isOnline: isOnline === "true",
         meetingLink,
+        address,
         status: WebinarStatus.PENDING,
         professorId,
         webinarImage,

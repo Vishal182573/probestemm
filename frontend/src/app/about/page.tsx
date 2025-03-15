@@ -111,10 +111,10 @@ const AboutUsPage = () => {
           <h2 className="text-4xl font-bold text-[#472014] mb-8 text-center">About Probe STEM</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
-              <p className="text-lg text-[#472014] text-left">
+              <p className="text-lg text-[#472014] text-justify">
               Probe STEM is a pioneering platform dedicated to bridging the gap between academia and industry in the Science, Technology, Engineering and Mathematics fields. We believe in creating meaningful connections that transform theoretical knowledge into practical innovations.
               </p>
-              <p className="text-lg text-[#472014] text-left">
+              <p className="text-lg text-[#472014] text-justify">
                 Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.
               </p>
             </div>
@@ -153,7 +153,7 @@ const AboutUsPage = () => {
                   Collaboration
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-[#472014] text-lg">
+              <CardContent className="text-[#472014] text-lg text-justify">
                 <p>
                 In today's era of rapid innovation, academia and industry often operate in isolation. Bridging the gap between them could ignite a revolution, empowering researchers to make meaningful contributions by aligning their work with real-world applications. This forum aims to expand faculty and researchers' access to industry, supporting the journey from research to marketable products. Additionally, we hope it will enable industry partners to connect with expert consultants in academia, fostering collaborations that both parties seek yet often struggle to find.
                 </p>
@@ -174,7 +174,7 @@ const AboutUsPage = () => {
                   Exchange
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-[#472014] text-lg">
+              <CardContent className="text-[#472014] text-lg text-justify">
                 <p>
                 In academia, students often encounter critical questions, and reliable discussions can be the key to navigating challenges and advancing their careers. Through our discussion forum, we aim to foster insightful conversations and Q&A sessions on a wide range of topics. From the administrative side, we will ensure that all discussions are accurate and trustworthy.
                 </p>
@@ -194,13 +194,14 @@ const AboutUsPage = () => {
             <Card className="h-full bg-white/90 backdrop-blur shadow-xl border-none">
               <CardHeader>
                 <CardTitle className="flex items-center text-2xl text-[#472014] font-bold">
-                  <FaBook className="mr-2 text-[#eb5e17]" /> Company
-                  Projects
+                  <FaBook className="mr-2 text-[#eb5e17]" /> Online Courses
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-[#472014] text-lg">
+              <CardContent className="text-[#472014] text-lg text-justify">
                 <p>
-                Our primary goal is to build connections between academia and industry, enabling students and faculty to engage with industry partners. Faculty can pursue opportunities for R&D projects, consultancy, and technology solutions that align with their research expertise. Students will gain access to industrial internships and, through their professors, can participate in research projects that foster practical experience and innovation.</p>
+                At Probe STEM, we aim to connect expert faculty, researchers, and industry professionals with learners worldwide. If you are interested in teaching, we welcome your expertise!
+                Online courses on Probe STEM are designed to bridge the gap between academia and industry by providing hands-on, interactive learning experiences. These courses are structured to ensure that students gain both theoretical knowledge and practical skills that are directly applicable to real-world challenges.
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -217,7 +218,7 @@ const AboutUsPage = () => {
                   <FaBookReader className="mr-2 text-[#eb5e17]" /> R <sup>c</sup>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-[#472014] text-lg">
+              <CardContent className="text-[#472014] text-lg text-justify">
                 <p>
                 Research Corner will empower professors/researchers to present their unique findings as spotlights, offering them a platform to showcase breakthroughs and impactful discoveries. This section will also serve as a space for researchers to share announcements related to their work, including calls for a specific collaboration, upcoming events, or specialized opportunities, enhancing professional networking and community engagement.
               </p>

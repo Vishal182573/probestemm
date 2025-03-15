@@ -60,6 +60,13 @@ const ApplicantActions: React.FC<ApplicantActionsProps> = ({
         >
           Assign
         </Button>
+        <Button
+          size="sm"
+          onClick={() => onReject(projectId, applicantId, applicantType)}
+          className="bg-red-600 text-white"
+        >
+          Reject
+        </Button>
       </div>
     );
   }

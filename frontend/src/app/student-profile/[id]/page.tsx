@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -124,6 +124,8 @@ const StudentProfilePage: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0); // Track unread notifications
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { toast } = useToast();
 
   // useEffect hook for initial data fetching
@@ -164,6 +166,13 @@ const StudentProfilePage: React.FC = () => {
     fetchData();
   }, [id, router]);
 
+  useEffect(() => {
+    const openChat = searchParams.get('openChat');
+    if (openChat === 'true') {
+      setIsChatOpen(true);
+    }
+  }, [searchParams]);
+
   // State and functions for handling project applicants
   const [appliedApplicantsMap, setAppliedApplicantsMap] = useState<{
     [projectId: string]: AppliedApplicant[];
@@ -193,6 +202,8 @@ const StudentProfilePage: React.FC = () => {
         ...prevMap,
         [projectId]: allApplications,
       }));
+
+      console.log("Fetched applied applicants:", allApplications);
     } catch (error) {
       console.error("Error fetching applied applicants:", error);
       setError("Failed to fetch applied applicants. Please try again.");
@@ -218,7 +229,7 @@ const StudentProfilePage: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if(response.status == 200){
-          router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}?openChat=true`)
       }
 
     } catch (error:any) {
@@ -265,6 +276,102 @@ const StudentProfilePage: React.FC = () => {
       setError("Failed to mark notification as read. Please try again.");
     }
   };
+
+  // Add these to your existing state variables
+const [applicationStatuses, setApplicationStatuses] = useState<{
+  [applicationId: string]: string;
+}>({});
+
+// Add these functions for handling applicant status updates
+const handleAssignApplicant = async (projectId: string, applicantId: string, applicantType: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${API_URL}/project/${projectId}/assign`,
+      {
+        applicationId: applicantId,
+        applicationType: applicantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    // Update local state
+    setApplicationStatuses(prev => ({...prev, [applicantId]: 'ACCEPTED'}));
+    
+    toast({
+      title: "Applicant accepted",
+      description: "The applicant has been successfully assigned to this project.",
+      className: "bg-[#eb5e17] text-white",
+    });
+  } catch (error) {
+    console.error("Error assigning applicant:", error);
+    toast({
+      title: "Error",
+      description: "Failed to assign applicant. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
+const handleRejectApplicant = async (projectId: string, applicantId: string, applicantType: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${API_URL}/project/${projectId}/reject`,
+      {
+        applicationId: applicantId,
+        applicationType: applicantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    // Update local state
+    setApplicationStatuses(prev => ({...prev, [applicantId]: 'REJECTED'}));
+    
+    toast({
+      title: "Applicant rejected",
+      description: "The applicant has been rejected from this project.",
+      className: "bg-red-600 text-white",
+    });
+  } catch (error) {
+    console.error("Error rejecting applicant:", error);
+    toast({
+      title: "Error",
+      description: "Failed to reject applicant. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
+const handleSetInReviewApplicant = async (projectId: string, applicantId: string, applicantType: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${API_URL}/project/${projectId}/review`,
+      {
+        applicationId: applicantId,
+        applicationType: applicantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    
+    // Update local state
+    setApplicationStatuses(prev => ({...prev, [applicantId]: 'IN_REVIEW'}));
+    
+    toast({
+      title: "Application in review",
+      description: "The applicant status has been set to in review.",
+      className: "bg-yellow-600 text-white",
+    });
+  } catch (error) {
+    console.error("Error setting applicant to review:", error);
+    toast({
+      title: "Error",
+      description: "Failed to update applicant status. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
 
   // Helper variables
   const userId = localStorage.getItem("userId");
@@ -351,7 +458,10 @@ const StudentProfilePage: React.FC = () => {
                       </div>
                       {!notification.isRead && (
                         <Button
-                          onClick={() => handleMarkAsRead(notification.id)}
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevent navigation from the parent link
+                            handleMarkAsRead(notification.id);
+                          }}
                           size="sm"
                           className="bg-[#eb5e17] hover:bg-[#472014] text-white transition-colors duration-300 w-full sm:w-auto"
                         >
@@ -439,7 +549,7 @@ const StudentProfilePage: React.FC = () => {
         title: "Project Deleted Successfully",
         description: "The project has been permanently removed.",
         variant: "default",
-        duration: 3000,
+        duration: 5000,
         className: "bg-[#eb5e17] text-white",
       });
 
@@ -449,6 +559,7 @@ const StudentProfilePage: React.FC = () => {
         title: "Error Deleting Project",
         description: "Failed to delete project. Please try again.",
         variant: "destructive",
+        duration: 5000,
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
@@ -556,40 +667,108 @@ const StudentProfilePage: React.FC = () => {
                         ) : appliedApplicantsMap[project.id].length > 0 ? (
                           <ul className="space-y-2">
                             {appliedApplicantsMap[project.id].map(
-                              (applicant) => (
-                                <div key={applicant.id}>
-                                <li
-                                  className="flex items-center space-x-4 cursor-pointer"
-                                  onClick={() => {
-                                    const route = applicant.professorId
-                                      ? `/professor-profile/${applicant.professorId}`
-                                      : `/business-profile/${applicant.businessId}`;
-                                    window.location.href = route;
-                                  }}
-                                >
-                                  <div>
-                                    <p className="font-semibold text-gray-600">
-                                      {applicant.name}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.email}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      {applicant.description}
-                                    </p>
+                              (applicant) => {
+                                const applicantType = applicant.professorId ? 'professor' : applicant.businessId ?  'business' : 'student';
+                                const applicantId = applicant.id;
+                                const status = applicationStatuses[applicantId] || 'PENDING';
+
+                                return (
+                                  <div key={applicant.id} className="border p-3 rounded-md shadow-sm">
+                                    <li
+                                      className="flex items-center space-x-4 cursor-pointer mb-3"
+                                      onClick={() => {
+                                        const route = applicant.professorId
+                                          ? `/professor-profile/${applicant.professorId}`
+                                          : `/business-profile/${applicant.businessId}`;
+                                        window.location.href = route;
+                                      }}
+                                    >
+                                      <div>
+                                        <p className="font-semibold text-gray-600">
+                                          {applicant.name}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                          {applicant.email}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                          {applicant.description}
+                                        </p>
+                                      </div>
+                                    </li>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="bg-white text-blue-600 hover:text-blue-800"
+                                        onClick={() => window.open(applicant.resume, '_blank')}
+                                      >
+                                        <FileText className="h-4 w-4 mr-1" />
+                                        View Resume
+                                      </Button>
+                                      
+                                      {status === 'PENDING' && (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
+                                            className="bg-[#eb5e17] text-white"
+                                          >
+                                            Accept
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
+                                            className="bg-red-600 text-white"
+                                          >
+                                            Reject
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => handleSetInReviewApplicant(project.id, applicantId, applicantType)}
+                                            className="bg-yellow-600 text-white"
+                                          >
+                                            Set In Review
+                                          </Button>
+                                        </>
+                                      )}
+                                      
+                                      {status === 'IN_REVIEW' && (
+                                        <>
+                                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            In Review
+                                          </span>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
+                                            className="bg-[#eb5e17] text-white"
+                                          >
+                                            Accept
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
+                                            className="bg-red-600 text-white"
+                                          >
+                                            Reject
+                                          </Button>
+                                        </>
+                                      )}
+                                      
+                                      {status === 'ACCEPTED' && (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          Accepted
+                                        </span>
+                                      )}
+                                      
+                                      {status === 'REJECTED' && (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                          Rejected
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                </li>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="mt-2 bg-white text-blue-600 hover:text-blue-800"
-                                  onClick={() => window.open(applicant.resume, '_blank')}
-                                >
-                                  <FileText className="h-4 w-4" />
-                                  View Resume
-                                </Button>
-                                </div>
-                              )
+                                );
+                              }
                             )}
                           </ul>
                         ) : (
@@ -615,7 +794,7 @@ const StudentProfilePage: React.FC = () => {
     // Includes responsive design and animations
     <div className="flex flex-col min-h-screen bg-white text-[#472014]">
       <NavbarWithBg />
-      {isOwnProfile && <GlobalChatBox/>
+      {isOwnProfile && <GlobalChatBox isChatOpen={isChatOpen}/>
       }
 
       <main className="flex-grow">

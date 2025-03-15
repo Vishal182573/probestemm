@@ -179,7 +179,7 @@ const StudentProposalForm: React.FC<StudentProposalFormProps> = ({
         </CardHeader>
         <CardContent className="text-center space-y-6">
           <p className="text-gray-700">
-            Your project proposal has been successfully submitted!
+            Your project proposal has been successfully submitted and It is live on Project Openings page!
           </p>
           <div className="flex justify-center space-x-4">
             <Button 

@@ -310,18 +310,19 @@ const ProjectsPage: React.FC = () => {
               setActiveCategory(null);
             }}
           >
+            <div className="text-white text-2xl mb-4 font-medium ">Research Positions/Projects floated by </div>
             <TabsList className="mb-8 bg-blue-800">
               <TabsTrigger value="professors" className="text-white">
                 <UserCircle className="mr-2 h-5 w-5" />
-                Professor Projects
+                Faculty/Scientist
               </TabsTrigger>
               <TabsTrigger value="industry" className="text-white">
                 <Building className="mr-2 h-5 w-5" />
-                Industry Projects
+                Industry
               </TabsTrigger>
               <TabsTrigger value="students" className="text-white">
                 <GraduationCap className="mr-2 h-5 w-5" />
-                Student Proposals
+                Student
               </TabsTrigger>
             </TabsList>
 

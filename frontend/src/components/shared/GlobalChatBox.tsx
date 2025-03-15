@@ -72,10 +72,14 @@ interface ChatMessage {
   updatedAt: string;
 }
 
-const GlobalChatBox: React.FC = () => {
+interface GlobalChatBoxProps {
+  isChatOpen: boolean;
+}
+
+const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   // State Management
   // Core UI States
-  const [isOpen, setIsOpen] = useState(false);          // Controls main chat dialog visibility
+  const [isOpen, setIsOpen] = useState(isChatOpen);          // Controls main chat dialog visibility
   const [message, setMessage] = useState('');           // Current message input
   const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);  // Currently selected chat
   const [searchQuery, setSearchQuery] = useState('');   // Search input for filtering chats

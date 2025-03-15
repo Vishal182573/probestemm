@@ -8,6 +8,8 @@ import {
   updateStudent,
   updateProfessor,
   updateBusiness,
+  getCurrentUser,
+  type AuthenticatedRequest,
 } from "../controllers/userController";
 
 // Configure Cloudinary storage
@@ -66,5 +68,14 @@ router.put(
     }
   }
 );
+
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    await getCurrentUser(req as AuthenticatedRequest, res);
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;

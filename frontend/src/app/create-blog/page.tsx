@@ -26,6 +26,8 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -48,6 +50,39 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
       });
     }
   }, [router, toast]);
+
+  // Check if we're in edit mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit');
+    
+    if (editId) {
+      // Fetch blog details and populate form
+      fetchBlogDetails(editId);
+    }
+  }, []);
+
+  const fetchBlogDetails = async (id: string) => {
+    try {
+      const response = await axios.get(`${API_URL}/blogs/${id}`);
+      const blogData = response.data;
+      
+      // Set form fields with blog data
+      setTitle(blogData.title);
+      setContent(blogData.content);
+      // Set other fields as needed
+      
+      // Set edit mode
+      setIsEditing(true);
+      setEditId(id);
+    } catch (error) {
+      console.error('Error fetching blog details:', error);
+      toast({ 
+        title: 'Error fetching blog details', 
+        variant: 'destructive' 
+      });
+    }
+  };
 
   /**
    * Image Upload Handler
@@ -75,7 +110,6 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     setIsLoading(true);
 
     try {
-
       const token = localStorage.getItem("token");
       if (!token) {
         router.push("/login");
@@ -89,25 +123,44 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
         formData.append("blogImage", image);
       }
 
-      const response = await axios.post(`${API_URL}/blogs`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      let response;
+      
+      if (isEditing && editId) {
+        // Update existing blog post
+        response = await axios.put(`${API_URL}/blogs/${editId}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        
+        toast({
+          title: "Success",
+          description: "Your blog post has been updated successfully.",
+        });
+      } else {
+        // Create new blog post
+        response = await axios.post(`${API_URL}/blogs`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        
+        toast({
+          title: "Success",
+          description: "Your blog post has been created successfully.",
+        });
+      }
 
-      console.log("Blog created:", response.data);
-      toast({
-        title: "Success",
-        description: "Your blog post has been created successfully.",
-      });
+      console.log(isEditing ? "Blog updated:" : "Blog created:", response.data);
       router.push("/blogs");
     } catch (error) {
-      console.error("Error creating blog post:", error);
+      console.error(isEditing ? "Error updating blog post:" : "Error creating blog post:", error);
       if (axios.isAxiosError(error) && error.response) {
         toast({
           title: "Error",
-          description: `Failed to create blog post: ${
+          description: `Failed to ${isEditing ? "update" : "create"} blog post: ${
             error.response.data.error || error.message
           }`,
           variant: "destructive",
@@ -116,7 +169,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
         toast({
           title: "Error",
           description:
-            "An unexpected error occurred while creating the blog post. Please try again.",
+            `An unexpected error occurred while ${isEditing ? "updating" : "creating"} the blog post. Please try again.`,
           variant: "destructive",
         });
       }
@@ -141,7 +194,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
           <CardHeader>
             <CardTitle className="text-5xl sm:text-6xl font-extrabold text-[#472014] font-caveat flex items-center justify-center">
               <Pencil className="mr-4 h-12 w-12" />
-              Create New Blog Post
+              {isEditing ? "Edit Blog Post" : "Create New Blog Post"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -185,7 +238,7 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                   htmlFor="image"
                   className="block text-xl font-bold text-[#472014] mb-2"
                 >
-                  Image
+                  {isEditing ? 'Update' : ""} Image
                 </label>
                 <input
                   type="file"
@@ -200,7 +253,9 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
                 className="bg-[#c1502e] hover:bg-[#472014] text-white"
                 disabled={isLoading}
               >
-                {isLoading ? "Creating..." : "Create Blog Post"}
+                {isLoading 
+                  ? (isEditing ? "Updating..." : "Creating...") 
+                  : (isEditing ? "Update Blog Post" : "Create Blog Post")}
               </Button>
             </form>
           </CardContent>

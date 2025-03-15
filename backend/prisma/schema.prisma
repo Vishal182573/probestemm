@@ -427,6 +427,7 @@ model Webinar {
   duration        Int?
   isOnline        Boolean        @default(true)
   meetingLink     String?
+  address         String?
   webinarImage    String?
   webinarDocument String?
   notifications   Notification[]
@@ -464,6 +465,7 @@ enum DiscussionStatus {
 enum UserType {
   PROFESSOR
   STUDENT
+  BUSINESS
 }
 
 enum WebinarStatus {

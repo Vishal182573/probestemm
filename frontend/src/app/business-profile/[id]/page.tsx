@@ -33,6 +33,7 @@ import GlobalChatBox from "@/components/shared/GlobalChatBox";
 import { ToastAction } from "@/components/ui/toast"
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { useSearchParams } from 'next/navigation';
 
 // Type definitions for notifications received by the business
 type Notification = {
@@ -74,6 +75,7 @@ interface ApplicationDetails {
     department?: string;
   };
   createdAt: string;
+  status?: "PENDING" | "IN_REVIEW" | "ACCEPTED" | "REJECTED";
 }
 
 // Interface defining the structure of a project
@@ -122,6 +124,8 @@ const BusinessProfilePage: React.FC = () => {
   // State for tracking applied professors and authentication status
   const [appliedProfessorsMap, setAppliedProfessorsMap] = useState<{[projectId: string]: AppliedProfessor[]}>({});
   const [isLoggedInUser, setIsLoggedInUser] = useState(false);
+  const searchParams = useSearchParams();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // State for notifications and application tracking
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -176,6 +180,13 @@ const BusinessProfilePage: React.FC = () => {
     fetchBusinessData();
   }, [id, isLoggedInUser]);
 
+  useEffect(() => {
+    const openChat = searchParams.get('openChat');
+    if (openChat === 'true') {
+      setIsChatOpen(true);
+    }
+  }, [searchParams]);
+
   // Function to fetch application details for a specific project
   const fetchApplicationDetails = async (projectId: string) => {
     try {
@@ -197,20 +208,24 @@ const BusinessProfilePage: React.FC = () => {
         ...response.data.professorApplications.map((app: any) => ({
           ...app,
           applicationType: "professor",
+          status: app.status || "PENDING",
         })),
         ...response.data.studentApplications.map((app: any) => ({
           ...app,
           applicationType: "student",
+          status: app.status || "PENDING",
         })),
         ...response.data.businessApplications.map((app: any) => ({
           ...app,
           applicationType: "business",
+          status: app.status || "PENDING",
         })),
       ].map((app: any) => ({
         id: app.id,
         description: app.description,
         resume: app.resume || '',
         applicationType: app.applicationType,
+        status: app.status,
         applicantDetails: {
           id: app.professorId || app.studentId || app.businessId || "",
           name: app.name,
@@ -236,7 +251,15 @@ const BusinessProfilePage: React.FC = () => {
   const handleContact = async ()=>{
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("No authentication token found");
+      if (!token) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to contact this business",
+          variant: "destructive",
+        });
+        router.push("/login");
+        return;
+      }
 
       const response = await axios.post(
         `${API_URL}/chat/rooms`,
@@ -249,7 +272,7 @@ const BusinessProfilePage: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if(response.status == 200){
-          router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}`)
+        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}?openChat=true`)
       }
 
     } catch (error:any) {
@@ -359,7 +382,7 @@ const BusinessProfilePage: React.FC = () => {
         title: "Project Deleted Successfully",
         description: "The project has been permanently removed.",
         variant: "default",
-        duration: 3000,
+        duration: 5000,
         className: "bg-[#eb5e17] text-white",
       });
 
@@ -369,10 +392,105 @@ const BusinessProfilePage: React.FC = () => {
         title: "Error Deleting Project",
         description: "Failed to delete project. Please try again.",
         variant: "destructive",
+        duration: 5000,
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
     }
   };
+
+// Function to handle rejecting an application
+const handleRejectApplication = async (
+  projectId: string,
+  applicationId: string,
+  applicationType: "professor" | "student" | "business"
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    await axios.post(
+      `${API_URL}/project/${projectId}/reject`,
+      {
+        applicationId,
+        applicationType,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // Update application status in the UI
+    setApplicationDetails((prev) => {
+      const updatedApplications = prev[projectId].map(app => 
+        app.id === applicationId ? {...app, status: 'REJECTED'} : app
+      );
+      return {...prev, [projectId]: updatedApplications};
+    });
+
+    toast({
+      title: "Application Rejected",
+      description: "The application has been rejected successfully.",
+      className: "bg-red-600 text-white",
+    });
+  } catch (error) {
+    console.error("Error rejecting application:", error);
+    toast({
+      title: "Error",
+      description: "Failed to reject application. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
+// Function to handle setting an application to in-review status
+const handleSetInReview = async (
+  projectId: string,
+  applicationId: string,
+  applicationType: "professor" | "student" | "business"
+) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    await axios.post(
+      `${API_URL}/project/${projectId}/review`,
+      {
+        applicationId,
+        applicationType,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // Update application status in the UI
+    setApplicationDetails((prev) => {
+      const updatedApplications = prev[projectId].map(app => 
+        app.id === applicationId ? {...app, status: 'IN_REVIEW'} : app
+      );
+      return {...prev, [projectId]: updatedApplications};
+    });
+
+    toast({
+      title: "Application Status Updated",
+      description: "Application is now in review.",
+      className: "bg-yellow-600 text-white",
+    });
+  } catch (error) {
+    console.error("Error updating application status:", error);
+    toast({
+      title: "Error",
+      description: "Failed to update application status. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
   
   const ConfirmationModal = () => {
     return (
@@ -433,7 +551,7 @@ const BusinessProfilePage: React.FC = () => {
 
     return (
       <div className="space-y-4 ">
-        <h4 className="text-lg font-bold text-[#472014] mb-3">
+        <h4 className="text-lg font-bold text-[#472014] mb-3 mt-2">
           Applications ({applications.length})
         </h4>
         {applications.length === 0 && (
@@ -482,23 +600,72 @@ const BusinessProfilePage: React.FC = () => {
             </div>
           )}
 
-            {project.status === "OPEN" && (
-              <div className="mt-4 flex justify-end">
-                <Button
-                  onClick={() =>
-                    handleChangeProjectStatus(
-                      project.id,
-                      "ONGOING",
-                      application.id,
-                      application.applicationType
-                    )
-                  }
-                  className="bg-[#eb5e17] hover:bg-[#472014] text-white"
-                >
-                  Accept Application
-                </Button>
-              </div>
-            )}
+          {project.status === "OPEN" && (
+            <div className="mt-4 flex justify-end space-x-3">
+              {(application.status === "PENDING" || !application.status) && (
+                <>
+                  <Button
+                    onClick={() =>
+                      handleChangeProjectStatus(
+                        project.id,
+                        "ONGOING",
+                        application.id,
+                        application.applicationType
+                      )
+                    }
+                    className="bg-[#eb5e17] hover:bg-[#472014] text-white"
+                  >
+                    Accept Application
+                  </Button>
+                  <Button 
+                    onClick={() => handleRejectApplication(project.id, application.id, application.applicationType)}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    onClick={() => handleSetInReview(project.id, application.id, application.applicationType)}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  >
+                    Set In Review
+                  </Button>
+                </>
+              )}
+              
+              {application.status === "IN_REVIEW" && (
+                <>
+                  <div className="text-yellow-600 font-medium flex items-center mr-4">In Review</div>
+                  <Button
+                    onClick={() =>
+                      handleChangeProjectStatus(
+                        project.id,
+                        "ONGOING",
+                        application.id,
+                        application.applicationType
+                      )
+                    }
+                    className="bg-[#eb5e17] hover:bg-[#472014] text-white"
+                  >
+                    Accept Application
+                  </Button>
+                  <Button 
+                    onClick={() => handleRejectApplication(project.id, application.id, application.applicationType)}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+              
+              {application.status === "REJECTED" && (
+                <div className="text-red-600 font-medium">Application Rejected</div>
+              )}
+              
+              {application.status === "ACCEPTED" && (
+                <div className="text-green-600 font-medium">Application Accepted</div>
+              )}
+            </div>
+          )}
           </Card>
         ))}
       </div>
@@ -575,11 +742,24 @@ const BusinessProfilePage: React.FC = () => {
 
               {project.status === "OPEN" && (
                 <Button
-                  onClick={() => fetchApplicationDetails(project.id)}
-                  className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
-                >
-                  <FileText className="mr-2" /> View Applications
-                </Button>
+                onClick={() => {
+                  if (applicationDetails[project.id]) {
+                    // If applications are already loaded, remove them to collapse
+                    setApplicationDetails((prev) => {
+                      const newDetails = { ...prev };
+                      delete newDetails[project.id];
+                      return newDetails;
+                    });
+                  } else {
+                    // If not loaded, fetch them
+                    fetchApplicationDetails(project.id);
+                  }
+                }}
+                className="w-full bg-[#eb5e17] hover:bg-[#472014] text-white"
+              >
+                <FileText className="mr-2" /> 
+                {applicationDetails[project.id] ? "Hide Applications" : "View Applications"}
+              </Button>
               )}
 
               {applicationDetails[project.id] &&
@@ -694,8 +874,7 @@ const BusinessProfilePage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarWithBg />
-      {isLoggedInUser && 
-        <GlobalChatBox/>}
+      {isLoggedInUser && <GlobalChatBox isChatOpen={isChatOpen}/>}
       <main className="flex-grow">
         <motion.section
           className="relative bg-gradient-to-b from-[#eb5e17] to-[#686256] text-white py-24"
@@ -807,32 +986,39 @@ const BusinessProfilePage: React.FC = () => {
               )}
             </motion.div>
 
-            <div className="mt-8">{renderProjectsList()}</div>
+            {isLoggedInUser && (
+                <div className="mt-8">{renderProjectsList()}</div>
+            )}
           </div>
         </section>
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            <EnrolledProjectsTabs
-              userId={Array.isArray(id) ? id[0] : id}
-              role="business"
-            />
-          </div>
-        </section>
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            <Tabs defaultValue="notifications">
-              <TabsList>
-                {isLoggedInUser && (
-                  <TabsTrigger value="notifications">
-                    Notifications {unreadCount > 0 && `(${unreadCount})`}
-                  </TabsTrigger>
-                )}
-              </TabsList>
-              {renderNotificationsTab()}
-              {isModalOpen && ConfirmationModal()}
-            </Tabs>
-          </div>
-        </section>
+
+        {isLoggedInUser && (
+          <>
+            <section className="py-8">
+              <div className="container mx-auto px-4">
+                <EnrolledProjectsTabs
+                  userId={Array.isArray(id) ? id[0] : id}
+                  role="business"
+                />
+              </div>
+            </section>
+            <section className="py-8">
+              <div className="container mx-auto px-4">
+                <Tabs defaultValue="notifications">
+                  <TabsList>
+                    {isLoggedInUser && (
+                      <TabsTrigger value="notifications">
+                        Notifications {unreadCount > 0 && `(${unreadCount})`}
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                  {renderNotificationsTab()}
+                  {isModalOpen && ConfirmationModal()}
+                </Tabs>
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
       <Footer />

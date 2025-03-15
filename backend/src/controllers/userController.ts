@@ -27,8 +27,13 @@ const safeJSONParse = (value: any) => {
 };
 
 // Helper function to clean up uploaded file
-const cleanupUploadedFile = (file?: Express.Multer.File) => {
+const cleanupUploadedFile = (file?: Express.Multer.File | { path: string }) => {
   if (file?.path) {
+    // Skip cleanup if the path is a URL (from Cloudinary)
+    if (file.path.startsWith('http')) {
+      return;
+    }
+    
     try {
       unlinkSync(file.path);
     } catch (error) {
@@ -302,5 +307,60 @@ export const updateBusiness = async (
     cleanupUploadedFile(file);
     console.error("Error updating business:", error);
     res.status(500).json({ error: "Failed to update business profile" });
+  }
+};
+
+export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    // Auth middleware should have already verified and added user to req
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const { id, role } = req.user;
+    
+    let userData;
+    
+    // Fetch the appropriate user type based on role
+    switch (role) {
+      case "student":
+        userData = await prisma.student.findUnique({
+          where: { id },
+          include: {
+            education: true,
+            achievements: true,
+          }
+        });
+        break;
+      case "professor":
+        userData = await prisma.professor.findUnique({
+          where: { id },
+          include: {
+            positions: true,
+            achievements: true,
+            researchInterests: true,
+            tags: true,
+          }
+        });
+        break;
+      case "business":
+        userData = await prisma.business.findUnique({
+          where: { id }
+        });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid user role" });
+    }
+
+    if (!userData) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Include the role in the response
+    res.status(200).json({ ...userData, role });
+    
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    res.status(500).json({ error: "Failed to fetch user information" });
   }
 };

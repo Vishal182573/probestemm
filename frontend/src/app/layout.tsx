@@ -23,7 +23,7 @@ const geistMono = localFont({
 // This information is used for SEO and browser display
 export const metadata: Metadata = {
   title: "Probestem",
-  description: "Revolutionize your STEM Research",
+  description: "Revolutionize STEM Research",
   // Configure various favicon and icon settings for different platforms
   icons:{
     icon:[

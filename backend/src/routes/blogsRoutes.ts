@@ -58,7 +58,11 @@ router.post(
   }
 );
 
-router.put("/:id", async (req, res) => {
+router.put(
+  "/:id",
+  upload.single("blogImage"),
+  authMiddleware,
+  async (req, res) => {
   try {
     await blogController.updateBlog(req, res);
   } catch (error) {
@@ -67,7 +71,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     await blogController.deleteBlog(req, res);
   } catch (error) {

@@ -834,6 +834,7 @@ const EditProfileForm = () => {
                     {/* Research Interests Section */}
                     <div className="space-y-4">
                       <Label>Research Interests</Label>
+                      {isEditing &&
                       <div className="flex flex-col space-y-4">
                         <Input
                           placeholder="Interest Title"
@@ -899,6 +900,7 @@ const EditProfileForm = () => {
                           Add Research Interest
                         </Button>
                       </div>
+                      }
 
                       {/* Existing Research Interests */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
@@ -1212,25 +1214,27 @@ const EditProfileForm = () => {
                   </div>
                 )}
 
-                {/* Achievements Section - Common for all roles */}
+                {/* Achievements Section - Customized label based on role */}
                 {role !== "business" && (
                   <div className="space-y-2">
-                    <Label>Achievements</Label>
+                    <Label>{role === "professor" ? "Teaching Interests" : "Achievements"}</Label>
                     {profileData?.achievements?.map(
                       (achievement: Achievement, index: number) => (
                         <div
                           key={index}
                           className="flex gap-2 p-4 bg-secondary/20 rounded-lg"
                         >
-                          <Input
-                            placeholder="Year"
-                            value={achievement.year}
-                            onChange={(e) =>
-                              updateAchievement(index, "year", e.target.value)
-                            }
-                            disabled={!isEditing}
-                            className="w-32 text-black bg-white"
-                          />
+                          {(role === "student" &&
+                            <Input
+                              placeholder="Year"
+                              value={achievement.year}
+                              onChange={(e) =>
+                                updateAchievement(index, "year", e.target.value)
+                              }
+                              disabled={!isEditing}
+                              className="w-32 text-black bg-white"
+                            />
+                          )}
                           <Input
                             placeholder="Description"
                             value={achievement.description}
@@ -1265,7 +1269,7 @@ const EditProfileForm = () => {
                         onClick={addAchievement}
                         className="text-black bg-white m-2"
                       >
-                        <PlusCircle className="h-4 w-4" /> Add Achievement
+                        <PlusCircle className="h-4 w-4" /> {role === "professor" ? "Add Teaching Interest" : "Add Achievement"}
                       </Button>
                     )}
                   </div>
