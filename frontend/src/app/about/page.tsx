@@ -117,6 +117,13 @@ const AboutUsPage = () => {
               <p className="text-lg text-[#472014] text-justify">
                 Our platform serves as a dynamic ecosystem where students, professors, and industry professionals collaborate on cutting-edge projects, share knowledge, and drive technological advancement. Through our innovative approach, we are reshaping how STEM education translates into real-world impact.
               </p>
+              <p className="text-lg text-justify text-blue-700">
+              <span className="font-bold text-xl">Objectives: </span><br />
+              •	Facilitate opportunities for faculty to engage in industrial R&D projects, consultancy, and technology solutions aligned with their research expertise. <br />
+              •	Provide students with access to industrial internships, PhD positions, and research opportunities that enhance practical experience and innovation. <br />
+              •	Enhance skill development through online courses, expert mentorship, and interdisciplinary learning opportunities. br
+
+              </p>
             </div>
             <div className="relative h-64 md:h-96 rounded-lg overflow-hidden shadow-xl">
               <Image
