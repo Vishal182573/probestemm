@@ -23,7 +23,6 @@ import { DISCUSSION, LOGO } from "../../../../public";
 import Image from "next/image";
 import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 // Type definitions for Answer and Discussion objects
 interface Answer {

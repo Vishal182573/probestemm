@@ -79,6 +79,14 @@ interface RelatedBlog {
   blogImage: string;
 }
 
+interface User {
+  id: string;
+  role: "STUDENT" | "PROFESSOR" | "BUSINESS";
+  fullName?: string; // For students and professors
+  companyName?: string; // For businesses
+  profileImageUrl?: string; // For user avatars
+}
+
 // Main BlogPostPage Component
 const BlogPostPage = () => {
   // State management using React hooks
@@ -102,7 +110,7 @@ const BlogPostPage = () => {
   >(null);
   const { toast } = useToast();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editedCommentContent, setEditedCommentContent] = useState("");
 

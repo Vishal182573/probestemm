@@ -319,7 +319,7 @@ const BlogsPage: React.FC = () => {
         
         {showMyBlogs && filteredBlogs.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-[#686256] text-lg mb-4">You haven't created any blogs yet.</p>
+            <p className="text-[#686256] text-lg mb-4">{"You haven't created any blogs yet."}</p>
             <Link href="/create-blog">
               <Button
                 variant="default"

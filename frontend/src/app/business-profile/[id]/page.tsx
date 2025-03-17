@@ -425,7 +425,7 @@ const handleRejectApplication = async (
     // Update application status in the UI
     setApplicationDetails((prev) => {
       const updatedApplications = prev[projectId].map(app => 
-        app.id === applicationId ? {...app, status: 'REJECTED'} : app
+        app.id === applicationId ? {...app, status: "REJECTED" as const} : app
       );
       return {...prev, [projectId]: updatedApplications};
     });
@@ -472,7 +472,7 @@ const handleSetInReview = async (
     // Update application status in the UI
     setApplicationDetails((prev) => {
       const updatedApplications = prev[projectId].map(app => 
-        app.id === applicationId ? {...app, status: 'IN_REVIEW'} : app
+        app.id === applicationId ? {...app, status: "IN_REVIEW" as const} : app
       );
       return {...prev, [projectId]: updatedApplications};
     });
