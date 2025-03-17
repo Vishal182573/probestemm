@@ -74,10 +74,6 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
       description: "",
     });
 
-  useEffect(() => {
-    fetchProfileData();
-  }, [userId, role]);
-
   const fetchProfileData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -103,6 +99,11 @@ const EditProfileForm = ({ role, userId }: EditProfileFormProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [userId, role, fetchProfileData]);
+  
   const updateResearchInterest = (
     index: number,
     field: keyof ResearchInterest,

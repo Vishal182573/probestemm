@@ -89,15 +89,6 @@ const BlogsPage: React.FC = () => {
   const { toast } = useToast(); // Toast notifications
   const [userId, setUserId] = useState<string | null>(null); // Store user's ID
 
-  // Initial data fetching on component mount
-  useEffect(() => {
-    fetchBlogs();
-    const role = localStorage.getItem("role");
-    const id = localStorage.getItem("userId");
-    setUserRole(role);
-    setUserId(id);
-  }, []);
-
   // Fetches all blogs from the API
   const fetchBlogs = async () => {
     try {
@@ -119,6 +110,15 @@ const BlogsPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Initial data fetching on component mount
+  useEffect(() => {
+    fetchBlogs();
+    const role = localStorage.getItem("role");
+    const id = localStorage.getItem("userId");
+    setUserRole(role);
+    setUserId(id);
+  }, [fetchBlogs]);
 
   // Fetches user's previous interactions (likes/dislikes) with blogs
   const fetchUserInteractions = async (blogIds: string[]) => {
@@ -319,7 +319,7 @@ const BlogsPage: React.FC = () => {
         
         {showMyBlogs && filteredBlogs.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-[#686256] text-lg mb-4">You haven't created any blogs yet.</p>
+            <p className="text-[#686256] text-lg mb-4">{"You haven't created any blogs yet."}</p>
             <Link href="/create-blog">
               <Button
                 variant="default"

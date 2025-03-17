@@ -39,7 +39,7 @@ const HeroSection = () => {
     }, 5000);
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
 
   return (
     // Main section with gradient background and full viewport height

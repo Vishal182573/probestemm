@@ -106,15 +106,6 @@ const BlogPostPage = () => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editedCommentContent, setEditedCommentContent] = useState("");
 
-  // Effect hook to fetch initial data when component mounts or ID changes
-  useEffect(() => {
-    if (id) {
-      fetchBlogPost();
-      fetchUserInteraction();
-      fetchRelatedBlogs();
-    }
-  }, [id]);
-
   // Fetch current user info on component mount
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -184,6 +175,15 @@ const BlogPostPage = () => {
       console.error("Error fetching related blogs:", error);
     }
   };
+
+  // Effect hook to fetch initial data when component mounts or ID changes
+  useEffect(() => {
+    if (id) {
+      fetchBlogPost();
+      fetchUserInteraction();
+      fetchRelatedBlogs();
+    }
+  }, [id, fetchBlogPost, fetchUserInteraction, fetchRelatedBlogs]);
 
   // Function to check if the current user is the author of the blog
   const isUserBlogAuthor = () => {

@@ -193,15 +193,6 @@ const ProjectsPage: React.FC = () => {
   // for category filter
   const [selectedCategory, setSelectedCategory] = useState('all'); // Currently selected category
   const [selectedOpportunity, setSelectedOpportunity] = useState('all');
-
-  // Combined filtering effect
-  useEffect(() => {
-    filterProjects();
-  }, [searchQuery, selectedCategory]);
-
-  useEffect(() => {
-    filterProjects();
-  }, [searchQuery, selectedCategory, selectedOpportunity]);
   
   const filterProjects = () => {
     let filtered = projects;
@@ -260,6 +251,14 @@ const ProjectsPage: React.FC = () => {
     setFilteredProjects(filtered);
   };
 
+  // Combined filtering effect
+  useEffect(() => {
+    filterProjects();
+  }, [searchQuery, selectedCategory, filterProjects]);
+
+  useEffect(() => {
+    filterProjects();
+  }, [searchQuery, selectedCategory, selectedOpportunity, filterProjects]);
 
   // Modal control functions
   const openApplyModal = (project: Project) => {

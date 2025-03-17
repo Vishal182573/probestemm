@@ -102,7 +102,7 @@ export default function ProfessorsPage() {
   // Effect hook to trigger search when query changes
   useEffect(() => {
     debouncedFetch(searchQuery);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedFetch]);
 
   return (
     <div className="bg-white w-full">

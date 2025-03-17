@@ -90,13 +90,6 @@ const DiscussionForum: React.FC = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const router = useRouter();
 
-  // Effect hook to fetch discussions when filters change
-  useEffect(() => {
-    fetchDiscussions();
-    const role = localStorage.getItem("role");
-    setUserRole(role);
-  }, [sortBy, status, category, subcategory, pagination.currentPage]);
-
   // Function to fetch discussions from the API with current filters
   const fetchDiscussions = async () => {
     try {
@@ -126,6 +119,13 @@ const DiscussionForum: React.FC = () => {
       console.error("Failed to fetch discussions:", error);
     }
   };
+
+  // Effect hook to fetch discussions when filters change
+  useEffect(() => {
+    fetchDiscussions();
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, [sortBy, status, category, subcategory, pagination.currentPage, fetchDiscussions]);
 
   // Handler for search button click
   const handleSearch = () => {

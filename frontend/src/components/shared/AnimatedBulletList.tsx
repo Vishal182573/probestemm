@@ -20,7 +20,6 @@ const AnimatedBulletList: React.FC<AnimatedBulletListProps> = ({
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(0);
-  const controls = useAnimation();
   const y = useMotionValue(0);
   const animationRef = useRef<number | null>(null);
   const speedRef = useRef<number>(0.5); // pixels per frame
@@ -72,7 +71,7 @@ const AnimatedBulletList: React.FC<AnimatedBulletListProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [listHeight, isHovering]);
+  }, [listHeight, isHovering, animate]);
 
   return (
     <div 

@@ -111,23 +111,6 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     type: null 
   });
 
-  // Effects for Data Fetching and Real-time Updates
-  useEffect(() => {
-    // Fetches chat rooms and sets up polling for unread counts
-    if (currentUser.id) {
-      fetchChatRooms();
-      fetchBlockedUsers();
-      // Set up intervals for both total and individual unread counts
-      const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
-      const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
-      
-      return () => {
-        clearInterval(totalUnreadInterval);
-        clearInterval(roomUnreadInterval);
-      };
-    }
-  }, [currentUser.id]);
-
   // Add function to refresh selected chat
   const refreshSelectedChat = useCallback(async () => {
     if (!selectedChat?.id) return;
@@ -167,6 +150,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     }
   };
 
+
   // Set isClient to true once the component mounts
   useEffect(() => {
     setIsClient(true);
@@ -192,90 +176,8 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   }, []);
 
   useEffect(() => {
-    if (currentUser.id) {
-      fetchChatRooms();
-      const interval = setInterval(fetchUnreadCounts, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [currentUser.id]);
-
-  useEffect(() => {
     scrollToBottom();
   }, [selectedChat?.messages, scrollToBottom]);
-
-  useEffect(() => {
-    if (!currentUser.id) return;
-
-    const newSocket = io(SOCKET_URL, {
-      auth: {
-        userId: currentUser.id,
-        userType: currentUser.type
-      },
-      path: '/api/socket.io',
-      transports: ['websocket', 'polling'],
-      upgrade: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
-
-    newSocket.on('connect', () => {
-      console.log('Connected to socket server with ID:', newSocket.id);
-    });
-
-    newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-    });
-
-    newSocket.on('receiveMessage', (message: ChatMessage) => {
-      setSelectedChat(prev => {
-        if (!prev || prev.id !== message.chatRoomId) return prev;
-        return {
-          ...prev,
-          messages: [...(prev.messages || []), message]
-        };
-      });
-      
-      if (selectedChat?.id === message.chatRoomId) {
-        markMessagesAsRead(message.chatRoomId);
-      }
-      fetchUnreadCounts();
-    });
-
-    newSocket.on('userTyping', ({ userId, chatRoomId, isTyping }) => {
-      if (selectedChat?.id === chatRoomId && userId !== currentUser.id) {
-        setTypingUsers(prev => {
-          const newState = { ...prev };
-          if (isTyping) {
-            newState[userId] = true;
-          } else {
-            delete newState[userId];
-          }
-          return newState;
-        });
-      }
-    });
-
-    
-    // Add online status events
-    newSocket.emit('userOnline', { userId: currentUser.id });
-    
-    newSocket.on('userStatusUpdate', ({ userId, isOnline }) => {
-      setOnlineUsers(prev => ({
-        ...prev,
-        [userId]: isOnline
-      }));
-    });
-
-    setSocket(newSocket);
-
-    return () => {
-      if (newSocket) {
-        newSocket.emit('userOffline', { userId: currentUser.id });
-        newSocket.disconnect();
-      }
-    };
-  }, [currentUser.id, currentUser.type]);
 
   const fetchChatRooms = async () => {
     // Fetches all chat rooms for the current user
@@ -349,6 +251,31 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     }
   };
 
+  // Effects for Data Fetching and Real-time Updates
+  useEffect(() => {
+    // Fetches chat rooms and sets up polling for unread counts
+    if (currentUser.id) {
+      fetchChatRooms();
+      fetchBlockedUsers();
+      // Set up intervals for both total and individual unread counts
+      const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
+      const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
+      
+      return () => {
+        clearInterval(totalUnreadInterval);
+        clearInterval(roomUnreadInterval);
+      };
+    }
+  }, [currentUser.id, fetchChatRooms, fetchBlockedUsers, fetchUnreadCounts, fetchChatRoomUnreadCounts]);
+
+  useEffect(() => {
+    if (currentUser.id) {
+      fetchChatRooms();
+      const interval = setInterval(fetchUnreadCounts, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [currentUser.id, fetchUnreadCounts, fetchChatRooms]);
+
   const markMessagesAsRead = async (chatId: string) => {
     if (!currentUser.id) return;
 
@@ -378,6 +305,80 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
       return [];
     }
   };
+
+  useEffect(() => {
+    if (!currentUser.id) return;
+
+    const newSocket = io(SOCKET_URL, {
+      auth: {
+        userId: currentUser.id,
+        userType: currentUser.type
+      },
+      path: '/api/socket.io',
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to socket server with ID:', newSocket.id);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    newSocket.on('receiveMessage', (message: ChatMessage) => {
+      setSelectedChat(prev => {
+        if (!prev || prev.id !== message.chatRoomId) return prev;
+        return {
+          ...prev,
+          messages: [...(prev.messages || []), message]
+        };
+      });
+      
+      if (selectedChat?.id === message.chatRoomId) {
+        markMessagesAsRead(message.chatRoomId);
+      }
+      fetchUnreadCounts();
+    });
+
+    newSocket.on('userTyping', ({ userId, chatRoomId, isTyping }) => {
+      if (selectedChat?.id === chatRoomId && userId !== currentUser.id) {
+        setTypingUsers(prev => {
+          const newState = { ...prev };
+          if (isTyping) {
+            newState[userId] = true;
+          } else {
+            delete newState[userId];
+          }
+          return newState;
+        });
+      }
+    });
+
+    
+    // Add online status events
+    newSocket.emit('userOnline', { userId: currentUser.id });
+    
+    newSocket.on('userStatusUpdate', ({ userId, isOnline }) => {
+      setOnlineUsers(prev => ({
+        ...prev,
+        [userId]: isOnline
+      }));
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        newSocket.emit('userOffline', { userId: currentUser.id });
+        newSocket.disconnect();
+      }
+    };
+  }, [currentUser.id, currentUser.type, selectedChat?.id, markMessagesAsRead, fetchUnreadCounts]);
 
   const sendNewMessage = async () => {
     // Handles message sending through both WebSocket and REST API

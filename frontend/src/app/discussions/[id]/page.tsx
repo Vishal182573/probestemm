@@ -23,7 +23,6 @@ import { DISCUSSION, LOGO } from "../../../../public";
 import Image from "next/image";
 import Banner from "@/components/shared/Banner";
 import ContactForm from "@/components/shared/Feedback";
-import FeaturesDemo from "@/components/shared/TextImageComponent";
 
 // Type definitions for Answer and Discussion objects
 interface Answer {
@@ -65,13 +64,6 @@ const QuestionDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Effect hook to fetch discussion data and user role on component mount or ID change
-  useEffect(() => {
-    fetchDiscussion();
-    const role = localStorage.getItem("role");
-    setUserRole(role);
-  }, [id]);
-
   // Fetches discussion details from the API
   // Requires authentication token, redirects to login if not found
   const fetchDiscussion = async () => {
@@ -90,6 +82,13 @@ const QuestionDetailPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Effect hook to fetch discussion data and user role on component mount or ID change
+  useEffect(() => {
+    fetchDiscussion();
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, [id, fetchDiscussion]);
 
   // Handles posting new answers to discussions
   // Includes validation for professor approval status

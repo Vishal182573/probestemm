@@ -102,7 +102,7 @@ export default function BusinessesPage() {
   // Automatically fetches businesses when component mounts or search query updates
   useEffect(() => {
     debouncedFetch(searchQuery);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedFetch]);
 
   // Component render section
   return (
