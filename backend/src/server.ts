@@ -11,6 +11,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { createServer } from 'http';
 import { createNotification } from "./controllers/notificationController";
+import session from "express-session";
 
 
 // Route imports
@@ -652,12 +653,58 @@ const setupAdminPanel = async () => {
       },
     },
     rootPath: "/api/admin",
+    loginPath: "/api/admin/login",
+    logoutPath: "/api/admin/logout",
   };
 
   const admin = new AdminJS(adminOptions);
 
-  // Build and use the router
-  const adminRouter = AdminJSExpress.buildRouter(admin);
+  // Build and use the router with authentication
+  const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+    admin,
+    {
+      authenticate: async (email, password) => {
+        try {
+          // Find the SuperAdmin by email
+          const superAdmin = await prisma.superAdmin.findUnique({
+            where: { email },
+          });
+          
+          if (!superAdmin) {
+            console.log('No SuperAdmin found with email:', email);
+            return false;
+          }
+          
+          // Compare the provided password with the hashed password in the database
+          const matched = await bcrypt.compare(password, superAdmin.password);
+          
+          if (matched) {
+            console.log('SuperAdmin authenticated successfully:', superAdmin.id);
+            return superAdmin;
+          }
+          
+          console.log('Password does not match for SuperAdmin:', email);
+          return false;
+        } catch (error) {
+          console.error('Error during authentication:', error);
+          return false;
+        }
+      },
+      cookiePassword: process.env.COOKIE_SECRET || 'some-secure-random-string-used-for-cookie-encryption',
+    },
+    null,
+    {
+      resave: false,
+      saveUninitialized: true,
+      secret: process.env.SESSION_SECRET || 'another-secure-random-string-for-session',
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      },
+      name: 'adminjs',
+    }
+  );
+  
   return { admin, adminRouter };
 };
 
@@ -668,17 +715,20 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-// Middleware
-app.use(cors(corsOptions));
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
 // Set up AdminJS
 const startApp = async () => {
   const { admin, adminRouter } = await setupAdminPanel();
 
-  // Mount AdminJS
+  // Apply CORS middleware first
+  app.use(cors(corsOptions));
+  
+  // Mount AdminJS before body-parser middleware
   app.use(admin.options.rootPath, adminRouter);
+  
+  // Body parser middleware after AdminJS router
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.static('src/public')); // Serve static files from the public directory
 
   // API Routes
   app.use("/api/auth", authRoutes);
@@ -702,6 +752,21 @@ const startApp = async () => {
   // Default route
   app.get("/", (req, res) => {
     res.send("Server is running");
+  });
+
+  // Redirect from /admin to /api/admin
+  app.get("/admin", (req, res) => {
+    res.redirect("/api/admin");
+  });
+
+  // Redirect from /admin/login to /api/admin/login
+  app.get("/admin/login", (req, res) => {
+    res.redirect("/api/admin/login");
+  });
+
+  // Serve the custom login page
+  app.get("/admin-login", (req, res) => {
+    res.sendFile("admin-login-test.html", { root: "src/public" });
   });
 
   // Start server using httpServer instead of app.listen

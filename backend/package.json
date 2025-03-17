@@ -19,7 +19,9 @@
     "build": "bun build src/server.ts --outdir dist --target node",
     "lint": "bun run eslint src/**/*.ts",
     "format": "bun run prettier --write src/**/*.ts",
-    "test": "bun run vitest"
+    "test": "bun run vitest",
+    "create-admin": "bun run src/scripts/createSuperAdmin.ts",
+    "change-admin-password": "bun run src/scripts/changeSuperAdminPassword.ts"
   },
   "dependencies": {
     "@adminjs/design-system": "^4.1.1",

@@ -32,6 +32,7 @@ import FAQSection from "@/components/shared/Faq";
 import Image from "next/image";
 import { INDUSTRY, PROFESSOR, STUDENT } from "../../public";
 import { RecentProjects } from "@/components/shared/RecentProjects";
+import AnimatedBulletList from "@/components/shared/AnimatedBulletList";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -112,6 +113,16 @@ const HeroSection = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Define bullet points for the animated list
+  const bulletPoints = [
+    { text: "PhD/Research positions openings", link: "/projects/faculty" },
+    { text: "Faculty proposals available for industries", link: "/projects/faculty" },
+    { text: "Students available for Internship", link: "/projects/students" },
+    { text: "Students available for PhD/Research positions", link: "/projects/students" },
+    { text: "Internship opportunities for students", link: "/projects/industry" },
+    { text: "R&D Projects/Consultancy opportunities for faculty", link: "/projects/industry" }
+  ];
+
   // Hero section with animated background, overlay, and call-to-action buttons
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -144,57 +155,13 @@ const HeroSection = () => {
           >
             CURRENT OPENINGS
           </Button>
-          <Link href="/projects/faculty">
-            <Button 
-              variant="outline" 
-              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
-            >
-              <div className="flex flex-col items-start">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>PhD/Research positions openings</span>
-                </div>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>Faculty proposals available for industries</span>
-                </div>
-              </div>
-            </Button>
-          </Link>
-          <Link href="/projects/students">
-            <Button 
-              variant="outline" 
-              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
-            >
-              <div className="flex flex-col items-start">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>Students available for Internship</span>
-                </div>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>Students available for PhD/Research positions</span>
-                </div>
-              </div>
-            </Button>
-          </Link>
-          <Link href="/projects/industry">
-            <Button 
-              variant="outline" 
-              className="text-white text-start text-wrap bg-transparent border-0 hover:underline hover:bg-transparent text-xl flex justify-start py-2 px-4 rounded-lg min-h-20 max-w-[40rem] mb-6"
-            >
-              <div className="flex flex-col items-start">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>Internship opportunities for students</span>
-                </div>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 rounded-full bg-white mr-2"></div>
-                  <span>R&D Projects/Consultancy opportunities for faculty</span>
-                </div>
-              </div>
-            </Button>
-          </Link>
+          
+          {/* Replace the existing Link buttons with the AnimatedBulletList */}
+          <AnimatedBulletList 
+            bulletPoints={bulletPoints} 
+            className="bg-transparent border-0 w-[25rem] h-[300px]"
+          />
+          
         </motion.div>
         <div className="flex flex-col md:flex-row justify-end items-center">
           {/* Hero text */}
