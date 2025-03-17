@@ -417,6 +417,13 @@ const EditProfileForm = () => {
     setProfileData({ ...profileData, tags: newTags });
   };
 
+  // Fetch user profile data when userId and role are available
+  useEffect(() => {
+    if (userId && role) {
+      fetchProfileData();
+    }
+  }, [userId, role]);
+
   // Function to fetch user profile data from API
   const fetchProfileData = async () => {
     try {
@@ -441,13 +448,6 @@ const EditProfileForm = () => {
       });
     }
   };
-
-  // Fetch user profile data when userId and role are available
-  useEffect(() => {
-    if (userId && role) {
-      fetchProfileData();
-    }
-  }, [userId, role, fetchProfileData]);
 
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {

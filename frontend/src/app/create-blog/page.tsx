@@ -51,6 +51,17 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
     }
   }, [router, toast]);
 
+  // Check if we're in edit mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit');
+    
+    if (editId) {
+      // Fetch blog details and populate form
+      fetchBlogDetails(editId);
+    }
+  }, []);
+
   const fetchBlogDetails = async (id: string) => {
     try {
       const response = await axios.get(`${API_URL}/blogs/${id}`);
@@ -72,17 +83,6 @@ const CreateBlogPost: React.FC<CreateBlogPostProps> = () => {
       });
     }
   };
-
-  // Check if we're in edit mode
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const editId = params.get('edit');
-    
-    if (editId) {
-      // Fetch blog details and populate form
-      fetchBlogDetails(editId);
-    }
-  }, [fetchBlogDetails]);
 
   /**
    * Image Upload Handler

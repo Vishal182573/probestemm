@@ -97,7 +97,7 @@ export default function StudentsPage() {
   // Re-runs whenever searchQuery state changes
   useEffect(() => {
     debouncedFetch(searchQuery);
-  }, [searchQuery, debouncedFetch]);
+  }, [searchQuery]);
 
   return (
     <div className="bg-white w-full">

@@ -111,6 +111,23 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     type: null 
   });
 
+  // Effects for Data Fetching and Real-time Updates
+  useEffect(() => {
+    // Fetches chat rooms and sets up polling for unread counts
+    if (currentUser.id) {
+      fetchChatRooms();
+      fetchBlockedUsers();
+      // Set up intervals for both total and individual unread counts
+      const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
+      const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
+      
+      return () => {
+        clearInterval(totalUnreadInterval);
+        clearInterval(roomUnreadInterval);
+      };
+    }
+  }, [currentUser.id]);
+
   // Add function to refresh selected chat
   const refreshSelectedChat = useCallback(async () => {
     if (!selectedChat?.id) return;
@@ -150,7 +167,6 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     }
   };
 
-
   // Set isClient to true once the component mounts
   useEffect(() => {
     setIsClient(true);
@@ -176,135 +192,16 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedChat?.messages, scrollToBottom]);
-
-  const fetchChatRooms = async () => {
-    // Fetches all chat rooms for the current user
-    if (!currentUser.id) return;
-    
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_URL}/chat/rooms/${currentUser.id}`);
-      if (!response.ok) throw new Error('Failed to fetch chat rooms');
-      const data = await response.json();
-      setChatRooms(data);
-    } catch (error) {
-      console.error('Failed to fetch chat rooms:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add this function with the other API functions
-  const deleteChat = async (chatId: string) => {
-    try {
-      const response = await fetch(`${API_URL}/chat/rooms/${chatId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to delete chat');
-      return true;
-    } catch (error) {
-      console.error('Failed to delete chat:', error);
-      return false;
-    }
-  };
-
-  const toggleBlockUser = async (userId: string, action: 'block' | 'unblock') => {
-    try {
-      const response = await fetch(`${API_URL}/chat/users/${userId}/${action}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blockerId: currentUser.id })
-      });
-      if (!response.ok) throw new Error(`Failed to ${action} user`);
-      return true;
-    } catch (error) {
-      console.error(`Failed to ${action} user:`, error);
-      return false;
-    }
-  };
-
-  const fetchBlockedUsers = async () => {
-    if (!currentUser.id) return;
-    try {
-      const response = await fetch(`${API_URL}/chat/users/blocked/${currentUser.id}`);
-      if (!response.ok) throw new Error('Failed to fetch blocked users');
-      const data = await response.json();
-      setBlockedUsers(data.blockedUsers || []);
-    } catch (error) {
-      console.error('Failed to fetch blocked users:', error);
-    }
-  };
-
-  const fetchUnreadCounts = async () => {
-    if (!currentUser.id) return;
-
-    try {
-      const response = await fetch(`${API_URL}/chat/messages/unread/${currentUser.id}`);
-      if (!response.ok) throw new Error('Failed to fetch unread counts');
-      const data = await response.json();
-      setUnreadCounts(data.unreadCount);
-    } catch (error) {
-      console.error('Failed to fetch unread counts:', error);
-    }
-  };
-
-  // Effects for Data Fetching and Real-time Updates
-  useEffect(() => {
-    // Fetches chat rooms and sets up polling for unread counts
-    if (currentUser.id) {
-      fetchChatRooms();
-      fetchBlockedUsers();
-      // Set up intervals for both total and individual unread counts
-      const totalUnreadInterval = setInterval(fetchUnreadCounts, 2000);
-      const roomUnreadInterval = setInterval(fetchChatRoomUnreadCounts, 2000);
-      
-      return () => {
-        clearInterval(totalUnreadInterval);
-        clearInterval(roomUnreadInterval);
-      };
-    }
-  }, [currentUser.id, fetchChatRooms, fetchBlockedUsers, fetchUnreadCounts, fetchChatRoomUnreadCounts]);
-
-  useEffect(() => {
     if (currentUser.id) {
       fetchChatRooms();
       const interval = setInterval(fetchUnreadCounts, 10000);
       return () => clearInterval(interval);
     }
-  }, [currentUser.id, fetchUnreadCounts, fetchChatRooms]);
+  }, [currentUser.id]);
 
-  const markMessagesAsRead = async (chatId: string) => {
-    if (!currentUser.id) return;
-
-    try {
-      const response = await fetch(`${API_URL}/chat/messages/read`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatRoomId: chatId, userId: currentUser.id })
-      });
-      if (!response.ok) throw new Error('Failed to mark messages as read');
-      await fetchUnreadCounts();
-    } catch (error) {
-      console.error('Failed to mark messages as read:', error);
-    }
-  };
-
-  const fetchChatMessages = async (chatId: string, page = 1, limit = 50) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/chat/messages?chatId=${chatId}&page=${page}&limit=${limit}`
-      );
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json();
-      return data.messages ?? [];
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
-      return [];
-    }
-  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedChat?.messages, scrollToBottom]);
 
   useEffect(() => {
     if (!currentUser.id) return;
@@ -378,7 +275,109 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
         newSocket.disconnect();
       }
     };
-  }, [currentUser.id, currentUser.type, selectedChat?.id, markMessagesAsRead, fetchUnreadCounts]);
+  }, [currentUser.id, currentUser.type]);
+
+  const fetchChatRooms = async () => {
+    // Fetches all chat rooms for the current user
+    if (!currentUser.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/chat/rooms/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch chat rooms');
+      const data = await response.json();
+      setChatRooms(data);
+    } catch (error) {
+      console.error('Failed to fetch chat rooms:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add this function with the other API functions
+  const deleteChat = async (chatId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/chat/rooms/${chatId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to delete chat');
+      return true;
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
+      return false;
+    }
+  };
+
+  const toggleBlockUser = async (userId: string, action: 'block' | 'unblock') => {
+    try {
+      const response = await fetch(`${API_URL}/chat/users/${userId}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blockerId: currentUser.id })
+      });
+      if (!response.ok) throw new Error(`Failed to ${action} user`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to ${action} user:`, error);
+      return false;
+    }
+  };
+
+  const fetchBlockedUsers = async () => {
+    if (!currentUser.id) return;
+    try {
+      const response = await fetch(`${API_URL}/chat/users/blocked/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch blocked users');
+      const data = await response.json();
+      setBlockedUsers(data.blockedUsers || []);
+    } catch (error) {
+      console.error('Failed to fetch blocked users:', error);
+    }
+  };
+
+  const fetchUnreadCounts = async () => {
+    if (!currentUser.id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/messages/unread/${currentUser.id}`);
+      if (!response.ok) throw new Error('Failed to fetch unread counts');
+      const data = await response.json();
+      setUnreadCounts(data.unreadCount);
+    } catch (error) {
+      console.error('Failed to fetch unread counts:', error);
+    }
+  };
+
+  const markMessagesAsRead = async (chatId: string) => {
+    if (!currentUser.id) return;
+
+    try {
+      const response = await fetch(`${API_URL}/chat/messages/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatRoomId: chatId, userId: currentUser.id })
+      });
+      if (!response.ok) throw new Error('Failed to mark messages as read');
+      await fetchUnreadCounts();
+    } catch (error) {
+      console.error('Failed to mark messages as read:', error);
+    }
+  };
+
+  const fetchChatMessages = async (chatId: string, page = 1, limit = 50) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/chat/messages?chatId=${chatId}&page=${page}&limit=${limit}`
+      );
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      return data.messages ?? [];
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+      return [];
+    }
+  };
 
   const sendNewMessage = async () => {
     // Handles message sending through both WebSocket and REST API
