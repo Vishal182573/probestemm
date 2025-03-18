@@ -482,7 +482,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         className="flex items-center text-wrap max-w-[50%] gap-2 -ml-2 cursor-pointer transition-colors w-full"
       >
         <div className="flex-shrink-0 h-10 w-10 relative rounded-full overflow-hidden border border-gray-200">
-          {userData ? (
+          {(userData?.photoUrl || userData?.profileImageUrl || userData?.imageUrl) ? (
             <Image 
               src={
                 project.type === 'PROFESSOR_PROJECT' ? userData.photoUrl || '' :
