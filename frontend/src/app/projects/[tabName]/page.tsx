@@ -371,7 +371,7 @@ const ProjectsPage: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="all">All Projects</SelectItem>
                     {(activeTab !== "students") && <SelectItem value="students">Students</SelectItem>}
-                    <SelectItem value="PROFESSOR_COLLABORATION">Professor</SelectItem>
+                    <SelectItem value="PROFESSOR_COLLABORATION">Faculty/Scientist</SelectItem>
                     {(activeTab !== "industry") && <SelectItem value="INDUSTRY_COLLABORATION">Industry</SelectItem>}
                   </SelectContent>
                 </Select>

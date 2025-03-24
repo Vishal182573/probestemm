@@ -199,7 +199,7 @@ export const Navbar: React.FC = () => {
                   <Image
                     src={LOGOLEFT}
                     alt="left logo part"
-                    className="w-auto h-20 lg:h-24 object-contain"
+                    className="w-auto h-24 lg:h-36 object-contain"
                     priority
                   />
                 </div>
@@ -207,7 +207,7 @@ export const Navbar: React.FC = () => {
                   <Image
                     src={LOGORIGHT}
                     alt="right logo part"
-                    className="w-auto h-20 lg:h-24 object-contain"
+                    className="w-auto h-24 lg:h-36 object-contain"
                     priority
                   />
                 </div>
@@ -216,7 +216,7 @@ export const Navbar: React.FC = () => {
               <Image 
                 src={LOGOWHITE} 
                 alt="logo" 
-                className="w-32 lg:w-56 lg:h-56 h-32"
+                className="w-40 lg:w-64 lg:h-64 h-40"
               />
             )}
           </Link>

@@ -628,7 +628,7 @@ export const SignupForm: React.FC = () => {
         </SelectTrigger>
         <SelectContent className="text-black bg-white">
           <SelectItem value="student">Student</SelectItem>
-          <SelectItem value="professor">Professor/Scientist</SelectItem>
+          <SelectItem value="professor">Faculty/Scientist</SelectItem>
           <SelectItem value="business">Industry</SelectItem>
         </SelectContent>
       </Select>
