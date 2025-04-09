@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import GlobalChatBox from "../shared/GlobalChatBox";
+import { useSearchParams } from "next/navigation";
 
 interface GlobalChatProviderProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface GlobalChatProviderProps {
 export function GlobalChatProvider({ children }: GlobalChatProviderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   // Check authentication status when component mounts
   useEffect(() => {
@@ -32,10 +34,12 @@ export function GlobalChatProvider({ children }: GlobalChatProviderProps) {
     checkAuthStatus();
   }, []);
 
-  // Toggle chat open/closed
-  const toggleChat = () => {
-    setIsChatOpen(prev => !prev);
-  };
+  useEffect(() => {
+      const openChat = searchParams.get('openChat');
+      if (openChat === 'true') {
+        setIsChatOpen(true);
+      }
+    }, [searchParams]);
 
   return (
     <>
