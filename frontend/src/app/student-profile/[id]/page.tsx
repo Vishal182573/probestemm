@@ -103,6 +103,7 @@ interface AppliedApplicant {
   email: string;
   description: string;
   resume: string;
+  status: "PENDING" | "ACCEPTED" | "IN_REVIEW" | "REJECTED";
 }
 
 interface ApplicationsResponse {
@@ -202,6 +203,13 @@ const StudentProfilePage: React.FC = () => {
         ...prevMap,
         [projectId]: allApplications,
       }));
+
+      // Update the applicationStatuses state with status from response
+      const newStatusMap = { ...applicationStatuses };
+      allApplications.forEach(app => {
+        newStatusMap[app.id] = app.status;
+      });
+      setApplicationStatuses(newStatusMap);
 
       console.log("Fetched applied applicants:", allApplications);
     } catch (error) {
@@ -658,124 +666,137 @@ const handleSetInReviewApplicant = async (projectId: string, applicantId: string
                     </Button>
 
                     {appliedApplicantsMap[project.id] && (
-                      <div className="mt-4">
-                        <h5 className="text-md font-semibold mb-2 text-black">
-                          Applicants:
-                        </h5>
-                        {isLoadingApplicants[project.id] ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
-                        ) : appliedApplicantsMap[project.id].length > 0 ? (
-                          <ul className="space-y-2">
-                            {appliedApplicantsMap[project.id].map(
-                              (applicant) => {
-                                const applicantType = applicant.professorId ? 'professor' : applicant.businessId ?  'business' : 'student';
-                                const applicantId = applicant.id;
-                                const status = applicationStatuses[applicantId] || 'PENDING';
+                    <div className="mt-4">
+                      <h5 className="text-md font-semibold mb-2 text-black">
+                        Applicants:
+                      </h5>
+                      {isLoadingApplicants[project.id] ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-[#eb5e17]" />
+                      ) : appliedApplicantsMap[project.id].length > 0 ? (
+                        <ul className="space-y-2">
+                          {(() => {
+                            // Check if there's any ACCEPTED applicant
+                            const hasAccepted = appliedApplicantsMap[project.id].some(
+                              app => app.status === 'ACCEPTED' || applicationStatuses[app.id] === 'ACCEPTED'
+                            );
+                            
+                            // If there's an accepted applicant, only show that one
+                            const applicantsToShow = hasAccepted 
+                              ? appliedApplicantsMap[project.id].filter(
+                                  app => app.status === 'ACCEPTED' || applicationStatuses[app.id] === 'ACCEPTED'
+                                )
+                              : appliedApplicantsMap[project.id];
+                              
+                            return applicantsToShow.map(applicant => {
+                              const applicantType = applicant.professorId ? 'professor' : applicant.businessId ? 'business' : 'student';
+                              const applicantId = applicant.id;
+                              // Prioritize the application status from state over the one from the applicant object
+                              const status = applicationStatuses[applicantId] || applicant.status || 'PENDING';
 
-                                return (
-                                  <div key={applicant.id} className="border p-3 rounded-md shadow-sm">
-                                    <li
-                                      className="flex items-center space-x-4 cursor-pointer mb-3"
-                                      onClick={() => {
-                                        const route = applicant.professorId
-                                          ? `/professor-profile/${applicant.professorId}`
-                                          : `/business-profile/${applicant.businessId}`;
-                                        window.location.href = route;
-                                      }}
-                                    >
-                                      <div>
-                                        <p className="font-semibold text-gray-600">
-                                          {applicant.name}
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                          {applicant.email}
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                          {applicant.description}
-                                        </p>
-                                      </div>
-                                    </li>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="bg-white text-blue-600 hover:text-blue-800"
-                                        onClick={() => window.open(applicant.resume, '_blank')}
-                                      >
-                                        <FileText className="h-4 w-4 mr-1" />
-                                        View Resume
-                                      </Button>
-                                      
-                                      {status === 'PENDING' && (
-                                        <>
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
-                                            className="bg-[#eb5e17] text-white"
-                                          >
-                                            Accept
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
-                                            className="bg-red-600 text-white"
-                                          >
-                                            Reject
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handleSetInReviewApplicant(project.id, applicantId, applicantType)}
-                                            className="bg-yellow-600 text-white"
-                                          >
-                                            Set In Review
-                                          </Button>
-                                        </>
-                                      )}
-                                      
-                                      {status === 'IN_REVIEW' && (
-                                        <>
-                                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            In Review
-                                          </span>
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
-                                            className="bg-[#eb5e17] text-white"
-                                          >
-                                            Accept
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
-                                            className="bg-red-600 text-white"
-                                          >
-                                            Reject
-                                          </Button>
-                                        </>
-                                      )}
-                                      
-                                      {status === 'ACCEPTED' && (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                          Accepted
-                                        </span>
-                                      )}
-                                      
-                                      {status === 'REJECTED' && (
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                          Rejected
-                                        </span>
-                                      )}
+                              return (
+                                <div key={applicant.id} className="border p-3 rounded-md shadow-sm">
+                                  <li
+                                    className="flex items-center space-x-4 cursor-pointer mb-3"
+                                    onClick={() => {
+                                      const route = applicant.professorId
+                                        ? `/professor-profile/${applicant.professorId}`
+                                        : `/business-profile/${applicant.businessId}`;
+                                      window.location.href = route;
+                                    }}
+                                  >
+                                    <div>
+                                      <p className="font-semibold text-gray-600">
+                                        {applicant.name}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {applicant.email}
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        {applicant.description}
+                                      </p>
                                     </div>
+                                  </li>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="bg-white text-blue-600 hover:text-blue-800"
+                                      onClick={() => window.open(applicant.resume, '_blank')}
+                                    >
+                                      <FileText className="h-4 w-4 mr-1" />
+                                      View Resume
+                                    </Button>
+                                    
+                                    {status === 'PENDING' && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
+                                          className="bg-[#eb5e17] text-white"
+                                        >
+                                          Accept
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
+                                          className="bg-red-600 text-white"
+                                        >
+                                          Reject
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleSetInReviewApplicant(project.id, applicantId, applicantType)}
+                                          className="bg-yellow-600 text-white"
+                                        >
+                                          Set In Review
+                                        </Button>
+                                      </>
+                                    )}
+                                    
+                                    {status === 'IN_REVIEW' && (
+                                      <>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                          In Review
+                                        </span>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleAssignApplicant(project.id, applicantId, applicantType)}
+                                          className="bg-[#eb5e17] text-white"
+                                        >
+                                          Accept
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleRejectApplicant(project.id, applicantId, applicantType)}
+                                          className="bg-red-600 text-white"
+                                        >
+                                          Reject
+                                        </Button>
+                                      </>
+                                    )}
+                                    
+                                    {status === 'ACCEPTED' && (
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Accepted
+                                      </span>
+                                    )}
+                                    
+                                    {status === 'REJECTED' && (
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Rejected
+                                      </span>
+                                    )}
                                   </div>
-                                );
-                              }
-                            )}
-                          </ul>
-                        ) : (
-                          <p className="text-black">No applicants yet.</p>
-                        )}
-                      </div>
-                    )}
+                                </div>
+                              );
+                            });
+                          })()}
+                        </ul>
+                      ) : (
+                        <p className="text-black">No applicants yet.</p>
+                      )}
+                    </div>
+                  )}
                   </li>
                 ))}
               </ul>

@@ -105,7 +105,7 @@ const NotificationsComponent: React.FC = () => {
       {/* Header section with title and total count */}
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-4xl font-bold text-[#472014] font-caveat">
-          Webinars
+          Webinars (Conferences/Workshops)
         </CardTitle>
         <Badge variant="secondary" className="bg-[#eb5e17] text-white">
           {filteredWebinars.length} Total
@@ -198,7 +198,7 @@ const NotificationsComponent: React.FC = () => {
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm text-[#686256]">
                               <Calendar className="h-4 w-4 mr-2 text-[#eb5e17]" />
-                              {format(new Date(webinar.date), 'MMM dd, yyyy h:mm a')} IST
+                              {format(new Date(webinar.date), 'MMM dd, yyyy h:mm a')}
                             </div>
                             <div className="flex items-center text-sm text-[#686256]">
                               <MapPin className="h-4 w-4 mr-2 text-[#eb5e17]" />

@@ -244,17 +244,33 @@ const ProjectsPage: React.FC = () => {
       filtered = filtered.filter(project => project.content === selectedOpportunity);
     }
   
-    // Filter by search query
+    // Filter by search query (tags or name)
     if (searchQuery.trim()) {
       const searchTerms = searchQuery.toLowerCase().split(',').map(term => term.trim());
       
-      filtered = filtered.filter(project => 
-        searchTerms.some(term => 
-          project.tags.some(tag => 
-            tag.toLowerCase().includes(term)
-          )
-        )
-      );
+      filtered = filtered.filter(project => {
+        // Check if any search term matches any tag
+        const matchesTags = searchTerms.some(term => 
+          project.tags.some(tag => tag.toLowerCase().includes(term))
+        );
+        
+        // Check if any search term matches the name of the creator
+        const matchesName = searchTerms.some(term => {
+          if (project.professor && project.professor.fullName) {
+            return project.professor.fullName.toLowerCase().includes(term);
+          }
+          if (project.business && project.business.companyName) {
+            return project.business.companyName.toLowerCase().includes(term);
+          }
+          if (project.student && project.student.fullName) {
+            return project.student.fullName.toLowerCase().includes(term);
+          }
+          return false;
+        });
+        
+        // Return true if either condition is met
+        return matchesTags || matchesName;
+      });
     }
   
     setFilteredProjects(filtered);
@@ -333,20 +349,20 @@ const ProjectsPage: React.FC = () => {
                 Search Projects
               </label>
               <div className="relative">
-                <Input
-                  id="search"
-                  type="text"
-                  placeholder="Enter tags (e.g., AI, Machine Learning)"
-                  value={tempSearch}
-                  onChange={(e) => setTempSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      setSearchQuery(tempSearch);
-                    }
-                  }}
-                  className="w-full pl-8 text-white"
-                />
+              <Input
+                id="search"
+                type="text"
+                placeholder="Search by tags or user name (e.g., AI, John Smith)"
+                value={tempSearch}
+                onChange={(e) => setTempSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    setSearchQuery(tempSearch);
+                  }
+                }}
+                className="w-full pl-8 text-white"
+              />
                 <button
                   type="button"
                   onClick={() => setSearchQuery(tempSearch)}
@@ -356,7 +372,7 @@ const ProjectsPage: React.FC = () => {
                 </button>
               </div>
               <p className="text-sm text-gray-500">
-                Separate multiple tags with commas
+                  Search by tags or names, separate multiple terms with commas
               </p>
             </div>
 

@@ -179,7 +179,7 @@ export const createStudentProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
-        "/projects/professor",
+        "/projects/student",
         project.id,
         "project"
       );
@@ -252,7 +252,7 @@ export const createIndustryProject = async (req: Request, res: Response) => {
         notificationContent,
         business.id,
         "business",
-        "/projects/professor",
+        "/projects/industry",
         project.id,
         "project"
       );
@@ -493,6 +493,15 @@ export const applyForProject = async (req: Request, res: Response) => {
             resume,
           },
         });
+        applicantDetails = await prisma.professor.findUnique({
+          where: { id: applicantId },
+          select: {
+            fullName: true,
+            email: true,
+            university: true,
+            department: true,
+          },
+        });
         break;
       case "student":
         application = await prisma.studentApplication.create({
@@ -505,6 +514,15 @@ export const applyForProject = async (req: Request, res: Response) => {
             resume,
           },
         });
+        applicantDetails = await prisma.student.findUnique({
+          where: { id: applicantId },
+          select: {
+            fullName: true,
+            email: true,
+            university: true,
+            course: true,
+          },
+        });
         break;
       case "business":
         application = await prisma.businessApplication.create({
@@ -515,6 +533,14 @@ export const applyForProject = async (req: Request, res: Response) => {
             email,
             description,
             resume,
+          },
+        });
+        applicantDetails = await prisma.business.findUnique({
+          where: { id: applicantId },
+          select: {
+            companyName: true,
+            email: true,
+            industry: true,
           },
         });
         break;
@@ -550,7 +576,7 @@ export const applyForProject = async (req: Request, res: Response) => {
       }
 
       const notificationContent = `
-        New application received for your project
+        New application received for your project "${project.topic}": ${applicantInfo}
       `.trim();
 
       // Send notification to project creator
@@ -664,7 +690,7 @@ export const createRDProject = async (req: Request, res: Response) => {
         notificationContent,
         professor.id,
         "professor",
-        "/projects/business",
+        "/projects/industry",
         project.id,
         "project"
       );
@@ -736,7 +762,7 @@ export const createInternshipProject = async (req: Request, res: Response) => {
         notificationContent,
         student.id,
         "student",
-        "/projects/business",
+        "/projects/industry",
         project.id,
         "project"
       );
@@ -928,7 +954,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
       notificationContent = `Congratulation! You have found a collaborator for the project "${project.topic}"`.trim();
     }
     else if(project.category=="PROJECT"){
-      notificationContent = `Congratulation! Student has considered your response`.trim();
+      notificationContent = `Congratulation! Student has considered your response for the project "${project.topic}"`.trim();
     }
 
     if (applicantId) {
@@ -937,7 +963,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
         notificationContent,
         applicantId,
         applicantType,
-        `${applicantType}-profile/${applicantId}`,
+        `/projects/professor`,
         projectId,
         "project"
       );
@@ -965,7 +991,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.professorId,
             "professor",
-            `/professor-profile/${app.professorId}`,
+            `/projects/professor`,
             projectId,
             "project"
           );
@@ -979,7 +1005,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.studentId,
             "student",
-            `/student-profile/${app.studentId}`,
+            `/projects/professor`,
             projectId,
             "project"
           );
@@ -993,7 +1019,7 @@ export const assignParticipant = async (req: Request, res: Response) => {
             rejectionContent,
             app.businessId,
             "business",
-            `/business-profile/${app.businessId}`,
+            `/projects/professor`,
             projectId,
             "project"
           );
@@ -1088,7 +1114,7 @@ export const rejectApplication = async (req: Request, res: Response) => {
         rejectionContent,
         applicantId,
         applicantType,
-        `/${applicantType}-profile/${applicantId}`,
+        `/projects/professor`,
         projectId,
         "project"
       );
@@ -1182,7 +1208,7 @@ export const setApplicationInReview = async (req: Request, res: Response) => {
         reviewContent,
         applicantId,
         applicantType,
-        `/${applicantType}-profile/${applicantId}`,
+        `/projects/professor`,
         projectId,
         "project"
       );
@@ -1254,7 +1280,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.professorId,
           "professor",
-          `professor-profile/${project.professorId}`,
+          `projects/professor`,
           projectId,
           "project"
         );
@@ -1264,7 +1290,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.businessId,
           "business",
-          `business-profile/${project.businessId}`,
+          `projects/industry`,
           projectId,
           "project"
         );
@@ -1274,7 +1300,7 @@ export const completeProject = async (req: Request, res: Response) => {
           completionContent,
           project.studentId,
           "student",
-          `student-profile/${project.studentId}`,
+          `projects/student`,
           projectId,
           "project"
         );

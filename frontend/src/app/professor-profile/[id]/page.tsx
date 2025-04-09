@@ -360,10 +360,18 @@ const ProfessorProfilePage: React.FC = () => {
         ...response.data.studentApplications,
         ...response.data.businessApplications,
       ];
+      
+      // Check if there's any accepted applicant
+      const acceptedApplicant = allApplications.find(app => app.status === "ACCEPTED");
+      
+      // If there's an accepted applicant, only show that one
+      const applicantsToShow = acceptedApplicant 
+        ? [acceptedApplicant] 
+        : allApplications;
 
       setAppliedApplicantsMap((prevMap) => ({
         ...prevMap,
-        [projectId]: allApplications,
+        [projectId]: applicantsToShow,
       }));
     } catch (error) {
       console.error("Error fetching applied applicants:", error);
@@ -1755,7 +1763,7 @@ const handleSetInReview = async (
                         <CardHeader>
                           <CardTitle className="flex items-center text-2xl font-bold ">
                             <Video className="mr-2" />
-                            My Webinars
+                            My Webinars (Conferences/Workshops)
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -1772,7 +1780,7 @@ const handleSetInReview = async (
                                 </DialogTrigger>
                                 <DialogContent className="max-h-[80vh] overflow-y-auto bg-white">
                                   <DialogHeader>
-                                    <DialogTitle className="text-black">Request a New Webinar</DialogTitle>
+                                    <DialogTitle className="text-black">Request a New Webinar (Conferences/Workshops)</DialogTitle>
                                   </DialogHeader>
                                   <form
                                     onSubmit={(e) => {
@@ -1798,7 +1806,7 @@ const handleSetInReview = async (
                                     className="space-y-4 text-black"
                                   >
                                     <div>
-                                      <Label htmlFor="webinar-title">Webinar Title</Label>
+                                      <Label htmlFor="webinar-title">Webinar Title (Conferences/Workshops)</Label>
                                       <Input
                                         id="webinar-title"
                                         name="title"

@@ -101,7 +101,8 @@ const ProjectList: React.FC<ProjectListProps> = ({
           </div>
 
           <div className="mb-2">
-            <p className="text-sm text-[#686256]">
+            <p className="text-md font-semibold text-black">Topic - {project.topic}</p>
+            <p className="text-sm text-[#686256]">Description - <br />
               {expandedDescriptions[project.id] 
                 ? project.techDescription
                 : project.techDescription?.length > 50 

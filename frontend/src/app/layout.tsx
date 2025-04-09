@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { GlobalChatProvider } from "@/components/chat/GlobalChatProvider";
 
 // Configure Geist Sans font with variable font support
 // This allows for dynamic font weights from 100 to 900
@@ -53,8 +54,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Render the page content */}
-        {children}
+        {/* Wrap children in the GlobalChatProvider */}
+        <GlobalChatProvider>
+          {/* Render the page content */}
+          {children}
+        </GlobalChatProvider>
       </body>
     </html>
   );
