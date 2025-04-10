@@ -479,10 +479,14 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   const MessageView = ({ msg }: { msg: ChatMessage }) => {
     // Renders individual message bubbles with read receipts
     const isCurrentUser = msg.senderId === currentUser.id;
-    const messageTime = new Date(msg.createdAt).toLocaleTimeString([], {
+    const messageDateTime = new Date(msg.createdAt).toLocaleString([], {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
+    
 
     
     const getInitial = () => {
@@ -534,7 +538,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-              <span>{messageTime}</span>
+              <span>{messageDateTime}</span>
               {isCurrentUser && (
                 <div className="flex items-center gap-1">
                   <CheckCheck className={cn(
