@@ -18,6 +18,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { API_URL } from "@/constants";
+import { emitAuthChange } from "../chat/GlobalChatProvider";
 
 // Create an axios instance for authentication-related API calls
 const authApi = axios.create({
@@ -75,6 +76,9 @@ export const LoginForm: React.FC = () => {
 
       // Set authorization header for future API requests
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Emit auth change event
+      emitAuthChange();
 
       // Show success notification
       toast({

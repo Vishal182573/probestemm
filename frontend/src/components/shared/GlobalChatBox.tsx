@@ -111,6 +111,12 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     type: null 
   });
 
+  // Add currentUserData state
+  const [currentUserData, setCurrentUserData] = useState<any>(null);
+
+  // Add isAuthenticated state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   // Effects for Data Fetching and Real-time Updates
   useEffect(() => {
     // Fetches chat rooms and sets up polling for unread counts
@@ -172,11 +178,15 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     setIsClient(true);
   }, []);
 
-  // Initialize currentUser after component mounts and only if we're on client side
+  // Update useEffect to load current user data
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const userId = localStorage.getItem("userId");
       const userType = localStorage.getItem("role");
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      
+      setCurrentUserData(userData);
+      setIsAuthenticated(!!userId && !!userType); // Set authentication status
       
       if (userId && userType) {
         setCurrentUser({
@@ -185,7 +195,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
         });
       }
     }
-  }, [isClient]);
+  }, [isClient, isOpen]);
 
   const scrollToBottom = useCallback(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -198,6 +208,14 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
       return () => clearInterval(interval);
     }
   }, [currentUser.id]);
+
+  // Add effect to refresh chat rooms when chatbox is opened
+  useEffect(() => {
+    if (isOpen && currentUser.id) {
+      fetchChatRooms();
+      fetchBlockedUsers();
+    }
+  }, [isOpen, currentUser.id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -286,9 +304,17 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
       const response = await fetch(`${API_URL}/chat/rooms/${currentUser.id}`);
       if (!response.ok) throw new Error('Failed to fetch chat rooms');
       const data = await response.json();
-      setChatRooms(data);
+      
+      // Ensure data is an array before setting it
+      if (Array.isArray(data)) {
+        setChatRooms(data);
+      } else {
+        console.error('Chat rooms data is not an array:', data);
+        setChatRooms([]);
+      }
     } catch (error) {
       console.error('Failed to fetch chat rooms:', error);
+      // Don't clear existing chat rooms on error to prevent UI flicker
     } finally {
       setLoading(false);
     }
@@ -392,6 +418,12 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
       return;
     }
 
+    // Prevent users from texting themselves
+    if (selectedChat.otherUser.id === currentUser.id) {
+      console.error('Cannot send message to yourself');
+      return;
+    }
+
     try {
       setSending(true);
       const messageData = {
@@ -461,6 +493,12 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   };
 
   const handleChatSelect = async (chat: ChatRoom) => {
+    // Prevent users from selecting a chat with themselves
+    if (chat.otherUser.id === currentUser.id) {
+      console.error('Cannot select a chat with yourself');
+      return;
+    }
+    
     // Manages chat selection and message loading
     setSelectedChat(chat);
     setIsSidebarOpen(window.innerWidth > 768);
@@ -471,9 +509,12 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   };
 
   const filteredChatRooms = chatRooms.filter(chat =>
-    chat.otherUser?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    // Filter out blocked users and self-chats
+    !blockedUsers.includes(chat.otherUser.id) &&
+    chat.otherUser.id !== currentUser.id &&
+    (chat.otherUser?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.otherUser?.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.otherUser?.email.toLowerCase().includes(searchQuery.toLowerCase())
+    chat.otherUser?.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const MessageView = ({ msg }: { msg: ChatMessage }) => {
@@ -499,8 +540,6 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
         selectedChat?.otherUser.companyName?.toUpperCase()[0] || '?';
     };
   
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-  
     return (
       <div
         className={cn(
@@ -514,14 +553,14 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
         )}>
           <Avatar className="w-8 h-8 shrink-0 transition-transform group-hover:scale-105">
             <AvatarImage src={isCurrentUser
-      ? user.photoUrl || user.photoImageUrl || user.imageUrl
-      : selectedChat?.otherUser?.imageUrl || 
-        selectedChat?.otherUser?.photoUrl || 
-        selectedChat?.otherUser?.profileImageUrl} />
-            <AvatarFallback className={cn(
-              "text-white transition-colors",
-              isCurrentUser ? 'bg-[#eb5e17]' : 'bg-gray-400'
-            )}>
+              ? currentUserData?.imageUrl || 
+                currentUserData?.photoUrl || 
+                currentUserData?.profileImageUrl || 
+                currentUserData?.photoImageUrl
+              : selectedChat?.otherUser?.imageUrl || 
+                selectedChat?.otherUser?.photoUrl || 
+                selectedChat?.otherUser?.profileImageUrl} />
+            <AvatarFallback className="bg-[#eb5e17] text-white">
               {getInitial()}
             </AvatarFallback>
           </Avatar>
@@ -584,8 +623,10 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     >
       <div className="relative">
         <Avatar className="h-12 w-12 shrink-0">
-          <AvatarImage src={chat.otherUser?.imageUrl} />
-          <AvatarFallback className="bg-[#eb5e17]/90 text-white">
+          <AvatarImage src={chat.otherUser?.imageUrl || 
+                            chat.otherUser?.photoUrl || 
+                            chat.otherUser?.profileImageUrl} />
+          <AvatarFallback className="bg-[#eb5e17] text-white">
             {chat.otherUser?.fullName?.[0]?.toUpperCase() ||
               chat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}
           </AvatarFallback>
@@ -613,7 +654,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
     </div>
   );
 
-  if (!isClient) {
+  if (!isClient || !isAuthenticated) {
     return null;
   }
 
@@ -632,18 +673,19 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[900px] h-[80vh] max-h-[800px] flex flex-col p-0 focus:ring-0 focus:ring-offset-0 focus:outline-none gap-0 text-black">
           <DialogHeader className="p-4 border-b bg-white ">
-          <DialogTitle className="flex gap-2 items-center text-lg font-semibold">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={JSON.parse(localStorage.getItem("user") || "{}")?.photoUrl || 
-                              JSON.parse(localStorage.getItem("user") || "{}")?.photoImageUrl || 
-                              JSON.parse(localStorage.getItem("user") || "{}")?.imageUrl} />
-              <AvatarFallback className="bg-[#eb5e17] text-white">
-                {localStorage.getItem("fullName")?.[0]?.toUpperCase() || 
-                localStorage.getItem("companyName")?.[0]?.toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
-            <span>Messages</span>
-          </DialogTitle>
+            <DialogTitle className="flex gap-2 items-center text-lg font-semibold">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={currentUserData?.imageUrl || 
+                                currentUserData?.photoUrl || 
+                                currentUserData?.profileImageUrl || 
+                                currentUserData?.photoImageUrl} />
+                <AvatarFallback className="bg-[#eb5e17] text-white">
+                  {localStorage.getItem("fullName")?.[0]?.toUpperCase() || 
+                  localStorage.getItem("companyName")?.[0]?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span>Messages</span>
+            </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-1 overflow-hidden text-black">
@@ -715,7 +757,9 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
                         <MessageCircle className="h-4 w-4" />
                       </Button>
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={selectedChat.otherUser?.imageUrl} />
+                        <AvatarImage src={selectedChat.otherUser?.imageUrl || 
+                                          selectedChat.otherUser?.photoUrl || 
+                                          selectedChat.otherUser?.profileImageUrl} />
                         <AvatarFallback className="bg-[#eb5e17] text-white">
                           {selectedChat.otherUser?.fullName?.[0]?.toUpperCase() ||
                             selectedChat.otherUser?.companyName?.[0]?.toUpperCase() || '?'}

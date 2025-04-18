@@ -21,7 +21,7 @@ const socialLinks = {
   facebook: "https://www.facebook.com/profile.php?id=61573531766943",
   linkedin: "https://www.linkedin.com/in/probe-stem-36b7bb345/",
   youtube: "https://www.youtube.com/channel/UCOxc4PcOaUUY3eN18gcvYpw",
-  google: "mailto:probestem2024@gmail.com",
+  google: "https://g.co/kgs/rNUWWDn",
 };
 
 export const Footer: React.FC = () => {

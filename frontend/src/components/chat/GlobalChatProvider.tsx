@@ -22,29 +22,52 @@ interface GlobalChatProviderProps {
   children: React.ReactNode;
 }
 
+// Create a custom event for auth changes
+const AUTH_CHANGE_EVENT = 'authChange';
+
+// Function to emit auth change event
+export const emitAuthChange = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+  }
+};
+
 export function GlobalChatProvider({ children }: GlobalChatProviderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Check authentication status when component mounts
+  const checkAuthStatus = () => {
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem("userId");
+      const userType = localStorage.getItem("role");
+      setIsLoggedIn(!!userId && !!userType);
+    }
+  };
+
+  // Check authentication status when component mounts and when auth changes
   useEffect(() => {
-    // Replace this with your actual authentication check
-    const checkAuthStatus = async () => {
-      try {
-        // Example: fetch user data from API or check local storage
-        // const response = await fetch('/api/auth/status');
-        // const data = await response.json();
-        // setIsLoggedIn(data.isLoggedIn);
-        
-        // For testing, you can set this to true
-        setIsLoggedIn(true);
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-        setIsLoggedIn(false);
-      }
+    // Initial check
+    checkAuthStatus();
+
+    // Listen for storage events (cross-tab)
+    window.addEventListener('storage', checkAuthStatus);
+    
+    // Listen for auth changes within the same tab
+    window.addEventListener(AUTH_CHANGE_EVENT, checkAuthStatus);
+    
+    // Check auth status on route changes
+    const handleRouteChange = () => {
+      checkAuthStatus();
     };
 
-    checkAuthStatus();
+    // Add route change listener
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuthStatus);
+      window.removeEventListener(AUTH_CHANGE_EVENT, checkAuthStatus);
+      window.removeEventListener('popstate', handleRouteChange);
+    };
   }, []);
 
   return (

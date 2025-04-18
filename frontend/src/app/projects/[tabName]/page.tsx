@@ -352,7 +352,7 @@ const ProjectsPage: React.FC = () => {
               <Input
                 id="search"
                 type="text"
-                placeholder="Search by tags or user name (e.g., AI, John Smith)"
+                placeholder={activeTab === "professors" ? "Search by tags or user name (e.g., AI, John Smith)" : "Search by tags (e.g., AI, math)"}
                 value={tempSearch}
                 onChange={(e) => setTempSearch(e.target.value)}
                 onKeyDown={(e) => {
@@ -372,7 +372,7 @@ const ProjectsPage: React.FC = () => {
                 </button>
               </div>
               <p className="text-sm text-gray-500">
-                  Search by tags or names, separate multiple terms with commas
+                {activeTab === "professors" ? "Search by tags or names, separate multiple terms with commas" : "Search by tags, separate multiple terms with commas"}
               </p>
             </div>
 

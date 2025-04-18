@@ -7,6 +7,7 @@ import Image from "next/image";
 import { LOGOLEFT, LOGORIGHT, LOGOWHITE } from "../../../public";
 import { io } from "socket.io-client";
 import {  SOCKET_URL } from "@/constants";
+import { emitAuthChange } from "../chat/GlobalChatProvider";
 
 // Main Navbar component definition
 export const Navbar: React.FC = () => {
@@ -105,6 +106,7 @@ export const Navbar: React.FC = () => {
   // Logout handler to clear local storage and refresh page
   const handleLogout = () => {
     localStorage.clear();
+    emitAuthChange();
     window.location.reload();
   };
 

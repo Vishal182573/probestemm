@@ -49,29 +49,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Footer } from "@/components/shared/Footer";
-import { redirect, useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { API_URL } from "@/constants";
 import NavbarWithBg from "@/components/shared/NavbarWithbg";
 import { PROFESSORPAGE } from "../../../../public";
 import EnrolledProjectsTabs from "@/components/shared/EnrolledProjectsTab";
-import { Description } from "@radix-ui/react-dialog";
 import GlobalChatBox from "@/components/shared/GlobalChatBox";
-import { FaSpinner } from "react-icons/fa";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { ProjectCategories } from "@/lib/pre-define-data";
-import { ToastAction } from "@/components/ui/toast"
+import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import ProjectList from "@/components/ProfessorProjectsTab/ProjectList";
 
 // Interface definitions for various data types used throughout the component
 interface AppliedApplicant {
-  id:string;
+  id: string;
   professorId: string;
-  studentId:string;
-  businessId:string;
+  studentId: string;
+  businessId: string;
   name: string;
   email: string;
   description: string;
@@ -101,7 +103,7 @@ interface Professor {
   department: string;
   position: string;
   researchInterests: Array<{
-    id:string;
+    id: string;
     title: string;
     description: string;
     imageUrl: string[];
@@ -136,11 +138,11 @@ interface Project {
   status: "OPEN" | "ONGOING" | "CLOSED";
   type: "PROFESSOR_PROJECT" | "STUDENT_PROPOSAL" | "BUSINESS_PROJECT";
   category:
-  | "PROFESSOR_COLLABORATION"
-  | "INDUSTRY_COLLABORATION"
-  | "INTERNSHIP"
-  | "PHD_POSITION"
-  | "RND_PROJECT";
+    | "PROFESSOR_COLLABORATION"
+    | "INDUSTRY_COLLABORATION"
+    | "INTERNSHIP"
+    | "PHD_POSITION"
+    | "RND_PROJECT";
   professor?: {
     fullName: string;
     email: string;
@@ -171,7 +173,7 @@ type Notification = {
   webinarId?: string;
   discussionId?: string;
   projectId?: string;
-  redirectionLink?: string
+  redirectionLink?: string;
 };
 
 interface Webinar {
@@ -189,7 +191,6 @@ interface Webinar {
   webinarImage?: string;
   webinarDocument?: string;
 }
-
 
 interface ResearchInterest {
   id: string;
@@ -230,25 +231,28 @@ const ProfessorProfilePage: React.FC = () => {
   const [collaborationType, setCollaborationType] = useState("");
   const [studentOpportunityType, setStudentOpportunityType] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
-  const [category, setCategory] = useState('');
-  const [subcategory, setSubcategory] = useState('');
+  const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
   const [place, setPlace] = useState("");
   const searchParams = useSearchParams();
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(null);
+  const [projectIDToDelete, setProjectIDToDelete] = useState<string | null>(
+    null
+  );
   const [webinarCreationLoading, setWebinarCreationLoading] = useState(false);
   const { toast } = useToast();
 
-  const [categorizedProjects, setCategorizedProjects] = useState<ProjectCategories>({
-    industryCollaboration: [],
-    professorCollaboration: [],
-    internship: [],
-    rndProject: [],
-    phdPosition: [],
-  });
+  const [categorizedProjects, setCategorizedProjects] =
+    useState<ProjectCategories>({
+      industryCollaboration: [],
+      professorCollaboration: [],
+      internship: [],
+      rndProject: [],
+      phdPosition: [],
+    });
 
   const openModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -310,7 +314,7 @@ const ProfessorProfilePage: React.FC = () => {
         rndProject: [],
         phdPosition: [],
       };
-    
+
       professor?.projects?.forEach((project: Project) => {
         switch (project.category) {
           case "INDUSTRY_COLLABORATION":
@@ -332,15 +336,15 @@ const ProfessorProfilePage: React.FC = () => {
             break;
         }
       });
-    
+
       setCategorizedProjects(newCategories);
     };
-  handleCategorization();
+    handleCategorization();
   }, [professor]);
 
   useEffect(() => {
-    const openChat = searchParams.get('openChat');
-    if (openChat === 'true') {
+    const openChat = searchParams.get("openChat");
+    if (openChat === "true") {
       setIsChatOpen(true);
     }
   }, [searchParams]);
@@ -360,13 +364,15 @@ const ProfessorProfilePage: React.FC = () => {
         ...response.data.studentApplications,
         ...response.data.businessApplications,
       ];
-      
+
       // Check if there's any accepted applicant
-      const acceptedApplicant = allApplications.find(app => app.status === "ACCEPTED");
-      
+      const acceptedApplicant = allApplications.find(
+        (app) => app.status === "ACCEPTED"
+      );
+
       // If there's an accepted applicant, only show that one
-      const applicantsToShow = acceptedApplicant 
-        ? [acceptedApplicant] 
+      const applicantsToShow = acceptedApplicant
+        ? [acceptedApplicant]
         : allApplications;
 
       setAppliedApplicantsMap((prevMap) => ({
@@ -412,13 +418,13 @@ const ProfessorProfilePage: React.FC = () => {
       );
 
       // Update the UI state
-      setAppliedApplicantsMap(prevMap => ({
+      setAppliedApplicantsMap((prevMap) => ({
         ...prevMap,
-        [projectId]: prevMap[projectId].map(applicant => 
-          applicant.id === applicantId 
-            ? { ...applicant, status: 'ACCEPTED' }
+        [projectId]: prevMap[projectId].map((applicant) =>
+          applicant.id === applicantId
+            ? { ...applicant, status: "ACCEPTED" }
             : applicant
-        )
+        ),
       }));
 
       setProfessor((prevProfessor) => {
@@ -438,71 +444,69 @@ const ProfessorProfilePage: React.FC = () => {
     }
   };
 
-// Handler for rejecting an applicant
-const handleRejectApplicant = async (
-  projectId: string,
-  applicantId: string,
-  applicantType: string
-) => {
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post(
-      `${API_URL}/project/${projectId}/reject`,
-      {
-        applicationId: applicantId,
-        applicationType: applicantType,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    // Remove the rejected applicant from the UI
-    setAppliedApplicantsMap(prevMap => {
-      const updatedMap = { ...prevMap };
-      // Filter out the rejected applicant
-      updatedMap[projectId] = prevMap[projectId].filter(
-        applicant => applicant.id !== applicantId
+  // Handler for rejecting an applicant
+  const handleRejectApplicant = async (
+    projectId: string,
+    applicantId: string,
+    applicantType: string
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/project/${projectId}/reject`,
+        {
+          applicationId: applicantId,
+          applicationType: applicantType,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      return updatedMap;
-    });
 
-  } catch (error) {
-    console.error("Error rejecting applicant:", error);
-    setError("Failed to reject applicant. Please try again.");
-  }
-};
+      // Remove the rejected applicant from the UI
+      setAppliedApplicantsMap((prevMap) => {
+        const updatedMap = { ...prevMap };
+        // Filter out the rejected applicant
+        updatedMap[projectId] = prevMap[projectId].filter(
+          (applicant) => applicant.id !== applicantId
+        );
+        return updatedMap;
+      });
+    } catch (error) {
+      console.error("Error rejecting applicant:", error);
+      setError("Failed to reject applicant. Please try again.");
+    }
+  };
 
-// Handler for setting application status to in review
-const handleSetInReview = async (
-  projectId: string,
-  applicantId: string,
-  applicantType: string
-) => {
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post(
-      `${API_URL}/project/${projectId}/review`,
-      {
-        applicationId: applicantId,
-        applicationType: applicantType,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  // Handler for setting application status to in review
+  const handleSetInReview = async (
+    projectId: string,
+    applicantId: string,
+    applicantType: string
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/project/${projectId}/review`,
+        {
+          applicationId: applicantId,
+          applicationType: applicantType,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // Update the UI state
-    setAppliedApplicantsMap(prevMap => ({
-      ...prevMap,
-      [projectId]: prevMap[projectId].map(applicant => 
-        applicant.id === applicantId 
-          ? { ...applicant, status: 'IN_REVIEW' }
-          : applicant
-      )
-    }));
-
-  } catch (error) {
-    console.error("Error setting application to review:", error);
-    setError("Failed to set application to review. Please try again.");
-  }
-};
+      // Update the UI state
+      setAppliedApplicantsMap((prevMap) => ({
+        ...prevMap,
+        [projectId]: prevMap[projectId].map((applicant) =>
+          applicant.id === applicantId
+            ? { ...applicant, status: "IN_REVIEW" }
+            : applicant
+        ),
+      }));
+    } catch (error) {
+      console.error("Error setting application to review:", error);
+      setError("Failed to set application to review. Please try again.");
+    }
+  };
 
   // Handler for marking a project as complete
   const handleCompleteProject = async (projectId: string) => {
@@ -566,48 +570,47 @@ const handleSetInReview = async (
         throw new Error("No authentication token found");
       }
       setWebinarCreationLoading(true);
-  
+
       // First check professor's approval status
-      const professorResponse = await axios.get(
-        `${API_URL}/professors/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-  
+      const professorResponse = await axios.get(`${API_URL}/professors/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       if (!professorResponse.data.isApproved) {
-        alert("Your profile has not been approved by admin yet. Please wait for approval before creating webinars.");
+        alert(
+          "Your profile has not been approved by admin yet. Please wait for approval before creating webinars."
+        );
         setWebinarCreationLoading(false);
         setIsWebinarDialogOpen(false);
         return;
       }
-  
+
       const formData = new FormData();
-  
+
       // Append webinar data
       Object.keys(webinarData).forEach((key) => {
         formData.append(key, webinarData[key]);
       });
-  
+
       // Append image if it exists
       if (webinarImage) {
         formData.append("webinarImage", webinarImage);
       }
-  
+
       // Append document if it exists
       if (webinarDocument) {
         formData.append("webinarDocument", webinarDocument);
       }
-  
+
       const response = await axios.post(`${API_URL}/webinars`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       // console.log("Server response:", response.data);
-  
+
       setWebinars((prevWebinars) => [...prevWebinars, response.data]);
       setIsWebinarDialogOpen(false);
       setWebinarCreationLoading(false);
@@ -621,7 +624,7 @@ const handleSetInReview = async (
       setError("Failed to create webinar. Please try again.");
     }
   };
-  
+
   // Handler for updating webinar status
   const handleUpdateWebinarStatus = async (
     webinarId: string,
@@ -644,7 +647,7 @@ const handleSetInReview = async (
   };
 
   // Handler for initiating contact with the professor
-  const handleContact = async ()=>{
+  const handleContact = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No authentication token found");
@@ -652,22 +655,25 @@ const handleSetInReview = async (
       const response = await axios.post(
         `${API_URL}/chat/rooms`,
         {
-          userOneId:id,
-          userOneType:"professor",
-          userTwoId:localStorage.getItem("userId"),
-          userTwoType:localStorage.getItem("role")
+          userOneId: id,
+          userOneType: "professor",
+          userTwoId: localStorage.getItem("userId"),
+          userTwoType: localStorage.getItem("role"),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if(response.status == 200){
-        router.push(`/${localStorage.getItem("role")}-profile/${localStorage.getItem("userId")}?openChat=true`)
+      if (response.status == 200) {
+        router.push(
+          `/${localStorage.getItem("role")}-profile/${localStorage.getItem(
+            "userId"
+          )}?openChat=true`
+        );
       }
-
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Error marking notification as read:", error);
       setError(error.message);
     }
-  }
+  };
 
   // Handler for creating new projects
   const handleCreateProject = async (projectData: any) => {
@@ -676,7 +682,7 @@ const handleSetInReview = async (
       const token = localStorage.getItem("token");
       let endpoint = `${API_URL}/project`;
       let data = {};
-  
+
       if (collaborationType === "professors") {
         endpoint += "/professor-collaboration";
         data = {
@@ -699,58 +705,61 @@ const handleSetInReview = async (
       } else {
         throw new Error("Invalid collaboration type selected.");
       }
-  
+
       const response = await axios.post(endpoint, data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       // Update professor state with the new project
-      setProfessor(prev => {
+      setProfessor((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
-          projects: [...prev.projects, response.data]
+          projects: [...prev.projects, response.data],
         };
       });
-  
+
       // Update categorizedProjects based on the new project's category
-      setCategorizedProjects(prev => {
+      setCategorizedProjects((prev) => {
         const newCategories = { ...prev };
         const category = response.data.category.toLowerCase();
-        
+
         // Map the API category to our state category
         const categoryMap: { [key: string]: keyof ProjectCategories } = {
-          'industry_collaboration': 'industryCollaboration',
-          'professor_collaboration': 'professorCollaboration',
-          'internship': 'internship',
-          'rnd_project': 'rndProject',
-          'phd_position': 'phdPosition'
+          industry_collaboration: "industryCollaboration",
+          professor_collaboration: "professorCollaboration",
+          internship: "internship",
+          rnd_project: "rndProject",
+          phd_position: "phdPosition",
         };
-  
+
         const stateCategory = categoryMap[category];
         if (stateCategory) {
-          newCategories[stateCategory] = [...newCategories[stateCategory], response.data];
+          newCategories[stateCategory] = [
+            ...newCategories[stateCategory],
+            response.data,
+          ];
         }
-  
+
         return newCategories;
       });
-  
+
       // Show success toast
       toast({
         title: "Project Created Successfully!",
-        description: "Your project has been posted and is now visible on project opennings page.",
+        description:
+          "Your project has been posted and is now visible on project opennings page.",
         variant: "default",
         duration: 5000,
         className: "bg-[#eb5e17] text-white",
       });
-  
+
       // Reset form and close dialog
       setIsProjectDialogOpen(false);
       setCollaborationType("");
       setStudentOpportunityType("");
       setCategory("");
       setSubcategory("");
-  
     } catch (error) {
       console.error("Error creating project:", error);
       toast({
@@ -775,26 +784,27 @@ const handleSetInReview = async (
       });
 
       // Update professor state by removing the deleted project
-      setProfessor(prev => {
+      setProfessor((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
-          projects: prev.projects.filter(project => project.id !== projectId)
+          projects: prev.projects.filter((project) => project.id !== projectId),
         };
       });
 
       // Update categorizedProjects state
-      setCategorizedProjects(prev => {
+      setCategorizedProjects((prev) => {
         const newCategories = { ...prev };
-        Object.keys(newCategories).forEach(key => {
-          newCategories[key as keyof ProjectCategories] = newCategories[key as keyof ProjectCategories]
-            .filter(project => project.id !== projectId);
+        Object.keys(newCategories).forEach((key) => {
+          newCategories[key as keyof ProjectCategories] = newCategories[
+            key as keyof ProjectCategories
+          ].filter((project) => project.id !== projectId);
         });
         return newCategories;
       });
 
       // Clear the project from appliedApplicantsMap if it exists
-      setAppliedApplicantsMap(prev => {
+      setAppliedApplicantsMap((prev) => {
         const newMap = { ...prev };
         delete newMap[projectId];
         return newMap;
@@ -812,7 +822,6 @@ const handleSetInReview = async (
         duration: 5000,
         className: "bg-[#eb5e17] text-white",
       });
-
     } catch (error) {
       console.error("Error deleting project:", error);
       toast({
@@ -823,21 +832,23 @@ const handleSetInReview = async (
       });
     }
   };
-  
+
   const ConfirmationModal = () => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
         <div className="bg-white p-8 rounded-lg text-center max-w-sm w-full">
-          <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete this project?</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            Are you sure you want to delete this project?
+          </h3>
           <div className="flex justify-evenly">
             <Button
-              onClick={() => handleDeleteProject(projectIDToDelete as string)} 
+              onClick={() => handleDeleteProject(projectIDToDelete as string)}
               className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
             >
               Yes
             </Button>
             <Button
-              onClick={() => setIsModalOpen(false)} 
+              onClick={() => setIsModalOpen(false)}
               className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
             >
               No
@@ -847,7 +858,7 @@ const handleSetInReview = async (
       </div>
     );
   };
-  
+
   // Form submission handler for creating projects
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -928,12 +939,21 @@ const handleSetInReview = async (
                         <p className="text-[#472014] text-md font-light  leading-snug line-clamp-2">
                           {notification.content}
                         </p>
-                        <p className={`text-sm ${notification.isRead ? "text-gray-500" : "text-[#eb5e17] font-semibold"}`}>
-                          {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
+                        <p
+                          className={`text-sm ${
+                            notification.isRead
+                              ? "text-gray-500"
+                              : "text-[#eb5e17] font-semibold"
+                          }`}
+                        >
+                          {new Date(notification.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
                         </p>
                       </div>
                       {!notification.isRead && (
@@ -947,7 +967,6 @@ const handleSetInReview = async (
                       )}
                     </a>
                   </li>
-
                 ))}
               </ul>
             ) : (
@@ -1030,7 +1049,7 @@ const handleSetInReview = async (
                         value={category}
                         onValueChange={(value: string) => {
                           setCategory(value);
-                          setSubcategory(''); // Reset subcategory when category changes
+                          setSubcategory(""); // Reset subcategory when category changes
                         }}
                         required
                       >
@@ -1038,8 +1057,14 @@ const handleSetInReview = async (
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {(Object.keys(categories) as Array<keyof typeof categories>).map((cat) => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          {(
+                            Object.keys(categories) as Array<
+                              keyof typeof categories
+                            >
+                          ).map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1057,8 +1082,12 @@ const handleSetInReview = async (
                             <SelectValue placeholder="Select Subcategory" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories[category as keyof typeof categories].map((subcat) => (
-                              <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
+                            {categories[
+                              category as keyof typeof categories
+                            ].map((subcat) => (
+                              <SelectItem key={subcat} value={subcat}>
+                                {subcat}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -1104,7 +1133,7 @@ const handleSetInReview = async (
 
                 <div>
                   <Label htmlFor="project-tech-description">
-                  Technical Description
+                    Technical Description
                   </Label>
                   <Input
                     id="project-tech-description"
@@ -1123,7 +1152,7 @@ const handleSetInReview = async (
                     className="bg-white text-black"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="duration">Project Duration</Label>
                   <Input
@@ -1135,16 +1164,18 @@ const handleSetInReview = async (
                 </div>
 
                 <div>
-                    <Label htmlFor="deadline">Application Deadline 
-                      <br />
-                      (Project will be deleted 10 days after the deadline)</Label>
-                    <Input
-                      id="deadline"
-                      name="deadline"
-                      type="date"
-                      required
-                      className="bg-white text-black"
-                    />
+                  <Label htmlFor="deadline">
+                    Application Deadline
+                    <br />
+                    (Project will be deleted 10 days after the deadline)
+                  </Label>
+                  <Input
+                    id="deadline"
+                    name="deadline"
+                    type="date"
+                    required
+                    className="bg-white text-black"
+                  />
                 </div>
 
                 {collaborationType === "students" && (
@@ -1173,16 +1204,16 @@ const handleSetInReview = async (
                 )}
 
                 {collaborationType === "industry" && (
-                <div>
-                  <Label htmlFor="project-requirements">
-                    What I am looking for ?
-                  </Label>
-                  <Textarea
-                    id="project-requirements"
-                    name="requirements"
-                    placeholder="Enter project requirements"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="project-requirements">
+                      What I am looking for ?
+                    </Label>
+                    <Textarea
+                      id="project-requirements"
+                      name="requirements"
+                      placeholder="Enter project requirements"
+                    />
+                  </div>
                 )}
                 <div>
                   <Label>Is Funded</Label>
@@ -1234,12 +1265,19 @@ const handleSetInReview = async (
                 setProjectIDToDelete(projectId);
                 setIsModalOpen(true);
               }}
-              onHandleAssignApplicant={(projectId, applicantId, applicantType) => 
-                handleAssignApplicant(projectId, applicantId, applicantType)}
-              onHandleRejectApplicant={(projectId, applicantId, applicantType) => 
-                handleRejectApplicant(projectId, applicantId, applicantType)}
-              onHandleSetInReview={(projectId, applicantId, applicantType) => 
-                handleSetInReview(projectId, applicantId, applicantType)}
+              onHandleAssignApplicant={(
+                projectId,
+                applicantId,
+                applicantType
+              ) => handleAssignApplicant(projectId, applicantId, applicantType)}
+              onHandleRejectApplicant={(
+                projectId,
+                applicantId,
+                applicantType
+              ) => handleRejectApplicant(projectId, applicantId, applicantType)}
+              onHandleSetInReview={(projectId, applicantId, applicantType) =>
+                handleSetInReview(projectId, applicantId, applicantType)
+              }
               onHandleCompleteProject={handleCompleteProject}
             />
           </CardContent>
@@ -1281,7 +1319,9 @@ const handleSetInReview = async (
           </CardHeader>
           <CardContent>
             {/* Internships */}
-            <h3 className="text-xl font-semibold mb-2 text-[#472014]">Internships</h3>
+            <h3 className="text-xl font-semibold mb-2 text-[#472014]">
+              Internships
+            </h3>
             <ProjectList
               projects={categorizedProjects.internship}
               appliedApplicantsMap={appliedApplicantsMap}
@@ -1298,7 +1338,9 @@ const handleSetInReview = async (
             />
 
             {/* Research Projects */}
-            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">Research Projects</h3>
+            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">
+              Research Projects
+            </h3>
             <ProjectList
               projects={categorizedProjects.rndProject}
               appliedApplicantsMap={appliedApplicantsMap}
@@ -1315,7 +1357,9 @@ const handleSetInReview = async (
             />
 
             {/* PhD Positions */}
-            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">PhD Positions</h3>
+            <h3 className="text-xl font-semibold mb-2 mt-6 text-[#472014]">
+              PhD Positions
+            </h3>
             <ProjectList
               projects={categorizedProjects.phdPosition}
               appliedApplicantsMap={appliedApplicantsMap}
@@ -1341,16 +1385,16 @@ const handleSetInReview = async (
     { id: "profile", label: "My Profile", icon: <GraduationCap /> },
     ...(isLoggedInUser
       ? [
-        { id: "projects", label: "My Projects", icon: <Briefcase /> },
-        { id: "webinars", label: "My Webinars", icon: <Video /> },
-        { id: "blogs", label: "My Research Corner", icon: <BookOpen /> },
-        { id: "notifications", label: "Notifications", icon: <Bell /> },
-        {
-          id: "enrolled-projects",
-          label: "Enrolled Projects",
-          icon: <BookOpen />,
-        },
-      ]
+          { id: "projects", label: "My Projects", icon: <Briefcase /> },
+          { id: "webinars", label: "My Webinars", icon: <Video /> },
+          { id: "blogs", label: "My Research Corner", icon: <BookOpen /> },
+          { id: "notifications", label: "Notifications", icon: <Bell /> },
+          {
+            id: "enrolled-projects",
+            label: "Enrolled Projects",
+            icon: <BookOpen />,
+          },
+        ]
       : []),
   ];
 
@@ -1361,7 +1405,7 @@ const handleSetInReview = async (
       <NavbarWithBg />
 
       {/* Global Chat Box (only for logged-in users) */}
-      {isLoggedInUser && <GlobalChatBox isChatOpen={isChatOpen}/>}
+      {isLoggedInUser && <GlobalChatBox isChatOpen={isChatOpen} />}
 
       <main className="flex-grow">
         {/* Hero Section with Professor Info */}
@@ -1426,7 +1470,10 @@ const handleSetInReview = async (
                   Google Scholar
                 </a>
                 {!isLoggedInUser && (
-                  <Button className="bg-white px-4 py-2 border-2 border-white" onClick={handleContact}>
+                  <Button
+                    className="bg-white px-4 py-2 border-2 border-white"
+                    onClick={handleContact}
+                  >
                     Send Message
                   </Button>
                 )}
@@ -1521,29 +1568,36 @@ const handleSetInReview = async (
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {professor.researchInterests && professor.researchInterests.length > 0 ? (
+                      {professor.researchInterests &&
+                      professor.researchInterests.length > 0 ? (
                         <ul className="space-y-6">
                           {professor.researchInterests.map((research) => (
                             <li key={research.id} className="space-y-3">
                               <div className="flex flex-col gap-3">
-                                <Badge variant="outline" className="text-black w-fit">
+                                <Badge
+                                  variant="outline"
+                                  className="text-black w-fit"
+                                >
                                   {research.title}
                                 </Badge>
-                                {research.imageUrl && research.imageUrl.length > 0 && (
-                                  <div className="flex gap-2 flex-wrap">
-                                    {research.imageUrl.map((url, index) => (
-                                      <Image
-                                        key={`${research.id}-${index}`}
-                                        src={url}
-                                        alt={`${research.title} - Image ${index + 1}`}
-                                        height={100}
-                                        width={100}
-                                        className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => openModal(url)}
-                                      />
-                                    ))}
-                                  </div>
-                                )}
+                                {research.imageUrl &&
+                                  research.imageUrl.length > 0 && (
+                                    <div className="flex gap-2 flex-wrap">
+                                      {research.imageUrl.map((url, index) => (
+                                        <Image
+                                          key={`${research.id}-${index}`}
+                                          src={url}
+                                          alt={`${research.title} - Image ${
+                                            index + 1
+                                          }`}
+                                          height={100}
+                                          width={100}
+                                          className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => openModal(url)}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
                                 {research.description && (
                                   <p className="text-sm text-gray-600">
                                     {research.description}
@@ -1578,9 +1632,12 @@ const handleSetInReview = async (
                                 variant="outline"
                                 className="w-[140px] h-8 flex items-center justify-center shrink-0 text-center text-xs font-normal text-black"
                               >
-                                {position.startYear} - { position.current ? "Current year" :  position.endYear}
+                                {position.startYear} -{" "}
+                                {position.current
+                                  ? "Current year"
+                                  : position.endYear}
                               </Badge>
-                              <span >
+                              <span>
                                 {position.title}, {position.institution}
                               </span>
                             </li>
@@ -1607,8 +1664,7 @@ const handleSetInReview = async (
                               key={achievement.id}
                               className="flex items-center"
                             >
-                              <div className="mr-2 w-2 h-2 bg-[#472014] rounded-full">
-                              </div>
+                              <div className="mr-2 w-2 h-2 bg-[#472014] rounded-full"></div>
                               {achievement.description}
                             </li>
                           ))}
@@ -1629,7 +1685,7 @@ const handleSetInReview = async (
                       <div className="relative max-w-4xl w-full aspect-video bg-white rounded-lg p-2">
                         <Image
                           src={selectedImage}
-                          alt='NA'
+                          alt="NA"
                           fill
                           className="object-contain rounded"
                         />
@@ -1689,9 +1745,9 @@ const handleSetInReview = async (
                                       <p className="text-gray-600 line-clamp-3">
                                         {blog.content.length > 150
                                           ? `${blog.content.substring(
-                                            0,
-                                            150
-                                          )}...`
+                                              0,
+                                              150
+                                            )}...`
                                           : blog.content}
                                       </p>
                                     </div>
@@ -1780,33 +1836,57 @@ const handleSetInReview = async (
                                 </DialogTrigger>
                                 <DialogContent className="max-h-[80vh] overflow-y-auto bg-white">
                                   <DialogHeader>
-                                    <DialogTitle className="text-black">Request a New Webinar (Conferences/Workshops)</DialogTitle>
+                                    <DialogTitle className="text-black">
+                                      Request a New Webinar
+                                      (Conferences/Workshops)
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <form
                                     onSubmit={(e) => {
                                       e.preventDefault();
-                                      const formData = new FormData(e.currentTarget);
+                                      const formData = new FormData(
+                                        e.currentTarget
+                                      );
                                       const webinarData = {
                                         professorId: id,
                                         title: formData.get("title") as string,
                                         topic: formData.get("topic") as string,
                                         place: formData.get("place") as string,
                                         date: formData.get("date") as string,
-                                        maxAttendees: parseInt(formData.get("maxAttendees") as string),
-                                        duration: parseInt(formData.get("duration") as string),
-                                        isOnline: formData.get("place") === "online",
-                                        meetingLink: formData.get("meetingLink") as string,
-                                        address: formData.get("address") as string,
+                                        maxAttendees: parseInt(
+                                          formData.get("maxAttendees") as string
+                                        ),
+                                        duration: parseInt(
+                                          formData.get("duration") as string
+                                        ),
+                                        isOnline:
+                                          formData.get("place") === "online",
+                                        meetingLink: formData.get(
+                                          "meetingLink"
+                                        ) as string,
+                                        address: formData.get(
+                                          "address"
+                                        ) as string,
                                       };
 
-                                      const webinarImage = formData.get("webinarImage") as File;
-                                      const webinarDocument = formData.get("webinarDocument") as File;
-                                      handleCreateWebinar(webinarData, webinarImage, webinarDocument);
+                                      const webinarImage = formData.get(
+                                        "webinarImage"
+                                      ) as File;
+                                      const webinarDocument = formData.get(
+                                        "webinarDocument"
+                                      ) as File;
+                                      handleCreateWebinar(
+                                        webinarData,
+                                        webinarImage,
+                                        webinarDocument
+                                      );
                                     }}
                                     className="space-y-4 text-black"
                                   >
                                     <div>
-                                      <Label htmlFor="webinar-title">Webinar Title (Conferences/Workshops)</Label>
+                                      <Label htmlFor="webinar-title">
+                                        Webinar Title (Conferences/Workshops)
+                                      </Label>
                                       <Input
                                         id="webinar-title"
                                         name="title"
@@ -1816,7 +1896,9 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-topic">Abstract</Label>
+                                      <Label htmlFor="webinar-topic">
+                                        Abstract
+                                      </Label>
                                       <Input
                                         id="webinar-topic"
                                         name="topic"
@@ -1826,27 +1908,40 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-place">Place</Label>
-                                      <Select 
-                                        name="place" 
-                                        required 
-                                        onValueChange={(value) => setPlace(value)}
+                                      <Label htmlFor="webinar-place">
+                                        Place
+                                      </Label>
+                                      <Select
+                                        name="place"
+                                        required
+                                        onValueChange={(value) =>
+                                          setPlace(value)
+                                        }
                                       >
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select a place" />
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white">
-                                          <SelectItem value="online">Online</SelectItem>
-                                          <SelectItem value="in-person">In-person</SelectItem>
-                                          <SelectItem value="hybrid">Hybrid</SelectItem>
+                                          <SelectItem value="online">
+                                            Online
+                                          </SelectItem>
+                                          <SelectItem value="in-person">
+                                            In-person
+                                          </SelectItem>
+                                          <SelectItem value="hybrid">
+                                            Hybrid
+                                          </SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
 
                                     {/* Show address field for in-person or hybrid */}
-                                    {(place === "in-person" || place === "hybrid") && (
+                                    {(place === "in-person" ||
+                                      place === "hybrid") && (
                                       <div>
-                                        <Label htmlFor="webinar-address">Address</Label>
+                                        <Label htmlFor="webinar-address">
+                                          Address
+                                        </Label>
                                         <Input
                                           id="webinar-address"
                                           name="address"
@@ -1858,7 +1953,8 @@ const handleSetInReview = async (
                                     )}
 
                                     {/* Show meeting link field for online or hybrid */}
-                                    {(place === "online" || place === "hybrid") && (
+                                    {(place === "online" ||
+                                      place === "hybrid") && (
                                       <div>
                                         <Label htmlFor="webinar-meeting-link">
                                           Meeting Link
@@ -1884,7 +1980,9 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-max-attendees">Max Attendees</Label>
+                                      <Label htmlFor="webinar-max-attendees">
+                                        Max Attendees
+                                      </Label>
                                       <Input
                                         id="webinar-max-attendees"
                                         name="maxAttendees"
@@ -1895,7 +1993,9 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-duration">Duration (minutes)</Label>
+                                      <Label htmlFor="webinar-duration">
+                                        Duration (minutes)
+                                      </Label>
                                       <Input
                                         id="webinar-duration"
                                         name="duration"
@@ -1906,7 +2006,10 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-image" className="mb-2 text-gray-700 font-medium">
+                                      <Label
+                                        htmlFor="webinar-image"
+                                        className="mb-2 text-gray-700 font-medium"
+                                      >
                                         Webinar Image
                                       </Label>
                                       <Input
@@ -1918,7 +2021,10 @@ const handleSetInReview = async (
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="webinar-document" className="mb-2 text-gray-700 font-medium">
+                                      <Label
+                                        htmlFor="webinar-document"
+                                        className="mb-2 text-gray-700 font-medium"
+                                      >
                                         Webinar Document (PDF/DOC)
                                       </Label>
                                       <Input
@@ -1929,17 +2035,24 @@ const handleSetInReview = async (
                                         className="text-gray-800 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 p-2"
                                       />
                                       <p className="text-sm text-gray-500 mt-1">
-                                        Upload a detailed document about the webinar (max 10MB)
+                                        Upload a detailed document about the
+                                        webinar (max 10MB)
                                       </p>
                                     </div>
 
                                     {/* add spinner when I press submit */}
-                                    {webinarCreationLoading ?
+                                    {webinarCreationLoading ? (
                                       <div className="flex justify-center items-center py-4">
                                         <ReloadIcon className="h-6 w-6 animate-spin" />
-                                        <span className="ml-2">Creating a Webinar...</span>
+                                        <span className="ml-2">
+                                          Creating a Webinar...
+                                        </span>
                                       </div>
-                                    : <Button type="submit">Submit for Approval</Button>}
+                                    ) : (
+                                      <Button type="submit">
+                                        Submit for Approval
+                                      </Button>
+                                    )}
                                   </form>
                                 </DialogContent>
                               </Dialog>
@@ -1956,9 +2069,10 @@ const handleSetInReview = async (
                                 <h3 className="text-xl font-semibold mb-2">
                                   {status === "PENDING"
                                     ? "Pending Approval"
-                                    : `${status.charAt(0) +
-                                    status.slice(1).toLowerCase()
-                                    } Webinars`}
+                                    : `${
+                                        status.charAt(0) +
+                                        status.slice(1).toLowerCase()
+                                      } Webinars`}
                                 </h3>
                                 <ul className="space-y-4">
                                   {webinars
@@ -2014,8 +2128,8 @@ const handleSetInReview = async (
                                               status === "COMPLETED"
                                                 ? "secondary"
                                                 : status === "PENDING"
-                                                  ? "outline"
-                                                  : "default"
+                                                ? "outline"
+                                                : "default"
                                             }
                                             className="bg-[#eb5e17] hover:bg-[#472014] text-white font-caveat"
                                           >
@@ -2073,7 +2187,7 @@ const handleSetInReview = async (
         </section>
       </main>
       <Footer />
-      <Toaster/>
+      <Toaster />
     </div>
   );
 };

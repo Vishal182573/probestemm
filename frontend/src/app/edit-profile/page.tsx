@@ -493,6 +493,11 @@ const EditProfileForm = () => {
         throw new Error(`Failed to update profile: ${errorResponse}`);
       }
 
+      const updatedData = await response.json();
+
+      // Update local storage with the new user data
+      localStorage.setItem("user", JSON.stringify(updatedData));
+
       toast({
         title: "Success",
         description: "Profile updated successfully",
