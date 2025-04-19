@@ -510,11 +510,12 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
 
   const filteredChatRooms = chatRooms.filter(chat =>
     // Filter out blocked users and self-chats
+    chat.otherUser && // Add null check for otherUser
     !blockedUsers.includes(chat.otherUser.id) &&
     chat.otherUser.id !== currentUser.id &&
     (chat.otherUser?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.otherUser?.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.otherUser?.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    chat.otherUser?.email?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const MessageView = ({ msg }: { msg: ChatMessage }) => {
