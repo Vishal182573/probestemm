@@ -22,6 +22,8 @@ interface Project {
   business?: { id: string; companyName: string; email: string };
   professor?: { id: string; fullName: string; email: string };
   student?: { id: string; name: string; email: string };
+  createdAt: string;
+  deadline: string;
 }
 
 // Define props interface for the EnrolledProjectsTabs component
@@ -143,7 +145,26 @@ const EnrolledProjectsTabs: React.FC<EnrolledProjectsTabsProps> = ({
                 >
                   {project.status}
                 </Badge>
+                <div>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-bold">Created:</span> {new Date(project.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                  {project.deadline && (
+                    <div className="text-sm text-gray-600">
+                      <span className="font-bold">Deadline:</span> {new Date(project.deadline).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
+              
               {owner && (
                 <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2">

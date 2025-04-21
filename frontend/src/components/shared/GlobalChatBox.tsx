@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { Socket, io } from 'socket.io-client';
 import { SOCKET_URL } from '@/constants';
 import { Badge } from '../ui/badge';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 // Interface definitions for type safety
 interface User {
@@ -95,6 +97,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   const [sending, setSending] = useState(false);        // Message sending state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Mobile sidebar visibility
   const [isClient, setIsClient] = useState(false);      // Client-side rendering check
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // Auto-refresh toggle state
   
   // Real-time Features States
   const [socket, setSocket] = useState<Socket | null>(null);  // WebSocket connection
@@ -149,9 +152,11 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
 
   // Add effect for periodic chat refresh
   useEffect(() => {
+    if (!autoRefreshEnabled) return;
+    
     const intervalId = setInterval(refreshSelectedChat, 3000);
     return () => clearInterval(intervalId);
-  }, [refreshSelectedChat]);
+  }, [refreshSelectedChat, autoRefreshEnabled]);
 
    // Add new function to fetch unread counts for each chat room
    const fetchChatRoomUnreadCounts = async () => {
@@ -218,8 +223,10 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
   }, [isOpen, currentUser.id]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedChat?.messages, scrollToBottom]);
+    if (autoRefreshEnabled) {
+      scrollToBottom();
+    }
+  }, [selectedChat?.messages, scrollToBottom, autoRefreshEnabled]);
 
   useEffect(() => {
     if (!currentUser.id) return;
@@ -673,7 +680,7 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[900px] h-[80vh] max-h-[800px] flex flex-col p-0 focus:ring-0 focus:ring-offset-0 focus:outline-none gap-0 text-black">
-          <DialogHeader className="p-4 border-b bg-white ">
+          <DialogHeader className="p-4 border-b bg-white flex flex-row justify-between">
             <DialogTitle className="flex gap-2 items-center text-lg font-semibold">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={currentUserData?.imageUrl || 
@@ -687,6 +694,17 @@ const GlobalChatBox: React.FC<GlobalChatBoxProps> = ({isChatOpen}) => {
               </Avatar>
               <span>Messages</span>
             </DialogTitle>
+            <div className="flex items-center space-x-2 mr-10">
+              <Switch
+                id="auto-refresh"
+                checked={autoRefreshEnabled}
+                onCheckedChange={setAutoRefreshEnabled}
+                className="data-[state=checked]:bg-[#eb5e17]"
+              />
+              <Label htmlFor="auto-refresh" className="text-xs text-gray-500 cursor-pointer">
+                Auto-scroll
+              </Label>
+            </div>
           </DialogHeader>
 
           <div className="flex flex-1 overflow-hidden text-black">
