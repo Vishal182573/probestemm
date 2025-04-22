@@ -1,13 +1,11 @@
-import { MailService } from "@sendgrid/mail";
+import nodemailer from 'nodemailer';
 import dotenv from "dotenv";
 dotenv.config();
-const sgMail = new MailService();
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
 interface EmailOptions {
- to: string;
- subject: string;
- html:string;
+  to: string;
+  subject: string;
+  html: string;
 }
 
 const isValidEmail = (email: string): boolean => {
@@ -15,13 +13,25 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-export const sendEmail = async (options: EmailOptions): Promise<void> => {
-  const { to, subject,html } = options;
-  const from = "stemprobe@gmail.com";
+// Create a transporter using Gmail SMTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'probestem2024@gmail.com',
+    pass: process.env.EMAIL_PASSWORD || '',
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
-  if (!to || !subject ) {
+export const sendEmail = async (options: EmailOptions): Promise<void> => {
+  const { to, subject, html } = options;
+  const from = "probestem2024@gmail.com";
+
+  if (!to || !subject) {
     throw new Error(
-      "Missing required fields: to, subject, code, and fileUrl are required."
+      "Missing required fields: to and subject are required."
     );
   }
 
@@ -29,12 +39,30 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     throw new Error("Invalid email format.");
   }
 
-
-  const msg = { to, from, subject, html };
+  const mailOptions = {
+    from: {
+      name: 'Probestem', // Add a display name
+      address: from
+    },
+    to,
+    subject,
+    html,
+    headers: {
+      'X-Mailer': 'Probestem',
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'high',
+      'List-Unsubscribe': '<mailto:unsubscribe@probestem.com>',
+    },
+    dkim: {
+      domainName: "probestem.com",
+      keySelector: "default",
+      privateKey: process.env.DKIM_PRIVATE_KEY || "",
+    }
+  };
 
   try {
-    // console.log("Sending email with payload:", msg);
-    await sgMail.send(msg);
+    await transporter.sendMail(mailOptions);
     console.log("Email sent successfully");
   } catch (error) {
     console.error("Email sending error:", error);
