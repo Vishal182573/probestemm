@@ -13,11 +13,13 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// Create a transporter using Gmail SMTP
+// Create a transporter using Hostinger SMTP
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.hostinger.com',
+  port: 465,
+  secure: true, // use SSL
   auth: {
-    user: process.env.EMAIL_USER || 'probestem2024@gmail.com',
+    user: process.env.EMAIL_USER || 'admin@probestem.com',
     pass: process.env.EMAIL_PASSWORD || '',
   },
   tls: {
@@ -27,7 +29,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   const { to, subject, html } = options;
-  const from = "probestem2024@gmail.com";
+  const from = "admin@probestem.com";
 
   if (!to || !subject) {
     throw new Error(
@@ -41,7 +43,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
 
   const mailOptions = {
     from: {
-      name: 'Probestem', // Add a display name
+      name: 'Probestem',
       address: from
     },
     to,
@@ -53,11 +55,6 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       'X-MSMail-Priority': 'High',
       'Importance': 'high',
       'List-Unsubscribe': '<mailto:unsubscribe@probestem.com>',
-    },
-    dkim: {
-      domainName: "probestem.com",
-      keySelector: "default",
-      privateKey: process.env.DKIM_PRIVATE_KEY || "",
     }
   };
 

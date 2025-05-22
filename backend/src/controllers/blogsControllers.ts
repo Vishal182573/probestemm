@@ -656,7 +656,7 @@ const toggleBlogLike = async (req: AuthenticatedRequest, res: Response) => {
           }" by ${userName}`,
           authorId,
           authorType,
-          id,
+          authorId,
           "blog"
         );
       }
