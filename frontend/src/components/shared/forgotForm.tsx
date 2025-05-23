@@ -58,6 +58,19 @@ const ForgotPasswordForm = () => {
     setError("");
 
     try {
+      // First check if user exists
+      const userExist = await axios.post(`${API_URL}/auth/check-existence`, {
+        email: email
+      });
+      
+      // If email already exists, show error
+      if (!userExist.data.exists) {
+        setError(`No account found with this email and role`);
+        setIsLoading(false);
+        return;
+      }
+
+      // If user exists, proceed with sending OTP
       await axios.post(`${API_URL}/email/send-email`, { email });
       toast({
         title: "OTP Sent",
